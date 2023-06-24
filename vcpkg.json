@@ -1,0 +1,23 @@
+{
+  "name": "vcpkg-example",
+  "version": "1.83",
+  "dependencies": [
+    "glm",
+    "glfw3",
+    "spdlog",
+    "vulkan",
+    "vulkan-hpp",
+    {
+      "name": "imgui",
+      "default-features": false,
+      "features": [
+        "vulkan-binding",
+        "glfw-binding",
+        "docking-experimental"
+      ]
+    },
+    "stb",
+    "gtest",
+    "catch2"
+  ]
+}
