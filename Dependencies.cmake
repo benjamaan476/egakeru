@@ -16,6 +16,11 @@ function(egakeru_setup_dependencies)
     include_directories(${Imgui_INCLUDE_DIRS})
   endif()
 
+  if(NOT TARGET ${Vulkan_LIBRARIES})
+    find_package(Vulkan REQUIRED COMPONENTS glslc)
+    include_directories(${Vulkan_INCLUDE_DIRS})
+  endif()
+
   if(NOT TARGET spdlog::spdlog)
     find_package(spdlog REQUIRED)
   endif()
