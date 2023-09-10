@@ -1,5 +1,4 @@
 include(cmake/SystemLink.cmake)
-include(cmake/LibFuzzer.cmake)
 include(CMakeDependentOption)
 include(CheckCXXCompilerFlag)
 
@@ -78,7 +77,6 @@ macro(egakeru_setup_options)
       egakeru_ENABLE_CACHE)
   endif()
 
-  egakeru_check_libfuzzer_support(LIBFUZZER_SUPPORTED)
   if(LIBFUZZER_SUPPORTED AND (egakeru_ENABLE_SANITIZER_ADDRESS OR egakeru_ENABLE_SANITIZER_THREAD OR egakeru_ENABLE_SANITIZER_UNDEFINED))
     set(DEFAULT_FUZZER ON)
   else()

@@ -154,6 +154,8 @@ function(egakeru_package_project)
 
   unset(_PackageProject_TARGETS)
 
+  include(FetchContent)
+
   # download ForwardArguments
   FetchContent_Declare(
     _fargs
