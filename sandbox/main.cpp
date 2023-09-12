@@ -6,7 +6,7 @@ int main()
 {
 	std::cout << "FK" << std::endl;
 
-	egkr::log::init();
+	egkr::log::init(); 
 	LOG_TRACE("Hello");
 	LOG_INFO("Hello");
 	LOG_ERROR("Hello");

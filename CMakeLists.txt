@@ -22,9 +22,6 @@ project(
   HOMEPAGE_URL "https://github.com/benjamaan476/egakeru"
   LANGUAGES CXX C)
 
-  set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
-
-
 include(cmake/PreventInSourceBuilds.cmake)
 include(ProjectOptions.cmake)
 
@@ -40,14 +37,14 @@ egakeru_local_options()
 # don't know if this should be set globally from here or not...
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-set(GIT_SHA
-    "Unknown"
-    CACHE STRING "SHA this build was generated from")
-string(
-  SUBSTRING "${GIT_SHA}"
-            0
-            8
-            GIT_SHORT_SHA)
+#set(GIT_SHA
+#    "Unknown"
+#    CACHE STRING "SHA this build was generated from")
+#string(
+#  SUBSTRING "${GIT_SHA}"
+#            0
+#            8
+#            GIT_SHORT_SHA)
 
 target_compile_features(egakeru_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
@@ -58,11 +55,11 @@ add_library(egakeru::egakeru_warnings ALIAS egakeru_warnings)
 #add_library(egakeru::egakeru_warnings INTERFACE IMPORTED)
 
 # configure files based on CMake configuration options
-add_subdirectory(configured_files)
+#add_subdirectory(configured_files)
 
 # Adding the src:
-add_subdirectory(src)
-
+add_subdirectory(engine)
+add_subdirectory(sandbox)
 # Don't even look at tests if we're not top level
 if(NOT PROJECT_IS_TOP_LEVEL)
   return()

@@ -1,9 +1,14 @@
+project(engine)
+
 
 file(GLOB SOURCES
-    log/*.h
     log/*.cpp
 )
-add_executable(engine main.cpp ${SOURCES})
+
+set(HEADERS 
+    log/log.h)
+
+add_library(engine SHARED ${SOURCES})
 
 target_link_libraries(
   engine
@@ -15,5 +20,3 @@ target_link_system_libraries(
   PRIVATE
           spdlog::spdlog
 )
-
-target_include_directories(engine PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
