@@ -1,11 +1,6 @@
-#include <iostream>
+#include "pch.h"
 
-#include "log/log.h"
-
-int main()
-{
-	std::cout << "FK" << std::endl;
-
+int main() {
 	egkr::log::init(); 
 	LOG_TRACE("Hello");
 	LOG_INFO("Hello");
