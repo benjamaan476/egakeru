@@ -1,6 +1,7 @@
 
 file(GLOB SOURCES
     log/*.h
+    platform/*.h
 )
 
 add_executable(sandbox main.cpp ${SOURCES})
@@ -21,7 +22,10 @@ target_link_system_libraries(
 
 target_include_directories(sandbox PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
 
-add_custom_command(TARGET sandbox POST_BUILD        # Adds a post-build event to MyTest
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
-        "${engine_BINARY_DIR}/engine.dll"      # <--this is in-file
-        $<TARGET_FILE_DIR:sandbox>)                 # <--this is out-file path
+set_target_properties(sandbox PROPERTIES LINK_DEPENDS $<TARGET_FILE:engine>)
+
+add_custom_command(
+    TARGET sandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:sandbox> $<TARGET_FILE_DIR:sandbox>
+    COMMAND_EXPAND_LISTS
+  )
