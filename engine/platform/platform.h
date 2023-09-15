@@ -43,7 +43,7 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<platform>;
-		API static shared_ptr create(platform_type type);
+		static shared_ptr create(platform_type type);
 
 		virtual ~platform() = default;
 

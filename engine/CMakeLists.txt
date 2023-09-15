@@ -6,11 +6,14 @@ file(GLOB SOURCES
     log/*.cpp
     platform/*.cpp
     platform/windows/*.cpp
+    application/*.cpp
 )
 
 set(HEADERS 
     log/log.h
-    platform/platform.h)
+    platform/platform.h
+    application/*.h
+)
 
 add_library(engine SHARED ${SOURCES})
 
