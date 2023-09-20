@@ -56,7 +56,7 @@ macro(egakeru_setup_options)
     option(egakeru_ENABLE_CLANG_TIDY "Enable clang-tidy" ON)
     option(egakeru_ENABLE_CPPCHECK "Enable cpp-check analysis" ON)
     option(egakeru_ENABLE_PCH "Enable precompiled headers" OFF)
-    option(egakeru_ENABLE_CACHE "Enable ccache" ON)
+    option(egakeru_ENABLE_CACHE "Enable ccache" OFF)
   endif()
 
   if(NOT PROJECT_IS_TOP_LEVEL)
