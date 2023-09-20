@@ -14,6 +14,9 @@ Checks: "*,
         -cppcoreguidelines-non-private-member-variables-in-classes,
         -misc-non-private-member-variables-in-classes,
         -bugprone-exception-escape,
+        -cppcoreguidelines-pro-bounds-constant-array-index,
+        -misc-use-anonymous-namespace,
+        -cppcoreguidelines-avoid-non-const-global-variables,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

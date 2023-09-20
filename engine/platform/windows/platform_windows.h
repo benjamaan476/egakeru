@@ -23,6 +23,8 @@ namespace egkr
 		std::chrono::milliseconds get_time() const final;
 		void sleep(std::chrono::milliseconds time) const final;
 	private:
+
+		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		inline static bool is_initialised_{false};
 
 		GLFWwindow* window_{};

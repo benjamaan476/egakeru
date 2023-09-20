@@ -2,6 +2,8 @@
 #include "pch.h"
 
 #include "platform/platform.h"
+#include "game/game.h"
+#include "event.h"
 
 namespace egkr
 {
@@ -12,28 +14,25 @@ namespace egkr
 		platform::shared_ptr platform{};
 		uint32_t width{};
 		uint32_t height{};
-	};
-
-	struct application_configuration
-	{
-		uint32_t width{ 800 };
-		uint32_t height{ 600 };
 		std::string name{};
+		game::unique_ptr game{};
 	};
 
 	class application
 	{
 	public:
-		using shared_ptr = std::shared_ptr<application>;
-		API static shared_ptr create(const application_configuration& config);
+		using unique_ptr = std::unique_ptr<application>;
+		API static unique_ptr create(game::unique_ptr game);
 		//Don't call this directly, only here to shutup clang
-		explicit application(const application_configuration& config);
+		explicit application(game::unique_ptr game);
 
-		API void run() const;
+		static API void run();
+		static void shutdown();
 
 	private:
-
+		//void reginster_event();
+		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 		inline static bool is_initialised_{false};
-		app_state state_{};
+		inline static app_state state_{};
 	};
 }

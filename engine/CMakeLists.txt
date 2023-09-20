@@ -7,12 +7,18 @@ file(GLOB SOURCES
     platform/*.cpp
     platform/windows/*.cpp
     application/*.cpp
+    game/*.cpp
+    event.cpp
+    input.cpp
 )
 
 set(HEADERS 
     log/log.h
     platform/platform.h
     application/*.h
+    game/*.h
+    event.h
+    input.h
 )
 
 add_library(engine SHARED ${SOURCES})

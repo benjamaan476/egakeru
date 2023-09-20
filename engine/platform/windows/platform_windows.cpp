@@ -6,11 +6,14 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include "input.h"
+
 namespace egkr
 {
 	platform_windows::~platform_windows()
 	{
 		shutdown();
+		window_ = nullptr;
 	}
 
 	platform_windows::shared_ptr platform_windows::create()
@@ -39,6 +42,8 @@ namespace egkr
 		glfwMakeContextCurrent(window_);
 		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
 
+		glfwSetKeyCallback(window_, &platform_windows::key_callback);
+
 		is_initialised_ = true;
 		return true;
 
@@ -47,8 +52,10 @@ namespace egkr
 	{
 		if (is_initialised_)
 		{
+			glfwSetWindowShouldClose(window_, 1);
 			glfwDestroyWindow(window_);
 			glfwTerminate();
+
 		}
 
 		is_initialised_ = false;
@@ -69,5 +76,15 @@ namespace egkr
 	void platform_windows::sleep(std::chrono::milliseconds time) const
 	{
 		std::this_thread::sleep_for(time);
+	}
+	void platform_windows::key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Key event from wrong window");
+			return;
+		}
+		auto pressed = action == GLFW_PRESS;
+		input::process_key((egkr::key)key, pressed);
 	}
 }

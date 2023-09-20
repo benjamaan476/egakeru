@@ -1,12 +1,13 @@
 
 file(GLOB SOURCES
-    log/*.h
-    platform/*.h
+    entry.cpp
+    sandbox_game.cpp
 )
 
-add_executable(sandbox main.cpp ${SOURCES})
+add_executable(sandbox $<TARGET_OBJECTS:engine> ${SOURCES})
 
 include_directories(${engine_SOURCE_DIR})
+
 
 target_link_libraries(
   sandbox
@@ -18,6 +19,7 @@ target_link_system_libraries(
   sandbox
   PRIVATE
           spdlog::spdlog
+          glfw
 )
 
 target_include_directories(sandbox PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
