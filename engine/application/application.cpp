@@ -63,7 +63,7 @@ namespace egkr
 
 			state_.game->render();
 
-			state_.is_running = state_.platform->is_running();
+			state_.is_running &= state_.platform->is_running();
 		}
 	}
 

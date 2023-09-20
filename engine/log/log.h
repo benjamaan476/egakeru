@@ -20,13 +20,8 @@ namespace egkr
 }
 
 
-template<typename ...T>
-constexpr auto LOG_TRACE(T&&... args) { spdlog::get(egkr::log::get_log_name().data())->trace(std::forward<T>(args)...); }
-template<typename ...T>
-constexpr auto LOG_INFO(T&&... args) { spdlog::get(egkr::log::get_log_name().data())->info(std::forward<T>(args)...); }
-template<typename ...T>
-constexpr auto LOG_WARN(T&&... args) { spdlog::get(egkr::log::get_log_name().data())->warn(std::forward<T>(args)...); }
-template<typename ...T>
-constexpr auto LOG_ERROR(T&&... args) { spdlog::get(egkr::log::get_log_name().data())->error(std::forward<T>(args)...); }
-template<typename ...T>
-constexpr auto LOG_FATAL(T&&... args) { spdlog::get(egkr::log::get_log_name().data())->critical(std::forward<T>(args)...); }
+#define LOG_TRACE(...) spdlog::get(egkr::log::get_log_name().data())->trace(__VA_ARGS__)
+#define LOG_INFO(...) spdlog::get(egkr::log::get_log_name().data())->info(__VA_ARGS__)
+#define LOG_WARN(...) spdlog::get(egkr::log::get_log_name().data())->warn(__VA_ARGS__)
+#define LOG_ERROR(...) spdlog::get(egkr::log::get_log_name().data())->error(__VA_ARGS__)
+#define LOG_FATAL(...) spdlog::get(egkr::log::get_log_name().data())->critical(__VA_ARGS__)
