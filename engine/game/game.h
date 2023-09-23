@@ -14,8 +14,8 @@ namespace egkr
 		API virtual ~game()  = default;
 
 		virtual bool init() = 0;
-		virtual void update() = 0;
-		virtual void render() = 0;
+		virtual void update(std::chrono::milliseconds delta_time) = 0;
+		virtual void render(std::chrono::milliseconds delta_time) = 0;
 		virtual void resize() = 0;
 
 		const auto& get_application_configuration() const

@@ -106,12 +106,12 @@ namespace egkr
 
 	}
 
-	std::pair<int, int> input::get_mouse_position()
+	int2 input::get_mouse_position()
 	{
 		return { 1 ,1 };
 	}
 
-	std::pair<int, int> input::get_previous_mouse_position()
+	int2 input::get_previous_mouse_position()
 	{
 		return { 0, 0 };
 	}

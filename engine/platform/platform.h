@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+#include <vulkan/vulkan.hpp>
+
 
 namespace egkr
 {
@@ -55,5 +57,10 @@ namespace egkr
 
 		virtual std::chrono::milliseconds get_time() const = 0;
 		virtual void sleep(std::chrono::milliseconds duration) const = 0;
+
+		virtual egkr::vector<const char*> get_required_extensions() const = 0;
+		virtual vk::SurfaceKHR create_surface(vk::Instance instance) = 0;
+
+		virtual int2 get_framebuffer_size() = 0;
 	};
 }

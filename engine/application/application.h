@@ -4,6 +4,7 @@
 #include "platform/platform.h"
 #include "game/game.h"
 #include "event.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
@@ -16,6 +17,7 @@ namespace egkr
 		uint32_t height{};
 		std::string name{};
 		game::unique_ptr game{};
+		renderer_frontend::unique_ptr renderer{};
 	};
 
 	class application
@@ -34,5 +36,11 @@ namespace egkr
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 		inline static bool is_initialised_{false};
 		inline static app_state state_{};
+		inline static std::chrono::milliseconds last_time_{};
+
+		inline static bool limit_framerate_{true};
+		inline static std::chrono::milliseconds frame_time_{16ms};
 	};
+
+	static application::unique_ptr application_;
 }

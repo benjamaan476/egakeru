@@ -156,8 +156,8 @@ namespace egkr
 		static bool was_button_down(mouse_button button);
 		static void process_button(mouse_button button, bool pressed);
 
-		static std::pair<int, int> get_mouse_position();
-		static std::pair<int, int> get_previous_mouse_position();
+		static int2 get_mouse_position();
+		static int2 get_previous_mouse_position();
 		static void process_mouse_move();
 		static void process_mouse_wheel();
 	};

@@ -70,7 +70,7 @@ namespace egkr
 	}
 	std::chrono::milliseconds platform_windows::get_time() const
 	{
-		const auto time = 10;
+		auto time = std::chrono::steady_clock::now().time_since_epoch().count();
 		return std::chrono::milliseconds{time};
 	}
 	void platform_windows::sleep(std::chrono::milliseconds time) const
@@ -87,4 +87,29 @@ namespace egkr
 		auto pressed = action == GLFW_PRESS;
 		input::process_key((egkr::key)key, pressed);
 	}
+
+	egkr::vector<const char*> egkr::platform_windows::get_required_extensions() const
+	{
+		uint32_t extensionCount = 0;
+		auto* extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+		std::vector<const char*> extension(extensions, extensions + extensionCount);
+		return  extension;
+	}
+
+	vk::SurfaceKHR platform_windows::create_surface(vk::Instance instance)
+	{
+		VkSurfaceKHR surface{};
+		glfwCreateWindowSurface(instance, window_, nullptr, &surface);
+		return { surface };
+	}
+
+	int2 platform_windows::get_framebuffer_size()
+	{
+		int32_t width{};
+		int32_t height{};
+		glfwGetFramebufferSize(window_, &width, &height);
+
+		return { width, height };
+	}
+
 }

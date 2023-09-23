@@ -22,6 +22,12 @@ namespace egkr
 
 		std::chrono::milliseconds get_time() const final;
 		void sleep(std::chrono::milliseconds time) const final;
+
+		egkr::vector<const char*> get_required_extensions() const final;	
+		vk::SurfaceKHR create_surface(vk::Instance instance) final;
+
+		int2 get_framebuffer_size() final;
+
 	private:
 
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

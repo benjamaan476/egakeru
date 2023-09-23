@@ -12,11 +12,11 @@ bool sandbox_game::init()
 	return true;
 }
 
-void sandbox_game::update()
+void sandbox_game::update(std::chrono::milliseconds /*delta_time*/)
 {
 }
 
-void sandbox_game::render()
+void sandbox_game::render(std::chrono::milliseconds /*delta_time*/)
 {
 }
 

@@ -1,5 +1,8 @@
 #include "application.h"
 #include "input.h"
+
+using namespace std::chrono_literals;
+
 namespace egkr
 {
 	application::unique_ptr application::create(game::unique_ptr game)
@@ -44,6 +47,12 @@ namespace egkr
 			return;
 		}
 
+		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
+		if (!state_.renderer->init())
+		{
+			LOG_FATAL("Failed to initialise renderer");
+		}
+
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");
@@ -57,13 +66,28 @@ namespace egkr
 	{
 		while (state_.is_running)
 		{
+			auto time = state_.platform->get_time();
+			auto delta_time = time - last_time_;
+
+			auto frame_time = time;
 			state_.platform->pump();
 
-			state_.game->update();
+			state_.game->update(delta_time);
 
-			state_.game->render();
+			state_.game->render(delta_time);
+			state_.renderer->draw_frame({ delta_time });
+
+			auto frame_duration = state_.platform->get_time() - frame_time;
+			if (limit_framerate_ && frame_duration < frame_time_)
+			{
+				auto time_remaining = frame_time_ - frame_duration;
+				state_.platform->sleep(time_remaining - 1ms);
+				LOG_INFO("Hi");
+			}
 
 			state_.is_running &= state_.platform->is_running();
+
+			last_time_ = time;
 		}
 	}
 

@@ -12,7 +12,9 @@ include_directories(${engine_SOURCE_DIR})
 target_link_libraries(
   sandbox
   PRIVATE egakeru::egakeru_options
-          egakeru::egakeru_warnings
+          egakeru::egakeru_warnings  
+          Vulkan::Vulkan
+          Vulkan::Headers
           engine)
 
 target_link_system_libraries(
@@ -20,6 +22,7 @@ target_link_system_libraries(
   PRIVATE
           spdlog::spdlog
           glfw
+          glm::glm
 )
 
 target_include_directories(sandbox PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")

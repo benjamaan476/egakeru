@@ -11,13 +11,20 @@ function(egakeru_setup_dependencies)
   endif()
 
   if(NOT TARGET Vulkan_LIBRARIES)
-     find_package(Vulkan REQUIRED COMPONENTS glslc)
+     find_package(Vulkan REQUIRED)
+     find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
+     find_package(VulkanHeaders CONFIG)
      include_directories(${Vulkan_INCLUDE_DIRS})
   endif()
 
   if(NOT TARGET glfw)
         find_package(glfw3 CONFIG REQUIRED)
         include_directories(${GLFW_INCLUDE_DIRS})
+  endif()
+
+  if(NOT TARGET glm)
+        find_package(glm CONFIG REQUIRED)
+        include_directories(${GLM_INCLUDE_DIRS})
   endif()
 
 endfunction()
