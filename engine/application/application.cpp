@@ -19,8 +19,8 @@ namespace egkr
 	application::application(game::unique_ptr game)
 	{
 
-		state_.width = game->get_application_configuration().width;
-		state_.height = game->get_application_configuration().height;
+		state_.width_ = game->get_application_configuration().width_;
+		state_.height_ = game->get_application_configuration().height_;
 		state_.name = game->get_application_configuration().name;
 		state_.game = std::move(game);
 
@@ -30,7 +30,7 @@ namespace egkr
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width = state_.width, .height = state_.height, .name = state_.name };
+		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = state_.width_, .height_ = state_.height_, .name = state_.name };
 
 
 		state_.platform = egkr::platform::create(egkr::platform_type::windows);
@@ -59,6 +59,7 @@ namespace egkr
 		}
 
 		event::register_event(event_code::key_down, nullptr, application::on_event);
+		event::register_event(event_code::quit, nullptr, application::on_event);
 		state_.is_running = true;
 	}
 
@@ -85,8 +86,6 @@ namespace egkr
 				LOG_INFO("Hi");
 			}
 
-			state_.is_running &= state_.platform->is_running();
-
 			last_time_ = time;
 		}
 	}
@@ -98,6 +97,11 @@ namespace egkr
 
 	bool application::on_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
 	{
+		if (code == event_code::quit)
+		{
+			shutdown();
+		}
+
 		if (code == event_code::key_down)
 		{
 			const size_t array_size{ 8 };

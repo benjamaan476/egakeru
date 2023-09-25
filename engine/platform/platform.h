@@ -35,8 +35,8 @@ namespace egkr
 	{
 		uint32_t start_x{};
 		uint32_t start_y{};
-		uint32_t width{};
-		uint32_t height{};
+		uint32_t width_{};
+		uint32_t height_{};
 		std::string name{};
 	};
 

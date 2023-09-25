@@ -4,6 +4,9 @@
 #include <vulkan/vulkan.hpp>
 
 #include "swapchain.h"
+#include "renderpass.h"
+#include "command_buffer.h"
+#include "fence.h"
 
 namespace egkr
 {
@@ -12,6 +15,14 @@ namespace egkr
 		vk::PhysicalDevice physical_device{};
 		vk::Device logical_device{};
 		vk::Format depth_format{};
+
+		uint32_t graphics_queue_index{};
+		vk::Queue graphics_queue{};
+
+		uint32_t present_queue_index{};
+		vk::Queue present_queue{};
+
+		vk::CommandPool graphics_command_pool{};
 
 		int32_t find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const;
 	};
@@ -23,7 +34,17 @@ namespace egkr
 		VkDebugUtilsMessengerEXT debug{};
 		vulkan_device device{};
 		vk::SurfaceKHR surface{};
-		swapchain::unique_ptr swapchain{};
+		swapchain::shared_ptr swapchain{};
+		renderpass::shared_ptr main_renderpass{};
+
+		egkr::vector<command_buffer> graphics_command_buffers{};
+
+		egkr::vector<vk::Semaphore> image_available_semaphore{};
+		egkr::vector<vk::Semaphore> queue_complete_semaphore{};
+
+		egkr::vector<fence::shared_ptr> in_flight_fences{};
+		egkr::vector<fence::shared_ptr> images_in_flight{};
+
 		uint32_t framebuffer_width{};
 		uint32_t framebuffer_height{};
 		uint32_t image_index{};

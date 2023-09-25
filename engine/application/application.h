@@ -13,8 +13,8 @@ namespace egkr
 		bool is_running{};
 		bool is_suspended{};
 		platform::shared_ptr platform{};
-		uint32_t width{};
-		uint32_t height{};
+		uint32_t width_{};
+		uint32_t height_{};
 		std::string name{};
 		game::unique_ptr game{};
 		renderer_frontend::unique_ptr renderer{};

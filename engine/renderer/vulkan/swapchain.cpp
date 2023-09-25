@@ -4,9 +4,9 @@
 
 namespace egkr
 {
-	swapchain::unique_ptr swapchain::create(vulkan_context* context)
+	swapchain::shared_ptr swapchain::create(vulkan_context* context)
 	{
-		return std::make_unique<swapchain>(context);
+		return std::make_shared<swapchain>(context);
 	}
 
 	swapchain::swapchain(vulkan_context* context)
@@ -22,6 +22,8 @@ namespace egkr
 
 	void swapchain::destroy()
 	{
+		framebuffer_.clear();
+
 		if (depth_attachment_)
 		{
 			depth_attachment_.reset();
@@ -79,6 +81,24 @@ namespace egkr
 		else if (result != vk::Result::eSuccess)
 		{
 			LOG_FATAL("Failed to present swap chain image");
+		}
+	}
+
+	void swapchain::regenerate_framebuffers(renderpass::shared_ptr renderpass)
+	{
+		framebuffer_.resize(image_count_);
+		for (auto i{ 0U }; i < image_count_; ++i)
+		{
+			//TODO configure based on attachment
+			std::array<vk::ImageView, 2> attachments{image_views_[i], depth_attachment_->get_view() };
+
+			framebuffer_properties properties{};
+			properties.attachments = attachments;
+			properties.renderpass = renderpass;
+			properties.width_ = context_->framebuffer_width;
+			properties.height_ = context_->framebuffer_height;
+
+			framebuffer_[i] = framebuffer::create(context_, properties);
 		}
 	}
 

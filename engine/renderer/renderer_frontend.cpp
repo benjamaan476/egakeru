@@ -32,9 +32,9 @@ namespace egkr
 	{
 		backend_->shutdown();
 	}
-	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
+	void renderer_frontend::on_resize(uint32_t width_, uint32_t height_)
 	{
-		backend_->resize(width, height);
+		backend_->resize(width_, height_);
 	}
 	void renderer_frontend::draw_frame(const render_packet& packet)
 	{

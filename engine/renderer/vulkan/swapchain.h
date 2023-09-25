@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "image.h"
+#include "framebuffer.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -11,9 +12,9 @@ namespace egkr
 	class swapchain
 	{
 	public:
-		using unique_ptr = std::unique_ptr<swapchain>;
+		using shared_ptr = std::shared_ptr<swapchain>;
 
-		static unique_ptr create(vulkan_context* context);
+		static shared_ptr create(vulkan_context* context);
 
 		explicit swapchain(vulkan_context* context);
 		~swapchain();
@@ -24,6 +25,13 @@ namespace egkr
 		uint32_t acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence);
 		void present(vk::Queue graphics_queue, vk::Queue present_queue, vk::Semaphore render_complete, uint32_t image_index);
 
+		void regenerate_framebuffers(renderpass::shared_ptr renderpass);
+
+		const auto& get_format() const { return format_; }
+		const auto& get_image_count() const { return image_count_; }
+		const auto& get_image_view(uint8_t image_index) const { return image_views_[image_index]; }
+		const auto& get_depth_attachment() const { return depth_attachment_; }
+		const auto& get_max_frames_in_flight() const { return frames_in_flight_; }
 	private:
 
 		void create();
@@ -34,6 +42,8 @@ namespace egkr
 
 	private:
 		vulkan_context* context_;
+		egkr::vector<framebuffer::unique_ptr> framebuffer_{};
+
 		vk::SurfaceFormatKHR format_{};
 		vk::Extent2D extent_{};
 		vk::SwapchainKHR swapchain_{};

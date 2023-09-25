@@ -3,9 +3,9 @@
 
 namespace egkr
 {
-	vulkan_image::shared_ptr vulkan_image::create(const vulkan_context* context, uint32_t width, uint32_t height, const image_properties& properties, bool create_view)
+	vulkan_image::shared_ptr vulkan_image::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view)
 	{
-		auto image =  std::make_shared<vulkan_image>(context, width, height, properties);
+		auto image =  std::make_shared<vulkan_image>(context, width_, height_, properties);
 
 		if (create_view)
 		{
@@ -36,14 +36,14 @@ namespace egkr
 
 	}
 
-	vulkan_image::vulkan_image(const vulkan_context* context, uint32_t width, uint32_t height, const image_properties& properties)
-		: context_{ context }, width_{width}, height_{height}
+	vulkan_image::vulkan_image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties)
+		: context_{ context }, width_{width_}, height_{height_}
 	{
 		vk::ImageCreateInfo image_info{};
 	
 		image_info
 			.setImageType(vk::ImageType::e2D)
-			.setExtent({ width, height, properties.depth })
+			.setExtent({ width_, height_, properties.depth })
 			.setFormat(properties.image_format)
 			.setMipLevels(properties.mip_levels)
 			.setTiling(properties.tiling)

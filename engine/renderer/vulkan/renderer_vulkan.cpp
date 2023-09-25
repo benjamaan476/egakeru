@@ -49,6 +49,25 @@ namespace egkr
 		LOG_WARN("Failed to find suitable memory type");
 		return -1;
 	}
+
+	void renderer_vulkan::create_command_buffers()
+	{
+		if (context_.graphics_command_buffers.empty())
+		{
+			context_.graphics_command_buffers.resize(context_.swapchain->get_image_count());
+		}
+
+		for (auto& buffer : context_.graphics_command_buffers)
+		{
+			if (buffer.get_handle() != VK_NULL_HANDLE)
+			{
+				buffer.free(&context_, context_.device.graphics_command_pool);
+			}
+
+			buffer.allocate(&context_, context_.device.graphics_command_pool, true);
+		}
+	}
+
 	renderer_backend::unique_ptr renderer_vulkan::create(const platform::shared_ptr& platform)
 	{
 		return std::make_unique<renderer_vulkan>(platform);
@@ -94,11 +113,54 @@ namespace egkr
 
 		context_.swapchain = swapchain::create(&context_);
 
+		renderpass_properties main_renderpass_properties{};
+		main_renderpass_properties.clear_colour = { 0.F, 0.F, 0.2F, 1.F };
+		main_renderpass_properties.render_extent = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
+		main_renderpass_properties.depth = 1.F;
+		main_renderpass_properties.stencil = 0;
+
+		context_.main_renderpass = renderpass::create(&context_, main_renderpass_properties);
+
+		context_.swapchain->regenerate_framebuffers(context_.main_renderpass);
+
+		create_command_buffers();
+
+		context_.image_available_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
+		context_.queue_complete_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
+
+		context_.in_flight_fences.resize(context_.swapchain->get_max_frames_in_flight());
+
+		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
+		{
+			context_.image_available_semaphore[i] = context_.device.logical_device.createSemaphore({}, context_.allocator);
+			context_.queue_complete_semaphore[i] = context_.device.logical_device.createSemaphore({}, context_.allocator);
+
+			context_.in_flight_fences[i] = fence::create(&context_, true);
+		}
+
 		return true;
 	}
 
 	void renderer_vulkan::shutdown()
 	{
+		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
+		{
+			context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
+			context_.device.logical_device.destroySemaphore(context_.image_available_semaphore[i], context_.allocator);
+			context_.in_flight_fences[i]->destroy();
+		}
+		for (auto& buffer : context_.graphics_command_buffers)
+		{
+			if (buffer.get_handle())
+			{
+				buffer.free(&context_, context_.device.graphics_command_pool);
+			}
+		}
+		context_.graphics_command_buffers.clear();
+
+		context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
+
+		context_.main_renderpass.reset();
 		context_.swapchain.reset();
 
 		context_.instance.destroySurfaceKHR(context_.surface);
@@ -271,8 +333,6 @@ namespace egkr
 		return (properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu || properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) && (bool)features.geometryShader && queueIndices.is_complete() && swapChainAdequate;
 	}
 
-
-
 	bool renderer_vulkan::check_device_extension_support(const vk::PhysicalDevice& physical_device)
 	{
 		auto extension_properties = physical_device.enumerateDeviceExtensionProperties();
@@ -335,15 +395,29 @@ namespace egkr
 			device_create_info.setEnabledLayerCount(0);
 		}
 
-		context_.device.logical_device = context_.device.physical_device.createDevice(device_create_info, context_.allocator);
-		if (context_.device.logical_device == vk::Device{})
+		auto& device = context_.device;
+
+		device.logical_device = device.physical_device.createDevice(device_create_info, context_.allocator);
+		if (device.logical_device == vk::Device{})
 		{
 			LOG_ERROR("Could not create logical device");
 			return false;
 		}
 
+		device.graphics_queue_index = queue_indices.graphics_family.value();
+		device.graphics_queue = device.logical_device.getQueue(device.graphics_queue_index, 0);
+
+		device.present_queue_index = queue_indices.present_family.value();
+		device.present_queue = device.logical_device.getQueue(device.present_queue_index, 0);
+
+		vk::CommandPoolCreateInfo create_pool{};
+		create_pool
+			.setQueueFamilyIndex(device.graphics_queue_index)
+			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+
+		device.graphics_command_pool = device.logical_device.createCommandPool(create_pool, context_.allocator);
+
 		return true;
 	}
-
 
 }

@@ -7,6 +7,7 @@
 #include <GLFW/glfw3native.h>
 
 #include "input.h"
+#include "event.h"
 
 namespace egkr
 {
@@ -32,7 +33,7 @@ namespace egkr
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		window_ = glfwCreateWindow((int)configuration.width, (int)configuration.height, configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
@@ -43,6 +44,7 @@ namespace egkr
 		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
+		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
 
 		is_initialised_ = true;
 		return true;
@@ -88,6 +90,17 @@ namespace egkr
 		input::process_key((egkr::key)key, pressed);
 	}
 
+	void platform_windows::on_close(GLFWwindow* window)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Key event from wrong window");
+			return;
+		}
+
+		event::fire_event(event_code::quit, nullptr, {});
+	}
+
 	egkr::vector<const char*> egkr::platform_windows::get_required_extensions() const
 	{
 		uint32_t extensionCount = 0;
@@ -105,11 +118,11 @@ namespace egkr
 
 	int2 platform_windows::get_framebuffer_size()
 	{
-		int32_t width{};
-		int32_t height{};
-		glfwGetFramebufferSize(window_, &width, &height);
+		int32_t width_{};
+		int32_t height_{};
+		glfwGetFramebufferSize(window_, &width_, &height_);
 
-		return { width, height };
+		return { width_, height_ };
 	}
 
 }
