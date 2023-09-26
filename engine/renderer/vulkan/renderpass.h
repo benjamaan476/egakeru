@@ -38,6 +38,8 @@ namespace egkr
 		void begin(command_buffer& command_buffer, vk::Framebuffer framebuffer);
 		static void end(command_buffer& command_buffer);
 
+		void set_extent(uint4 extent);
+
 		const auto& get_handle() { return renderpass_; }
 	private:
 		const vulkan_context* context_{};

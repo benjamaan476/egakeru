@@ -45,6 +45,7 @@ namespace egkr
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
+		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
 
 		is_initialised_ = true;
 		return true;
@@ -99,6 +100,14 @@ namespace egkr
 		}
 
 		event::fire_event(event_code::quit, nullptr, {});
+	}
+
+	void platform_windows::on_resize(GLFWwindow* /*window*/, int width, int height)
+	{
+		event_context context{};
+		const int array_size{ 4 };
+		context = std::array<int32_t, array_size>{ width, height };
+		event::fire_event(event_code::resize, nullptr, context);
 	}
 
 	egkr::vector<const char*> egkr::platform_windows::get_required_extensions() const

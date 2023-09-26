@@ -34,6 +34,7 @@ namespace egkr
 	private:
 		//void reginster_event();
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
+		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
 		inline static bool is_initialised_{false};
 		inline static app_state state_{};
 		inline static std::chrono::milliseconds last_time_{};

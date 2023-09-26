@@ -26,7 +26,7 @@ namespace egkr
 		virtual bool init() = 0;
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
-		virtual void begin_frame(std::chrono::milliseconds delta_time) = 0;
+		virtual bool begin_frame(std::chrono::milliseconds delta_time) = 0;
 		virtual void end_frame() = 0;
 	private:
 		platform::shared_ptr platform_;

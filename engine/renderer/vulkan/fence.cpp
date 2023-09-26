@@ -26,11 +26,11 @@ namespace egkr
 		destroy();
 	}
 
-	bool fence::wait(std::chrono::nanoseconds timeout)
+	bool fence::wait(uint64_t timeout)
 	{
 		if (!is_signaled_)
 		{
-			const auto result = context_->device.logical_device.waitForFences(fence_, true, timeout.count());
+			const auto result = context_->device.logical_device.waitForFences(fence_, true, timeout);
 
 			switch (result)
 			{

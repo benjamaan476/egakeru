@@ -48,9 +48,12 @@ namespace egkr
 		uint32_t framebuffer_width{};
 		uint32_t framebuffer_height{};
 		uint32_t image_index{};
-		uint32_t frame_count{};
+		uint32_t current_frame{};
 
 		bool recreating_swapchain{};
+		uint32_t size_generation_{};
+		uint32_t last_size_generation_{};
+
 	};
 
 

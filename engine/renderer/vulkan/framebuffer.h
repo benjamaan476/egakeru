@@ -24,7 +24,11 @@ namespace egkr
 		framebuffer(const vulkan_context* context, const framebuffer_properties& properties);
 		~framebuffer();
 
+		void increment_generation();
+
 		void destroy();
+
+		const auto& get_handle() const { return framebuffer_; }
 	private:
 		const vulkan_context* context_{};
 		vk::Framebuffer framebuffer_{};

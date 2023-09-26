@@ -60,6 +60,7 @@ namespace egkr
 
 		event::register_event(event_code::key_down, nullptr, application::on_event);
 		event::register_event(event_code::quit, nullptr, application::on_event);
+		event::register_event(event_code::resize, nullptr, application::on_resize);
 		state_.is_running = true;
 	}
 
@@ -240,5 +241,17 @@ namespace egkr
 		return false;
 	}
 
+	bool application::on_resize(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
+	{
+		if (code == event_code::resize)
+		{
+			auto& context_array = std::get<std::array<int32_t, 4>>(context);
+			auto& width = context_array[0];
+			auto& height = context_array[1];
+
+			state_.renderer->on_resize(width, height);
+		}
+		return false;
+	}
 
 }

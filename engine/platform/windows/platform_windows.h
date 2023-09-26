@@ -32,6 +32,7 @@ namespace egkr
 
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void on_close(GLFWwindow* window);
+		static void on_resize(GLFWwindow* window, int width, int height);
 		inline static bool is_initialised_{false};
 
 		GLFWwindow* window_{};

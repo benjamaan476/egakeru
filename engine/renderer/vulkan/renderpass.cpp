@@ -124,4 +124,8 @@ namespace egkr
 	{
 		command_buffer.end_render_pass();
 	}
+	void renderpass::set_extent(uint4 extent)
+	{
+		render_extent_ = extent;
+	}
 }

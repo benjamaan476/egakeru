@@ -19,7 +19,7 @@ namespace egkr
 		bool init() final;
 		void shutdown() final;
 		void resize(uint32_t width_, uint32_t height_) final;
-		void begin_frame(std::chrono::milliseconds delta_time) final;
+		bool begin_frame(std::chrono::milliseconds delta_time) final;
 		void end_frame() final;
 	private:
 		bool init_instance();
@@ -34,6 +34,7 @@ namespace egkr
 		bool create_logical_device();
 		void create_command_buffers();
 
+		bool recreate_swapchain();
 	private:
 		vulkan_context context_{};
 

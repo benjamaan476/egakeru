@@ -15,7 +15,7 @@ namespace egkr
 		fence(const vulkan_context* context, bool is_signaled);
 		~fence();
 
-		bool wait(std::chrono::nanoseconds timeout);
+		bool wait(uint64_t timeout);
 		void reset();
 
 		void destroy();

@@ -29,6 +29,7 @@ namespace egkr
 
 	void framebuffer::destroy()
 	{
+		context_->device.logical_device.waitIdle();
 		context_->device.logical_device.destroyFramebuffer(framebuffer_, context_->allocator);
 		framebuffer_ = VK_NULL_HANDLE;
 	}

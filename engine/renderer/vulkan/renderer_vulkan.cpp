@@ -129,6 +129,7 @@ namespace egkr
 		context_.queue_complete_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
 
 		context_.in_flight_fences.resize(context_.swapchain->get_max_frames_in_flight());
+		context_.images_in_flight.resize(context_.swapchain->get_max_frames_in_flight());
 
 		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 		{
@@ -143,6 +144,8 @@ namespace egkr
 
 	void renderer_vulkan::shutdown()
 	{
+		context_.device.logical_device.waitIdle();
+
 		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 		{
 			context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
@@ -180,16 +183,89 @@ namespace egkr
 		context_.instance.destroy();
 
 	}
-	void renderer_vulkan::resize(uint32_t /*width*/, uint32_t /*height*/)
+	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
+
+		context_.framebuffer_width = width;
+		context_.framebuffer_height = height;
+
+		++context_.size_generation_;
 	}
-	void renderer_vulkan::begin_frame(std::chrono::milliseconds /*delta_time*/)
+
+	bool renderer_vulkan::begin_frame(std::chrono::milliseconds /*delta_time*/)
 	{
+		if (context_.recreating_swapchain)
+		{
+			context_.device.logical_device.waitIdle();
+			return false;
+		}
+
+		if (context_.size_generation_ != context_.last_size_generation_)
+		{
+			context_.device.logical_device.waitIdle();
+			recreate_swapchain();
+			return false;
+		}
+
+		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
+		context_.image_index = context_.swapchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
+
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		command_buffer.reset();
+		command_buffer.begin(false, false, false);
+
+		vk::Viewport viewport{};
+		viewport
+			.setX(0)
+			.setY(0)
+			.setWidth(context_.framebuffer_width)
+			.setHeight(context_.framebuffer_height)
+			.setMinDepth(0.F)
+			.setMaxDepth(1.F);
+
+		vk::Rect2D scissor{};
+		scissor
+			.setOffset({ 0, 0 })
+			.setExtent({ context_.framebuffer_width, context_.framebuffer_height });
+
+		command_buffer.get_handle().setViewport(0, viewport);
+		command_buffer.get_handle().setScissor(0, scissor);
+
+		context_.main_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
+
 		++frame_number_;
+		return true;
 	}
+
 	void renderer_vulkan::end_frame()
-	{
+	{ 
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+
+		context_.main_renderpass->end(command_buffer);
+		command_buffer.end();
+
+		if (context_.images_in_flight[context_.image_index] != VK_NULL_HANDLE)
+		{
+			context_.images_in_flight[context_.image_index]->wait(std::numeric_limits<uint64_t>::max());
+		}
+			context_.images_in_flight[context_.image_index] = context_.in_flight_fences[context_.current_frame];
+
+		context_.in_flight_fences[context_.current_frame]->reset();
+
+		const vk::PipelineStageFlags stage_mask = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		vk::SubmitInfo submit_info{};
+		submit_info
+			.setCommandBuffers(command_buffer.get_handle())
+			.setSignalSemaphores(context_.queue_complete_semaphore[context_.current_frame])
+			.setWaitSemaphores(context_.image_available_semaphore[context_.current_frame])
+			.setWaitDstStageMask(stage_mask);
+
+		context_.device.graphics_queue.submit(submit_info, context_.in_flight_fences[context_.current_frame]->get_handle());
+		command_buffer.update_submitted();
+
+		context_.swapchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
 	}
+
 	bool renderer_vulkan::init_instance()
 	{
 		vk::ApplicationInfo application_info{};
@@ -420,4 +496,46 @@ namespace egkr
 		return true;
 	}
 
+	bool renderer_vulkan::recreate_swapchain()
+	{
+		if (context_.recreating_swapchain)
+		{
+			return false;
+		}
+
+		if (context_.framebuffer_height == 0 || context_.framebuffer_width == 0)
+		{
+			LOG_INFO("Framebuffer called with zero dimension");
+			return false;
+		}
+
+		context_.device.logical_device.waitIdle();
+
+		for (auto& image_in_flight : context_.images_in_flight)
+		{
+			image_in_flight = VK_NULL_HANDLE;
+		}
+
+		//query_swapchain_support(*context_, context_->device.physical_device);
+		//detect_depth_format(context_->device);
+
+
+		context_.last_size_generation_ = context_.size_generation_;
+		for (auto i{ 0U }; i < context_.swapchain->get_image_count(); ++i)
+		{
+			context_.graphics_command_buffers[i].free(&context_, context_.device.graphics_command_pool);
+			context_.swapchain->get_framebuffer(i)->destroy();
+		}
+
+		context_.swapchain->recreate();
+
+		context_.main_renderpass->set_extent({ 0, 0, context_.framebuffer_width, context_.framebuffer_height });
+
+		context_.swapchain->regenerate_framebuffers(context_.main_renderpass);
+
+		create_command_buffers();
+		context_.recreating_swapchain = false;
+		return true;
+	}
 }
+

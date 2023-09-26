@@ -38,8 +38,11 @@ namespace egkr
 	}
 	void renderer_frontend::draw_frame(const render_packet& packet)
 	{
-		backend_->begin_frame(packet.delta_time);
+		if (backend_->begin_frame(packet.delta_time))
+		{
 
-		backend_->end_frame();
+
+			backend_->end_frame();
+		}
 	}
 }
