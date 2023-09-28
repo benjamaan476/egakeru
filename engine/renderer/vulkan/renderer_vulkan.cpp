@@ -3,6 +3,7 @@
 
 #include "platform/windows/platform_windows.h"
 #include "swapchain.h"
+#include "pipeline.h"
 
 namespace egkr
 {
@@ -90,12 +91,13 @@ namespace egkr
 	{
 		if (!init_instance())
 		{
+            LOG_FATAL("Failed to create vulkan instance");
 			return false;
 		}
 
-		if (!create_debug_messenger())
+		if (enable_validation_layers_ && !create_debug_messenger())
 		{
-			return false;
+            LOG_FATAL("Failed to create debug messenger");
 		}
 
 		context_.surface = create_surface();
@@ -128,8 +130,8 @@ namespace egkr
 		context_.image_available_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
 		context_.queue_complete_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
 
-		context_.in_flight_fences.resize(context_.swapchain->get_max_frames_in_flight());
-		context_.images_in_flight.resize(context_.swapchain->get_max_frames_in_flight());
+		context_.in_flight_fences.resize(context_.swapchain->get_image_count());
+		context_.images_in_flight.resize(context_.swapchain->get_image_count());
 
 		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 		{
@@ -139,49 +141,57 @@ namespace egkr
 			context_.in_flight_fences[i] = fence::create(&context_, true);
 		}
 
+		create_object_shader();
+
 		return true;
 	}
 
 	void renderer_vulkan::shutdown()
 	{
-		context_.device.logical_device.waitIdle();
+		if (context_.instance)
+		{
+			context_.device.logical_device.waitIdle();
 
-		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
-		{
-			context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
-			context_.device.logical_device.destroySemaphore(context_.image_available_semaphore[i], context_.allocator);
-			context_.in_flight_fences[i]->destroy();
-		}
-		for (auto& buffer : context_.graphics_command_buffers)
-		{
-			if (buffer.get_handle())
+			context_.object_shader_->destroy();
+			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
-				buffer.free(&context_, context_.device.graphics_command_pool);
+				context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
+				context_.device.logical_device.destroySemaphore(context_.image_available_semaphore[i], context_.allocator);
+				context_.in_flight_fences[i]->destroy();
 			}
+			for (auto& buffer : context_.graphics_command_buffers)
+			{
+				if (buffer.get_handle())
+				{
+					buffer.free(&context_, context_.device.graphics_command_pool);
+				}
+			}
+			context_.graphics_command_buffers.clear();
+
+			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
+
+			context_.main_renderpass.reset();
+			context_.swapchain.reset();
+
+			context_.instance.destroySurfaceKHR(context_.surface);
+			if (enable_validation_layers_)
+			{
+				//DestroyDebugUtilsMessengerEXT(context_.instance, context_.debug, nullptr);
+			}
+
+			auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context_.instance, "vkDestroyDebugUtilsMessengerEXT");
+
+			if (func != nullptr)
+			{
+				func(context_.instance, context_.debug, (VkAllocationCallbacks*)context_.allocator);
+			}
+
+			context_.device.logical_device.destroy();
+			context_.instance.destroy();
+			context_.instance = VK_NULL_HANDLE;
+
+			platform_.reset();
 		}
-		context_.graphics_command_buffers.clear();
-
-		context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
-
-		context_.main_renderpass.reset();
-		context_.swapchain.reset();
-
-		context_.instance.destroySurfaceKHR(context_.surface);
-		if (enable_validation_layers_)
-		{
-			//DestroyDebugUtilsMessengerEXT(context_.instance, context_.debug, nullptr);
-		}
-
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context_.instance, "vkDestroyDebugUtilsMessengerEXT");
-
-		if (func != nullptr)
-		{
-			func(context_.instance, context_.debug, (VkAllocationCallbacks*)context_.allocator);
-		}
-
-		context_.device.logical_device.destroy();
-		context_.instance.destroy();
-
 	}
 	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
@@ -274,7 +284,7 @@ namespace egkr
 			.setApplicationVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
 			.setPEngineName("egakeru")
 			.setEngineVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
-			.setApiVersion(VK_API_VERSION_1_0);
+			.setApiVersion(VK_API_VERSION_1_3);
 
 		vk::InstanceCreateInfo instance_info{};
 		instance_info.setPApplicationInfo(&application_info);
@@ -536,6 +546,27 @@ namespace egkr
 		create_command_buffers();
 		context_.recreating_swapchain = false;
 		return true;
+	}
+
+	void renderer_vulkan::create_object_shader()
+	{
+		context_.object_shader_ = shader::create(&context_);
+
+		//TODO Descriptors
+
+		vk::Viewport viewport(0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height, 0.F, 1.F);
+		vk::Rect2D scissor({ 0U, 0U }, { context_.framebuffer_width, context_.framebuffer_height});
+
+		pipeline_properties object_pipeline_properties{};
+		object_pipeline_properties.is_wireframe = false;
+		object_pipeline_properties.scissor = scissor;
+		object_pipeline_properties.viewport = viewport;
+		object_pipeline_properties.shader_stage_info = context_.object_shader_->get_shader_stages();
+		object_pipeline_properties.vertex_attributes = vertex_3d::get_attribute_description();
+		object_pipeline_properties.renderpass = context_.main_renderpass;
+
+		context_.object_shader_->set_pipeline(pipeline::create(&context_, object_pipeline_properties));
+
 	}
 }
 

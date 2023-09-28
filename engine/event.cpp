@@ -56,7 +56,7 @@ namespace egkr
 
 		if (removed_event != events.end())
 		{
-			LOG_INFO("Event unrgistered");
+			LOG_INFO("Event unregistered");
 			return true;
 		}
 

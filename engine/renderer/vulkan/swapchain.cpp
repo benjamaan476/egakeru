@@ -83,7 +83,7 @@ namespace egkr
 			LOG_FATAL("Failed to present swap chain image");
 		}
 
-		context_->current_frame = (context_->current_frame + 1) % frames_in_flight_;
+		context_->current_frame = (context_->current_frame + 1) % max_frames_in_flight_;
 	}
 
 	void swapchain::regenerate_framebuffers(renderpass::shared_ptr renderpass)
@@ -112,6 +112,7 @@ namespace egkr
 		extent_ = choose_swapchain_extent(swapchain_support.capabilities);
 
 		image_count_ = swapchain_support.capabilities.minImageCount + 1;
+		max_frames_in_flight_ = image_count_ - 1;
 		framebuffer_.resize(image_count_);
 
 		if (swapchain_support.capabilities.maxImageCount > 0 && image_count_ > swapchain_support.capabilities.maxImageCount)

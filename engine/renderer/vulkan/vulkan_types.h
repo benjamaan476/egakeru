@@ -7,6 +7,7 @@
 #include "renderpass.h"
 #include "command_buffer.h"
 #include "fence.h"
+#include "shader.h"
 
 namespace egkr
 {
@@ -54,6 +55,8 @@ namespace egkr
 		uint32_t size_generation_{};
 		uint32_t last_size_generation_{};
 
+		shader::shared_ptr object_shader_{};
+
 	};
 
 
@@ -74,6 +77,7 @@ namespace egkr
 		std::vector<vk::SurfaceFormatKHR> formats{};
 		std::vector<vk::PresentModeKHR> present_modes{};
 	};
+
 
 	static inline swapchain_support_details query_swapchain_support(const vulkan_context& context, const vk::PhysicalDevice& physical_device)
 	{
@@ -137,5 +141,47 @@ namespace egkr
 		}
 		return queueIndices;
 	}
+
+	struct vertex_3d
+	{
+		//Must match the vertex input attribute description
+		egkr::float3 position{};
+
+		consteval static vk::VertexInputBindingDescription get_binding_description() noexcept
+		{
+			vk::VertexInputBindingDescription bindingDescription{};
+			bindingDescription
+				.setBinding(0)
+				.setStride(sizeof(vertex_3d))
+				.setInputRate(vk::VertexInputRate::eVertex);
+			return bindingDescription;
+		}
+
+		consteval static std::array<vk::VertexInputAttributeDescription, 1> get_attribute_description() noexcept
+		{
+			std::array<vk::VertexInputAttributeDescription, 1> attributeDescriptions{};
+
+			attributeDescriptions[0].setBinding(0);
+			attributeDescriptions[0].setLocation(0);
+			attributeDescriptions[0].setFormat(vk::Format::eR32G32B32A32Sfloat);
+			attributeDescriptions[0].setOffset(offsetof(vertex_3d, position));
+
+			//attributeDescriptions[1].setBinding(0);
+			//attributeDescriptions[1].setLocation(1);
+			//attributeDescriptions[1].setFormat(vk::Format::eR32G32B32Sfloat);
+			//attributeDescriptions[1].setOffset(offsetof(vertex_3d, normal));
+
+			//attributeDescriptions[2].setBinding(0);
+			//attributeDescriptions[2].setLocation(2);
+			//attributeDescriptions[2].setFormat(vk::Format::eR32G32Sfloat);
+			//attributeDescriptions[2].setOffset(offsetof(vertex_3d, tex));
+
+			//attributeDescriptions[3].setBinding(0);
+			//attributeDescriptions[3].setLocation(3);
+			//attributeDescriptions[3].setFormat(vk::Format::eR32G32B32Sfloat);
+			//attributeDescriptions[3].setOffset(offsetof(vertex_3d, colour));
+			return attributeDescriptions;
+		}
+	};
 
 }

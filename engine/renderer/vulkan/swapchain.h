@@ -31,7 +31,7 @@ namespace egkr
 		const auto& get_image_count() const { return image_count_; }
 		const auto& get_image_view(uint8_t image_index) const { return image_views_[image_index]; }
 		const auto& get_depth_attachment() const { return depth_attachment_; }
-		const auto& get_max_frames_in_flight() const { return frames_in_flight_; }
+		const auto& get_max_frames_in_flight() const { return max_frames_in_flight_; }
 
 		const auto& get_framebuffer(uint32_t frame) const { return framebuffer_[frame]; }
 		const auto& get_frame_buffer() const { return framebuffer_; }
@@ -56,7 +56,7 @@ namespace egkr
 		vulkan_image::shared_ptr depth_attachment_{};
 
 		uint32_t image_count_{};
-		uint8_t frames_in_flight_{3};
+		uint8_t max_frames_in_flight_{3};
 
 	};
 }

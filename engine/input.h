@@ -143,6 +143,7 @@ namespace egkr
 	class input
 	{
 	public:
+		static bool init();
 		static void update();
 		static bool is_key_down(key key);
 		static bool is_key_up(key key);

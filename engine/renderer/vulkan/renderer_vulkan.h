@@ -35,6 +35,8 @@ namespace egkr
 		void create_command_buffers();
 
 		bool recreate_swapchain();
+
+		void create_object_shader();
 	private:
 		vulkan_context context_{};
 

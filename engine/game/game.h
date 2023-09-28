@@ -16,9 +16,9 @@ namespace egkr
 		virtual bool init() = 0;
 		virtual void update(std::chrono::milliseconds delta_time) = 0;
 		virtual void render(std::chrono::milliseconds delta_time) = 0;
-		virtual void resize() = 0;
+		virtual void resize(uint32_t width, uint32_t height) = 0;
 
-		const auto& get_application_configuration() const
+		[[nodiscard]] const auto& get_application_configuration() const
 		{
 			return application_configuration_;
 		}

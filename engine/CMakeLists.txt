@@ -43,3 +43,33 @@ target_link_system_libraries(
           glfw
 
 )
+
+set(SHADER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
+set(SHADER_BINARY_DIR ${CMAKE_BINARY_DIR}/assets/shaders)
+
+file(GLOB SHADERS
+    ${SHADER_SOURCE_DIR}/*.frag
+    ${SHADER_SOURCE_DIR}/*.vert
+)
+
+add_custom_command(
+    COMMAND
+        ${CMAKE_COMMAND} -E make_directory ${SHADER_BINARY_DIR}
+    OUTPUT ${SHADER_BINARY_DIR}
+)
+
+foreach(source IN LISTS SHADERS)
+    get_filename_component(FILENAME ${source} NAME)
+    add_custom_command(
+            COMMAND
+                ${glslc_executable} ${source}
+                # -MD -MF
+                -o ${SHADER_BINARY_DIR}/${FILENAME}.spv
+            OUTPUT ${SHADER_BINARY_DIR}/${FILENAME}.spv
+            DEPENDS ${source} ${SHADER_BINARY_DIR}
+            COMMENT "Compiling ${FILENAME}"
+    )
+    list(APPEND SPV_HEADERS ${SHADER_BINARY_DIR}/${FILENAME}.spv)
+endforeach()
+
+add_custom_target(shaders ALL DEPENDS ${SPV_HEADERS})

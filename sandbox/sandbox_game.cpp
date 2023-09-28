@@ -20,6 +20,4 @@ void sandbox_game::render(std::chrono::milliseconds /*delta_time*/)
 {
 }
 
-void sandbox_game::resize()
-{
-}
+void sandbox_game::resize(uint32_t /*width*/, uint32_t /*height*/) {}

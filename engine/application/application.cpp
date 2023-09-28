@@ -26,6 +26,8 @@ namespace egkr
 
 		//Init subsystems
 
+		egkr::log::init();
+		egkr::input::init();
 		//
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
@@ -74,11 +76,13 @@ namespace egkr
 			auto frame_time = time;
 			state_.platform->pump();
 
-			state_.game->update(delta_time);
+			if (!state_.is_suspended)
+			{
+				state_.game->update(delta_time);
 
-			state_.game->render(delta_time);
-			state_.renderer->draw_frame({ delta_time });
-
+				state_.game->render(delta_time);
+				state_.renderer->draw_frame({ delta_time });
+			}
 			auto frame_duration = state_.platform->get_time() - frame_time;
 			if (limit_framerate_ && frame_duration < frame_time_)
 			{
@@ -93,14 +97,20 @@ namespace egkr
 
 	void application::shutdown()
 	{
-		state_.is_running = false;
+
+		event::unregister_event(event_code::key_down, nullptr, on_event);
+		event::unregister_event(event_code::quit, nullptr, on_event);
+		event::unregister_event(event_code::resize, nullptr, application::on_resize);
+
+		state_.renderer->shutdown();
+		state_.platform->shutdown();
 	}
 
 	bool application::on_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
 	{
 		if (code == event_code::quit)
 		{
-			shutdown();
+		state_.is_running = false;
 		}
 
 		if (code == event_code::key_down)
@@ -111,128 +121,8 @@ namespace egkr
 			switch (key)
 			{
 			case egkr::key::esc:
-				shutdown();
+				state_.is_running = false;
 				break;
-			case egkr::key::unknown:
-			case egkr::key::space:
-			case egkr::key::apostrophe:
-			case egkr::key::comma:
-			case egkr::key::minus:
-			case egkr::key::period:
-			case egkr::key::slash:
-			case egkr::key::key_0:
-			case egkr::key::key_1:
-			case egkr::key::key_2:
-			case egkr::key::key_3:
-			case egkr::key::key_4:
-			case egkr::key::key_5:
-			case egkr::key::key_6:
-			case egkr::key::key_7:
-			case egkr::key::key_8:
-			case egkr::key::key_9:
-			case egkr::key::semicolon:
-			case egkr::key::equal:
-			case egkr::key::a:
-			case egkr::key::b:
-			case egkr::key::c:
-			case egkr::key::d:
-			case egkr::key::e:
-			case egkr::key::f:
-			case egkr::key::g:
-			case egkr::key::h:
-			case egkr::key::i:
-			case egkr::key::j:
-			case egkr::key::k:
-			case egkr::key::l:
-			case egkr::key::m:
-			case egkr::key::n:
-			case egkr::key::o:
-			case egkr::key::p:
-			case egkr::key::q:
-			case egkr::key::r:
-			case egkr::key::s:
-			case egkr::key::t:
-			case egkr::key::u:
-			case egkr::key::v:
-			case egkr::key::w:
-			case egkr::key::x:
-			case egkr::key::y:
-			case egkr::key::z:
-			case egkr::key::left_bracket:
-			case egkr::key::backslash:
-			case egkr::key::right_bracket:
-			case egkr::key::grave:
-			case egkr::key::world_1:
-			case egkr::key::world_2:
-			case egkr::key::enter:
-			case egkr::key::tab:
-			case egkr::key::backspace:
-			case egkr::key::insert:
-			case egkr::key::del:
-			case egkr::key::right:
-			case egkr::key::left:
-			case egkr::key::down:
-			case egkr::key::up:
-			case egkr::key::page_up:
-			case egkr::key::page_down:
-			case egkr::key::home:
-			case egkr::key::end:
-			case egkr::key::caps_lock:
-			case egkr::key::scroll_lock:
-			case egkr::key::num_lock:
-			case egkr::key::print_screen:
-			case egkr::key::pause:
-			case egkr::key::f1:
-			case egkr::key::f2:
-			case egkr::key::f3:
-			case egkr::key::f4:
-			case egkr::key::f5:
-			case egkr::key::f6:
-			case egkr::key::f7:
-			case egkr::key::f8:
-			case egkr::key::f9:
-			case egkr::key::f10:
-			case egkr::key::f11:
-			case egkr::key::f12:
-			case egkr::key::f13:
-			case egkr::key::f14:
-			case egkr::key::f15:
-			case egkr::key::f16:
-			case egkr::key::f17:
-			case egkr::key::f18:
-			case egkr::key::f19:
-			case egkr::key::f20:
-			case egkr::key::f21:
-			case egkr::key::f22:
-			case egkr::key::f23:
-			case egkr::key::f24:
-			case egkr::key::f25:
-			case egkr::key::kp_0:
-			case egkr::key::kp_1:
-			case egkr::key::kp_2:
-			case egkr::key::kp_3:
-			case egkr::key::kp_4:
-			case egkr::key::kp_5:
-			case egkr::key::kp_6:
-			case egkr::key::kp_7:
-			case egkr::key::kp_8:
-			case egkr::key::kp_9:
-			case egkr::key::kp_decimal:
-			case egkr::key::kp_divide:
-			case egkr::key::kp_multiply:
-			case egkr::key::kp_substract:
-			case egkr::key::kp_add:
-			case egkr::key::kp_enter:
-			case egkr::key::kp_equal:
-			case egkr::key::left_shift:
-			case egkr::key::left_control:
-			case egkr::key::left_alt:
-			case egkr::key::left_super:
-			case egkr::key::right_shift:
-			case egkr::key::right_control:
-			case egkr::key::right_alt:
-			case egkr::key::right_super:
-			case egkr::key::menu:
 			default:
 				break;
 			}
@@ -249,7 +139,25 @@ namespace egkr
 			auto& width = context_array[0];
 			auto& height = context_array[1];
 
-			state_.renderer->on_resize(width, height);
+			if (state_.width_ != (uint32_t)width || state_.height_ != (uint32_t)height)
+			{
+				state_.width_ = (uint32_t)width;
+				state_.height_ = (uint32_t)height;
+
+				if (width == 0 && height == 0)
+				{
+					state_.is_suspended = true;
+					return false;
+				}
+
+				if (state_.is_suspended)
+				{
+					state_.is_suspended = false;
+				}
+				state_.game->resize(width, height);
+				state_.renderer->on_resize(width, height);
+
+			}
 		}
 		return false;
 	}

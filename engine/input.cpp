@@ -26,6 +26,12 @@ namespace egkr
 
 	static input_state state{};
 
+	bool input::init()
+	{
+		LOG_INFO("Initialised input");
+		return true;
+	}
+
 	void input::update()
 	{
 		state.previous_keyboard = state.current_keyboard;

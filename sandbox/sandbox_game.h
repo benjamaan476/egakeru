@@ -9,5 +9,5 @@ public:
 	bool init() final;
 	void update(std::chrono::milliseconds delta_time) final;
 	void render(std::chrono::milliseconds delta_time) final;
-	void resize() final;
+	void resize(uint32_t width, uint32_t height) final;
 };
