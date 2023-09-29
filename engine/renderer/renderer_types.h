@@ -17,6 +17,14 @@ namespace egkr
 		std::chrono::milliseconds delta_time{};
 	};
 
+	struct global_uniform_buffer
+	{
+		float4x4 projection{};
+		float4x4 view{};
+		float4x4 reserved0{}; // make this 256 bytes in size
+		float4x4 reserve1{};
+	};
+
 	class renderer_backend
 	{
 	public:
@@ -27,6 +35,8 @@ namespace egkr
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame(std::chrono::milliseconds delta_time) = 0;
+		virtual void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
+		virtual void update(const float4x4& model) = 0;
 		virtual void end_frame() = 0;
 	private:
 		platform::shared_ptr platform_;

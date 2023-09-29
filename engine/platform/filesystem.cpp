@@ -6,8 +6,8 @@ namespace egkr
 {
 	bool filesystem::does_path_exist(std::string_view path)
 	{
-		std::filesystem::path filepath{ path };
-		auto absolute = std::filesystem::absolute(path);
+		const std::filesystem::path filepath{ path };
+		const auto absolute = std::filesystem::absolute(path);
 		return std::filesystem::exists(absolute);
 	}
 	file_handle filesystem::open(std::string_view path, file_mode mode, bool is_binary)
@@ -39,16 +39,16 @@ namespace egkr
 			LOG_ERROR("Invalid mode passed while trying to open file: '%s'", path);
 			return { {}, "", false };
 		}
-		FILE* f{};
-		fopen_s(&f, absolute_filepath.string().c_str(), openmode.c_str());
+		FILE* handle{};
+		fopen_s(&handle, absolute_filepath.string().c_str(), openmode.c_str());
 
-		if (!f)
+		if (!handle)
 		{
 			LOG_WARN("Failed to open file: {}", path.data());
 			return { {}, "", false };
 		}
 
-		return { f, absolute_filepath.string(), true };
+		return { handle, absolute_filepath.string(), true };
 	}
 
 	void filesystem::close(file_handle& handle)

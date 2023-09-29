@@ -72,12 +72,15 @@ namespace egkr
 			.setTopology(vk::PrimitiveTopology::eTriangleList)
 			.setPrimitiveRestartEnable(false);
 
+		vk::PushConstantRange push_constant_range(vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4) * 2);
+
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info{};
 		pipeline_layout_create_info
 			.setSetLayouts(properties.descriptor_set_layout)
-			.setSetLayoutCount(0);
+			.setPushConstantRanges(push_constant_range);
 
 		pipeline_layout_ = context_->device.logical_device.createPipelineLayout(pipeline_layout_create_info, context_->allocator);
+
 
 		vk::GraphicsPipelineCreateInfo pipeline_create_info{};
 		pipeline_create_info

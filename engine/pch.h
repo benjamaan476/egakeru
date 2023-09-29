@@ -4,6 +4,7 @@
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <string>
 #include <string_view>
@@ -11,6 +12,7 @@
 #include <chrono>
 #include <array>
 #include <set>
+#include <numbers>
 
 #include "log/log.h"
 
@@ -30,5 +32,8 @@ namespace egkr
 	using int2 = glm::ivec2;
 	using int3 = glm::ivec3;
 	using int4 = glm::ivec4;
+
+	using float4x4 = glm::mat4x4;
+	
 
 }

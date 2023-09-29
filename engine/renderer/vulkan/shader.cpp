@@ -74,12 +74,12 @@ namespace egkr
 		return {create_info, shader_module, stage_create_info};
 	}
 
-	shader::shared_ptr shader::create(const vulkan_context* context)
+	shader::shared_ptr shader::create(const vulkan_context* context, pipeline_properties& pipeline_properties)
 	{
-		return std::make_shared<shader>(context);
+		return std::make_shared<shader>(context, pipeline_properties);
 	}
 
-	shader::shader(const vulkan_context* context)
+	shader::shader(const vulkan_context* context, pipeline_properties& pipeline_properties)
 		: context_{context}
 	{
 		auto frag_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::frag, "spv"sv);
@@ -87,6 +87,50 @@ namespace egkr
 
 		stages_[shader_stages::frag] = frag_shader_module;
 		stages_[shader_stages::vert] = vert_shader_module;
+
+		const auto descriptor_type{ vk::DescriptorType::eUniformBuffer };
+
+		vk::DescriptorSetLayoutBinding binding{};
+		binding
+			.setBinding(0)
+			.setDescriptorType(descriptor_type)
+			.setStageFlags(vk::ShaderStageFlagBits::eVertex)
+			.setDescriptorCount(1);
+
+		vk::DescriptorSetLayoutCreateInfo create_info{};
+		create_info
+			.setBindings(binding);
+
+		global_descriptor_set_layout_ = context_->device.logical_device.createDescriptorSetLayout(create_info, context_->allocator);
+
+		vk::DescriptorPoolSize pool_size{};
+		pool_size
+			.setType(descriptor_type)
+			.setDescriptorCount(context_->swapchain->get_image_count());
+
+		vk::DescriptorPoolCreateInfo descriptor_pool_create_info{};
+		descriptor_pool_create_info
+			.setPoolSizes(pool_size)
+			.setMaxSets(context_->swapchain->get_image_count());
+
+		global_ubo_descriptor_pool_ = context_->device.logical_device.createDescriptorPool(descriptor_pool_create_info, context_->allocator);
+
+		pipeline_properties.descriptor_set_layout = global_descriptor_set_layout_;
+		pipeline_properties.shader_stage_info = get_shader_stages();
+		pipeline_ = pipeline::create(context_, pipeline_properties);
+
+		auto usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer;
+		auto memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer) * 3, usage, memory_properties, true);
+
+		std::array<vk::DescriptorSetLayout, 3> global_layouts = { global_descriptor_set_layout_, global_descriptor_set_layout_, global_descriptor_set_layout_ };
+
+		vk::DescriptorSetAllocateInfo alloc_info{};
+		alloc_info
+			.setDescriptorPool(global_ubo_descriptor_pool_)
+			.setSetLayouts(global_layouts);
+
+		global_descriptor_set_ = context_->device.logical_device.allocateDescriptorSets(alloc_info);
 
 	}
 
@@ -101,9 +145,34 @@ namespace egkr
 		context_->graphics_command_buffers[image_index].get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->get_handle());
 	}
 
-	void shader::set_pipeline(pipeline::shared_ptr pipeline)
+	void shader::update_global_state(const global_uniform_buffer& ubo)
 	{
-		pipeline_ = pipeline;
+		const auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
+
+		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 0, global_descriptor_set_[context_->image_index], nullptr);
+
+		auto range = sizeof(global_uniform_buffer); // one per frame in flight
+		auto offset = sizeof(global_uniform_buffer) * context_->image_index;
+
+		global_uniform_buffer_->load_data(offset, range, 0, &ubo);
+
+		vk::DescriptorBufferInfo buffer_info(global_uniform_buffer_->get_handle(), offset, range);
+		vk::WriteDescriptorSet write_set{};
+		write_set
+			.setBufferInfo(buffer_info)
+			.setDstSet(global_descriptor_set_[context_->image_index])
+			.setDstBinding(0)
+			.setDstArrayElement(0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+
+		context_->device.logical_device.updateDescriptorSets(write_set, nullptr);
+
+	}
+
+	void shader::update(float4x4 model)
+	{
+		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
+		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &model);
 	}
 
 	const egkr::vector<vk::PipelineShaderStageCreateInfo> shader::get_shader_stages() const
@@ -121,9 +190,26 @@ namespace egkr
 
 	void shader::destroy()
 	{
+		if (global_uniform_buffer_)
+		{
+			global_uniform_buffer_->destroy();
+		}
+
 		if (pipeline_)
 		{
 			pipeline_->destroy();
+		}
+
+		if (global_ubo_descriptor_pool_)
+		{
+			context_->device.logical_device.destroyDescriptorPool(global_ubo_descriptor_pool_, context_->allocator);
+			global_ubo_descriptor_pool_ = VK_NULL_HANDLE;
+		}
+
+		if (global_descriptor_set_layout_)
+		{
+			context_->device.logical_device.destroyDescriptorSetLayout(global_descriptor_set_layout_, context_->allocator);
+			global_descriptor_set_layout_ = VK_NULL_HANDLE;
 		}
 
 		for (auto& stage : stages_)

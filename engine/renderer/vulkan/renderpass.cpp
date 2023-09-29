@@ -101,7 +101,7 @@ namespace egkr
 	
 		vk::ClearValue colour_clear_value{};
 		colour_clear_value
-			.setColor({ clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a });
+			.setColor({ std::array<float, 4>{ clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a } });
 
 		vk::ClearValue depth_clear_value{};
 		depth_clear_value

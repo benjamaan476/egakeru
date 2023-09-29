@@ -30,6 +30,7 @@ namespace egkr
 		void bind(const command_buffer& command_buffer, vk::PipelineBindPoint bind_point);
 
 		const auto& get_handle() const { return pipeline_; }
+		const auto& get_layout() const { return pipeline_layout_; }
 	private:
 		const vulkan_context* context_{};
 		vk::Pipeline pipeline_{};

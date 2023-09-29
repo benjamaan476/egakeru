@@ -60,7 +60,7 @@ namespace egkr
 
 	void* egkr::buffer::lock(uint64_t offset, uint64_t size, uint32_t flags)
 	{
-		auto data = context_->device.logical_device.mapMemory(memory_, offset, size,(vk::MemoryMapFlags)flags);
+		auto* data = context_->device.logical_device.mapMemory(memory_, offset, size,(vk::MemoryMapFlags)flags);
 		return data;
 	}
 

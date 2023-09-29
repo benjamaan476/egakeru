@@ -135,9 +135,9 @@ namespace egkr
 	{
 		if (code == event_code::resize)
 		{
-			auto& context_array = std::get<std::array<int32_t, 4>>(context);
-			auto& width = context_array[0];
-			auto& height = context_array[1];
+			const auto& context_array = std::get<std::array<int32_t, 4>>(context);
+			const auto& width = context_array[0];
+			const auto& height = context_array[1];
 
 			if (state_.width_ != (uint32_t)width || state_.height_ != (uint32_t)height)
 			{

@@ -60,7 +60,7 @@ namespace egkr
 
 		for (auto& buffer : context_.graphics_command_buffers)
 		{
-			if (buffer.get_handle() != VK_NULL_HANDLE)
+			if (buffer.get_handle())
 			{
 				buffer.free(&context_, context_.device.graphics_command_pool);
 			}
@@ -159,7 +159,8 @@ namespace egkr
 
 		//TODO temp code
 
-		const egkr::vector<vertex_3d> vertices{ {{0.F, -0.5F, 0.F}}, {{0.5F, 0.5F, 0.F}}, {{0.F, 0.5F, 0.F}}, {{0.5F, -0.5F, 0.F}} };
+		const float scale{ 10.F };
+		const egkr::vector<vertex_3d> vertices{ {{0.F * scale, -0.5F * scale, 0.F}}, {{0.5F * scale, 0.5F * scale, 0.F}}, {{0.F * scale, 0.5F * scale, 0.F}}, {{0.5F * scale, -0.5F * scale, 0.F}} };
 		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_vertex_buffer, 0, vertices.size() * sizeof(vertex_3d), vertices.data());
 
 		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
@@ -269,6 +270,23 @@ namespace egkr
 
 		context_.main_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
 
+
+		++frame_number_;
+		return true;
+	}
+
+	void renderer_vulkan::update_global_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	{
+		context_.object_shader->use();
+		context_.object_shader->update_global_state({ projection, view });
+
+	}
+
+	void renderer_vulkan::update(const float4x4& model)
+	{
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		context_.object_shader->update(model);
+
 		//TODO temp test code
 		context_.object_shader->use();
 
@@ -278,9 +296,6 @@ namespace egkr
 		command_buffer.get_handle().bindIndexBuffer(context_.object_index_buffer->get_handle(), offset, vk::IndexType::eUint32);
 
 		command_buffer.get_handle().drawIndexed(6, 1, 0, 0, 0);
-
-		++frame_number_;
-		return true;
 	}
 
 	void renderer_vulkan::end_frame()
@@ -586,10 +601,6 @@ namespace egkr
 
 	void renderer_vulkan::create_object_shader()
 	{
-		context_.object_shader = shader::create(&context_);
-
-		//TODO Descriptors
-
 		vk::Viewport viewport(0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height, 0.F, 1.F);
 		vk::Rect2D scissor({ 0U, 0U }, { context_.framebuffer_width, context_.framebuffer_height});
 
@@ -597,11 +608,10 @@ namespace egkr
 		object_pipeline_properties.is_wireframe = false;
 		object_pipeline_properties.scissor = scissor;
 		object_pipeline_properties.viewport = viewport;
-		object_pipeline_properties.shader_stage_info = context_.object_shader->get_shader_stages();
 		object_pipeline_properties.vertex_attributes = vertex_3d::get_attribute_description();
 		object_pipeline_properties.renderpass = context_.main_renderpass;
 
-		context_.object_shader->set_pipeline(pipeline::create(&context_, object_pipeline_properties));
+		context_.object_shader = shader::create(&context_, object_pipeline_properties);
 
 	}
 
