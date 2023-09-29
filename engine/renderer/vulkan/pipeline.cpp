@@ -47,7 +47,7 @@ namespace egkr
 			.setColorBlendOp(vk::BlendOp::eAdd)
 			.setSrcAlphaBlendFactor(vk::BlendFactor::eSrcAlpha)
 			.setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eA);
+			.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 
 		vk::PipelineColorBlendStateCreateInfo colour_blend_state_create_info{};
 		colour_blend_state_create_info
@@ -74,13 +74,14 @@ namespace egkr
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info{};
 		pipeline_layout_create_info
-			.setSetLayouts(properties.descriptor_set_layout);
+			.setSetLayouts(properties.descriptor_set_layout)
+			.setSetLayoutCount(0);
 
 		pipeline_layout_ = context_->device.logical_device.createPipelineLayout(pipeline_layout_create_info, context_->allocator);
 
 		vk::GraphicsPipelineCreateInfo pipeline_create_info{};
 		pipeline_create_info
-			.setStageCount(2)
+			.setStages(properties.shader_stage_info)
 			.setPVertexInputState(&vertex_input_create_info)
 			.setPInputAssemblyState(&input_assembly_create_info)
 			.setPViewportState(&viewport_create_info)

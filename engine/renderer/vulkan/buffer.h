@@ -1,10 +1,11 @@
 #pragma once
 #include "pch.h"
 
-#include "vulkan_types.h"
+#include <vulkan/vulkan.hpp>
 
 namespace egkr
 {
+	struct vulkan_context;
 	class buffer
 	{
 	public:
@@ -16,7 +17,7 @@ namespace egkr
 
 		void destroy();
 
-		void lock(uint64_t offset, uint64_t size, uint32_t flags);
+		void* lock(uint64_t offset, uint64_t size, uint32_t flags);
 		void unlock();
 
 		void load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data);
@@ -25,6 +26,8 @@ namespace egkr
 		void resize(uint64_t new_size, vk::Queue queue, vk::CommandPool pool);
 
 		void bind(uint64_t offset);
+
+		const auto& get_handle() const { return handle_; }
 
 	private:
 		const vulkan_context* context_{};

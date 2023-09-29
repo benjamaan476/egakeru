@@ -69,6 +69,18 @@ namespace egkr
 		}
 	}
 
+	void renderer_vulkan::upload_data_range(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data)
+	{
+		const vk::MemoryPropertyFlags memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+		const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eTransferSrc;
+
+		auto staging_buffer = buffer::create(&context_, size, usage, memory_flags, true);
+
+		staging_buffer->load_data(offset, size, 0, data);
+		staging_buffer->copy_to(pool, fence, queue, staging_buffer->get_handle(), 0, buffer->get_handle(), 0, size);
+	}
+
+
 	renderer_backend::unique_ptr renderer_vulkan::create(const platform::shared_ptr& platform)
 	{
 		return std::make_unique<renderer_vulkan>(platform);
@@ -143,6 +155,17 @@ namespace egkr
 
 		create_object_shader();
 
+		create_object_buffers();
+
+		//TODO temp code
+
+		const egkr::vector<vertex_3d> vertices{ {{0.F, -0.5F, 0.F}}, {{0.5F, 0.5F, 0.F}}, {{0.F, 0.5F, 0.F}}, {{0.5F, -0.5F, 0.F}} };
+		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_vertex_buffer, 0, vertices.size() * sizeof(vertex_3d), vertices.data());
+
+		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
+		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_index_buffer, 0, indices.size() * sizeof(uint32_t), indices.data());
+
+		//TODO end temp code
 		return true;
 	}
 
@@ -152,7 +175,10 @@ namespace egkr
 		{
 			context_.device.logical_device.waitIdle();
 
-			context_.object_shader_->destroy();
+			context_.object_index_buffer->destroy();
+			context_.object_vertex_buffer->destroy();
+
+			context_.object_shader->destroy();
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
 				context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
@@ -199,7 +225,7 @@ namespace egkr
 		context_.framebuffer_width = width;
 		context_.framebuffer_height = height;
 
-		++context_.size_generation_;
+		++context_.framebuffer_size_generation;
 	}
 
 	bool renderer_vulkan::begin_frame(std::chrono::milliseconds /*delta_time*/)
@@ -210,7 +236,7 @@ namespace egkr
 			return false;
 		}
 
-		if (context_.size_generation_ != context_.last_size_generation_)
+		if (context_.framebuffer_size_generation != context_.framebuffer_last_size_generation)
 		{
 			context_.device.logical_device.waitIdle();
 			recreate_swapchain();
@@ -227,9 +253,9 @@ namespace egkr
 		vk::Viewport viewport{};
 		viewport
 			.setX(0)
-			.setY(0)
+			.setY(context_.framebuffer_height)
 			.setWidth(context_.framebuffer_width)
-			.setHeight(context_.framebuffer_height)
+			.setHeight(-(float)context_.framebuffer_height)
 			.setMinDepth(0.F)
 			.setMaxDepth(1.F);
 
@@ -242,6 +268,16 @@ namespace egkr
 		command_buffer.get_handle().setScissor(0, scissor);
 
 		context_.main_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
+
+		//TODO temp test code
+		context_.object_shader->use();
+
+		vk::DeviceSize offset{ 0 };
+		command_buffer.get_handle().bindVertexBuffers(0, context_.object_vertex_buffer->get_handle(), offset);
+
+		command_buffer.get_handle().bindIndexBuffer(context_.object_index_buffer->get_handle(), offset, vk::IndexType::eUint32);
+
+		command_buffer.get_handle().drawIndexed(6, 1, 0, 0, 0);
 
 		++frame_number_;
 		return true;
@@ -530,7 +566,7 @@ namespace egkr
 		//detect_depth_format(context_->device);
 
 
-		context_.last_size_generation_ = context_.size_generation_;
+		context_.framebuffer_last_size_generation = context_.framebuffer_size_generation;
 		for (auto i{ 0U }; i < context_.swapchain->get_image_count(); ++i)
 		{
 			context_.graphics_command_buffers[i].free(&context_, context_.device.graphics_command_pool);
@@ -550,7 +586,7 @@ namespace egkr
 
 	void renderer_vulkan::create_object_shader()
 	{
-		context_.object_shader_ = shader::create(&context_);
+		context_.object_shader = shader::create(&context_);
 
 		//TODO Descriptors
 
@@ -561,12 +597,26 @@ namespace egkr
 		object_pipeline_properties.is_wireframe = false;
 		object_pipeline_properties.scissor = scissor;
 		object_pipeline_properties.viewport = viewport;
-		object_pipeline_properties.shader_stage_info = context_.object_shader_->get_shader_stages();
+		object_pipeline_properties.shader_stage_info = context_.object_shader->get_shader_stages();
 		object_pipeline_properties.vertex_attributes = vertex_3d::get_attribute_description();
 		object_pipeline_properties.renderpass = context_.main_renderpass;
 
-		context_.object_shader_->set_pipeline(pipeline::create(&context_, object_pipeline_properties));
+		context_.object_shader->set_pipeline(pipeline::create(&context_, object_pipeline_properties));
 
+	}
+
+	void renderer_vulkan::create_object_buffers()
+	{
+		vk::MemoryPropertyFlags flags = vk::MemoryPropertyFlagBits::eDeviceLocal;
+		vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
+		const auto vertex_buffer_size = sizeof(vertex_3d) * 1024 * 1024;
+
+		context_.object_vertex_buffer = buffer::create(&context_, vertex_buffer_size, usage, flags, true);
+
+		vk::BufferUsageFlags index_usage = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
+		const auto index_buffer_size = sizeof(uint32_t) * 1024 * 1024;
+
+		context_.object_index_buffer = buffer::create(&context_, index_buffer_size, index_usage, flags, true);
 	}
 }
 

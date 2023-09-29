@@ -8,6 +8,7 @@
 #include "command_buffer.h"
 #include "fence.h"
 #include "shader.h"
+#include "buffer.h"
 
 namespace egkr
 {
@@ -52,10 +53,15 @@ namespace egkr
 		uint32_t current_frame{};
 
 		bool recreating_swapchain{};
-		uint32_t size_generation_{};
-		uint32_t last_size_generation_{};
+		uint32_t framebuffer_size_generation{};
+		uint32_t framebuffer_last_size_generation{};
 
-		shader::shared_ptr object_shader_{};
+		shader::shared_ptr object_shader{};
+
+		buffer::shared_ptr object_vertex_buffer{};
+		buffer::shared_ptr object_index_buffer{};
+		uint64_t geometry_vertex_offset{};
+		uint64_t geometry_index_offset{};
 
 	};
 

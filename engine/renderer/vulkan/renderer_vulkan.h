@@ -37,6 +37,10 @@ namespace egkr
 		bool recreate_swapchain();
 
 		void create_object_shader();
+		void create_object_buffers();
+
+
+		void upload_data_range(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data);
 	private:
 		vulkan_context context_{};
 

@@ -31,6 +31,8 @@ namespace egkr
 		explicit shader(const vulkan_context* context);
 		~shader();
 
+		void use();
+
 		void set_pipeline(pipeline::shared_ptr pipeline);
 
 		const egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;

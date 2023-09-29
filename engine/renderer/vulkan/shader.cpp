@@ -95,6 +95,12 @@ namespace egkr
 		destroy();
 	}
 
+	void shader::use()
+	{
+		const auto& image_index = context_->image_index;
+		context_->graphics_command_buffers[image_index].get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->get_handle());
+	}
+
 	void shader::set_pipeline(pipeline::shared_ptr pipeline)
 	{
 		pipeline_ = pipeline;
