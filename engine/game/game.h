@@ -5,6 +5,7 @@
 
 namespace egkr
 {
+	class application;
 	class game
 	{
 	public:
@@ -23,7 +24,16 @@ namespace egkr
 			return application_configuration_;
 		}
 
+		void set_application(application* app);
+
+	protected:
+		[[nodiscard]] auto* get_application() const { return application_;}
+
 	private:
+
+		application* application_;
 		application_configuration application_configuration_{};
 	};
+
+	static game::unique_ptr game_{};
 }

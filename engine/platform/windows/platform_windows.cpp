@@ -87,7 +87,7 @@ namespace egkr
 			LOG_WARN("Key event from wrong window");
 			return;
 		}
-		auto pressed = action == GLFW_PRESS;
+		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
 		input::process_key((egkr::key)key, pressed);
 	}
 

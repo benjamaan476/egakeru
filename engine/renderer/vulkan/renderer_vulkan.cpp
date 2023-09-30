@@ -237,8 +237,8 @@ namespace egkr
 		}
 
 		LOG_INFO("Creating logical device");
-		bool present_shares_graphics_queue = context->device.graphics_queue_index == context->device.present_queue_index;
-		bool transfer_shares_graphics_queue = context->device.graphics_queue_index == context->device.transfer_queue_index;
+		bool present_shares_graphics_queue = graphics_queue_index == present_queue_index;
+		bool transfer_shares_graphics_queue = graphics_queue_index == transfer_queue_index;
 
 		uint32_t index_count{ 1 };
 		if (!present_shares_graphics_queue)
@@ -254,15 +254,15 @@ namespace egkr
 		std::array<uint32_t, 32> indices{};
 		uint8_t index{};
 
-		indices[index++] = context->device.graphics_queue_index;
+		indices[index++] = graphics_queue_index;
 		if (!present_shares_graphics_queue)
 		{
-			indices[index++] = context->device.present_queue_index;
+			indices[index++] = present_queue_index;
 		}
 
 		if (!transfer_shares_graphics_queue)
 		{
-			indices[index++] = context->device.transfer_queue_index;
+			indices[index++] = transfer_queue_index;
 		}
 
 		std::array<vk::DeviceQueueCreateInfo, 32> device_queue_create_infos{};
@@ -279,7 +279,7 @@ namespace egkr
 		vk::PhysicalDeviceFeatures device_features{};
 		device_features.samplerAnisotropy = true;
 
-		auto available_extensions = context->device.physical_device.enumerateDeviceExtensionProperties();
+		auto available_extensions = physical_device.enumerateDeviceExtensionProperties();
 		bool portability_required{};
 		for (const auto& extension : available_extensions)
 		{
@@ -305,18 +305,18 @@ namespace egkr
 			.setPEnabledFeatures(&device_features)
 			.setPEnabledExtensionNames(extension_names);
 
-		context->device.logical_device = context->device.physical_device.createDevice(device_create_info, context->allocator);
+		logical_device = physical_device.createDevice(device_create_info, context->allocator);
 		
-		context->device.graphics_queue = context->device.logical_device.getQueue(context->device.graphics_queue_index, 0);
-		context->device.present_queue = context->device.logical_device.getQueue(context->device.present_queue_index, 0);
-		context->device.transfer_queue = context->device.logical_device.getQueue(context->device.transfer_queue_index, 0);
+		graphics_queue = logical_device.getQueue(graphics_queue_index, 0);
+		present_queue = logical_device.getQueue(present_queue_index, 0);
+		transfer_queue = logical_device.getQueue(transfer_queue_index, 0);
 
 		vk::CommandPoolCreateInfo pool_create_info{};
 		pool_create_info
-			.setQueueFamilyIndex(context->device.graphics_queue_index)
+			.setQueueFamilyIndex(graphics_queue_index)
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-		context->device.graphics_command_pool = context->device.logical_device.createCommandPool(pool_create_info, context->allocator);
+		graphics_command_pool = logical_device.createCommandPool(pool_create_info, context->allocator);
 		return true;
 	}
 
@@ -431,7 +431,7 @@ namespace egkr
 		//TODO temp code
 
 		const float scale{ 10.F };
-		const egkr::vector<vertex_3d> vertices{ {{0.F * scale, -0.5F * scale, 0.F}}, {{0.5F * scale, 0.5F * scale, 0.F}}, {{0.F * scale, 0.5F * scale, 0.F}}, {{0.5F * scale, -0.5F * scale, 0.F}} };
+		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}}, {{0.5F * scale, 0.5F * scale, 0.F}}, {{-0.5F * scale, 0.5F * scale, 0.F}}, {{0.5F * scale, -0.5F * scale, 0.F}} };
 		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_vertex_buffer, 0, vertices.size() * sizeof(vertex_3d), vertices.data());
 
 		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };

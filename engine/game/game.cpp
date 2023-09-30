@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include "application/application.h"
+
 namespace egkr
 {
 	game::game(application_configuration configuration)
@@ -8,4 +10,8 @@ namespace egkr
 
 	}
 
+	void game::set_application(application* app)
+	{
+		application_ = app;
+	}
 }

@@ -31,6 +31,7 @@ namespace egkr
 		static API void run();
 		static void shutdown();
 
+		const auto& get_state() const { return state_; }
 	private:
 		//void reginster_event();
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);

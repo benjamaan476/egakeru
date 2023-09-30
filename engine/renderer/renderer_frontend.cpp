@@ -11,7 +11,10 @@ namespace egkr
 
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
-		projection_ = glm::perspective(45.0F / 180.F * std::numbers::pi_v<float>, platform->get_framebuffer_size().x / (float)platform->get_framebuffer_size().y, 0.1F, 1000.F);
+		projection_ = glm::perspective(glm::radians(45.0F), platform->get_framebuffer_size().x / (float)platform->get_framebuffer_size().y, 0.1F, 1000.F);
+		float4x4 view{1};
+		view = glm::translate(view, { 0.F, 0.F, 30.F });
+		view = glm::inverse(view);
 		switch (type)
 		{
 		case backend_type::vulkan:
@@ -37,7 +40,7 @@ namespace egkr
 
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
-		projection_ = glm::perspective(45.0F / 180.F * std::numbers::pi_v<float>, width / (float)height, near_clip_, far_clip_);
+		projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
 		backend_->resize(width, height);
 	}
 
@@ -45,14 +48,9 @@ namespace egkr
 	{
 		if (backend_->begin_frame(packet.delta_time))
 		{
-			static float z = 30.F;
 			static float angle = 0.F;
 			angle -= 0.001F;
-			float4x4 view{1};
-			view = glm::translate(view, { 0.F, 0.F, z });
-
-			view = glm::inverse(view);
-			backend_->update_global_state(projection_, view, {}, {}, 0);
+			backend_->update_global_state(projection_, view_, {}, {}, 0);
 
 			float4x4 model{ 1 };
 			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
@@ -62,4 +60,9 @@ namespace egkr
 			backend_->end_frame();
 		}
 	}
+	
+	void renderer_frontend::set_view(const float4x4 & view)
+{
+		view_ = view;
+}
 }

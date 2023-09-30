@@ -65,6 +65,7 @@ namespace egkr
 		event::register_event(event_code::quit, nullptr, application::on_event);
 		event::register_event(event_code::resize, nullptr, application::on_resize);
 		state_.is_running = true;
+
 	}
 
 	void application::run()

@@ -15,11 +15,15 @@ namespace egkr
 		API void shutdown();
 		API void on_resize(uint32_t width, uint32_t height);
 		API void draw_frame(const render_packet& packet);
+
+		//TODO Hack
+		API void set_view(const float4x4& view);
 	private:
 		renderer_backend::unique_ptr backend_{};
 
 		float near_clip_{0.1F};
 		float far_clip_{ 1000.F };
 		float4x4 projection_{};
+		float4x4 view_{};
 	};
 }
