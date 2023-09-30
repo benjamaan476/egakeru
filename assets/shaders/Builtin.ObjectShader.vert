@@ -7,6 +7,8 @@ layout (set = 0, binding = 0) uniform global_uniform_object
 {
 	mat4 projection;
 	mat4 view;
+	mat4 reserved0;
+	mat4 reserved1;
 } global_ubo;
 
 layout(push_constant) uniform push_constant

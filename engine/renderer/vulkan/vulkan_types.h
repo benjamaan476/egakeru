@@ -12,6 +12,35 @@
 
 namespace egkr
 {
+
+	struct physical_device_requirements
+	{
+		bool graphics{};
+		bool present{};
+		bool compute{};
+		bool transfer{};
+
+		egkr::vector<const char*> extension_names{};
+		bool sampler_anisotropy;
+		bool discrete_gpu;
+	};
+
+	struct physical_device_queue_family_info
+	{
+		int32_t graphics_index{-1};
+		int32_t present_index{-1};
+		int32_t compute_index{-1};
+		int32_t transfer_index{-1};
+	};
+
+	struct swapchain_support_details
+	{
+		vk::SurfaceCapabilitiesKHR capabilities{};
+		std::vector<vk::SurfaceFormatKHR> formats{};
+		std::vector<vk::PresentModeKHR> present_modes{};
+	};
+
+	struct vulkan_context;
 	struct vulkan_device
 	{
 		vk::PhysicalDevice physical_device{};
@@ -24,9 +53,22 @@ namespace egkr
 		uint32_t present_queue_index{};
 		vk::Queue present_queue{};
 
+		uint32_t transfer_queue_index{};
+		vk::Queue transfer_queue{};
+
+		vk::PhysicalDeviceProperties properties{};
+		vk::PhysicalDeviceFeatures features{};
+		vk::PhysicalDeviceMemoryProperties memory{};
+
 		vk::CommandPool graphics_command_pool{};
 
+		swapchain_support_details swapchain_supprt{};
+
 		int32_t find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const;
+
+		bool physical_device_meets_requirements(vk::PhysicalDevice device, vk::SurfaceKHR surface, const vk::PhysicalDeviceProperties& properties, const vk::PhysicalDeviceFeatures features, const physical_device_requirements& requirements, physical_device_queue_family_info& family_info, swapchain_support_details& swapchain_support);
+		bool select_physical_device(vulkan_context* context);
+		bool create(vulkan_context* context);
 	};
 
 	struct vulkan_context
@@ -77,20 +119,14 @@ namespace egkr
 		}
 	};
 
-	struct swapchain_support_details
-	{
-		vk::SurfaceCapabilitiesKHR capabilities{};
-		std::vector<vk::SurfaceFormatKHR> formats{};
-		std::vector<vk::PresentModeKHR> present_modes{};
-	};
 
 
-	static inline swapchain_support_details query_swapchain_support(const vulkan_context& context, const vk::PhysicalDevice& physical_device)
+	static inline swapchain_support_details query_swapchain_support(vk::SurfaceKHR surface, const vk::PhysicalDevice& physical_device)
 	{
 		swapchain_support_details details;
-		details.capabilities = physical_device.getSurfaceCapabilitiesKHR(context.surface);
-		details.formats = physical_device.getSurfaceFormatsKHR(context.surface);
-		details.present_modes = physical_device.getSurfacePresentModesKHR(context.surface);
+		details.capabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
+		details.formats = physical_device.getSurfaceFormatsKHR(surface);
+		details.present_modes = physical_device.getSurfacePresentModesKHR(surface);
 
 		return details;
 	}
@@ -169,7 +205,7 @@ namespace egkr
 
 			attributeDescriptions[0].setBinding(0);
 			attributeDescriptions[0].setLocation(0);
-			attributeDescriptions[0].setFormat(vk::Format::eR32G32B32A32Sfloat);
+			attributeDescriptions[0].setFormat(vk::Format::eR32G32B32Sfloat);
 			attributeDescriptions[0].setOffset(offsetof(vertex_3d, position));
 
 			//attributeDescriptions[1].setBinding(0);

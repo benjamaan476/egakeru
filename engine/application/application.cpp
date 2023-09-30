@@ -35,7 +35,6 @@ namespace egkr
 		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = state_.width_, .height_ = state_.height_, .name = state_.name };
 
 
-		state_.projection_matrix = glm::perspective(45.0F / 180.F * std::numbers::pi_v<float>, state_.width_ / (float)state_.height_, 0.1F, 1000.F);
 
 		state_.platform = egkr::platform::create(egkr::platform_type::windows);
 		if (state_.platform == nullptr)
@@ -83,7 +82,7 @@ namespace egkr
 				state_.game->update(delta_time);
 
 				state_.game->render(delta_time);
-				state_.renderer->draw_frame({ delta_time, state_.projection_matrix });
+				state_.renderer->draw_frame({ delta_time});
 			}
 			auto frame_duration = state_.platform->get_time() - frame_time;
 			if (limit_framerate_ && frame_duration < frame_time_)
@@ -157,7 +156,6 @@ namespace egkr
 					state_.is_suspended = false;
 				}
 
-				state_.projection_matrix = glm::perspective(45.0F / 180.F * std::numbers::pi_v<float>, width / (float)height, 0.1F, 1000.F);
 
 				state_.game->resize(width, height);
 				state_.renderer->on_resize(width, height);
