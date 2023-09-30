@@ -47,7 +47,7 @@ namespace egkr
 		pipeline::shared_ptr pipeline_{};
 
 		global_uniform_buffer global_ubo_{};
-		vk::DescriptorPool global_ubo_descriptor_pool_{};
+		vk::DescriptorPool global_descriptor_pool_{};
 		vk::DescriptorSetLayout global_descriptor_set_layout_{};
 		egkr::vector<vk::DescriptorSet> global_descriptor_set_{};
 

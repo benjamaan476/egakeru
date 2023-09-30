@@ -85,21 +85,22 @@ namespace egkr
 		auto frag_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::frag, "spv"sv);
 		auto vert_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::vert, "spv"sv);
 
-		stages_[shader_stages::frag] = frag_shader_module;
 		stages_[shader_stages::vert] = vert_shader_module;
+		stages_[shader_stages::frag] = frag_shader_module;
 
 		const auto descriptor_type{ vk::DescriptorType::eUniformBuffer };
 
-		vk::DescriptorSetLayoutBinding binding{};
-		binding
+		vk::DescriptorSetLayoutBinding global_ubo_layout_binding{};
+		global_ubo_layout_binding
 			.setBinding(0)
 			.setDescriptorType(descriptor_type)
+			.setImmutableSamplers(nullptr)
 			.setStageFlags(vk::ShaderStageFlagBits::eVertex)
 			.setDescriptorCount(1);
 
 		vk::DescriptorSetLayoutCreateInfo create_info{};
 		create_info
-			.setBindings(binding);
+			.setBindings(global_ubo_layout_binding);
 
 		global_descriptor_set_layout_ = context_->device.logical_device.createDescriptorSetLayout(create_info, context_->allocator);
 
@@ -113,7 +114,7 @@ namespace egkr
 			.setPoolSizes(pool_size)
 			.setMaxSets(context_->swapchain->get_image_count());
 
-		global_ubo_descriptor_pool_ = context_->device.logical_device.createDescriptorPool(descriptor_pool_create_info, context_->allocator);
+		global_descriptor_pool_ = context_->device.logical_device.createDescriptorPool(descriptor_pool_create_info, context_->allocator);
 
 		pipeline_properties.descriptor_set_layout = global_descriptor_set_layout_;
 		pipeline_properties.shader_stage_info = get_shader_stages();
@@ -121,13 +122,13 @@ namespace egkr
 
 		auto usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer;
 		auto memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer) * 3, usage, memory_properties, true);
+		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer), usage, memory_properties, true);
 
 		std::array<vk::DescriptorSetLayout, 3> global_layouts = { global_descriptor_set_layout_, global_descriptor_set_layout_, global_descriptor_set_layout_ };
 
 		vk::DescriptorSetAllocateInfo alloc_info{};
 		alloc_info
-			.setDescriptorPool(global_ubo_descriptor_pool_)
+			.setDescriptorPool(global_descriptor_pool_)
 			.setSetLayouts(global_layouts);
 
 		global_descriptor_set_ = context_->device.logical_device.allocateDescriptorSets(alloc_info);
@@ -152,18 +153,24 @@ namespace egkr
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 0, global_descriptor_set_[context_->image_index], nullptr);
 
 		auto range = sizeof(global_uniform_buffer); // one per frame in flight
-		auto offset = sizeof(global_uniform_buffer) * context_->image_index;
+		auto offset = 0;// sizeof(global_uniform_buffer)* context_->image_index;
 
 		global_uniform_buffer_->load_data(offset, range, 0, &ubo);
 
-		vk::DescriptorBufferInfo buffer_info(global_uniform_buffer_->get_handle(), offset, range);
+		vk::DescriptorBufferInfo buffer_info{};
+		buffer_info
+			.setBuffer(global_uniform_buffer_->get_handle())
+			.setOffset(offset)
+			.setRange(range);
+
 		vk::WriteDescriptorSet write_set{};
 		write_set
-			.setBufferInfo(buffer_info)
 			.setDstSet(global_descriptor_set_[context_->image_index])
 			.setDstBinding(0)
 			.setDstArrayElement(0)
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(1)
+			.setBufferInfo(buffer_info);
 
 		context_->device.logical_device.updateDescriptorSets(write_set, nullptr);
 
@@ -200,10 +207,10 @@ namespace egkr
 			pipeline_->destroy();
 		}
 
-		if (global_ubo_descriptor_pool_)
+		if (global_descriptor_pool_)
 		{
-			context_->device.logical_device.destroyDescriptorPool(global_ubo_descriptor_pool_, context_->allocator);
-			global_ubo_descriptor_pool_ = VK_NULL_HANDLE;
+			context_->device.logical_device.destroyDescriptorPool(global_descriptor_pool_, context_->allocator);
+			global_descriptor_pool_ = VK_NULL_HANDLE;
 		}
 
 		if (global_descriptor_set_layout_)

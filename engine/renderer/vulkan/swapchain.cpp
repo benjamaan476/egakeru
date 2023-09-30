@@ -105,7 +105,7 @@ namespace egkr
 
 	void swapchain::create()
 	{
-		auto swapchain_support = query_swapchain_support(*context_, context_->device.physical_device);
+		auto swapchain_support = query_swapchain_support(context_->surface, context_->device.physical_device);
 
 		format_ = choose_swapchain_surface_format(swapchain_support.formats);
 		auto present_mode = choose_swapchain_present_mode(swapchain_support.present_modes);

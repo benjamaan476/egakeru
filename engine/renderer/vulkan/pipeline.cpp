@@ -18,18 +18,23 @@ namespace egkr
 
 		vk::PipelineRasterizationStateCreateInfo raster_create_info{};
 		raster_create_info
-			.setCullMode(vk::CullModeFlagBits::eBack)
+			.setDepthClampEnable(false)
+			.setRasterizerDiscardEnable(false)
 			.setPolygonMode(properties.is_wireframe ? vk::PolygonMode::eLine : vk::PolygonMode::eFill)
+			.setLineWidth(1.f)
+			.setCullMode(vk::CullModeFlagBits::eBack)
 			.setFrontFace(vk::FrontFace::eCounterClockwise)
 			.setDepthBiasEnable(false)
-			.setRasterizerDiscardEnable(false)
-			.setDepthBiasClamp(false);
+			.setDepthBiasClamp(0.F);
 
 		vk::PipelineMultisampleStateCreateInfo multisample_create_info{};
 		multisample_create_info
+			.setSampleShadingEnable(false)
 			.setRasterizationSamples(vk::SampleCountFlagBits::e1)
 			.setMinSampleShading(1.F)
-			.setPSampleMask(nullptr);
+			.setPSampleMask(nullptr)
+			.setAlphaToCoverageEnable(false)
+			.setAlphaToOneEnable(false);
 
 		vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info{};
 		depth_stencil_create_info
@@ -52,6 +57,7 @@ namespace egkr
 		vk::PipelineColorBlendStateCreateInfo colour_blend_state_create_info{};
 		colour_blend_state_create_info
 			.setLogicOpEnable(false)
+			.setLogicOp(vk::LogicOp::eCopy)
 			.setAttachments(colour_blend_attachment);
 
 		auto dynamic_states = { vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth };

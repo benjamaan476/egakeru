@@ -13,9 +13,13 @@ namespace egkr
 
 		API bool init();
 		API void shutdown();
-		API void on_resize(uint32_t width_, uint32_t height_);
+		API void on_resize(uint32_t width, uint32_t height);
 		API void draw_frame(const render_packet& packet);
 	private:
 		renderer_backend::unique_ptr backend_{};
+
+		float near_clip_{0.1F};
+		float far_clip_{ 1000.F };
+		float4x4 projection_{};
 	};
 }

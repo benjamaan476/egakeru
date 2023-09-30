@@ -7,6 +7,7 @@
 
 namespace egkr
 {
+
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
@@ -49,6 +50,274 @@ namespace egkr
 
 		LOG_WARN("Failed to find suitable memory type");
 		return -1;
+	}
+
+	bool vulkan_device::physical_device_meets_requirements(
+		vk::PhysicalDevice device,
+		vk::SurfaceKHR surface,
+		const vk::PhysicalDeviceProperties& properties, 
+		const vk::PhysicalDeviceFeatures features, 
+		const physical_device_requirements& requirements,
+		physical_device_queue_family_info& family_info,
+		swapchain_support_details& swapchain_support)
+	{
+		if (requirements.discrete_gpu)
+		{
+			if (properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
+			{
+				LOG_INFO("Device is not a discrete GPU when one is required, skipping");
+				return false;
+			}
+	}
+
+		auto queue_families = device.getQueueFamilyProperties();
+
+		LOG_INFO("Graphics | Present | Compute | Transfer | Name");
+		uint8_t min_transfer_score{ 255 };
+
+		for (auto i{ 0U }; i < queue_families.size(); ++i)
+		{
+			auto& queue_family = queue_families[i];
+
+			uint8_t current_transfer_score{};
+
+			if (queue_family.queueFlags & vk::QueueFlagBits::eGraphics)
+			{
+				family_info.graphics_index = i;
+				++current_transfer_score;
+			}
+
+			if (queue_family.queueFlags & vk::QueueFlagBits::eCompute)
+			{
+				family_info.compute_index = i;
+				++current_transfer_score;
+			}
+
+			if (queue_family.queueFlags & vk::QueueFlagBits::eTransfer)
+			{
+				if (current_transfer_score <= min_transfer_score)
+				{
+					min_transfer_score = current_transfer_score;
+					family_info.transfer_index = i;
+				}
+			}
+
+			auto supports_present = device.getSurfaceSupportKHR(i, surface);
+			if (supports_present)
+			{
+				family_info.present_index = i;
+			}
+		}
+
+		LOG_INFO("       {:d}|       {:d}|       {:d}|       {:d}| {}", 
+				 family_info.graphics_index != -1,
+				 family_info.present_index != -1, 
+				 family_info.compute_index != -1, 
+				 family_info.transfer_index != -1, 
+				 properties.deviceName.data());
+
+		if (
+			(!requirements.graphics || (requirements.graphics && family_info.graphics_index != -1)) &&
+		(!requirements.present || (requirements.present && family_info.present_index != -1)) &&
+			(!requirements.compute || (requirements.compute && family_info.compute_index != -1)) &&
+			(!requirements.transfer || (requirements.transfer && family_info.transfer_index != -1)))
+		{
+			LOG_INFO("Device meets requirements");
+
+			swapchain_support = query_swapchain_support(surface, device);
+
+			if (swapchain_support.formats.size() < 1 || swapchain_support.present_modes.size() < 1)
+			{
+				LOG_INFO("Required swapchain support not present, skipping device");
+				return false;
+			}
+
+			if (!requirements.extension_names.empty())
+			{
+				auto available_extensions = device.enumerateDeviceExtensionProperties();
+				for (const auto& extension : available_extensions)
+				{
+					bool found{};
+					for (auto i{ 0U }; i < available_extensions.size(); ++i)
+					{
+						if (strcmp(requirements.extension_names[i], extension.extensionName) == 0)
+						{
+							found = true;
+							break;
+						}
+					}
+
+					if (!found)
+					{
+						LOG_INFO("Required extension not found, skipping");
+						return false;
+					}
+				}
+			}
+
+		}
+
+		if (requirements.sampler_anisotropy && !features.samplerAnisotropy)
+		{
+			LOG_INFO("Device does not support samplerAnisotropy, skipping");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool vulkan_device::select_physical_device(vulkan_context* context)
+	{
+		auto physical_devices = context->instance.enumeratePhysicalDevices();
+
+		for (auto& physical_device : physical_devices)
+		{
+			const auto properties = physical_device.getProperties();
+			const auto features = physical_device.getFeatures();
+			const auto memory = physical_device.getMemoryProperties();
+
+			physical_device_requirements requirements{};
+			requirements.graphics = true;
+			requirements.present = true;
+			requirements.transfer = true;
+			requirements.sampler_anisotropy = true;
+
+			requirements.discrete_gpu = false;
+
+			physical_device_queue_family_info queue_info{};
+
+			auto result = physical_device_meets_requirements(physical_device, context->surface, properties, features, requirements, queue_info, context->device.swapchain_supprt);
+
+			if (result)
+			{
+				LOG_INFO("Selected device: {}", properties.deviceName.data());
+				switch (properties.deviceType)
+				{
+					using enum vk::PhysicalDeviceType;
+				case eOther:
+					LOG_INFO("Device type is unknown");
+					break;
+				case eIntegratedGpu:
+					LOG_INFO("Device type is integrated");
+					break;
+				case eDiscreteGpu:
+					LOG_INFO("Device type is discrete");
+					break;
+				default:
+					break;
+				}
+
+				LOG_INFO("GPU Driver version: {}.{}.{}", VK_VERSION_MAJOR(properties.driverVersion), VK_VERSION_MINOR(properties.driverVersion), VK_VERSION_PATCH(properties.driverVersion));
+				LOG_INFO("Vulkan API version: {}.{}.{}", VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion));
+
+				context->device.physical_device = physical_device;
+				context->device.graphics_queue_index = queue_info.graphics_index;
+				context->device.present_queue_index = queue_info.present_index;
+				context->device.transfer_queue_index = queue_info.transfer_index;
+
+				context->device.properties = properties;
+				context->device.features = features;
+				context->device.memory = memory;
+				break;
+			}
+		}
+
+		if (!context->device.physical_device)
+		{
+			LOG_ERROR("No physical devices found that support the requirements");
+		}
+		return true;
+	}
+
+	bool vulkan_device::create(vulkan_context* context)
+	{
+		if (!select_physical_device(context))
+		{
+			return false;
+		}
+
+		LOG_INFO("Creating logical device");
+		bool present_shares_graphics_queue = context->device.graphics_queue_index == context->device.present_queue_index;
+		bool transfer_shares_graphics_queue = context->device.graphics_queue_index == context->device.transfer_queue_index;
+
+		uint32_t index_count{ 1 };
+		if (!present_shares_graphics_queue)
+		{
+			++index_count;
+		}
+
+		if (!transfer_shares_graphics_queue)
+		{
+			++index_count;
+		}
+
+		std::array<uint32_t, 32> indices{};
+		uint8_t index{};
+
+		indices[index++] = context->device.graphics_queue_index;
+		if (!present_shares_graphics_queue)
+		{
+			indices[index++] = context->device.present_queue_index;
+		}
+
+		if (!transfer_shares_graphics_queue)
+		{
+			indices[index++] = context->device.transfer_queue_index;
+		}
+
+		std::array<vk::DeviceQueueCreateInfo, 32> device_queue_create_infos{};
+
+		for (auto i{ 0U }; i < index_count; ++i)
+		{
+			float queue_priority{ 1.F };
+			device_queue_create_infos[i]
+				.setQueueFamilyIndex(indices[i])
+				.setQueueCount(1)
+				.setPQueuePriorities(&queue_priority);
+		}
+
+		vk::PhysicalDeviceFeatures device_features{};
+		device_features.samplerAnisotropy = true;
+
+		auto available_extensions = context->device.physical_device.enumerateDeviceExtensionProperties();
+		bool portability_required{};
+		for (const auto& extension : available_extensions)
+		{
+			if (strcmp(extension.extensionName, "VK_KHR_portability_subset") == 0)
+			{
+				LOG_INFO("Adding required extension 'VK_KHR_portability_subset'");
+				portability_required = true;
+				break;
+			}
+		}
+
+		std::vector<const char*> extension_names{};
+		extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+		if (portability_required)
+		{
+			extension_names.push_back("VK_KHR_portability_subset");
+		}
+
+		vk::DeviceCreateInfo device_create_info{};
+		device_create_info
+			.setQueueCreateInfos(device_queue_create_infos)
+			.setQueueCreateInfoCount(index_count)
+			.setPEnabledFeatures(&device_features)
+			.setPEnabledExtensionNames(extension_names);
+
+		context->device.logical_device = context->device.physical_device.createDevice(device_create_info, context->allocator);
+		
+		context->device.graphics_queue = context->device.logical_device.getQueue(context->device.graphics_queue_index, 0);
+		context->device.present_queue = context->device.logical_device.getQueue(context->device.present_queue_index, 0);
+		context->device.transfer_queue = context->device.logical_device.getQueue(context->device.transfer_queue_index, 0);
+
+		vk::CommandPoolCreateInfo pool_create_info{};
+		pool_create_info
+			.setQueueFamilyIndex(context->device.graphics_queue_index)
+			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+
+		context->device.graphics_command_pool = context->device.logical_device.createCommandPool(pool_create_info, context->allocator);
+		return true;
 	}
 
 	void renderer_vulkan::create_command_buffers()
@@ -113,7 +382,9 @@ namespace egkr
 		}
 
 		context_.surface = create_surface();
-		if (!pick_physical_device())
+
+		context_.device.create(&context_);
+	/*	if (!pick_physical_device())
 		{
 			LOG_FATAL("Failed to find suitable physical device");
 			return false;
@@ -123,7 +394,7 @@ namespace egkr
 		{
 			LOG_FATAL("Failed to create logical device");
 			return false;
-		}
+		}*/
 
 		context_.swapchain = swapchain::create(&context_);
 
@@ -464,7 +735,7 @@ namespace egkr
 		auto properties = device.getProperties();
 		auto features = device.getFeatures();
 
-		auto swapChainSupport = query_swapchain_support(context_, device);
+		auto swapChainSupport = query_swapchain_support(context_.surface, device);
 		auto swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
 
 		return (properties.deviceType == vk::PhysicalDeviceType::eIntegratedGpu || properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) && (bool)features.geometryShader && queueIndices.is_complete() && swapChainAdequate;
