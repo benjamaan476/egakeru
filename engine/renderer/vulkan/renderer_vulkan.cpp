@@ -109,12 +109,12 @@ namespace egkr
 			}
 		}
 
-		LOG_INFO("       {}|       {}|       {}|       {}| {}", 
+		LOG_INFO("       {:d}|       {:d}|       {:d}|       {:d}| {}", 
 				 family_info.graphics_index != -1,
 				 family_info.present_index != -1, 
 				 family_info.compute_index != -1, 
 				 family_info.transfer_index != -1, 
-				 properties.deviceName);
+				 properties.deviceName.data());
 
 		if (
 			(!requirements.graphics || (requirements.graphics && family_info.graphics_index != -1)) &&
@@ -190,7 +190,7 @@ namespace egkr
 
 			if (result)
 			{
-				LOG_INFO("Selected device: {}", properties.deviceName);
+				LOG_INFO("Selected device: {}", properties.deviceName.data());
 				switch (properties.deviceType)
 				{
 					using enum vk::PhysicalDeviceType;
