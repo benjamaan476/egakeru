@@ -10,5 +10,7 @@ namespace egkr
 
 		core_logger_ = spdlog::stdout_color_mt(log_name_.data());
 		core_logger_->set_level(spdlog::level::trace);
+
+		core_logger_ = spdlog::get(get_log_name().data());
 	}
 }

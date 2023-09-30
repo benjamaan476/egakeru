@@ -15,6 +15,7 @@ namespace egkr
 		platform::shared_ptr platform{};
 		uint32_t width_{};
 		uint32_t height_{};
+		float4x4 projection_matrix{};
 		std::string name{};
 		game::unique_ptr game{};
 		renderer_frontend::unique_ptr renderer{};

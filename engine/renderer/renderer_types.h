@@ -15,6 +15,7 @@ namespace egkr
 	struct render_packet
 	{
 		std::chrono::milliseconds delta_time{};
+		float4x4 projection{};
 	};
 
 	struct global_uniform_buffer
