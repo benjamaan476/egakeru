@@ -3,6 +3,9 @@
 #include "pch.h"
 #include <vulkan/vulkan.hpp>
 
+#include "buffer.h"
+#include "command_buffer.h"
+
 namespace egkr
 {
 	struct vulkan_context;
@@ -23,19 +26,22 @@ namespace egkr
 		const uint32_t array_layers{ 1 };
 	};
 
-	class vulkan_image : std::enable_shared_from_this<vulkan_image>
+	class image : std::enable_shared_from_this<image>
 	{
 	public:
-		using shared_ptr = std::shared_ptr<vulkan_image>;
+		using shared_ptr = std::shared_ptr<image>;
 		API static shared_ptr create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view);
 		void create_view(const image_properties& properties);
 
-		vulkan_image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties);
-		~vulkan_image();
+		image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties);
+		~image();
 
 		void destroy();
 
 		const auto& get_view() const { return view_; }
+
+		void transition_layout(command_buffer command_buffer, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
+		void copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer);
 
 	private:
 		const vulkan_context* context_{};

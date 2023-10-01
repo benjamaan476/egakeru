@@ -3,18 +3,18 @@
 
 namespace egkr
 {
-	vulkan_image::shared_ptr vulkan_image::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view)
+	image::shared_ptr image::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view)
 	{
-		auto image =  std::make_shared<vulkan_image>(context, width_, height_, properties);
+		auto img =  std::make_shared<image>(context, width_, height_, properties);
 
 		if (create_view)
 		{
-			image->create_view(properties);
+			img->create_view(properties);
 		}
-		return image;
+		return img;
 	}
 
-	void vulkan_image::create_view(const image_properties& properties)
+	void image::create_view(const image_properties& properties)
 	{
 		vk::ImageSubresourceRange subresource{};
 		subresource
@@ -36,7 +36,7 @@ namespace egkr
 
 	}
 
-	vulkan_image::vulkan_image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties)
+	image::image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties)
 		: context_{ context }, width_{width_}, height_{height_}
 	{
 		vk::ImageCreateInfo image_info{};
@@ -77,12 +77,12 @@ namespace egkr
 		context_->device.logical_device.bindImageMemory(image_, memory_, 0);
 	}
 
-	vulkan_image::~vulkan_image()
+	image::~image()
 	{
 		destroy();
 	}
 
-	void vulkan_image::destroy()
+	void image::destroy()
 	{
 		const auto& logical_device = context_->device.logical_device;
 		if (view_)
@@ -102,5 +102,71 @@ namespace egkr
 			logical_device.destroyImage(image_, context_->allocator);
 			image_ = VK_NULL_HANDLE;
 		}
+	}
+
+	void image::transition_layout(command_buffer command_buffer, vk::Format /*format*/, vk::ImageLayout old_layout, vk::ImageLayout new_layout)
+	{
+		vk::ImageSubresourceRange subresource_range{};
+		subresource_range
+			.setBaseMipLevel(0)
+			.setLevelCount(1)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1)
+			.setAspectMask(vk::ImageAspectFlagBits::eColor);
+
+		vk::ImageMemoryBarrier barrier{};
+		barrier
+			.setOldLayout(old_layout)
+			.setNewLayout(new_layout)
+			.setSrcQueueFamilyIndex(context_->device.graphics_queue_index)
+			.setDstQueueFamilyIndex(context_->device.graphics_queue_index)
+			.setImage(image_)
+			.setSubresourceRange(subresource_range);
+
+		vk::PipelineStageFlags source_stage{};
+		vk::PipelineStageFlags destination_stage{};
+
+		if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal)
+		{
+			barrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+			source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+			destination_stage = vk::PipelineStageFlagBits::eTransfer;
+		}
+		else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal)
+		{
+			barrier
+				.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+				.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+
+			source_stage = vk::PipelineStageFlagBits::eTransfer;
+			destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+
+		}
+		else
+		{
+			LOG_FATAL("Unsupported transition");
+		}
+
+		command_buffer.get_handle().pipelineBarrier(source_stage, destination_stage, vk::DependencyFlags{}, nullptr, nullptr, barrier);
+	}
+
+	void image::copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer)
+	{
+		vk::ImageSubresourceLayers subresource{};
+		subresource
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		vk::BufferImageCopy image_copy{};
+		image_copy
+			.setBufferOffset(0)
+			.setBufferRowLength(0)
+			.setBufferImageHeight(0)
+			.setImageSubresource(subresource)
+			.setImageExtent({ width_, height_, 1 });
+
+		command_buffer.get_handle().copyBufferToImage(buffer->get_handle(), image_, vk::ImageLayout::eTransferDstOptimal, image_copy);
 	}
 }

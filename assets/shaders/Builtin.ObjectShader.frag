@@ -3,7 +3,12 @@
 
 layout (location = 0) out vec4 out_colour;
 
+layout (set = 1, binding = 0) uniform local_uniform_object
+{
+	vec4 diffuse;
+} object_ubo;
+
 void main()
 {
-	out_colour = vec4(1);
+	out_colour = object_ubo.diffuse;
 }

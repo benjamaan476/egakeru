@@ -53,7 +53,7 @@ namespace egkr
 
 		egkr::vector<vk::Image> images_{};
 		egkr::vector<vk::ImageView> image_views_{};
-		vulkan_image::shared_ptr depth_attachment_{};
+		image::shared_ptr depth_attachment_{};
 
 		uint32_t image_count_{};
 		uint8_t max_frames_in_flight_{3};

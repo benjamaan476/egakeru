@@ -8,6 +8,10 @@
 
 namespace egkr
 {
+
+	constexpr static uint32_t max_object_count{1024};
+	constexpr static uint32_t object_shader_descriptor_count{1};
+
 	enum class shader_stages
 	{
 		vert,
@@ -21,8 +25,19 @@ namespace egkr
 		vk::PipelineShaderStageCreateInfo stage_create_info{};
 	};
 
-	struct vulkan_context;
+	struct vulkan_descriptor_state
+	{
+		std::array<uint32_t, 3> generation{ invalid_id, invalid_id, invalid_id };
+	};
 
+	struct object_shader_object_state
+	{
+		std::vector<vk::DescriptorSet> descriptor_sets{};
+		std::array<vulkan_descriptor_state, object_shader_descriptor_count> descriptor_states{};
+	};
+
+
+	struct vulkan_context;
 	class shader
 	{
 	public: 
@@ -35,8 +50,11 @@ namespace egkr
 
 		void use();
 		void update_global_state(const global_uniform_buffer& ubo);
-		void update(float4x4 model);
+		void update(const geometry_render_data& data);
 
+		[[nodiscard]] uint32_t acquire_resource();
+		void release_resource(uint32_t object_id);
+		
 		const egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;
 
 		void destroy();
@@ -50,6 +68,13 @@ namespace egkr
 		vk::DescriptorPool global_descriptor_pool_{};
 		vk::DescriptorSetLayout global_descriptor_set_layout_{};
 		egkr::vector<vk::DescriptorSet> global_descriptor_set_{};
+
+		vk::DescriptorPool object_descriptor_pool_{};
+		vk::DescriptorSetLayout object_descriptor_set_layout_{};
+		buffer::shared_ptr object_uniform_buffer_{};
+		std::array<object_shader_object_state, max_object_count> object_shader_object_states_{};
+		uint32_t object_uniform_buffer_index_{};
+		egkr::vector<vk::DescriptorSet> object_descriptor_set_{};
 
 		buffer::shared_ptr global_uniform_buffer_{};
 

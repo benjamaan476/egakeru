@@ -35,6 +35,6 @@ namespace egkr
 	using int4 = glm::ivec4;
 
 	using float4x4 = glm::mat4x4;
-	
-
 }
+
+constexpr static const uint32_t invalid_id = std::numeric_limits<uint32_t>::max();

@@ -21,7 +21,7 @@ namespace egkr
 		void resize(uint32_t width_, uint32_t height_) final;
 		bool begin_frame(std::chrono::milliseconds delta_time) final;
 		void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_position, const float4& ambient_colour, int32_t mode) final;
-		void update(const float4x4& model) final;
+		void update(const geometry_render_data& model) final;
 		void end_frame() final;
 	private:
 		bool init_instance();

@@ -255,7 +255,7 @@ namespace egkr
 		depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
-		depth_attachment_ = vulkan_image::create(context_, extent_.width, extent_.height, depth_image_properties, true);
+		depth_attachment_ = image::create(context_, extent_.width, extent_.height, depth_image_properties, true);
 
 		return swapchain_images;
 	}

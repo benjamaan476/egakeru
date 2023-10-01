@@ -10,7 +10,7 @@ namespace egkr
 	{
 		renderpass::shared_ptr renderpass{};
 		std::array<vk::VertexInputAttributeDescription, 1> vertex_attributes{};
-		vk::DescriptorSetLayout descriptor_set_layout{};
+		std::vector<vk::DescriptorSetLayout> descriptor_set_layout{};
 		egkr::vector<vk::PipelineShaderStageCreateInfo> shader_stage_info{};
 		vk::Viewport viewport{};
 		vk::Rect2D scissor{};

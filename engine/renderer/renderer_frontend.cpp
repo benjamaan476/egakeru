@@ -55,7 +55,10 @@ namespace egkr
 			float4x4 model{ 1 };
 			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
-			backend_->update(model);
+			geometry_render_data render_data{};
+			render_data.model = model;
+
+			backend_->update(render_data);
 
 			backend_->end_frame();
 		}
