@@ -16,7 +16,7 @@ namespace egkr
 		vulkan_texture(const vulkan_context* context, const texture_properties& properties, const uint8_t* data);
 		~vulkan_texture();
 
-		void destroy();
+		void destroy() final;
 	private:
 		const vulkan_context* context_{};
 		image::shared_ptr image_{};

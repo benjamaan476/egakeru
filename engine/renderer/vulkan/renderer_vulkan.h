@@ -23,6 +23,8 @@ namespace egkr
 		void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_position, const float4& ambient_colour, int32_t mode) final;
 		void update(const geometry_render_data& model) final;
 		void end_frame() final;
+
+		const void* get_context() const final { return &context_; }
 	private:
 		bool init_instance();
 		bool create_debug_messenger();

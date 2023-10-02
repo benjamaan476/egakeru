@@ -18,6 +18,7 @@ namespace egkr
 
 		//TODO Hack
 		API void set_view(const float4x4& view);
+
 	private:
 		renderer_backend::unique_ptr backend_{};
 
@@ -25,5 +26,7 @@ namespace egkr
 		float far_clip_{ 1000.F };
 		float4x4 projection_{};
 		float4x4 view_{};
+
+		texture::shared_ptr default_texture_{};
 	};
 }

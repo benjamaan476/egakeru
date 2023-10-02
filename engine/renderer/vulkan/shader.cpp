@@ -1,6 +1,4 @@
 #include "shader.h"
-#include "shader.h"
-#include "shader.h"
 #include <format>
 #include <ranges>
 
@@ -233,7 +231,7 @@ namespace egkr
 		static float accumulate = 0.F;
 		accumulate += 0.001F;
 		auto colour = (std::sinf(accumulate) + 1) / 2.F;
-		obo.diffuse_colour = { colour, colour, colour, 1 };
+		obo.diffuse_colour = { colour, 1 - colour, 0, 1 };
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);
 
@@ -293,9 +291,8 @@ namespace egkr
 		context_->device.logical_device.freeDescriptorSets(object_descriptor_pool_, object_shader_object_states_[object_id].descriptor_sets);
 	}
 
-	const egkr::vector<vk::PipelineShaderStageCreateInfo> shader::get_shader_stages() const
+	egkr::vector<vk::PipelineShaderStageCreateInfo> shader::get_shader_stages() const
 	{
-
 		egkr::vector<vk::PipelineShaderStageCreateInfo> stages{};
 
 		for (const auto& stage : stages_ | std::views::values)

@@ -19,6 +19,12 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<texture>;
+
+		static shared_ptr create(const void* context, const texture_properties& properties, const uint8_t* data);
 		explicit texture(const texture_properties& properties);
+
+		virtual ~texture() = default;
+
+		virtual void destroy() = 0;
 	};
 }

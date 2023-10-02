@@ -20,6 +20,7 @@ namespace egkr
 		image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
 		image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		image_properties.image_format = vk::Format::eR8G8B8A8Srgb;
+		image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
 
 		image_ = image::create(context, properties.width, properties.height, image_properties, true);
 
@@ -57,8 +58,11 @@ namespace egkr
 	void vulkan_texture::destroy()
 	{
 		context_->device.logical_device.waitIdle();
-		context_->device.logical_device.destroySampler(sampler_, context_->allocator);
-
+		if (sampler_)
+		{
+			context_->device.logical_device.destroySampler(sampler_, context_->allocator);
+			sampler_ = VK_NULL_HANDLE;
+		}
 		image_->destroy();
 	}
 }

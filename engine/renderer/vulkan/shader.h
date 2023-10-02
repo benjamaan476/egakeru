@@ -55,7 +55,7 @@ namespace egkr
 		[[nodiscard]] uint32_t acquire_resource();
 		void release_resource(uint32_t object_id);
 		
-		const egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;
+		egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;
 
 		void destroy();
 

@@ -55,6 +55,8 @@ namespace egkr
 		virtual void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
 		virtual void update(const geometry_render_data& model) = 0;
 		virtual void end_frame() = 0;
+
+		virtual const void* get_context() const = 0;
 	private:
 		platform::shared_ptr platform_;
 	};
