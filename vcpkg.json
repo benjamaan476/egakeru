@@ -19,6 +19,7 @@
     "stb",
     "gtest",
     "tinygltf",
-    "spirv-reflect"
+    "spirv-reflect",
+    "stb"
   ]
 }

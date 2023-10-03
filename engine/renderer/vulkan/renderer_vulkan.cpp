@@ -384,17 +384,6 @@ namespace egkr
 		context_.surface = create_surface();
 
 		context_.device.create(&context_);
-	/*	if (!pick_physical_device())
-		{
-			LOG_FATAL("Failed to find suitable physical device");
-			return false;
-		}
-
-		if (!create_logical_device())
-		{
-			LOG_FATAL("Failed to create logical device");
-			return false;
-		}*/
 
 		context_.swapchain = swapchain::create(&context_);
 
@@ -424,8 +413,40 @@ namespace egkr
 			context_.in_flight_fences[i] = fence::create(&context_, true);
 		}
 
-		create_object_shader();
 
+		texture_properties default_texture_properties{};
+		default_texture_properties.width = 32;
+		default_texture_properties.height = 32;
+		default_texture_properties.channel_count = 4;
+		default_texture_properties.has_transparency = true;
+
+		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
+
+		for (auto y{ 0U }; y < default_texture_properties.height; y++)
+		{
+			for (auto x{ 0U }; x < default_texture_properties.width; x++)
+			{
+				auto index = y * default_texture_properties.width + x;
+				if (y % 2)
+				{
+					if (x % 2)
+					{
+						data[index + 0] = 0xFFFF0000;
+					}
+				}
+				else
+				{
+					if (!(x % 2))
+					{
+						data[index + 0] = 0xFFFF0000;
+					}
+				}
+			}
+		}
+
+		default_texture_ = vulkan_texture::create(&context_, default_texture_properties, (uint8_t*)data.data());
+
+		create_object_shader();
 		create_object_buffers();
 
 		//TODO temp code
@@ -445,6 +466,12 @@ namespace egkr
 
 	void renderer_vulkan::shutdown()
 	{
+		if (default_texture_)
+		{
+			default_texture_.reset();
+			default_texture_ = nullptr;
+		}
+
 		if (context_.instance)
 		{
 			context_.device.logical_device.waitIdle();
@@ -492,6 +519,7 @@ namespace egkr
 
 			platform_.reset();
 		}
+
 	}
 	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
@@ -884,7 +912,7 @@ namespace egkr
 		object_pipeline_properties.vertex_attributes = vertex_3d::get_attribute_description();
 		object_pipeline_properties.renderpass = context_.main_renderpass;
 
-		context_.object_shader = shader::create(&context_, object_pipeline_properties);
+		context_.object_shader = shader::create(&context_, default_texture_, object_pipeline_properties);
 
 	}
 

@@ -57,6 +57,7 @@ namespace egkr
 		virtual void end_frame() = 0;
 
 		virtual const void* get_context() const = 0;
+
 	private:
 		platform::shared_ptr platform_;
 	};

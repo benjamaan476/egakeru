@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "renderer_types.h"
+#include "event.h"
+
 namespace egkr
 {
 	class renderer_frontend
@@ -19,6 +21,12 @@ namespace egkr
 		//TODO Hack
 		API void set_view(const float4x4& view);
 
+		bool load_texture(std::string_view filename, texture::shared_ptr& texture);
+
+		static bool on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
+
+		auto get_test_texture() const { return test_texture_; }
+
 	private:
 		renderer_backend::unique_ptr backend_{};
 
@@ -27,6 +35,7 @@ namespace egkr
 		float4x4 projection_{};
 		float4x4 view_{};
 
-		texture::shared_ptr default_texture_{};
+		//TODO temp
+		texture::shared_ptr test_texture_{};
 	};
 }

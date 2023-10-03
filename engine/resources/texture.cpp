@@ -9,8 +9,13 @@ namespace egkr
 		return vulkan_texture::create((vulkan_context*)context, properties, data);
 	}
 
-	texture::texture(const texture_properties& /*properties*/)
+	texture::texture(const texture_properties& properties)
 	{
+		generation_ = properties.generation;
+	}
 
+	void texture::set_generation(uint32_t generation)
+	{
+		generation_ = generation;
 	}
 }

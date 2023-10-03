@@ -53,6 +53,11 @@ void sandbox_game::update(std::chrono::milliseconds /*delta_time*/)
 
 	}
 
+	if (egkr::input::is_key_down(egkr::key::t))
+	{
+		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
+	}
+
 	position_ += velocity * 0.01f;
 	view_dirty = true;
 

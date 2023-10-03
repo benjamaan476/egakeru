@@ -16,6 +16,8 @@ namespace egkr
 		mouse_move,
 		resize,
 
+		debug01,
+		debug02,
 		event_code_size
 	};
 

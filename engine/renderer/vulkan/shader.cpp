@@ -73,13 +73,13 @@ namespace egkr
 		return {create_info, shader_module, stage_create_info};
 	}
 
-	shader::shared_ptr shader::create(const vulkan_context* context, pipeline_properties& pipeline_properties)
+	shader::shared_ptr shader::create(const vulkan_context* context, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_properties)
 	{
-		return std::make_shared<shader>(context, pipeline_properties);
+		return std::make_shared<shader>(context, default_texture, pipeline_properties);
 	}
 
-	shader::shader(const vulkan_context* context, pipeline_properties& pipeline_properties)
-		: context_{context}
+	shader::shader(const vulkan_context* context, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_properties)
+		: context_{ context }, default_texture_{ default_texture }
 	{
 		auto frag_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::frag, "spv"sv);
 		auto vert_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::vert, "spv"sv);
@@ -270,7 +270,13 @@ namespace egkr
 
 		for (auto sampler_index{ 0U }; sampler_index < sampler_count; ++sampler_index)
 		{
-			const auto& texture = reinterpret_cast<vulkan_texture*>(data.textures[sampler_index].get());
+			auto texture = reinterpret_cast<vulkan_texture*>(data.textures[sampler_index].get());
+
+			if (texture->get_generation() == invalid_id)
+			{
+				texture = default_texture_.get();
+			}
+
 			auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
 
 			if (texture && (texture->get_generation() != generation || generation == invalid_id))
@@ -392,5 +398,10 @@ namespace egkr
 			context_->device.logical_device.destroyShaderModule(stage.second.handle, context_->allocator);
 		}
 		stages_.clear();
+
+		if (default_texture_)
+		{
+			default_texture_.reset();
+		}
 	}
 }

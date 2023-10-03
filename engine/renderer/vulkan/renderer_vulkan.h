@@ -25,6 +25,7 @@ namespace egkr
 		void end_frame() final;
 
 		const void* get_context() const final { return &context_; }
+
 	private:
 		bool init_instance();
 		bool create_debug_messenger();
@@ -50,6 +51,8 @@ namespace egkr
 
 		platform::shared_ptr platform_{};
 		uint32_t frame_number_{};
+
+		vulkan_texture::shared_ptr default_texture_{};
 
 #ifdef NDEBUG
 		const bool enable_validation_layers_ = false;
