@@ -10,7 +10,7 @@ namespace egkr
 {
 
 	constexpr static uint32_t max_object_count{1024};
-	constexpr static uint32_t object_shader_descriptor_count{1};
+	constexpr static uint32_t object_shader_descriptor_count{2};
 
 	enum class shader_stages
 	{

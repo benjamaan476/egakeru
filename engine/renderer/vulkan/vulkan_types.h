@@ -190,6 +190,7 @@ namespace egkr
 	{
 		//Must match the vertex input attribute description
 		egkr::float3 position{};
+		egkr::float2 tex{};
 
 		consteval static vk::VertexInputBindingDescription get_binding_description() noexcept
 		{
@@ -201,19 +202,19 @@ namespace egkr
 			return bindingDescription;
 		}
 
-		consteval static std::array<vk::VertexInputAttributeDescription, 1> get_attribute_description() noexcept
+		consteval static std::array<vk::VertexInputAttributeDescription, 2> get_attribute_description() noexcept
 		{
-			std::array<vk::VertexInputAttributeDescription, 1> attributeDescriptions{};
+			std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions{};
 
 			attributeDescriptions[0].setBinding(0);
 			attributeDescriptions[0].setLocation(0);
 			attributeDescriptions[0].setFormat(vk::Format::eR32G32B32Sfloat);
 			attributeDescriptions[0].setOffset(offsetof(vertex_3d, position));
 
-			//attributeDescriptions[1].setBinding(0);
-			//attributeDescriptions[1].setLocation(1);
-			//attributeDescriptions[1].setFormat(vk::Format::eR32G32B32Sfloat);
-			//attributeDescriptions[1].setOffset(offsetof(vertex_3d, normal));
+			attributeDescriptions[1].setBinding(0);
+			attributeDescriptions[1].setLocation(1);
+			attributeDescriptions[1].setFormat(vk::Format::eR32G32Sfloat);
+			attributeDescriptions[1].setOffset(offsetof(vertex_3d, tex));
 
 			//attributeDescriptions[2].setBinding(0);
 			//attributeDescriptions[2].setLocation(2);

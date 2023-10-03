@@ -4,6 +4,7 @@
 
 #include "platform/filesystem.h"
 #include "vulkan_types.h"
+#include "vulkan_texture.h"
 
 namespace egkr
 {
@@ -126,7 +127,7 @@ namespace egkr
 
 
 		//Fragment shader descriptors
-		std::array<vk::DescriptorType, object_shader_descriptor_count> object_descriptor_types{vk::DescriptorType::eUniformBuffer};
+		std::array<vk::DescriptorType, object_shader_descriptor_count> object_descriptor_types{vk::DescriptorType::eUniformBuffer, vk::DescriptorType::eCombinedImageSampler};
 		std::array<vk::DescriptorSetLayoutBinding, object_shader_descriptor_count> object_descriptor_set_layout{};
 
 		for (auto i{ 0U }; i < object_descriptor_set_layout.size(); ++i)
@@ -144,9 +145,13 @@ namespace egkr
 
 		object_descriptor_set_layout_ = context_->device.logical_device.createDescriptorSetLayout(object_create_info, context_->allocator);
 
-		vk::DescriptorPoolSize object_descriptor_pool{};
-		object_descriptor_pool
+		std::array<vk::DescriptorPoolSize, object_shader_descriptor_count> object_descriptor_pool{};
+		object_descriptor_pool[0]
 			.setType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(max_object_count);
+
+		object_descriptor_pool[1]
+			.setType(object_descriptor_types[1])
 			.setDescriptorCount(max_object_count);
 
 		vk::DescriptorPoolCreateInfo object_pool_create_info{};
@@ -222,6 +227,7 @@ namespace egkr
 		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &data.model);
 
 		auto& object = object_shader_object_states_[data.object_id];
+		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, object_shader_descriptor_count> write_set{};
 		auto range = sizeof(object_uniform_object);
@@ -231,7 +237,7 @@ namespace egkr
 		static float accumulate = 0.F;
 		accumulate += 0.001F;
 		auto colour = (std::sinf(accumulate) + 1) / 2.F;
-		obo.diffuse_colour = { colour, 1 - colour, 0, 1 };
+		obo.diffuse_colour = { colour, colour, colour, 1 };
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);
 
@@ -259,12 +265,49 @@ namespace egkr
 		}
 		++descriptor_index;
 
+		const uint32_t sampler_count{ 1 };
+		std::array<vk::DescriptorImageInfo, sampler_count> image_infos{};
+
+		for (auto sampler_index{ 0U }; sampler_index < sampler_count; ++sampler_index)
+		{
+			const auto& texture = reinterpret_cast<vulkan_texture*>(data.textures[sampler_index].get());
+			auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
+
+			if (texture && (texture->get_generation() != generation || generation == invalid_id))
+			{
+				image_infos[sampler_index]
+					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+					.setImageView(texture->get_view())
+					.setSampler(texture->get_sampler());
+
+
+				vk::WriteDescriptorSet sampler_write{};
+				sampler_write
+					.setDstSet(object_set)
+					.setDstBinding(descriptor_index)
+					.setDescriptorCount(1)
+					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+					.setImageInfo(image_infos[sampler_index]);
+
+				write_set[descriptor_count] = sampler_write;
+				++descriptor_count;
+
+				if (texture->get_generation() != invalid_id)
+				{
+					generation = texture->get_generation();
+				}
+
+				++descriptor_index;
+			}
+		}
+
+
 		if (descriptor_count > 0)
 		{
 			context_->device.logical_device.updateDescriptorSets(descriptor_count, write_set.data(), 0, nullptr);
 		}
 
-		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 1, object.descriptor_sets[context_->image_index], nullptr);
+		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 1, object_set, nullptr);
 	}
 
 	uint32_t shader::acquire_resource()

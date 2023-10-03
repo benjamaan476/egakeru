@@ -36,38 +36,36 @@ namespace egkr
 		auto backen_init = backend_->init();
 
 		texture_properties default_texture_properties{};
-		default_texture_properties.width = 256;
-		default_texture_properties.height = 256;
+		default_texture_properties.width = 32;
+		default_texture_properties.height = 32;
 		default_texture_properties.channel_count = 4;
 		default_texture_properties.has_transparency = true;
 
-		egkr::vector<uint8_t> data(default_texture_properties.width * default_texture_properties.height * default_texture_properties.channel_count, 255);
+		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
 
-		for (auto y{ 0U }; y < default_texture_properties.height; ++y)
+		for (auto y{ 0U }; y < default_texture_properties.height; y++)
 		{
-			for (auto x{ 0U }; x < default_texture_properties.width; ++x)
+			for (auto x{ 0U }; x < default_texture_properties.width; x++)
 			{
 				auto index = y * default_texture_properties.width + x;
 				if (y % 2)
 				{
 					if (x % 2)
 					{
-						data[index + 0] = 0;
-						data[index + 1] = 0;
+						data[index + 0] = 0xFFFF0000;
 					}
 				}
 				else
 				{
 					if (!(x % 2))
 					{
-						data[index + 0] = 0;
-						data[index + 1] = 0;
+						data[index + 0] = 0xFFFF0000;
 					}
 				}
 			}
 		}
 
-		default_texture_ = texture::create(backend_->get_context(), default_texture_properties, data.data());
+		default_texture_ = texture::create(backend_->get_context(), default_texture_properties, (uint8_t*)data.data());
 
 		return backen_init;
 	}
@@ -88,15 +86,17 @@ namespace egkr
 	{
 		if (backend_->begin_frame(packet.delta_time))
 		{
-			static float angle = 0.F;
-			angle -= 0.001F;
+			//static float angle = 0.F;
+			//angle -= 0.001F;
 			backend_->update_global_state(projection_, view_, {}, {}, 0);
 
 			float4x4 model{ 1 };
-			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
+			//model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
 			geometry_render_data render_data{};
 			render_data.model = model;
+			render_data.object_id = 0;
+			render_data.textures[0] = default_texture_;
 
 			backend_->update(render_data);
 

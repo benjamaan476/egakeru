@@ -431,7 +431,7 @@ namespace egkr
 		//TODO temp code
 
 		const float scale{ 10.F };
-		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}}, {{0.5F * scale, 0.5F * scale, 0.F}}, {{-0.5F * scale, 0.5F * scale, 0.F}}, {{0.5F * scale, -0.5F * scale, 0.F}} };
+		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}, {0.F, 0.F} }, { {0.5F * scale, 0.5F * scale, 0.F}, {1.F,1.F} }, { {-0.5F * scale, 0.5F * scale, 0.F}, {0.F,1.F} }, { {0.5F * scale, -0.5F * scale, 0.F}, {1.F,0.F} }};
 		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_vertex_buffer, 0, vertices.size() * sizeof(vertex_3d), vertices.data());
 
 		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };

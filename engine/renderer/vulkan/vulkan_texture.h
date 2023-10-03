@@ -17,6 +17,10 @@ namespace egkr
 		~vulkan_texture();
 
 		void destroy() final;
+
+		const auto& get_view() const { return image_->get_view(); }
+		const auto& get_sampler() const { return sampler_; }
+
 	private:
 		const vulkan_context* context_{};
 		image::shared_ptr image_{};

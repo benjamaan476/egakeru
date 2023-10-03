@@ -26,5 +26,11 @@ namespace egkr
 		virtual ~texture() = default;
 
 		virtual void destroy() = 0;
+
+
+		const auto& get_generation() const { return generation_; }
+
+	private:
+		uint32_t generation_{ invalid_id };
 	};
 }

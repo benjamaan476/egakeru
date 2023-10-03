@@ -9,7 +9,7 @@ namespace egkr
 	struct pipeline_properties
 	{
 		renderpass::shared_ptr renderpass{};
-		std::array<vk::VertexInputAttributeDescription, 1> vertex_attributes{};
+		std::array<vk::VertexInputAttributeDescription, 2> vertex_attributes{};
 		std::vector<vk::DescriptorSetLayout> descriptor_set_layout{};
 		egkr::vector<vk::PipelineShaderStageCreateInfo> shader_stage_info{};
 		vk::Viewport viewport{};
