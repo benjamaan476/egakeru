@@ -58,7 +58,7 @@ namespace egkr
 			.setCodeSize(code.size())
 			.setPCode((const uint32_t*)(code.data()));
 
-		vk::ShaderModule shader_module = context->device.logical_device.createShaderModule(create_info, context->allocator);
+		const vk::ShaderModule shader_module = context->device.logical_device.createShaderModule(create_info, context->allocator);
 
 
 
@@ -73,16 +73,16 @@ namespace egkr
 		return {create_info, shader_module, stage_create_info};
 	}
 
-	shader::shared_ptr shader::create(const vulkan_context* context, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_properties)
+	shader::shared_ptr shader::create(const vulkan_context* context, pipeline_properties& pipeline_properties)
 	{
-		return std::make_shared<shader>(context, default_texture, pipeline_properties);
+		return std::make_shared<shader>(context, pipeline_properties);
 	}
 
-	shader::shader(const vulkan_context* context, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_properties)
-		: context_{ context }, default_texture_{ default_texture }
+	shader::shader(const vulkan_context* context, pipeline_properties& pipeline_properties)
+		: context_{ context }
 	{
-		auto frag_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::frag, "spv"sv);
-		auto vert_shader_module = create_shader_module(context, "Builtin.ObjectShader"sv, shader_stages::vert, "spv"sv);
+		auto frag_shader_module = create_shader_module(context, "Builtin.MaterialShader"sv, shader_stages::frag, "spv"sv);
+		auto vert_shader_module = create_shader_module(context, "Builtin.MaterialShader"sv, shader_stages::vert, "spv"sv);
 
 		stages_[shader_stages::vert] = vert_shader_module;
 		stages_[shader_stages::frag] = frag_shader_module;
@@ -177,7 +177,7 @@ namespace egkr
 		auto usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer;
 		auto memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer), usage, memory_properties, true);
-		object_uniform_buffer_ = buffer::create(context_, sizeof(object_uniform_object), usage, memory_properties, true);
+		object_uniform_buffer_ = buffer::create(context_, sizeof(material_uniform_object), usage, memory_properties, true);
 	}
 
 	shader::~shader()
@@ -230,10 +230,10 @@ namespace egkr
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, object_shader_descriptor_count> write_set{};
-		auto range = sizeof(object_uniform_object);
-		auto offset = sizeof(object_uniform_object) * data.object_id;
+		auto range = sizeof(material_uniform_object);
+		auto offset = sizeof(material_uniform_object) * data.object_id;
 
-		object_uniform_object obo{};
+		material_uniform_object obo{};
 		static float accumulate = 0.F;
 		accumulate += 0.001F;
 		auto colour = (std::sinf(accumulate) + 1) / 2.F;

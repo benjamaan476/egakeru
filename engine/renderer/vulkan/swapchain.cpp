@@ -91,7 +91,7 @@ namespace egkr
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
 			//TODO configure based on attachment
-			std::array<vk::ImageView, 2> attachments{image_views_[i], depth_attachment_->get_view() };
+			const std::array<vk::ImageView, 2> attachments{image_views_[i], depth_attachment_->get_view() };
 
 			framebuffer_properties properties{};
 			properties.attachments = attachments;

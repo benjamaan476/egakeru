@@ -43,10 +43,10 @@ namespace egkr
 	{
 	public: 
 		using shared_ptr = std::shared_ptr<shader>;
-		API static shared_ptr create(const vulkan_context* context, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_properties);
+		API static shared_ptr create(const vulkan_context* context, pipeline_properties& pipeline_properties);
 		static shader_stage create_shader_module(const vulkan_context* context, std::string_view shader_name, shader_stages stage, std::string_view shader_type);
 
-		explicit shader(const vulkan_context* contex, vulkan_texture::shared_ptr default_texture, pipeline_properties& pipeline_propertiest);
+		explicit shader(const vulkan_context* context, pipeline_properties& pipeline_propertiest);
 		~shader();
 
 		void use();
@@ -78,6 +78,5 @@ namespace egkr
 		egkr::vector<vk::DescriptorSet> object_descriptor_set_{};
 
 		buffer::shared_ptr global_uniform_buffer_{};
-		vulkan_texture::shared_ptr default_texture_{};
 	};
 }

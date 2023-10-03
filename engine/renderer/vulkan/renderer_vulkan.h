@@ -41,8 +41,8 @@ namespace egkr
 
 		bool recreate_swapchain();
 
-		void create_object_shader();
-		void create_object_buffers();
+		void create_material_shader();
+		void create_material_buffers();
 
 
 		void upload_data_range(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data);
@@ -51,8 +51,6 @@ namespace egkr
 
 		platform::shared_ptr platform_{};
 		uint32_t frame_number_{};
-
-		vulkan_texture::shared_ptr default_texture_{};
 
 #ifdef NDEBUG
 		const bool enable_validation_layers_ = false;

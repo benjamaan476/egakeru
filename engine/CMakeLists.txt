@@ -13,6 +13,7 @@ file(GLOB SOURCES
     renderer/*.cpp
     renderer/vulkan/*.cpp
     resources/*.cpp
+    systems/*.cpp
 )
 
 set(HEADERS 
@@ -25,6 +26,7 @@ set(HEADERS
     renderer/*.h
     renderer/vulkan/*.h
     resources/*.h
+    systems/*.h
 )
 
 add_library(engine SHARED ${SOURCES})
@@ -43,8 +45,8 @@ target_link_system_libraries(
   PRIVATE
           spdlog::spdlog     
           glfw
-
 )
+
 
 set(SHADER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
 set(SHADER_BINARY_DIR ${CMAKE_BINARY_DIR}/assets/shaders)

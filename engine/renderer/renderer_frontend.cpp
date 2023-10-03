@@ -4,10 +4,6 @@
 
 #include "vulkan/renderer_vulkan.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include <filesystem>
-
 namespace egkr
 {
 	renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
@@ -65,7 +61,7 @@ namespace egkr
 			//angle -= 0.001F;
 			backend_->update_global_state(projection_, view_, {}, {}, 0);
 
-			float4x4 model{ 1 };
+			const float4x4 model{ 1 };
 			//model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
 			geometry_render_data render_data{};
@@ -158,7 +154,7 @@ namespace egkr
 		{
 			auto* frontend = (renderer_frontend*)listener;
 
-			std::array<std::string_view, 1> textures{"RandomStones"};
+			const std::array<std::string_view, 2> textures{"RandomStones", "Seamless"};
 
 			static int choice = 0;
 			choice++;

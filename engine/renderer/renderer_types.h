@@ -27,7 +27,7 @@ namespace egkr
 		float4x4 reserve1{};
 	};
 
-	struct object_uniform_object
+	struct material_uniform_object
 	{
 		float4 diffuse_colour{};
 		float4 pad0{};

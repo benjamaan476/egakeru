@@ -98,7 +98,7 @@ namespace egkr
 		uint32_t framebuffer_size_generation{};
 		uint32_t framebuffer_last_size_generation{};
 
-		shader::shared_ptr object_shader{};
+		shader::shared_ptr material_shader{};
 
 		buffer::shared_ptr object_vertex_buffer{};
 		buffer::shared_ptr object_index_buffer{};
