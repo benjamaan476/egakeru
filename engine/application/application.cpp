@@ -1,6 +1,8 @@
 #include "application.h"
 #include "input.h"
 
+#include "systems/texture_system.h"
+
 using namespace std::chrono_literals;
 
 namespace egkr
@@ -50,12 +52,14 @@ namespace egkr
 			return;
 		}
 
+
 		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
 		if (!state_.renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
+		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");
@@ -73,7 +77,8 @@ namespace egkr
 		while (state_.is_running)
 		{
 			auto time = state_.platform->get_time();
-			auto delta_time = time - last_time_;
+			std::chrono::duration<double, std::ratio<1, 1>> delta = time - last_time_;
+			auto delta_time = delta.count();
 
 			auto frame_time = time;
 			state_.platform->pump();
@@ -89,8 +94,7 @@ namespace egkr
 			if (limit_framerate_ && frame_duration < frame_time_)
 			{
 				auto time_remaining = frame_time_ - frame_duration;
-				state_.platform->sleep(time_remaining - 1ms);
-				LOG_INFO("Hi");
+				state_.platform->sleep(time_remaining);
 			}
 
 			last_time_ = time;
@@ -104,6 +108,7 @@ namespace egkr
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
+		texture_system::shutdown();
 		state_.renderer->shutdown();
 		state_.platform->shutdown();
 	}

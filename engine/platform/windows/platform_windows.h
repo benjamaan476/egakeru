@@ -20,8 +20,8 @@ namespace egkr
 		void pump() final;
 		bool is_running() const final;
 
-		std::chrono::milliseconds get_time() const final;
-		void sleep(std::chrono::milliseconds time) const final;
+		std::chrono::nanoseconds get_time() const final;
+		void sleep(std::chrono::nanoseconds time) const final;
 
 		egkr::vector<const char*> get_required_extensions() const final;	
 		vk::SurfaceKHR create_surface(vk::Instance instance) final;
@@ -36,5 +36,6 @@ namespace egkr
 		inline static bool is_initialised_{false};
 
 		GLFWwindow* window_{};
+		std::chrono::steady_clock::time_point startup_time_{};
 	};
 }

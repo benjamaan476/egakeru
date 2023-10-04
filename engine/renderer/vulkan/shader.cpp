@@ -6,6 +6,8 @@
 #include "vulkan_types.h"
 #include "vulkan_texture.h"
 
+#include "systems/texture_system.h"
+
 namespace egkr
 {
 
@@ -235,7 +237,7 @@ namespace egkr
 
 		material_uniform_object obo{};
 		static float accumulate = 0.F;
-		accumulate += 0.001F;
+		accumulate += data.delta_time;
 		auto colour = (std::sinf(accumulate) + 1) / 2.F;
 		obo.diffuse_colour = { colour, colour, colour, 1 };
 
@@ -270,16 +272,17 @@ namespace egkr
 
 		for (auto sampler_index{ 0U }; sampler_index < sampler_count; ++sampler_index)
 		{
-			auto texture = reinterpret_cast<vulkan_texture*>(data.textures[sampler_index].get());
+			auto texture = std::dynamic_pointer_cast<vulkan_texture>(data.textures[sampler_index]);
 
 			if (texture->get_generation() == invalid_id)
 			{
-				texture = default_texture_.get();
+				texture = std::dynamic_pointer_cast<vulkan_texture>(texture_system::get_default_texture());
 			}
 
 			auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
+			auto& descriptor_id = object.descriptor_states[descriptor_index].id[context_->image_index];
 
-			if (texture && (texture->get_generation() != generation || generation == invalid_id))
+			if (texture && (texture->get_id() != descriptor_id || texture->get_generation() != generation || generation == invalid_id))
 			{
 				image_infos[sampler_index]
 					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
@@ -301,6 +304,7 @@ namespace egkr
 				if (texture->get_generation() != invalid_id)
 				{
 					generation = texture->get_generation();
+					descriptor_id = texture->get_id();
 				}
 
 				++descriptor_index;
@@ -399,9 +403,5 @@ namespace egkr
 		}
 		stages_.clear();
 
-		if (default_texture_)
-		{
-			default_texture_.reset();
-		}
 	}
 }

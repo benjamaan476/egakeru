@@ -38,9 +38,9 @@ namespace egkr
 		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
 		inline static bool is_initialised_{false};
 		inline static app_state state_{};
-		inline static std::chrono::milliseconds last_time_{};
+		inline static std::chrono::nanoseconds last_time_{};
 
-		inline static bool limit_framerate_{true};
+		inline static bool limit_framerate_{false};
 		inline static std::chrono::milliseconds frame_time_{16ms};
 	};
 

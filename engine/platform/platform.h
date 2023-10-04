@@ -55,8 +55,8 @@ namespace egkr
 		virtual void pump() = 0;
 		virtual bool is_running() const = 0;
 
-		virtual std::chrono::milliseconds get_time() const = 0;
-		virtual void sleep(std::chrono::milliseconds duration) const = 0;
+		virtual std::chrono::nanoseconds get_time() const = 0;
+		virtual void sleep(std::chrono::nanoseconds duration) const = 0;
 
 		virtual egkr::vector<const char*> get_required_extensions() const = 0;
 		virtual vk::SurfaceKHR create_surface(vk::Instance instance) = 0;

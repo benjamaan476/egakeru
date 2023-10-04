@@ -149,6 +149,7 @@ namespace egkr
 		static bool is_key_up(key key);
 		static bool was_key_up(key key);
 		static bool was_key_down(key key);
+		static bool was_key_released(key key);
 		static void process_key(key key, bool pressed);
 
 		static bool is_button_up(mouse_button button);

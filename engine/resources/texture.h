@@ -29,9 +29,11 @@ namespace egkr
 
 
 		[[nodiscard]] const auto& get_generation() const { return generation_; }
+		[[nodiscard]] const auto& get_id() const { return id_; }
 		void set_generation(uint32_t generation);
 
 	private:
+		uint32_t id_{};
 		uint32_t generation_{ invalid_id };
 	};
 }

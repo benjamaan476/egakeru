@@ -48,14 +48,19 @@ namespace egkr
 		return !is_key_down(key);
 	}
 
-	bool input::was_key_up(key key)
+	bool input::was_key_down(key key)
 	{
 		return state.previous_keyboard.keys[(int16_t)key];
 	}
 
-	bool input::was_key_down(key key)
+	bool input::was_key_up(key key)
 	{
-		return !was_key_up(key);
+		return !was_key_down(key);
+	}
+
+	bool input::was_key_released(key key)
+	{
+		return was_key_down(key) && is_key_up(key);
 	}
 
 	void input::process_key(key key, bool pressed)

@@ -29,6 +29,7 @@ namespace egkr
 	struct vulkan_descriptor_state
 	{
 		std::array<uint32_t, 3> generation{ invalid_id, invalid_id, invalid_id };
+		std::array<uint32_t, 3> id{ invalid_id, invalid_id, invalid_id };
 	};
 
 	struct object_shader_object_state

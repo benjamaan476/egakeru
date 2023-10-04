@@ -18,18 +18,18 @@ bool sandbox_game::init()
 	return true;
 }
 
-void sandbox_game::update(std::chrono::milliseconds /*delta_time*/)
+void sandbox_game::update(double delta_time)
 {
 	auto* app = get_application();
 
 	if (egkr::input::is_key_down(egkr::key::a))
 	{
-		camera_yaw(0.001F);
+		camera_yaw(1.F * delta_time);
 	}
 
 	if (egkr::input::is_key_down(egkr::key::d))
 	{
-		camera_yaw(-0.001F);
+		camera_yaw(-1.F * delta_time);
 	}
 
 	egkr::float3 velocity{0};
@@ -58,7 +58,7 @@ void sandbox_game::update(std::chrono::milliseconds /*delta_time*/)
 		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
 	}
 
-	position_ += velocity * 0.01f;
+	position_ += velocity * 50.F * (float)delta_time;
 	view_dirty = true;
 
 	recalculate_view_matrix();
@@ -67,7 +67,7 @@ void sandbox_game::update(std::chrono::milliseconds /*delta_time*/)
 	app->get_state().renderer->set_view(view_);
 }
 
-void sandbox_game::render(std::chrono::milliseconds /*delta_time*/)
+void sandbox_game::render(double /*delta_time*/)
 {
 }
 

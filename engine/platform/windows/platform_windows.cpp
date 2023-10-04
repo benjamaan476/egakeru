@@ -47,6 +47,7 @@ namespace egkr
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
 		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
 
+		startup_time_ = std::chrono::steady_clock::now();
 		is_initialised_ = true;
 		return true;
 
@@ -71,15 +72,16 @@ namespace egkr
 	{
 		return glfwWindowShouldClose(window_) == 0;
 	}
-	std::chrono::milliseconds platform_windows::get_time() const
+	std::chrono::nanoseconds platform_windows::get_time() const
 	{
-		auto time = std::chrono::steady_clock::now().time_since_epoch().count();
-		return std::chrono::milliseconds{time};
+		return std::chrono::steady_clock::now() - startup_time_;
 	}
-	void platform_windows::sleep(std::chrono::milliseconds time) const
+
+	void platform_windows::sleep(std::chrono::nanoseconds time) const
 	{
 		std::this_thread::sleep_for(time);
 	}
+
 	void platform_windows::key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
 	{
 		if (window == nullptr)

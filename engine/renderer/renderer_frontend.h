@@ -21,12 +21,11 @@ namespace egkr
 		//TODO Hack
 		API void set_view(const float4x4& view);
 
-		bool load_texture(std::string_view filename, texture::shared_ptr& texture);
-
 		static bool on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
 
 		auto get_test_texture() const { return test_texture_; }
 
+		auto get_backend_context() const { return backend_->get_context(); }
 	private:
 		renderer_backend::unique_ptr backend_{};
 

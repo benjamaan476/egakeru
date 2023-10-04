@@ -11,6 +11,7 @@ namespace egkr
 
 	texture::texture(const texture_properties& properties)
 	{
+		id_ = properties.id;
 		generation_ = properties.generation;
 	}
 

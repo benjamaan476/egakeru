@@ -16,7 +16,7 @@ namespace egkr
 
 	struct render_packet
 	{
-		std::chrono::milliseconds delta_time{};
+		double delta_time{};
 	};
 
 	struct global_uniform_buffer
@@ -37,9 +37,10 @@ namespace egkr
 
 	struct geometry_render_data
 	{
-		uint32_t object_id{};
-		float4x4 model{};
 		std::array<texture::shared_ptr, 16> textures{};
+		float4x4 model{};
+		double delta_time{};
+		uint32_t object_id{};
 	};
 
 	class renderer_backend
@@ -51,7 +52,7 @@ namespace egkr
 		virtual bool init() = 0;
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
-		virtual bool begin_frame(std::chrono::milliseconds delta_time) = 0;
+		virtual bool begin_frame(double delta_time) = 0;
 		virtual void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
 		virtual void update(const geometry_render_data& model) = 0;
 		virtual void end_frame() = 0;

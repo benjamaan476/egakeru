@@ -1,7 +1,7 @@
 #include "renderer_frontend.h"
 #include "event.h"
 
-
+#include "systems/texture_system.h"
 #include "vulkan/renderer_vulkan.h"
 
 namespace egkr
@@ -57,17 +57,18 @@ namespace egkr
 	{
 		if (backend_->begin_frame(packet.delta_time))
 		{
-			//static float angle = 0.F;
-			//angle -= 0.001F;
+			static float angle = 0.F;
+			angle -= packet.delta_time;
 			backend_->update_global_state(projection_, view_, {}, {}, 0);
 
-			const float4x4 model{ 1 };
-			//model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
+			float4x4 model{ 1 };
+			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
 			geometry_render_data render_data{};
 			render_data.model = model;
 			render_data.object_id = 0;
 			render_data.textures[0] = test_texture_;
+			render_data.delta_time = packet.delta_time;
 
 			backend_->update(render_data);
 
@@ -80,73 +81,6 @@ namespace egkr
 		view_ = view;
 	}
 
-	bool renderer_frontend::load_texture(std::string_view filename, texture::shared_ptr& texture)
-	{
-		constexpr std::string_view format_string{ "../assets/textures/{}.{}" };
-		stbi_set_flip_vertically_on_load(true);
-
-		const auto filepath = std::format(format_string.data(), filename.data(), "jpg");
-
-		//auto fullpath = std::filesystem::absolute(filepath);
-
-		int32_t width{};
-		int32_t height{};
-		int32_t channels{};
-		int32_t required_channels{ 4 };
-
-		auto image_data = (uint8_t*)stbi_load(filepath.c_str(), &width, &height, &channels, required_channels);
-
-		if (image_data)
-		{
-			texture_properties properties{};
-			properties.channel_count = required_channels;
-			properties.width = width;
-			properties.height = height;
-			properties.generation = texture->get_generation();
-
-			texture->set_generation(invalid_id);
-
-
-			for (auto y{ 0 }; y < height; ++y)
-			{
-				for (auto x{ 0 }; x < width; x += 4)
-				{
-					auto index = y * width + 4;
-
-					if (image_data[index + 3] < 255)
-					{
-						properties.has_transparency = true;
-						break;
-					}
-				}
-			}
-
-			auto temp_texture = texture::create(backend_->get_context(), properties, image_data);
-
-			texture.reset();
-			texture = std::move(temp_texture);
-			if (texture->get_generation() == invalid_id)
-			{
-				texture->set_generation(0);
-			}
-			else
-			{
-				texture->set_generation(properties.generation + 1);
-			}
-
-			stbi_image_free(image_data);
-			return true;
-
-		}
-		else
-		{
-			if (stbi_failure_reason())
-			{
-				LOG_ERROR("Failed to load image {}, reason: {}", filepath, stbi_failure_reason());
-			}
-			return false;
-		}
-	}
 
 	bool renderer_frontend::on_debug_event(event_code code, void* /*sender*/, void* listener, const event_context& /*context*/)
 	{
@@ -159,8 +93,7 @@ namespace egkr
 			static int choice = 0;
 			choice++;
 			choice %= textures.size();
-			frontend->load_texture(textures[choice], frontend->test_texture_);
-
+			frontend->test_texture_ = texture_system::acquire(textures[choice]);
 		}
 		return false;
 	}

@@ -414,35 +414,6 @@ namespace egkr
 		}
 
 
-		texture_properties default_texture_properties{};
-		default_texture_properties.width = 32;
-		default_texture_properties.height = 32;
-		default_texture_properties.channel_count = 4;
-		default_texture_properties.has_transparency = true;
-
-		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
-
-		for (auto y{ 0U }; y < default_texture_properties.height; y++)
-		{
-			for (auto x{ 0U }; x < default_texture_properties.width; x++)
-			{
-				auto index = y * default_texture_properties.width + x;
-				if (y % 2)
-				{
-					if (x % 2)
-					{
-						data[index + 0] = 0xFFFF0000;
-					}
-				}
-				else
-				{
-					if (!(x % 2))
-					{
-						data[index + 0] = 0xFFFF0000;
-					}
-				}
-			}
-		}
 
 		create_material_shader();
 		create_material_buffers();
@@ -522,7 +493,7 @@ namespace egkr
 		++context_.framebuffer_size_generation;
 	}
 
-	bool renderer_vulkan::begin_frame(std::chrono::milliseconds /*delta_time*/)
+	bool renderer_vulkan::begin_frame(double /*delta_time*/)
 	{
 		if (context_.recreating_swapchain)
 		{

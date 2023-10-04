@@ -17,21 +17,28 @@ namespace egkr
 	{
 	public:
 		using unique_ptr = std::unique_ptr<texture_system>;
-		static unique_ptr create(const texture_system_properties& properties);
+		using texture_handle = uint32_t;
 
-		explicit texture_system(const texture_system_properties& properties);
+		static void create(const void* renderer_context, const texture_system_properties& properties);
+
+		texture_system(const void* renderer_context, const texture_system_properties& properties);
 		bool init();
-		void shutdown();
+		static void shutdown();
 
-		texture::shared_ptr acquire(std::string_view texture_name);
+		static texture::shared_ptr acquire(std::string_view texture_name);
 		void release(std::string_view texture_name);
 
-		texture::shared_ptr get_default_texture();
+		static texture::shared_ptr get_default_texture();
 	private:
+		static bool load_texture(std::string_view filepath, texture::shared_ptr& texture);
+
+
+	private:
+		const void* renderer_context_{};
 		texture::shared_ptr default_texture_{};
 
 		egkr::vector<texture::shared_ptr> registered_textures_{};
-		std::unordered_map<std::string, uint32_t> registered_textures_by_name_{};
+		std::unordered_map<std::string, texture_handle> registered_textures_by_name_{};
 
 		uint32_t max_texture_count_{};
 	};
