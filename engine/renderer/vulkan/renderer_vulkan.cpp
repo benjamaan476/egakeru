@@ -427,8 +427,6 @@ namespace egkr
 		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
 		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_index_buffer, 0, indices.size() * sizeof(uint32_t), indices.data());
 
-		context_.object_id_ = context_.material_shader->acquire_resource();
-
 		//TODO end temp code
 		return true;
 	}

@@ -128,9 +128,12 @@ namespace egkr
 		global_descriptor_set_ = context_->device.logical_device.allocateDescriptorSets(alloc_info);
 
 
+		sampler_uses_[0] = texture_use::map_diffuse;
+
 		//Fragment shader descriptors
-		std::array<vk::DescriptorType, object_shader_descriptor_count> object_descriptor_types{vk::DescriptorType::eUniformBuffer, vk::DescriptorType::eCombinedImageSampler};
-		std::array<vk::DescriptorSetLayoutBinding, object_shader_descriptor_count> object_descriptor_set_layout{};
+		std::array<vk::DescriptorType, material_shader_descriptor_count> object_descriptor_types{vk::DescriptorType::eUniformBuffer, vk::DescriptorType::eCombinedImageSampler};
+		std::array<vk::DescriptorSetLayoutBinding, material_shader_descriptor_count> object_descriptor_set_layout{};
+		std::array<vk::DescriptorPoolSize, material_shader_descriptor_count> object_descriptor_pool{};
 
 		for (auto i{ 0U }; i < object_descriptor_set_layout.size(); ++i)
 		{
@@ -139,6 +142,10 @@ namespace egkr
 				.setDescriptorCount(1)
 				.setDescriptorType(object_descriptor_types[i])
 				.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+			object_descriptor_pool[i]
+				.setType(object_descriptor_types[i])
+				.setDescriptorCount(material_shader_sampler_count * max_material_count);
 		}
 
 		vk::DescriptorSetLayoutCreateInfo object_create_info{};
@@ -147,19 +154,11 @@ namespace egkr
 
 		object_descriptor_set_layout_ = context_->device.logical_device.createDescriptorSetLayout(object_create_info, context_->allocator);
 
-		std::array<vk::DescriptorPoolSize, object_shader_descriptor_count> object_descriptor_pool{};
-		object_descriptor_pool[0]
-			.setType(vk::DescriptorType::eUniformBuffer)
-			.setDescriptorCount(max_object_count);
-
-		object_descriptor_pool[1]
-			.setType(object_descriptor_types[1])
-			.setDescriptorCount(max_object_count);
-
 		vk::DescriptorPoolCreateInfo object_pool_create_info{};
 		object_pool_create_info
 			.setPoolSizes(object_descriptor_pool)
-			.setMaxSets(max_object_count);
+			.setMaxSets(max_material_count)
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
 
 		object_descriptor_pool_ = context_->device.logical_device.createDescriptorPool(object_pool_create_info, context_->allocator);
 
@@ -178,8 +177,8 @@ namespace egkr
 
 		auto usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer;
 		auto memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer), usage, memory_properties, true);
-		object_uniform_buffer_ = buffer::create(context_, sizeof(material_uniform_object), usage, memory_properties, true);
+		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer) * 3, usage, memory_properties, true);
+		object_uniform_buffer_ = buffer::create(context_, sizeof(material_uniform_object) * 3, usage, memory_properties, true);
 	}
 
 	shader::~shader()
@@ -200,7 +199,7 @@ namespace egkr
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 0, global_descriptor_set_[context_->image_index], nullptr);
 
 		auto range = sizeof(global_uniform_buffer); // one per frame in flight
-		auto offset = 0;// sizeof(global_uniform_buffer)* context_->image_index;
+		auto offset = sizeof(global_uniform_buffer)* context_->image_index;
 
 		global_uniform_buffer_->load_data(offset, range, 0, &ubo);
 
@@ -228,24 +227,27 @@ namespace egkr
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &data.model);
 
-		auto& object = object_shader_object_states_[data.object_id];
+		auto& object = material_shader_instance_states_[data.material->get_internal_id()];
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
-		std::array<vk::WriteDescriptorSet, object_shader_descriptor_count> write_set{};
+		std::array<vk::WriteDescriptorSet, material_shader_descriptor_count> write_set{};
 		auto range = sizeof(material_uniform_object);
-		auto offset = sizeof(material_uniform_object) * data.object_id;
+		auto offset = sizeof(material_uniform_object) * data.material->get_internal_id();
+
+		//static float accumulate = 0.F;
+		//accumulate += data.delta_time;
+		//auto colour = (std::sinf(accumulate) + 1) / 2.F;
 
 		material_uniform_object obo{};
-		static float accumulate = 0.F;
-		accumulate += data.delta_time;
-		auto colour = (std::sinf(accumulate) + 1) / 2.F;
-		obo.diffuse_colour = { colour, colour, colour, 1 };
+		obo.diffuse_colour = data.material->get_diffuse_colour();
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);
 
 		uint32_t descriptor_index{};
 		uint32_t descriptor_count{};
-		if (object.descriptor_states[descriptor_index].generation[context_->image_index] == invalid_id)
+
+		auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
+		if (generation == invalid_id || generation != data.material->get_generation())
 		{
 			vk::DescriptorBufferInfo buffer_info{};
 			buffer_info
@@ -263,17 +265,28 @@ namespace egkr
 
 			write_set[descriptor_count] = write;
 			++descriptor_count;
-			object.descriptor_states[descriptor_index].generation[context_->image_index] = 1;
+			generation = data.material->get_generation();
 		}
 		++descriptor_index;
 
-		const uint32_t sampler_count{ 1 };
-		std::array<vk::DescriptorImageInfo, sampler_count> image_infos{};
+		std::array<vk::DescriptorImageInfo, material_shader_sampler_count> image_infos{};
 
-		for (auto sampler_index{ 0U }; sampler_index < sampler_count; ++sampler_index)
+		for (auto sampler_index{ 0U }; sampler_index < image_infos.size(); ++sampler_index)
 		{
-			auto texture = std::dynamic_pointer_cast<vulkan_texture>(data.textures[sampler_index]);
+			auto texture_use = sampler_uses_[sampler_index]; 
 
+			texture::shared_ptr tex{};
+			switch (texture_use)
+			{
+			case texture_use::map_diffuse:
+				tex = data.material->get_diffuse_map().texture;
+				break;
+			default:
+				LOG_FATAL("Unknown sampler usage, cannot bind");
+					break;
+			}
+
+			auto texture = std::dynamic_pointer_cast<vulkan_texture>(tex);
 			if (texture->get_generation() == invalid_id)
 			{
 				texture = std::dynamic_pointer_cast<vulkan_texture>(texture_system::get_default_texture());
@@ -320,12 +333,12 @@ namespace egkr
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 1, object_set, nullptr);
 	}
 
-	uint32_t shader::acquire_resource()
+	bool shader::acquire_resource(vulkan_material::shared_ptr& material)
 	{
-		auto object_id = object_uniform_buffer_index_;
+		material->set_internal_id(object_uniform_buffer_index_);
 		++object_uniform_buffer_index_;
 
-		object_shader_object_state& object_state = object_shader_object_states_[object_id];
+		material_shader_instance_state& object_state = material_shader_instance_states_[material->get_internal_id()];
 
 		std::array<vk::DescriptorSetLayout, 3> object_descriptor_set_layout{object_descriptor_set_layout_, object_descriptor_set_layout_, object_descriptor_set_layout_};
 		vk::DescriptorSetAllocateInfo allocate_info{};
@@ -335,13 +348,13 @@ namespace egkr
 
 		object_state.descriptor_sets = context_->device.logical_device.allocateDescriptorSets(allocate_info);
 
-		return object_id;
+		return true;
 	}
 
 	void shader::release_resource(uint32_t object_id)
 	{
 
-		context_->device.logical_device.freeDescriptorSets(object_descriptor_pool_, object_shader_object_states_[object_id].descriptor_sets);
+		context_->device.logical_device.freeDescriptorSets(object_descriptor_pool_, material_shader_instance_states_[object_id].descriptor_sets);
 	}
 
 	egkr::vector<vk::PipelineShaderStageCreateInfo> shader::get_shader_stages() const

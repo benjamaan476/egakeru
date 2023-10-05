@@ -1,9 +1,16 @@
 #pragma once
 
 #include "pch.h"
-
+#include "resource.h"
 namespace egkr
 {
+
+	enum class texture_use
+	{
+		unknown = 0,
+		map_diffuse
+	};
+
 	struct texture_properties
 	{
 		uint32_t id{};
@@ -15,7 +22,7 @@ namespace egkr
 		bool has_transparency{};
 	};
 
-	class texture
+	class texture : public resource<texture>
 	{
 	public:
 		using shared_ptr = std::shared_ptr<texture>;
@@ -25,15 +32,16 @@ namespace egkr
 
 		virtual ~texture() = default;
 
+
 		virtual void destroy() = 0;
 
-
-		[[nodiscard]] const auto& get_generation() const { return generation_; }
-		[[nodiscard]] const auto& get_id() const { return id_; }
-		void set_generation(uint32_t generation);
-
 	private:
-		uint32_t id_{};
-		uint32_t generation_{ invalid_id };
+		std::string name_{};
+	};
+
+	struct texture_map
+	{
+		texture::shared_ptr texture{};
+		texture_use use{};
 	};
 }

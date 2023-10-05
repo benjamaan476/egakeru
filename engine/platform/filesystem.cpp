@@ -68,8 +68,11 @@ namespace egkr
 		}
 
 		egkr::vector<uint8_t> data(max_size);
-		fgets((char*)data.data(), data.size(), handle.handle);
-
+		auto ret = fgets((char*)data.data(), data.size(), handle.handle);
+		if (ret == nullptr)
+		{
+			return {};
+		}
 		return data;
 	}
 

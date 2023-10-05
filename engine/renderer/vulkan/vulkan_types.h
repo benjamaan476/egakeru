@@ -105,8 +105,6 @@ namespace egkr
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
 
-		uint32_t object_id_{ invalid_id };
-
 	};
 
 

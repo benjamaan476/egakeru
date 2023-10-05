@@ -88,6 +88,13 @@ namespace egkr
 		}
 
 		uint32_t texture_id = texture_system_->registered_textures_.size();
+
+		if (texture_id >= texture_system_->max_texture_count_)
+		{
+			LOG_FATAL("Exceeded max texture count");
+			return nullptr;
+		}
+
 		auto new_texture = texture::create(texture_system_->renderer_context_, {.id = texture_id}, nullptr);
 		load_texture(texture_name, new_texture);
 
@@ -98,7 +105,7 @@ namespace egkr
 		}
 
 		texture_system_->registered_textures_.push_back(new_texture);
-		texture_system_->registered_textures_by_name_.emplace(texture_name.data(), texture_id);
+		texture_system_->registered_textures_by_name_[texture_name.data()] = texture_id;
 		return new_texture;
 	}
 
@@ -181,6 +188,7 @@ namespace egkr
 			if (stbi_failure_reason())
 			{
 				LOG_ERROR("Failed to load image {}, reason: {}", filepath, stbi_failure_reason());
+				stbi__err(0, 0);
 			}
 			return false;
 		}

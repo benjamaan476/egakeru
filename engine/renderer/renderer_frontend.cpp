@@ -2,6 +2,7 @@
 #include "event.h"
 
 #include "systems/texture_system.h"
+#include "systems/material_system.h"
 #include "vulkan/renderer_vulkan.h"
 
 namespace egkr
@@ -35,15 +36,13 @@ namespace egkr
 	{
 		auto backen_init = backend_->init();
 
-		test_texture_ = texture::create(backend_->get_context(), {}, nullptr);
-
 		event::register_event(event_code::debug01, this, &renderer_frontend::on_debug_event);
 		return backen_init;
 	}
 
 	void renderer_frontend::shutdown()
 	{
-		test_texture_.reset();
+		test_material_.reset();
 		backend_->shutdown();
 	}
 
@@ -64,10 +63,24 @@ namespace egkr
 			float4x4 model{ 1 };
 			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
+			if (!test_material_)
+			{
+				test_material_ = material_system::acquire("test_material");
+				if (!test_material_)
+				{
+					LOG_WARN("Automatic material load failed. Creating manually");
+
+					material_properties properties{};
+					properties.name = "test_material";
+					properties.diffuse_colour = float4{ 1.F };
+					properties.diffuse_map_name = default_texture_name;
+					test_material_ = material_system::acquire(properties);
+				}
+			}
+
 			geometry_render_data render_data{};
 			render_data.model = model;
-			render_data.object_id = 0;
-			render_data.textures[0] = test_texture_;
+			render_data.material = test_material_;
 			render_data.delta_time = packet.delta_time;
 
 			backend_->update(render_data);
@@ -93,7 +106,7 @@ namespace egkr
 			static int choice = 0;
 			choice++;
 			choice %= textures.size();
-			frontend->test_texture_ = texture_system::acquire(textures[choice]);
+			frontend->test_material_->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
 		}
 		return false;
 	}

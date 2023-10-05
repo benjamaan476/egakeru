@@ -2,6 +2,7 @@
 #include "input.h"
 
 #include "systems/texture_system.h"
+#include "systems/material_system.h"
 
 using namespace std::chrono_literals;
 
@@ -60,6 +61,11 @@ namespace egkr
 		}
 
 		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
+		if(!material_system::create(state_.renderer->get_backend_context()))
+		{
+			LOG_FATAL("Failed to create material system");
+		}
+
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");
@@ -108,6 +114,7 @@ namespace egkr
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
+		material_system::shutdown();
 		texture_system::shutdown();
 		state_.renderer->shutdown();
 		state_.platform->shutdown();

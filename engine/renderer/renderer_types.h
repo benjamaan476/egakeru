@@ -4,6 +4,7 @@
 #include "platform/platform.h"
 
 #include "resources/texture.h"
+#include "resources/material.h"
 
 namespace egkr
 {
@@ -37,10 +38,9 @@ namespace egkr
 
 	struct geometry_render_data
 	{
-		std::array<texture::shared_ptr, 16> textures{};
+		material::shared_ptr material{};
 		float4x4 model{};
 		double delta_time{};
-		uint32_t object_id{};
 	};
 
 	class renderer_backend

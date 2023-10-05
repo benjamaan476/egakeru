@@ -10,13 +10,8 @@ namespace egkr
 	}
 
 	texture::texture(const texture_properties& properties)
+		: resource{properties.id, properties.generation}
 	{
-		id_ = properties.id;
-		generation_ = properties.generation;
 	}
 
-	void texture::set_generation(uint32_t generation)
-	{
-		generation_ = generation;
-	}
 }

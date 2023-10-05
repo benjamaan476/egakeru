@@ -26,7 +26,7 @@ namespace egkr
 	{
 	public:
 		static bool does_path_exist(std::string_view path);
-		static file_handle open(std::string_view path, file_mode mode, bool is_binary);
+		[[nodiscard]] static file_handle open(std::string_view path, file_mode mode, bool is_binary);
 		static void close(file_handle& handle);
 
 		static egkr::vector<uint8_t> read_line(file_handle& handle, uint32_t max_size);

@@ -23,7 +23,7 @@ namespace egkr
 
 		static bool on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
 
-		auto get_test_texture() const { return test_texture_; }
+		auto get_test_material() const { return test_material_; }
 
 		auto get_backend_context() const { return backend_->get_context(); }
 	private:
@@ -35,6 +35,6 @@ namespace egkr
 		float4x4 view_{};
 
 		//TODO temp
-		texture::shared_ptr test_texture_{};
+		material::shared_ptr test_material_{};
 	};
 }
