@@ -3,8 +3,9 @@
 
 #include "platform/platform.h"
 
-#include "resources/texture.h"
-#include "resources/material.h"
+#include "resources/geometry.h"
+
+#include "vertex_types.h"
 
 namespace egkr
 {
@@ -15,10 +16,6 @@ namespace egkr
 		directx
 	};
 
-	struct render_packet
-	{
-		double delta_time{};
-	};
 
 	struct global_uniform_buffer
 	{
@@ -38,10 +35,17 @@ namespace egkr
 
 	struct geometry_render_data
 	{
-		material::shared_ptr material{};
+		geometry::shared_ptr geometry{};
 		float4x4 model{};
 		double delta_time{};
 	};
+
+	struct render_packet
+	{
+		double delta_time{};
+		geometry_render_data data{};
+	};
+
 
 	class renderer_backend
 	{
@@ -54,7 +58,7 @@ namespace egkr
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame(double delta_time) = 0;
 		virtual void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
-		virtual void update(const geometry_render_data& model) = 0;
+		virtual void draw_geometry(const geometry_render_data& model) = 0;
 		virtual void end_frame() = 0;
 
 		virtual const void* get_context() const = 0;

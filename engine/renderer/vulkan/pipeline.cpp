@@ -66,8 +66,8 @@ namespace egkr
 		dynamic_state_create_info
 			.setDynamicStates(dynamic_states);
 
-		const auto binding_description = vertex_3d::get_binding_description();
-		const auto attribute_description = vertex_3d::get_attribute_description();
+		const auto binding_description = get_binding_description<vertex_3d>();
+		const auto attribute_description = get_attribute_description();
 		vk::PipelineVertexInputStateCreateInfo vertex_input_create_info{};
 		vertex_input_create_info
 			.setVertexBindingDescriptions(binding_description)

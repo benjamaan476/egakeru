@@ -36,13 +36,14 @@ namespace egkr
 	{
 		auto backen_init = backend_->init();
 
+
 		event::register_event(event_code::debug01, this, &renderer_frontend::on_debug_event);
 		return backen_init;
 	}
 
 	void renderer_frontend::shutdown()
 	{
-		test_material_.reset();
+		test_geometry_.reset();
 		backend_->shutdown();
 	}
 
@@ -63,27 +64,27 @@ namespace egkr
 			float4x4 model{ 1 };
 			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
-			if (!test_material_)
-			{
-				test_material_ = material_system::acquire("test_material");
-				if (!test_material_)
-				{
-					LOG_WARN("Automatic material load failed. Creating manually");
+			//if (!test_geometry_)
+			//{
+			//	test_material_ = material_system::acquire("test_material");
+			//	if (!test_material_)
+			//	{
+			//		LOG_WARN("Automatic material load failed. Creating manually");
 
-					material_properties properties{};
-					properties.name = "test_material";
-					properties.diffuse_colour = float4{ 1.F };
-					properties.diffuse_map_name = default_texture_name;
-					test_material_ = material_system::acquire(properties);
-				}
-			}
+			//		material_properties properties{};
+			//		properties.name = "test_material";
+			//		properties.diffuse_colour = float4{ 1.F };
+			//		properties.diffuse_map_name = default_texture_name;
+			//		test_material_ = material_system::acquire(properties);
+			//	}
+			//}
 
 			geometry_render_data render_data{};
 			render_data.model = model;
-			render_data.material = test_material_;
+			render_data.geometry = test_geometry_;
 			render_data.delta_time = packet.delta_time;
 
-			backend_->update(render_data);
+			backend_->draw_geometry(render_data);
 
 			backend_->end_frame();
 		}
@@ -101,14 +102,29 @@ namespace egkr
 		{
 			auto* frontend = (renderer_frontend*)listener;
 
-			const std::array<std::string_view, 2> textures{"RandomStones", "Seamless"};
+			const std::array<std::string_view, 2> textures{ "RandomStones", "Seamless" };
 
 			static int choice = 0;
 			choice++;
 			choice %= textures.size();
-			frontend->test_material_->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
+			frontend->test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
 		}
 		return false;
 	}
 
+	void renderer_frontend::create_default_geometry()
+	{
+		const float scale{ 10.F };
+		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}, {0.F, 0.F} }, { {0.5F * scale, 0.5F * scale, 0.F}, {1.F,1.F} }, { {-0.5F * scale, 0.5F * scale, 0.F}, {0.F,1.F} }, { {0.5F * scale, -0.5F * scale, 0.F}, {1.F,0.F} } };
+
+		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
+
+		geometry_properties properties{};
+		properties.indices = indices;
+		properties.vertices = vertices;
+		properties.name = "test_geometry";
+		properties.material_name = "test_material";
+
+		test_geometry_ = geometry::create(backend_->get_context(), properties);
+	}
 }

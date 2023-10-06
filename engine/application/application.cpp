@@ -66,6 +66,7 @@ namespace egkr
 			LOG_FATAL("Failed to create material system");
 		}
 
+		state_.renderer->create_default_geometry();
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");

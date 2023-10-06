@@ -100,10 +100,9 @@ namespace egkr
 
 		shader::shared_ptr material_shader{};
 
-		buffer::shared_ptr object_vertex_buffer{};
-		buffer::shared_ptr object_index_buffer{};
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
+
 
 	};
 
@@ -184,47 +183,42 @@ namespace egkr
 		return queueIndices;
 	}
 
-	struct vertex_3d
+	template<class T>
+	consteval static vk::VertexInputBindingDescription get_binding_description() noexcept
 	{
-		//Must match the vertex input attribute description
-		egkr::float3 position{};
-		egkr::float2 tex{};
+		vk::VertexInputBindingDescription bindingDescription{};
+		bindingDescription
+			.setBinding(0)
+			.setStride(sizeof(T))
+			.setInputRate(vk::VertexInputRate::eVertex);
+		return bindingDescription;
+	}
 
-		consteval static vk::VertexInputBindingDescription get_binding_description() noexcept
-		{
-			vk::VertexInputBindingDescription bindingDescription{};
-			bindingDescription
-				.setBinding(0)
-				.setStride(sizeof(vertex_3d))
-				.setInputRate(vk::VertexInputRate::eVertex);
-			return bindingDescription;
-		}
+	consteval static std::array<vk::VertexInputAttributeDescription, 2> get_attribute_description() noexcept
+	{
+		std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions{};
 
-		consteval static std::array<vk::VertexInputAttributeDescription, 2> get_attribute_description() noexcept
-		{
-			std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions{};
+		attributeDescriptions[0].setBinding(0);
+		attributeDescriptions[0].setLocation(0);
+		attributeDescriptions[0].setFormat(vk::Format::eR32G32B32Sfloat);
+		attributeDescriptions[0].setOffset(offsetof(vertex_3d, position));
 
-			attributeDescriptions[0].setBinding(0);
-			attributeDescriptions[0].setLocation(0);
-			attributeDescriptions[0].setFormat(vk::Format::eR32G32B32Sfloat);
-			attributeDescriptions[0].setOffset(offsetof(vertex_3d, position));
+		attributeDescriptions[1].setBinding(0);
+		attributeDescriptions[1].setLocation(1);
+		attributeDescriptions[1].setFormat(vk::Format::eR32G32Sfloat);
+		attributeDescriptions[1].setOffset(offsetof(vertex_3d, tex));
 
-			attributeDescriptions[1].setBinding(0);
-			attributeDescriptions[1].setLocation(1);
-			attributeDescriptions[1].setFormat(vk::Format::eR32G32Sfloat);
-			attributeDescriptions[1].setOffset(offsetof(vertex_3d, tex));
+		//attributeDescriptions[2].setBinding(0);
+		//attributeDescriptions[2].setLocation(2);
+		//attributeDescriptions[2].setFormat(vk::Format::eR32G32Sfloat);
+		//attributeDescriptions[2].setOffset(offsetof(vertex_3d, tex));
 
-			//attributeDescriptions[2].setBinding(0);
-			//attributeDescriptions[2].setLocation(2);
-			//attributeDescriptions[2].setFormat(vk::Format::eR32G32Sfloat);
-			//attributeDescriptions[2].setOffset(offsetof(vertex_3d, tex));
+		//attributeDescriptions[3].setBinding(0);
+		//attributeDescriptions[3].setLocation(3);
+		//attributeDescriptions[3].setFormat(vk::Format::eR32G32B32Sfloat);
+		//attributeDescriptions[3].setOffset(offsetof(vertex_3d, colour));
+		return attributeDescriptions;
+	}
 
-			//attributeDescriptions[3].setBinding(0);
-			//attributeDescriptions[3].setLocation(3);
-			//attributeDescriptions[3].setFormat(vk::Format::eR32G32B32Sfloat);
-			//attributeDescriptions[3].setOffset(offsetof(vertex_3d, colour));
-			return attributeDescriptions;
-		}
-	};
 
 }

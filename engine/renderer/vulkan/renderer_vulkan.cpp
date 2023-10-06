@@ -338,18 +338,6 @@ namespace egkr
 		}
 	}
 
-	void renderer_vulkan::upload_data_range(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data)
-	{
-		const vk::MemoryPropertyFlags memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eTransferSrc;
-
-		auto staging_buffer = buffer::create(&context_, size, usage, memory_flags, true);
-
-		staging_buffer->load_data(offset, size, 0, data);
-		staging_buffer->copy_to(pool, fence, queue, staging_buffer->get_handle(), 0, buffer->get_handle(), 0, size);
-	}
-
-
 	renderer_backend::unique_ptr renderer_vulkan::create(const platform::shared_ptr& platform)
 	{
 		return std::make_unique<renderer_vulkan>(platform);
@@ -420,12 +408,6 @@ namespace egkr
 
 		//TODO temp code
 
-		const float scale{ 10.F };
-		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}, {0.F, 0.F} }, { {0.5F * scale, 0.5F * scale, 0.F}, {1.F,1.F} }, { {-0.5F * scale, 0.5F * scale, 0.F}, {0.F,1.F} }, { {0.5F * scale, -0.5F * scale, 0.F}, {1.F,0.F} }};
-		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_vertex_buffer, 0, vertices.size() * sizeof(vertex_3d), vertices.data());
-
-		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
-		upload_data_range(context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, context_.object_index_buffer, 0, indices.size() * sizeof(uint32_t), indices.data());
 
 		//TODO end temp code
 		return true;
@@ -436,9 +418,6 @@ namespace egkr
 		if (context_.instance)
 		{
 			context_.device.logical_device.waitIdle();
-
-			context_.object_index_buffer->destroy();
-			context_.object_vertex_buffer->destroy();
 
 			context_.material_shader->destroy();
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
@@ -544,20 +523,14 @@ namespace egkr
 
 	}
 
-	void renderer_vulkan::update(const geometry_render_data& data)
+	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		context_.material_shader->update(data);
 
 		//TODO temp test code
 		context_.material_shader->use();
+		data.geometry->draw();
 
-		vk::DeviceSize offset{ 0 };
-		command_buffer.get_handle().bindVertexBuffers(0, context_.object_vertex_buffer->get_handle(), offset);
-
-		command_buffer.get_handle().bindIndexBuffer(context_.object_index_buffer->get_handle(), offset, vk::IndexType::eUint32);
-
-		command_buffer.get_handle().drawIndexed(6, 1, 0, 0, 0);
 	}
 
 	void renderer_vulkan::end_frame()
@@ -870,7 +843,7 @@ namespace egkr
 		material_pipeline_properties.is_wireframe = false;
 		material_pipeline_properties.scissor = scissor;
 		material_pipeline_properties.viewport = viewport;
-		material_pipeline_properties.vertex_attributes = vertex_3d::get_attribute_description();
+		material_pipeline_properties.vertex_attributes = get_attribute_description();
 		material_pipeline_properties.renderpass = context_.main_renderpass;
 
 		context_.material_shader = shader::create(&context_, material_pipeline_properties);
@@ -879,16 +852,6 @@ namespace egkr
 
 	void renderer_vulkan::create_material_buffers()
 	{
-		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
-		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
-		const auto vertex_buffer_size = sizeof(vertex_3d) * 1024 * 1024;
-
-		context_.object_vertex_buffer = buffer::create(&context_, vertex_buffer_size, usage, flags, true);
-
-		const vk::BufferUsageFlags index_usage{vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
-		const auto index_buffer_size = sizeof(uint32_t) * 1024 * 1024;
-
-		context_.object_index_buffer = buffer::create(&context_, index_buffer_size, index_usage, flags, true);
 	}
 }
 

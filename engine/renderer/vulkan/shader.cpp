@@ -227,19 +227,19 @@ namespace egkr
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &data.model);
 
-		auto& object = material_shader_instance_states_[data.material->get_internal_id()];
+		auto& object = material_shader_instance_states_[data.geometry->get_material()->get_internal_id()];
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, material_shader_descriptor_count> write_set{};
 		auto range = sizeof(material_uniform_object);
-		auto offset = sizeof(material_uniform_object) * data.material->get_internal_id();
+		auto offset = sizeof(material_uniform_object) * data.geometry->get_material()->get_internal_id();
 
 		//static float accumulate = 0.F;
 		//accumulate += data.delta_time;
 		//auto colour = (std::sinf(accumulate) + 1) / 2.F;
 
 		material_uniform_object obo{};
-		obo.diffuse_colour = data.material->get_diffuse_colour();
+		obo.diffuse_colour = data.geometry->get_material()->get_diffuse_colour();
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);
 
@@ -247,7 +247,7 @@ namespace egkr
 		uint32_t descriptor_count{};
 
 		auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
-		if (generation == invalid_id || generation != data.material->get_generation())
+		if (generation == invalid_id || generation != data.geometry->get_material()->get_generation())
 		{
 			vk::DescriptorBufferInfo buffer_info{};
 			buffer_info
@@ -265,7 +265,7 @@ namespace egkr
 
 			write_set[descriptor_count] = write;
 			++descriptor_count;
-			generation = data.material->get_generation();
+			generation = data.geometry->get_material()->get_generation();
 		}
 		++descriptor_index;
 
@@ -279,7 +279,7 @@ namespace egkr
 			switch (texture_use)
 			{
 			case texture_use::map_diffuse:
-				tex = data.material->get_diffuse_map().texture;
+				tex = data.geometry->get_material()->get_diffuse_map().texture;
 				break;
 			default:
 				LOG_FATAL("Unknown sampler usage, cannot bind");
