@@ -55,6 +55,14 @@ namespace egkr
 			return;
 		}
 
+		resource_system_configuration resource_system_configuration{};
+		resource_system_configuration.max_loader_count = 6;
+		resource_system_configuration.base_path = "../assets/";
+
+		if (!resource_system::create(resource_system_configuration))
+		{
+			LOG_FATAL("Failed to create resource system");
+		}
 
 		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
 		if (!state_.renderer->init())
@@ -62,14 +70,7 @@ namespace egkr
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
-		resource_system_configuration resource_system_configuration{};
-		resource_system_configuration.max_loader_count = 6;
-		resource_system_configuration.base_path = "../assets";
 
-		if (!resource_system::create(resource_system_configuration))
-		{
-			LOG_FATAL("Failed to create resource system");
-		}
 
 		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
 		if(!material_system::create(state_.renderer->get_backend_context()))

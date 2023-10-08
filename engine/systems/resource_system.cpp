@@ -2,6 +2,7 @@
 
 #include "loaders/image_loader.h"
 #include "loaders/material_loader.h"
+#include "loaders/binary_loader.h"
 
 namespace egkr
 {
@@ -33,20 +34,28 @@ namespace egkr
 
 		resource_system_->registered_loaders_.reserve(resource_system_->max_loader_count_);
 
+		auto base_path = resource_system_->base_path_;
 			//Register known loaders
 		{
 			loader_properties image_loader_properties{};
 			image_loader_properties.custom_type = {};
-			image_loader_properties.path = "../assets/textures";
+			image_loader_properties.path = base_path + "textures";
 
 			register_loader(image_loader::create(image_loader_properties));
 		}
 		{
 			loader_properties material_loader_properties{};
 			material_loader_properties.custom_type = {};
-			material_loader_properties.path = "../assets/materials";
+			material_loader_properties.path = base_path + "materials";
 
 			register_loader(material_loader::create(material_loader_properties));
+		}
+		{
+			loader_properties binary_loader_properties{};
+			binary_loader_properties.custom_type = {};
+			binary_loader_properties.path = base_path;
+
+			register_loader(binary_loader::create(binary_loader_properties));
 		}
 		return true;
 	}

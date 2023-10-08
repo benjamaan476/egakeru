@@ -2,11 +2,11 @@
 #include <format>
 #include <ranges>
 
-#include "platform/filesystem.h"
 #include "vulkan_types.h"
 #include "vulkan_texture.h"
 
 #include "systems/texture_system.h"
+#include "systems/resource_system.h"
 
 namespace egkr
 {
@@ -41,24 +41,17 @@ namespace egkr
 			return {};
 		}
 
-		const auto* source_dir = "../assets/shaders/";
-		auto shader_filename = std::format("{}{}.{}.{}", source_dir, shader_name, shader_stage, shader_type);
 
-		auto file = egkr::filesystem::open(shader_filename, egkr::file_mode::read, true);
+		auto shader_filename = std::format("shaders/{}.{}.spv", shader_name, shader_stage, shader_type);
 
-		if (!file.is_valid)
-		{
-			LOG_ERROR("Failed to open file: {}", shader_filename);
-			return {};
-		}
-
-		const auto code = filesystem::read_all(file);
-
+		auto shader_resource = resource_system::load(shader_filename, resource_type::binary);
+		
+		auto* code = (binary_resource_properties*)shader_resource->get_data();
 
 		vk::ShaderModuleCreateInfo create_info{};
 		create_info
-			.setCodeSize(code.size())
-			.setPCode((const uint32_t*)(code.data()));
+			.setCodeSize(code->data.size())
+			.setPCode((const uint32_t*)(code->data.data()));
 
 		const vk::ShaderModule shader_module = context->device.logical_device.createShaderModule(create_info, context->allocator);
 
@@ -71,6 +64,8 @@ namespace egkr
 			.setStage(flag);
 
 		LOG_INFO("Succesfully created {} shader", shader_stage);
+
+		resource_system::unload(shader_resource);
 
 		return {create_info, shader_module, stage_create_info};
 	}

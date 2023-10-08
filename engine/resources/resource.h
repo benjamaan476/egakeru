@@ -21,6 +21,11 @@ namespace egkr
 		void* data{};
 	};
 
+	struct binary_resource_properties
+	{
+		egkr::vector<uint8_t> data;
+	};
+
 	class resource
 	{
 	public:

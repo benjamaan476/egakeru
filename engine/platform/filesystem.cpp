@@ -141,7 +141,12 @@ namespace egkr
 		auto size = std::filesystem::file_size(handle.filepath);
 
 		egkr::vector<uint8_t> data(size);
-		fread(data.data(), 1, size, handle.handle);
+		auto count = 0; 
+		auto read = 0;
+		while ((read = fread(data.data() + count, 1, size, handle.handle)) > 0)
+		{
+			count += read;
+		}
 		return data;
 	}
 }
