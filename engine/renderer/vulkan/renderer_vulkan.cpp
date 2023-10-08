@@ -381,9 +381,9 @@ namespace egkr
 		main_renderpass_properties.depth = 1.F;
 		main_renderpass_properties.stencil = 0;
 
-		context_.main_renderpass = renderpass::create(&context_, main_renderpass_properties);
+		context_.world_renderpass = renderpass::create(&context_, main_renderpass_properties);
 
-		context_.swapchain->regenerate_framebuffers(context_.main_renderpass);
+		context_.swapchain->regenerate_framebuffers();
 
 		create_command_buffers();
 
@@ -437,7 +437,7 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
-			context_.main_renderpass.reset();
+			context_.world_renderpass.reset();
 			context_.swapchain.reset();
 
 			context_.instance.destroySurfaceKHR(context_.surface);
@@ -509,7 +509,7 @@ namespace egkr
 		command_buffer.get_handle().setViewport(0, viewport);
 		command_buffer.get_handle().setScissor(0, scissor);
 
-		context_.main_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
+		context_.world_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
 
 
 		++frame_number_;
@@ -540,7 +540,7 @@ namespace egkr
 	{ 
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 
-		context_.main_renderpass->end(command_buffer);
+		context_.world_renderpass->end(command_buffer);
 		command_buffer.end();
 
 		if (context_.images_in_flight[context_.image_index] != VK_NULL_HANDLE)
@@ -828,9 +828,9 @@ namespace egkr
 
 		context_.swapchain->recreate();
 
-		context_.main_renderpass->set_extent({ 0, 0, context_.framebuffer_width, context_.framebuffer_height });
+		context_.world_renderpass->set_extent({ 0, 0, context_.framebuffer_width, context_.framebuffer_height });
 
-		context_.swapchain->regenerate_framebuffers(context_.main_renderpass);
+		context_.swapchain->regenerate_framebuffers();
 
 		create_command_buffers();
 		context_.recreating_swapchain = false;
@@ -847,7 +847,7 @@ namespace egkr
 		material_pipeline_properties.scissor = scissor;
 		material_pipeline_properties.viewport = viewport;
 		material_pipeline_properties.vertex_attributes = get_attribute_description();
-		material_pipeline_properties.renderpass = context_.main_renderpass;
+		material_pipeline_properties.renderpass = context_.world_renderpass;
 
 		context_.material_shader = shader::create(&context_, material_pipeline_properties);
 

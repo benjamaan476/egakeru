@@ -86,20 +86,29 @@ namespace egkr
 		context_->current_frame = (context_->current_frame + 1) % max_frames_in_flight_;
 	}
 
-	void swapchain::regenerate_framebuffers(renderpass::shared_ptr renderpass)
+	void swapchain::regenerate_framebuffers()
 	{
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
 			//TODO configure based on attachment
-			const std::array<vk::ImageView, 2> attachments{image_views_[i], depth_attachment_->get_view() };
+			const egkr::vector<vk::ImageView> world_attachments{image_views_[i], depth_attachment_->get_view() };
 
-			framebuffer_properties properties{};
-			properties.attachments = attachments;
-			properties.renderpass = renderpass;
-			properties.width_ = context_->framebuffer_width;
-			properties.height_ = context_->framebuffer_height;
+			framebuffer_properties world_framebuffer_properties{};
+			world_framebuffer_properties.attachments = world_attachments;
+			world_framebuffer_properties.renderpass = context_->world_renderpass;
+			world_framebuffer_properties.width_ = context_->framebuffer_width;
+			world_framebuffer_properties.height_ = context_->framebuffer_height;
 
-			framebuffer_[i] = framebuffer::create(context_, properties);
+			context_->world_framebuffers_[i] = framebuffer::create(context_, world_framebuffer_properties);
+
+			const egkr::vector<vk::ImageView> ui_attachments{ image_views_[i] };
+			framebuffer_properties ui_framebuffer_properties{};
+			ui_framebuffer_properties.attachments = ui_attachments;
+			ui_framebuffer_properties.renderpass = context_->ui_renderpass;
+			ui_framebuffer_properties.width_ = context_->framebuffer_width;
+			ui_framebuffer_properties.height_ = context_->framebuffer_height;
+
+			framebuffer_[i] = framebuffer::create(context_, ui_framebuffer_properties);
 		}
 	}
 

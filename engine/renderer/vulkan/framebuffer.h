@@ -8,7 +8,7 @@ namespace egkr
 {
 	struct framebuffer_properties
 	{
-		std::array<vk::ImageView, 2> attachments{};
+		egkr::vector<vk::ImageView> attachments{};
 		renderpass::shared_ptr renderpass{};
 		uint32_t width_{};
 		uint32_t height_{};
@@ -33,7 +33,7 @@ namespace egkr
 		const vulkan_context* context_{};
 		vk::Framebuffer framebuffer_{};
 
-		std::array<vk::ImageView, 2> attachments_{};
+		egkr::vector<vk::ImageView> attachments_{};
 		renderpass::shared_ptr renderpass_{};
 		uint32_t width_{};
 		uint32_t height_{};

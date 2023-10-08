@@ -25,7 +25,7 @@ namespace egkr
 		uint32_t acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence);
 		void present(vk::Queue graphics_queue, vk::Queue present_queue, vk::Semaphore render_complete, uint32_t image_index);
 
-		void regenerate_framebuffers(renderpass::shared_ptr renderpass);
+		void regenerate_framebuffers();
 
 		const auto& get_format() const { return format_; }
 		const auto& get_image_count() const { return image_count_; }

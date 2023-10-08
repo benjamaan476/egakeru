@@ -16,12 +16,26 @@ namespace egkr
 		not_allocated
 	};
 
+	enum renderpass_clear_flags
+	{
+		none,
+		colour = 0x01,
+		depth = 0x02,
+		stencil = 0x04
+	};
+
 	struct renderpass_properties
 	{
 		uint4 render_extent{};
+
+		renderpass_clear_flags clear_flags{};
 		float4 clear_colour{};
 		float_t depth{};
 		uint32_t stencil{};
+
+		bool has_previous_pass{};
+		bool has_next_pass{};
+
 	};
 
 	class renderpass : std::enable_shared_from_this<renderpass>
@@ -45,9 +59,14 @@ namespace egkr
 		const vulkan_context* context_{};
 		vk::RenderPass renderpass_{};
 		uint4 render_extent_{};
+
+		renderpass_clear_flags clear_flags_{};
 		float4 clear_colour_{};
 		float_t depth_{};
 		uint32_t stencil_{};
+
+		bool has_previous_pass_{};
+		bool has_next_pass_{};
 
 		renderpass_state state_{};
 	};

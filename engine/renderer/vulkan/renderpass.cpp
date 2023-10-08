@@ -10,19 +10,29 @@ namespace egkr
 	}
 
 	renderpass::renderpass(const vulkan_context* context, const renderpass_properties& properties)
-		: context_{ context }, render_extent_{ properties.render_extent }, clear_colour_{ properties.clear_colour }, depth_{ properties.depth }, stencil_{ properties.stencil }
+		: context_{ context }, 
+		render_extent_{ properties.render_extent },
+		clear_flags_{properties.clear_flags},
+		clear_colour_{ properties.clear_colour },
+		depth_{ properties.depth },
+		stencil_{ properties.stencil },
+		has_previous_pass_{ properties.has_previous_pass },
+		has_next_pass_{ properties.has_next_pass }
 	{
+
+		const bool do_clear = (clear_flags_ & renderpass_clear_flags::colour) != 0;
+		const bool do_depth = (clear_flags_ & renderpass_clear_flags::depth) != 0;
 
 		vk::AttachmentDescription colour_attachment{};
 		colour_attachment
 			.setFormat(context_->swapchain->get_format().format)
 			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setLoadOp(do_clear ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eLoad)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
 			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+			.setInitialLayout(has_previous_pass_ ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined)
+			.setFinalLayout(has_next_pass_ ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::ePresentSrcKHR);
 
 		//TODO not always need a depth attachment
 		vk::AttachmentDescription depth_attachment{};

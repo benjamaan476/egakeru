@@ -79,7 +79,10 @@ namespace egkr
 		vulkan_device device{};
 		vk::SurfaceKHR surface{};
 		swapchain::shared_ptr swapchain{};
-		renderpass::shared_ptr main_renderpass{};
+
+		std::array<framebuffer::unique_ptr, 3> world_framebuffers_{};
+		renderpass::shared_ptr world_renderpass{};
+		renderpass::shared_ptr ui_renderpass{};
 
 		egkr::vector<command_buffer> graphics_command_buffers{};
 
