@@ -1,20 +1,17 @@
 #include "texture_system.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include <filesystem>
-
+#include "systems/resource_system.h"
 
 namespace egkr
 {
 	static texture_system::unique_ptr texture_system_{};
 
-	void texture_system::create(const void* renderer_context, const texture_system_properties& properties)
+	void texture_system::create(const void* renderer_context, const texture_system_configuration& properties)
 	{
 		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
 	}
 
-	texture_system::texture_system(const void* renderer_context, const texture_system_properties& properties)
+	texture_system::texture_system(const void* renderer_context, const texture_system_configuration& properties)
 		:renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
 	{
 		if (max_texture_count_ == 0)
@@ -126,71 +123,17 @@ namespace egkr
 
 	bool texture_system::load_texture(std::string_view filename, texture::shared_ptr& texture)
 	{
-		constexpr std::string_view format_string{ "../assets/textures/{}.{}" };
-		stbi_set_flip_vertically_on_load(true);
+		texture->set_generation(invalid_id);
 
-		const auto filepath = std::format(format_string.data(), filename.data(), "jpg");
+		auto image = resource_system::load(filename, resource_type::image);
 
-		//auto fullpath = std::filesystem::absolute(filepath);
+		auto properties = (texture_properties*)image->get_data();
 
-		int32_t width{};
-		int32_t height{};
-		int32_t channels{};
-		int32_t required_channels{ 4 };
+		properties->id = texture->get_id();
+		auto temp_texture = texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);
+		texture.reset();
 
-		auto image_data = (uint8_t*)stbi_load(filepath.c_str(), &width, &height, &channels, required_channels);
-
-		if (image_data)
-		{
-			texture_properties properties{};
-			properties.channel_count = required_channels;
-			properties.width = width;
-			properties.height = height;
-			properties.generation = texture->get_generation();
-			properties.id = texture->get_id();
-
-			texture->set_generation(invalid_id);
-
-
-			for (auto y{ 0 }; y < height; ++y)
-			{
-				for (auto x{ 0 }; x < width; x += 4)
-				{
-					auto index = y * width + 4;
-
-					if (image_data[index + 3] < 255)
-					{
-						properties.has_transparency = true;
-						break;
-					}
-				}
-			}
-
-			auto temp_texture = texture::create(texture_system_->renderer_context_, properties, image_data);
-
-			texture.reset();
-			texture = std::move(temp_texture);
-			if (texture->get_generation() == invalid_id)
-			{
-				texture->set_generation(0);
-			}
-			else
-			{
-				texture->set_generation(properties.generation + 1);
-			}
-
-			stbi_image_free(image_data);
-			return true;
-
-		}
-		else
-		{
-			if (stbi_failure_reason())
-			{
-				LOG_ERROR("Failed to load image {}, reason: {}", filepath, stbi_failure_reason());
-				stbi__err(0, 0);
-			}
-			return false;
-		}
+		texture = std::move(temp_texture);
+		return true;
 	}
 }

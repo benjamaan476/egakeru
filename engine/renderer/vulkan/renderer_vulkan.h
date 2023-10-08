@@ -44,8 +44,6 @@ namespace egkr
 		void create_material_shader();
 		void create_material_buffers();
 
-
-		void upload_data_range(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data);
 	private:
 		vulkan_context context_{};
 
@@ -67,7 +65,5 @@ namespace egkr
 		{
 			"VK_KHR_swapchain"
 		};
-
-
 	};
 }

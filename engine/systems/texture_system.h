@@ -8,7 +8,7 @@ namespace egkr
 {
 	constexpr static std::string_view default_texture_name{"default"};
 
-	struct texture_system_properties
+	struct texture_system_configuration
 	{
 		uint32_t max_texture_count{};
 	};
@@ -19,9 +19,9 @@ namespace egkr
 		using unique_ptr = std::unique_ptr<texture_system>;
 		using texture_handle = uint32_t;
 
-		static void create(const void* renderer_context, const texture_system_properties& properties);
+		static void create(const void* renderer_context, const texture_system_configuration& properties);
 
-		texture_system(const void* renderer_context, const texture_system_properties& properties);
+		texture_system(const void* renderer_context, const texture_system_configuration& properties);
 		bool init();
 		static void shutdown();
 

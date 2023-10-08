@@ -20,7 +20,7 @@ namespace egkr
 		std::string material_name{};
 	};
 
-	class geometry : public resource<geometry>
+	class geometry : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<geometry>;

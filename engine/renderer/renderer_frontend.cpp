@@ -2,7 +2,7 @@
 #include "event.h"
 
 #include "systems/texture_system.h"
-#include "systems/material_system.h"
+#include "systems/geometry_system.h"
 #include "vulkan/renderer_vulkan.h"
 
 namespace egkr
@@ -64,20 +64,15 @@ namespace egkr
 			float4x4 model{ 1 };
 			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
 
-			//if (!test_geometry_)
-			//{
-			//	test_material_ = material_system::acquire("test_material");
-			//	if (!test_material_)
-			//	{
-			//		LOG_WARN("Automatic material load failed. Creating manually");
+			if (!test_geometry_)
+			{
+				test_geometry_ = geometry_system::get_default();
+				if (!test_geometry_)
+				{
+					LOG_WARN("Automatic material load failed. Creating manually");
 
-			//		material_properties properties{};
-			//		properties.name = "test_material";
-			//		properties.diffuse_colour = float4{ 1.F };
-			//		properties.diffuse_map_name = default_texture_name;
-			//		test_material_ = material_system::acquire(properties);
-			//	}
-			//}
+				}
+			}
 
 			geometry_render_data render_data{};
 			render_data.model = model;
@@ -112,19 +107,4 @@ namespace egkr
 		return false;
 	}
 
-	void renderer_frontend::create_default_geometry()
-	{
-		const float scale{ 10.F };
-		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}, {0.F, 0.F} }, { {0.5F * scale, 0.5F * scale, 0.F}, {1.F,1.F} }, { {-0.5F * scale, 0.5F * scale, 0.F}, {0.F,1.F} }, { {0.5F * scale, -0.5F * scale, 0.F}, {1.F,0.F} } };
-
-		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
-
-		geometry_properties properties{};
-		properties.indices = indices;
-		properties.vertices = vertices;
-		properties.name = "test_geometry";
-		properties.material_name = "test_material";
-
-		test_geometry_ = geometry::create(backend_->get_context(), properties);
-	}
 }

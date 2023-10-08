@@ -23,7 +23,6 @@ namespace egkr
 
 		static bool on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
 
-		void create_default_geometry();
 		auto get_backend_context() const { return backend_->get_context(); }
 
 	private:

@@ -1,8 +1,10 @@
 #include "application.h"
 #include "input.h"
 
+#include "systems/resource_system.h"
 #include "systems/texture_system.h"
 #include "systems/material_system.h"
+#include "systems/geometry_system.h"
 
 using namespace std::chrono_literals;
 
@@ -60,13 +62,26 @@ namespace egkr
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
+		resource_system_configuration resource_system_configuration{};
+		resource_system_configuration.max_loader_count = 6;
+		resource_system_configuration.base_path = "../assets";
+
+		if (!resource_system::create(resource_system_configuration))
+		{
+			LOG_FATAL("Failed to create resource system");
+		}
+
 		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
 		if(!material_system::create(state_.renderer->get_backend_context()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
 
-		state_.renderer->create_default_geometry();
+		if (!geometry_system::create(state_.renderer->get_backend_context()))
+		{
+			LOG_FATAL("Failed to create geometry system");
+		}
+
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");
@@ -115,6 +130,7 @@ namespace egkr
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
+		geometry_system::shutdown();
 		material_system::shutdown();
 		texture_system::shutdown();
 		state_.renderer->shutdown();

@@ -222,21 +222,20 @@ namespace egkr
 
 	}
 
-	void shader::update(const geometry_render_data& data)
+	void shader::set_model(const float4x4& model)
 	{
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
-		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &data.model);
+		command_buffer.get_handle().pushConstants(pipeline_->get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4), &model);
+	}
 
+	void shader::apply_material(const geometry_render_data& data)
+	{
 		auto& object = material_shader_instance_states_[data.geometry->get_material()->get_internal_id()];
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, material_shader_descriptor_count> write_set{};
 		auto range = sizeof(material_uniform_object);
 		auto offset = sizeof(material_uniform_object) * data.geometry->get_material()->get_internal_id();
-
-		//static float accumulate = 0.F;
-		//accumulate += data.delta_time;
-		//auto colour = (std::sinf(accumulate) + 1) / 2.F;
 
 		material_uniform_object obo{};
 		obo.diffuse_colour = data.geometry->get_material()->get_diffuse_colour();
@@ -330,6 +329,7 @@ namespace egkr
 			context_->device.logical_device.updateDescriptorSets(descriptor_count, write_set.data(), 0, nullptr);
 		}
 
+		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 1, object_set, nullptr);
 	}
 

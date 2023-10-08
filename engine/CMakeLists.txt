@@ -14,6 +14,7 @@ file(GLOB SOURCES
     renderer/vulkan/*.cpp
     resources/*.cpp
     systems/*.cpp
+    loaders/*.cpp
 )
 
 set(HEADERS 
@@ -27,6 +28,7 @@ set(HEADERS
     renderer/vulkan/*.h
     resources/*.h
     systems/*.h
+    loaders/*.h
 )
 
 add_library(engine SHARED ${SOURCES})

@@ -12,6 +12,7 @@ namespace egkr
 	}
 
 	material::material()
+		: resource(0, 0)
 	{
 		diffuse_map_.use = texture_use::map_diffuse;
 		diffuse_map_.texture = texture_system::get_default_texture();

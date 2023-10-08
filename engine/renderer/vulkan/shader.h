@@ -55,7 +55,9 @@ namespace egkr
 
 		void use();
 		void update_global_state(const global_uniform_buffer& ubo);
-		void update(const geometry_render_data& data);
+		void set_model(const float4x4& model);
+
+		void apply_material(const geometry_render_data& data);
 
 		[[nodiscard]] bool acquire_resource(vulkan_material::shared_ptr& material);
 		void release_resource(uint32_t object_id);

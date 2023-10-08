@@ -20,9 +20,11 @@ namespace egkr
 
 		uint32_t generation{invalid_id};
 		bool has_transparency{};
+
+		const void* data{};
 	};
 
-	class texture : public resource<texture>
+	class texture : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<texture>;

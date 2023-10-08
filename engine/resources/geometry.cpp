@@ -13,7 +13,7 @@ namespace egkr
 	}
 
 	geometry::geometry(const geometry_properties& properties)
-		: id_{ properties.id }, generation_{properties.generation}
+		: resource(0, 0), id_{ properties.id }, generation_{properties.generation}
 	{
 		material_ = material_system::acquire(properties.material_name);
 	}

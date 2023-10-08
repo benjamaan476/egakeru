@@ -146,6 +146,9 @@ namespace egkr
 		if (!handle.is_valid)
 		{
 			LOG_ERROR("Failed to open material file: {}", path.data());
+			properties.diffuse_colour = float4{ 1.F };
+			properties.diffuse_map_name = "default";
+			properties.diffuse_map_name = "default";
 			return properties;
 		}
 
@@ -156,7 +159,7 @@ namespace egkr
 			std::string line_string{ line.begin(), line.end() };
 			trim(line_string);
 			
-			if (line.empty() || line[0] == '#' || line_string == "")
+			if (line.empty() || line[0] == '#' || line[0] == '\n')
 			{
 				//line = filesystem::read_line(handle, 511);
 				continue;

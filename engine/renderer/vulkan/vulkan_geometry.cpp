@@ -43,6 +43,13 @@ namespace egkr
 
 		command_buffer.get_handle().bindIndexBuffer(index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
 
-		command_buffer.get_handle().drawIndexed(index_count_, 1, 0, 0, 0);
+		if (index_count_)
+		{
+			command_buffer.get_handle().drawIndexed(index_count_, 1, 0, 0, 0);
+		}
+		else
+		{
+			command_buffer.get_handle().draw(vertex_count_, 0, 0, 0);
+		}
 	}
 }

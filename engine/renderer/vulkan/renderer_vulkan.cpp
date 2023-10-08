@@ -520,15 +520,18 @@ namespace egkr
 	{
 		context_.material_shader->use();
 		context_.material_shader->update_global_state({ projection, view });
-
 	}
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		context_.material_shader->update(data);
-
-		//TODO temp test code
 		context_.material_shader->use();
+		context_.material_shader->set_model(data.model);
+
+		if (data.geometry->get_material())
+		{
+			context_.material_shader->apply_material(data);
+		}
+
 		data.geometry->draw();
 
 	}

@@ -7,7 +7,15 @@
 namespace egkr
 {
 	constexpr static std::string_view default_material_name_{ "default" };
-	class material : public resource<material>
+
+	struct material_properties
+	{
+		float4 diffuse_colour{};
+		std::string name{};
+		std::string diffuse_map_name{};
+	};
+
+	class material : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<material>;

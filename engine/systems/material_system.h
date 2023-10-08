@@ -6,14 +6,6 @@
 
 namespace egkr
 {
-
-	struct material_properties
-	{
-		float4 diffuse_colour{};
-		std::string name{};
-		std::string diffuse_map_name{};
-	};
-
 	class material_system
 	{
 	public:
