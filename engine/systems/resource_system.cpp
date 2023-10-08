@@ -1,6 +1,8 @@
 #include "resource_system.h"
 
 #include "loaders/image_loader.h"
+#include "loaders/material_loader.h"
+
 namespace egkr
 {
 	static resource_system::unique_ptr resource_system_{};
@@ -31,13 +33,21 @@ namespace egkr
 
 		resource_system_->registered_loaders_.reserve(resource_system_->max_loader_count_);
 
-		//Register known loaders
-		loader_properties image_loader_properties{};
-		image_loader_properties.custom_type = {};
-		image_loader_properties.path = "../assets/textures";
+			//Register known loaders
+		{
+			loader_properties image_loader_properties{};
+			image_loader_properties.custom_type = {};
+			image_loader_properties.path = "../assets/textures";
 
-		register_loader(image_loader::create(image_loader_properties));
+			register_loader(image_loader::create(image_loader_properties));
+		}
+		{
+			loader_properties material_loader_properties{};
+			material_loader_properties.custom_type = {};
+			material_loader_properties.path = "../assets/materials";
 
+			register_loader(material_loader::create(material_loader_properties));
+		}
 		return true;
 	}
 
@@ -66,5 +76,16 @@ namespace egkr
 
 		LOG_ERROR("Attempted to load resource without corresponding loader registered");
 		return nullptr;
+	}
+
+	bool resource_system::unload(const resource::shared_ptr& resource)
+	{
+		if (resource_system_->registered_loaders_.contains(resource->get_type()))
+		{
+			return resource_system_->registered_loaders_[resource->get_type()]->unload(resource);
+		}
+
+		LOG_ERROR("Tried to unload a resource without a corresponding loader registered");
+		return false;
 	}
 }

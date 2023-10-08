@@ -2,6 +2,7 @@
 
 #include "texture_system.h"
 #include "platform/filesystem.h"
+#include "systems/resource_system.h"
 
 namespace egkr
 {
@@ -53,13 +54,15 @@ namespace egkr
 
 	material::shared_ptr material_system::acquire(std::string_view name)
 	{
-		constexpr const std::string_view format_string{ "../assets/materials/{}.{}" };
+		auto material_resource = resource_system::load(name, resource_type::material);
 
-		const auto material_filename = std::format(format_string, name, "emt");
+		auto* material_config = (material_properties*)material_resource->get_data();
 
-		const auto properties = load_configuration_file(material_filename);
+		auto material = acquire(*material_config);
 
-		return acquire(properties);
+		resource_system::unload(material_resource);
+
+		return material;
 	}
 
 	material::shared_ptr material_system::acquire(const material_properties& properties)
@@ -136,73 +139,5 @@ namespace egkr
 		material->set_diffuse_map({ std::move(texture),texture_use::map_diffuse });
 
 		return true;
-	}
-
-	material_properties material_system::load_configuration_file(std::string_view path)
-	{
-		material_properties properties{};
-
-		auto handle = filesystem::open(path, file_mode::read, false);
-		if (!handle.is_valid)
-		{
-			LOG_ERROR("Failed to open material file: {}", path.data());
-			properties.diffuse_colour = float4{ 1.F };
-			properties.diffuse_map_name = "default";
-			properties.diffuse_map_name = "default";
-			return properties;
-		}
-
-		auto line = filesystem::read_line(handle, 511); 
-		uint32_t line_number{};
-		for(; !line.empty(); line = filesystem::read_line(handle, 511), ++line_number)
-		{
-			std::string line_string{ line.begin(), line.end() };
-			trim(line_string);
-			
-			if (line.empty() || line[0] == '#' || line[0] == '\n')
-			{
-				//line = filesystem::read_line(handle, 511);
-				continue;
-			}
-
-
-
-			auto split_index = line_string.find_first_of('=');
-			if (split_index == std::string::npos)
-			{
-				LOG_WARN("Potential formatting issue found in file {}: '=' token not found on line number {}.", path.data(), line_number);
-				continue;
-			}
-
-			auto variable_name = line_string.substr(0, split_index);
-			trim(variable_name);
-
-			auto value = line_string.substr(split_index +  1);
-			trim(value);
-
-			if (variable_name == "version")
-			{
-				//TODO version
-			}
-			else if (variable_name == "name")
-			{
-				properties.name = value;
-			}
-			else if (variable_name == "diffuse_map_name")
-			{
-				properties.diffuse_map_name = value;
-			}
-			else if (variable_name == "diffuse_colour")
-			{
-				std::stringstream ss{ value };
-				float x, y, z, w;
-				ss >> x >> y >> z >> w;
-
-				properties.diffuse_colour = { x, y, z, w };
-			}
-
-		}
-
-		return properties;
 	}
 }

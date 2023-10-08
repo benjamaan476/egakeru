@@ -24,7 +24,6 @@ namespace egkr
 	private:
 		static bool create_default_material();
 		static bool load_material(const material_properties& properties, material::shared_ptr& material);
-		static material_properties load_configuration_file(std::string_view path);
 	private:
 		const void* renderer_context_{};
 		uint32_t max_material_count_{};

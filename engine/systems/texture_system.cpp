@@ -134,6 +134,8 @@ namespace egkr
 		texture.reset();
 
 		texture = std::move(temp_texture);
+
+		resource_system::unload(std::move(image));
 		return true;
 	}
 }

@@ -38,6 +38,8 @@ namespace egkr
 		const auto& get_generation() const { return generation_; }
 		void increment_generation() { ++generation_; }
 		void set_generation(uint32_t generation) { generation_ = generation; }
+
+		const auto& get_type() const { return resource_type_; }
 	private:
 		uint32_t id_{ invalid_id };
 		uint32_t generation_{ invalid_id };

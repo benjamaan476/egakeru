@@ -11,6 +11,7 @@ namespace egkr
 		std::optional<std::string> custom_type{};
 	};
 
+
 	class resource_loader
 	{
 	public:
@@ -20,7 +21,7 @@ namespace egkr
 		virtual ~resource_loader() = default;
 
 		virtual resource::shared_ptr load(std::string_view name) = 0;
-		virtual void unload(const resource::shared_ptr& resource) = 0;
+		virtual bool unload(const resource::shared_ptr& resource) = 0;
 
 		const auto& get_loader_type() const { return loader_type_; }
 

@@ -60,11 +60,13 @@ namespace egkr
 					}
 				}
 			}
-//TODO fix this mess
+
 			resource_properties image_properties{};
 			image_properties.type = resource_type::image;
 			image_properties.name = name;
 			image_properties.full_path = buff;
+
+			// Deleted by unload
 			image_properties.data = new(texture_properties);
 			*(texture_properties*)(image_properties.data) = properties;
 
@@ -82,7 +84,11 @@ namespace egkr
 		}
 	}
 
-	void egkr::image_loader::unload(const resource::shared_ptr& /*resource*/)
+	bool egkr::image_loader::unload(const resource::shared_ptr& resource)
 	{
+		auto* data = (texture_properties*)resource->get_data();
+		delete data;
+
+		return true;
 	}
 }
