@@ -3,6 +3,7 @@
 #include "loaders/image_loader.h"
 #include "loaders/material_loader.h"
 #include "loaders/binary_loader.h"
+#include "loaders/text_loader.h"
 
 namespace egkr
 {
@@ -56,6 +57,13 @@ namespace egkr
 			binary_loader_properties.path = base_path;
 
 			register_loader(binary_loader::create(binary_loader_properties));
+		}
+		{
+			loader_properties text_loader_properties{};
+			text_loader_properties.custom_type = {};
+			text_loader_properties.path = base_path;
+
+			register_loader(text_loader::create(text_loader_properties));
 		}
 		return true;
 	}
