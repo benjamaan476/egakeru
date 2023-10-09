@@ -14,7 +14,9 @@ namespace egkr
 
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
-		projection_ = glm::perspective(glm::radians(45.0F), platform->get_framebuffer_size().x / (float)platform->get_framebuffer_size().y, 0.1F, 1000.F);
+		world_projection_ = glm::perspective(glm::radians(45.0F), platform->get_framebuffer_size().x / (float)platform->get_framebuffer_size().y, 0.1F, 1000.F);
+		ui_projection_ = glm::ortho(0, platform->get_framebuffer_size().x, platform->get_framebuffer_size().y, 0, -100, 100);
+
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });
 		view = glm::inverse(view);
@@ -36,20 +38,18 @@ namespace egkr
 	{
 		auto backen_init = backend_->init();
 
-
-		event::register_event(event_code::debug01, this, &renderer_frontend::on_debug_event);
 		return backen_init;
 	}
 
 	void renderer_frontend::shutdown()
 	{
-		test_geometry_.reset();
 		backend_->shutdown();
 	}
 
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
-		projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
+		world_projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
+		ui_projection_ = glm::ortho(0, (int32_t)width, (int32_t)height, 0, -100, 100);
 		backend_->resize(width, height);
 	}
 
@@ -57,29 +57,39 @@ namespace egkr
 	{
 		if (backend_->begin_frame(packet.delta_time))
 		{
-			static float angle = 0.F;
-			angle -= packet.delta_time;
-			backend_->update_global_state(projection_, view_, {}, {}, 0);
-
-			float4x4 model{ 1 };
-			model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
-
-			if (!test_geometry_)
+			if (backend_->begin_renderpass(builtin_renderpass::world))
 			{
-				test_geometry_ = geometry_system::get_default();
-				if (!test_geometry_)
-				{
-					LOG_WARN("Automatic material load failed. Creating manually");
+				backend_->update_world_state(world_projection_, world_view_, {}, {}, 0);
 
+
+				for (const auto& render_data : packet.world_geometry_data)
+				{
+					backend_->draw_geometry(render_data);
+				}
+
+				if (!backend_->end_renderpass(builtin_renderpass::world))
+				{
+					LOG_ERROR("Failed to end world renderpass");
+					return;
+				}
+
+
+				if (backend_->begin_renderpass(builtin_renderpass::ui))
+				{
+					backend_->update_ui_state(ui_projection_, ui_view_, {}, {}, 0);
+
+					for (const auto& render_data : packet.ui_geometry_data)
+					{
+						backend_->draw_geometry(render_data);
+					}
+
+					if (!backend_->end_renderpass(builtin_renderpass::ui))
+					{
+						LOG_ERROR("Failed to end ui renderpass");
+						return;
+					}
 				}
 			}
-
-			geometry_render_data render_data{};
-			render_data.model = model;
-			render_data.geometry = test_geometry_;
-			render_data.delta_time = packet.delta_time;
-
-			backend_->draw_geometry(render_data);
 
 			backend_->end_frame();
 		}
@@ -87,24 +97,6 @@ namespace egkr
 
 	void renderer_frontend::set_view(const float4x4& view)
 	{
-		view_ = view;
+		world_view_ = view;
 	}
-
-
-	bool renderer_frontend::on_debug_event(event_code code, void* /*sender*/, void* listener, const event_context& /*context*/)
-	{
-		if (code == event_code::debug01)
-		{
-			auto* frontend = (renderer_frontend*)listener;
-
-			const std::array<std::string_view, 2> textures{ "RandomStones", "Seamless" };
-
-			static int choice = 0;
-			choice++;
-			choice %= textures.size();
-			frontend->test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
-		}
-		return false;
-	}
-
 }

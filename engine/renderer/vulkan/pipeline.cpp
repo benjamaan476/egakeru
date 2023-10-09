@@ -37,12 +37,15 @@ namespace egkr
 			.setAlphaToOneEnable(false);
 
 		vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info{};
-		depth_stencil_create_info
-			.setDepthTestEnable(true)
-			.setDepthWriteEnable(true)
-			.setDepthCompareOp(vk::CompareOp::eLess)
-			.setDepthBoundsTestEnable(false)
-			.setStencilTestEnable(false);
+		if (properties.depth_test_enabled)
+		{
+			depth_stencil_create_info
+				.setDepthTestEnable(true)
+				.setDepthWriteEnable(true)
+				.setDepthCompareOp(vk::CompareOp::eLess)
+				.setDepthBoundsTestEnable(false)
+				.setStencilTestEnable(false);
+		}
 
 		vk::PipelineColorBlendAttachmentState colour_blend_attachment{};
 		colour_blend_attachment
@@ -66,12 +69,10 @@ namespace egkr
 		dynamic_state_create_info
 			.setDynamicStates(dynamic_states);
 
-		const auto binding_description = get_binding_description<vertex_3d>();
-		const auto attribute_description = get_attribute_description();
 		vk::PipelineVertexInputStateCreateInfo vertex_input_create_info{};
 		vertex_input_create_info
-			.setVertexBindingDescriptions(binding_description)
-			.setVertexAttributeDescriptions(attribute_description);
+			.setVertexBindingDescriptions(properties.input_binding_description)
+			.setVertexAttributeDescriptions(properties.input_attribute_description);
 
 		vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info{};
 		input_assembly_create_info

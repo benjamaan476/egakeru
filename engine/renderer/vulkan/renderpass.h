@@ -24,6 +24,8 @@ namespace egkr
 		stencil = 0x04
 	};
 
+	ENUM_CLASS_OPERATORS(renderpass_clear_flags)
+
 	struct renderpass_properties
 	{
 		uint4 render_extent{};

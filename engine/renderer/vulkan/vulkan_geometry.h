@@ -10,6 +10,7 @@ namespace egkr
 	{
 	public:
 		explicit vulkan_geometry(const vulkan_context* context, const geometry_properties& properties);
+		~vulkan_geometry() override;
 
 		void draw() const override;
 	private:

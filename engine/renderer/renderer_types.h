@@ -16,8 +16,7 @@ namespace egkr
 		directx
 	};
 
-
-	struct global_uniform_buffer
+	struct material_shader_uniform_buffer_object
 	{
 		float4x4 projection{};
 		float4x4 view{};
@@ -25,7 +24,7 @@ namespace egkr
 		float4x4 reserve1{};
 	};
 
-	struct material_uniform_object
+	struct material_instance_uniform_buffer_object
 	{
 		float4 diffuse_colour{};
 		float4 pad0{};
@@ -43,9 +42,15 @@ namespace egkr
 	struct render_packet
 	{
 		double delta_time{};
-		geometry_render_data data{};
+		egkr::vector<geometry_render_data> world_geometry_data{};
+		egkr::vector<geometry_render_data> ui_geometry_data{};
 	};
 
+	enum class builtin_renderpass
+	{
+		world,
+		ui
+	};
 
 	class renderer_backend
 	{
@@ -57,7 +62,10 @@ namespace egkr
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame(double delta_time) = 0;
-		virtual void update_global_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
+		virtual bool begin_renderpass(builtin_renderpass renderpass) = 0;
+		virtual bool end_renderpass(builtin_renderpass renderpass) = 0;
+		virtual void update_world_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
+		virtual void update_ui_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
 		virtual void draw_geometry(const geometry_render_data& model) = 0;
 		virtual void end_frame() = 0;
 

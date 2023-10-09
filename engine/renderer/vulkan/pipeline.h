@@ -8,13 +8,16 @@ namespace egkr
 {
 	struct pipeline_properties
 	{
+		std::string_view shader_name{};
 		renderpass::shared_ptr renderpass{};
-		std::array<vk::VertexInputAttributeDescription, 2> vertex_attributes{};
 		std::vector<vk::DescriptorSetLayout> descriptor_set_layout{};
 		egkr::vector<vk::PipelineShaderStageCreateInfo> shader_stage_info{};
+		vk::VertexInputBindingDescription input_binding_description{};
+		egkr::vector<vk::VertexInputAttributeDescription> input_attribute_description{};
 		vk::Viewport viewport{};
 		vk::Rect2D scissor{};
 		bool is_wireframe{};
+		bool depth_test_enabled{};
 	};
 
 	class pipeline

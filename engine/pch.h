@@ -62,3 +62,12 @@ static inline void trim(std::string &s) {
     rtrim(s);
     ltrim(s);
 }
+
+#define ENUM_CLASS_OPERATORS(e) \
+	inline e operator& (e a, e b) { return static_cast<e>(static_cast<int>(a) & static_cast<int>(b)); } \
+	inline e& operator&= (e& a, e b) { a = a & b; return a; }; \
+	inline e operator| (e a, e b) { return static_cast<e>(static_cast<int>(a) | static_cast<int>(b)); } \
+	inline e& operator|= (e& a, e b) { a = a | b; return a; }; \
+	inline e operator~ (e a) { return static_cast<e>(~static_cast<int>(a));} \
+	inline bool isSet(e val, e flag) { return (val & flag) != static_cast<e>(0); } \
+	inline void flipBit(e& val, e flag) { val = isSet(val, flag) ? (val & (~flag)) : (val | flag); }

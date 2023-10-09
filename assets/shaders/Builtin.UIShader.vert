@@ -1,6 +1,6 @@
 #version 450
 
-layout (location = 0) in vec3 in_position;
+layout (location = 0) in vec2 in_position;
 layout (location = 1) in vec2 in_tex;
 
 
@@ -25,6 +25,6 @@ layout(push_constant) uniform push_constant
 
 void main()
 {
-	out_dto.tex = in_tex;
-	gl_Position = global_ubo.projection * global_ubo.view * u_push_constant.model * vec4(in_position, 1);
+	out_dto.tex = vec2(in_tex.x, 1.0 - in_tex.y);
+	gl_Position = global_ubo.projection * global_ubo.view * u_push_constant.model * vec4(in_position, 0, 1);
 }

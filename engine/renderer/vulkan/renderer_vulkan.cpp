@@ -380,8 +380,19 @@ namespace egkr
 		main_renderpass_properties.render_extent = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
 		main_renderpass_properties.depth = 1.F;
 		main_renderpass_properties.stencil = 0;
+		main_renderpass_properties.clear_flags = renderpass_clear_flags::colour | renderpass_clear_flags::depth | renderpass_clear_flags::stencil;
+		main_renderpass_properties.has_previous_pass = false;
+		main_renderpass_properties.has_next_pass = true;
 
 		context_.world_renderpass = renderpass::create(&context_, main_renderpass_properties);
+
+		renderpass_properties ui_renderpass_properties{};
+		ui_renderpass_properties.clear_flags = renderpass_clear_flags::none;
+		ui_renderpass_properties.render_extent = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
+		ui_renderpass_properties.has_previous_pass = true;
+		ui_renderpass_properties.has_next_pass = false;
+
+		context_.ui_renderpass = renderpass::create(&context_, ui_renderpass_properties);
 
 		context_.swapchain->regenerate_framebuffers();
 
@@ -403,7 +414,7 @@ namespace egkr
 
 
 
-		create_material_shader();
+		create_shaders();
 		create_material_buffers();
 
 		//TODO temp code
@@ -419,7 +430,9 @@ namespace egkr
 		{
 			context_.device.logical_device.waitIdle();
 
+			context_.ui_shader->destroy();
 			context_.material_shader->destroy();
+
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
 				context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
@@ -437,7 +450,9 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
+			context_.ui_renderpass.reset();
 			context_.world_renderpass.reset();
+			context_.world_framebuffers.clear();
 			context_.swapchain.reset();
 
 			context_.instance.destroySurfaceKHR(context_.surface);
@@ -509,22 +524,73 @@ namespace egkr
 		command_buffer.get_handle().setViewport(0, viewport);
 		command_buffer.get_handle().setScissor(0, scissor);
 
-		context_.world_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
 
 
 		++frame_number_;
 		return true;
 	}
 
-	void renderer_vulkan::update_global_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	bool renderer_vulkan::begin_renderpass(builtin_renderpass renderpass)
 	{
-		context_.material_shader->use();
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		switch (renderpass)
+		{
+		case egkr::builtin_renderpass::world:
+			context_.world_renderpass->begin(command_buffer, context_.world_framebuffers[context_.image_index]->get_handle());
+			break;
+		case egkr::builtin_renderpass::ui:
+			context_.ui_renderpass->begin(command_buffer, context_.swapchain->get_framebuffer(context_.image_index)->get_handle());
+			break;
+		default:
+			LOG_ERROR("Begin renderpass called with invalid id");
+			return false;
+		}
+
+		switch (renderpass)
+		{
+		case egkr::builtin_renderpass::world:
+			context_.material_shader->use();
+			break;
+		case egkr::builtin_renderpass::ui:
+			context_.ui_shader->use();
+			break;
+		default:
+			break;
+		}
+
+		return true;
+	}
+
+	bool renderer_vulkan::end_renderpass(builtin_renderpass renderpass)
+	{
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		switch (renderpass)
+		{
+		case egkr::builtin_renderpass::world:
+			context_.world_renderpass->end(command_buffer);
+			break;
+		case egkr::builtin_renderpass::ui:
+			context_.ui_renderpass->end(command_buffer);
+			break;
+		default:
+			LOG_ERROR("Begin renderpass called with invalid id");
+			return false;
+		}
+		return true;
+	}
+
+	void renderer_vulkan::update_world_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	{
 		context_.material_shader->update_global_state({ projection, view });
+	}
+
+	void renderer_vulkan::update_ui_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	{
+		context_.ui_shader->update_global_state({ projection, view });
 	}
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		context_.material_shader->use();
 		context_.material_shader->set_model(data.model);
 
 		if (data.geometry->get_material())
@@ -539,8 +605,6 @@ namespace egkr
 	void renderer_vulkan::end_frame()
 	{ 
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
-
-		context_.world_renderpass->end(command_buffer);
 		command_buffer.end();
 
 		if (context_.images_in_flight[context_.image_index] != VK_NULL_HANDLE)
@@ -837,19 +901,32 @@ namespace egkr
 		return true;
 	}
 
-	void renderer_vulkan::create_material_shader()
+	void renderer_vulkan::create_shaders()
 	{
 		const vk::Viewport viewport(0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height, 0.F, 1.F);
 		const vk::Rect2D scissor({ 0U, 0U }, { context_.framebuffer_width, context_.framebuffer_height});
 
 		pipeline_properties material_pipeline_properties{};
+		material_pipeline_properties.shader_name = "Builtin.MaterialShader";
 		material_pipeline_properties.is_wireframe = false;
 		material_pipeline_properties.scissor = scissor;
 		material_pipeline_properties.viewport = viewport;
-		material_pipeline_properties.vertex_attributes = get_attribute_description();
 		material_pipeline_properties.renderpass = context_.world_renderpass;
-
+		material_pipeline_properties.input_binding_description = get_binding_description<vertex_3d>();
+		material_pipeline_properties.input_attribute_description = get_attribute_description();
 		context_.material_shader = shader::create(&context_, material_pipeline_properties);
+
+		pipeline_properties ui_pipeline_properties{};
+		ui_pipeline_properties.shader_name = "Builtin.UIShader";
+		ui_pipeline_properties.is_wireframe = false;
+		ui_pipeline_properties.depth_test_enabled = false;
+		ui_pipeline_properties.scissor = scissor;
+		ui_pipeline_properties.viewport = viewport;
+		ui_pipeline_properties.renderpass = context_.ui_renderpass;
+		ui_pipeline_properties.input_binding_description = get_binding_description<vertex_2d>();
+		ui_pipeline_properties.input_attribute_description = get_attribute_description();
+
+		context_.ui_shader = shader::create(&context_, ui_pipeline_properties);
 
 	}
 

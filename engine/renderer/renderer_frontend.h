@@ -21,8 +21,6 @@ namespace egkr
 		//TODO Hack
 		API void set_view(const float4x4& view);
 
-		static bool on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
-
 		auto get_backend_context() const { return backend_->get_context(); }
 
 	private:
@@ -30,10 +28,10 @@ namespace egkr
 
 		float near_clip_{0.1F};
 		float far_clip_{ 1000.F };
-		float4x4 projection_{};
-		float4x4 view_{};
-
+		float4x4 world_projection_{};
+		float4x4 world_view_{};
+		float4x4 ui_projection_{};
+		float4x4 ui_view_{};
 		//TODO temp
-		geometry::shared_ptr test_geometry_{};
 	};
 }

@@ -54,7 +54,7 @@ namespace egkr
 		~shader();
 
 		void use();
-		void update_global_state(const global_uniform_buffer& ubo);
+		void update_global_state(const material_shader_uniform_buffer_object& ubo);
 		void set_model(const float4x4& model);
 
 		void apply_material(const geometry_render_data& data);
@@ -71,7 +71,7 @@ namespace egkr
 		std::unordered_map<shader_stages, shader_stage> stages_{};
 		pipeline::shared_ptr pipeline_{};
 
-		global_uniform_buffer global_ubo_{};
+		material_shader_uniform_buffer_object global_ubo_{};
 		vk::DescriptorPool global_descriptor_pool_{};
 		vk::DescriptorSetLayout global_descriptor_set_layout_{};
 		egkr::vector<vk::DescriptorSet> global_descriptor_set_{};

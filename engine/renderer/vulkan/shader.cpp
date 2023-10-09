@@ -78,8 +78,8 @@ namespace egkr
 	shader::shader(const vulkan_context* context, pipeline_properties& pipeline_properties)
 		: context_{ context }
 	{
-		auto frag_shader_module = create_shader_module(context, "Builtin.MaterialShader"sv, shader_stages::frag, "spv"sv);
-		auto vert_shader_module = create_shader_module(context, "Builtin.MaterialShader"sv, shader_stages::vert, "spv"sv);
+		auto frag_shader_module = create_shader_module(context, pipeline_properties.shader_name, shader_stages::frag, "spv"sv);
+		auto vert_shader_module = create_shader_module(context, pipeline_properties.shader_name, shader_stages::vert, "spv"sv);
 
 		stages_[shader_stages::vert] = vert_shader_module;
 		stages_[shader_stages::frag] = frag_shader_module;
@@ -172,8 +172,8 @@ namespace egkr
 
 		auto usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer;
 		auto memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		global_uniform_buffer_ = buffer::create(context_, sizeof(global_uniform_buffer) * 3, usage, memory_properties, true);
-		object_uniform_buffer_ = buffer::create(context_, sizeof(material_uniform_object) * 3, usage, memory_properties, true);
+		global_uniform_buffer_ = buffer::create(context_, sizeof(material_shader_uniform_buffer_object) * 3, usage, memory_properties, true);
+		object_uniform_buffer_ = buffer::create(context_, sizeof(material_instance_uniform_buffer_object) * 3, usage, memory_properties, true);
 	}
 
 	shader::~shader()
@@ -187,14 +187,14 @@ namespace egkr
 		context_->graphics_command_buffers[image_index].get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->get_handle());
 	}
 
-	void shader::update_global_state(const global_uniform_buffer& ubo)
+	void shader::update_global_state(const material_shader_uniform_buffer_object& ubo)
 	{
 		const auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 0, global_descriptor_set_[context_->image_index], nullptr);
 
-		auto range = sizeof(global_uniform_buffer); // one per frame in flight
-		auto offset = sizeof(global_uniform_buffer)* context_->image_index;
+		auto range = sizeof(material_shader_uniform_buffer_object); // one per frame in flight
+		auto offset = sizeof(material_shader_uniform_buffer_object)* context_->image_index;
 
 		global_uniform_buffer_->load_data(offset, range, 0, &ubo);
 
@@ -229,10 +229,10 @@ namespace egkr
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, material_shader_descriptor_count> write_set{};
-		auto range = sizeof(material_uniform_object);
-		auto offset = sizeof(material_uniform_object) * data.geometry->get_material()->get_internal_id();
+		auto range = sizeof(material_instance_uniform_buffer_object);
+		auto offset = sizeof(material_instance_uniform_buffer_object) * data.geometry->get_material()->get_internal_id();
 
-		material_uniform_object obo{};
+		material_instance_uniform_buffer_object obo{};
 		obo.diffuse_colour = data.geometry->get_material()->get_diffuse_colour();
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);

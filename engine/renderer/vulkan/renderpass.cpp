@@ -34,38 +34,42 @@ namespace egkr
 			.setInitialLayout(has_previous_pass_ ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined)
 			.setFinalLayout(has_next_pass_ ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::ePresentSrcKHR);
 
-		//TODO not always need a depth attachment
-		vk::AttachmentDescription depth_attachment{};
-		depth_attachment
-			.setFormat(context_->device.depth_format) // TODO configure
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
-			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-
 		vk::AttachmentReference colour_attachment_reference{};
 		colour_attachment_reference
 			.setAttachment(0)
 			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+		//TODO other attachment types (input, resolve, preserve)
+		//TODO configurable
+		egkr::vector<vk::AttachmentDescription> attachment_descriptions{ colour_attachment };
+
+		if (do_depth)
+		{
+			vk::AttachmentDescription depth_attachment{};
+			depth_attachment
+				.setFormat(context_->device.depth_format) // TODO configure
+				.setSamples(vk::SampleCountFlagBits::e1)
+				.setLoadOp(vk::AttachmentLoadOp::eClear)
+				.setStoreOp(vk::AttachmentStoreOp::eDontCare)
+				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+				.setInitialLayout(has_previous_pass_ ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined)
+				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+
+			attachment_descriptions.push_back(depth_attachment);
+		}
 
 		vk::AttachmentReference depth_attachment_reference{};
 		depth_attachment_reference
 			.setAttachment(1)
 			.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
-		//TODO other attachment types (input, resolve, preserve)
-		//TODO configurable
-		std::array<vk::AttachmentDescription, 2> attachment_descriptions{colour_attachment, depth_attachment};
-
 		vk::SubpassDescription subpass{};
 		subpass
 			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
 			.setColorAttachments(colour_attachment_reference)
-			.setPDepthStencilAttachment(&depth_attachment_reference);
+			.setPDepthStencilAttachment(do_depth ? &depth_attachment_reference : nullptr);
 
 		vk::SubpassDependency subpass_dependencies{};
 		subpass_dependencies
@@ -109,16 +113,24 @@ namespace egkr
 			.setOffset({ (int32_t)render_extent_.x, (int32_t)render_extent_.y })
 			.setExtent({ render_extent_.z, render_extent_.w });
 	
-		vk::ClearValue colour_clear_value{};
-		colour_clear_value
-			.setColor({ std::array<float, 4>{ clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a } });
 
-		vk::ClearValue depth_clear_value{};
-		depth_clear_value
-			.setDepthStencil({ depth_, stencil_ });
+		egkr::vector<vk::ClearValue> clear_values{};
 
-		//Same order as attachments
-		std::array<vk::ClearValue, 2> clear_values{colour_clear_value, depth_clear_value};
+		if (clear_flags_ & renderpass_clear_flags::colour)
+		{
+			vk::ClearValue colour_clear_value{};
+			colour_clear_value
+				.setColor({ std::array<float, 4>{ clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a } });
+			clear_values.push_back(colour_clear_value);
+		}
+
+		if (clear_flags_ & renderpass_clear_flags::depth)
+		{
+			vk::ClearValue depth_clear_value{};
+			depth_clear_value
+				.setDepthStencil({ depth_, stencil_ });
+			clear_values.push_back(depth_clear_value);
+		}
 
 		vk::RenderPassBeginInfo begin_info{};
 		begin_info

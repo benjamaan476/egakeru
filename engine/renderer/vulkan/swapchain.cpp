@@ -99,7 +99,7 @@ namespace egkr
 			world_framebuffer_properties.width_ = context_->framebuffer_width;
 			world_framebuffer_properties.height_ = context_->framebuffer_height;
 
-			context_->world_framebuffers_[i] = framebuffer::create(context_, world_framebuffer_properties);
+			context_->world_framebuffers[i] = framebuffer::create(context_, world_framebuffer_properties);
 
 			const egkr::vector<vk::ImageView> ui_attachments{ image_views_[i] };
 			framebuffer_properties ui_framebuffer_properties{};

@@ -35,6 +35,13 @@ namespace egkr
 
 	}
 
+	vulkan_geometry::~vulkan_geometry()
+	{
+		context_->device.logical_device.waitIdle();
+		vertex_buffer_.reset();
+		index_buffer_.reset();
+	}
+
 	void vulkan_geometry::draw() const
 	{
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];

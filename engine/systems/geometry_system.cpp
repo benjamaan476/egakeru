@@ -30,16 +30,8 @@ namespace egkr
 
 		geometry_system_->registered_geometries_.reserve(geometry_system_->max_geometry_count_);
 		
-		const float scale{ 10.F };
-		const egkr::vector<vertex_3d> vertices{ {{-0.5F * scale, -0.5F * scale, 0.F}, {0.F, 0.F} }, { {0.5F * scale, 0.5F * scale, 0.F}, {1.F,1.F} }, { {-0.5F * scale, 0.5F * scale, 0.F}, {0.F,1.F} }, { {0.5F * scale, -0.5F * scale, 0.F}, {1.F,0.F} } };
 
-		const egkr::vector<uint32_t> indices{ 0, 1, 2, 0, 3, 1 };
-
-		geometry_properties properties{};
-		properties.indices = indices;
-		properties.vertices = vertices;
-		properties.name = "default";
-		properties.material_name = "test_material";
+		const auto properties = generate_plane(10, 5, 8, 4, 2, 1, "default", "test_material");
 
 		geometry_system_->default_geometry_ = geometry::create(geometry_system_->renderer_context_, properties);
 		return false;
@@ -67,8 +59,57 @@ namespace egkr
 		return geometry_system_->default_geometry_;
 	}
 
-	geometry_properties geometry_system::generate_plane(uint32_t /*width*/, uint32_t /*height*/, uint32_t /*x_segments*/, uint32_t /*y_segments*/, uint32_t /*tile_x*/, uint32_t /*tile_y*/, std::string_view /*name*/, std::string_view /*material_name*/)
+	constexpr geometry_properties geometry_system::generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
 	{
-		return geometry_properties();
+		geometry_properties plane_properties{};
+		plane_properties.name = name;
+		plane_properties.material_name = material_name;
+
+		egkr::vector<vertex_3d> vertices{ (x_segments + 1) * (y_segments + 1) };
+		egkr::vector<uint32_t> indices(6 * x_segments * y_segments);
+
+		uint32_t index{ 0 };
+		//Posts, not gaps
+		for (auto y{ 0U }; y < y_segments + 1; ++y)
+		{
+			auto y_pos = 2 * y / (float)y_segments - 1;
+
+			auto tex_y = y / (float)y_segments;
+			tex_y *= tile_y;
+
+			for (auto x{ 0U }; x < x_segments + 1; ++x)
+			{
+				auto x_pos = 2 * x / (float)x_segments - 1;
+				auto tex_x = x / (float)x_segments;
+				tex_x *= tile_x;
+
+				vertices[index] = { {width * x_pos, height * y_pos, 0.F},  {tex_x, tex_y} };
+				++index;
+			}
+		}
+
+		plane_properties.vertices = vertices;
+
+		index = 0;
+		for (auto y_index{ 0U }; y_index < y_segments; ++y_index)
+		{
+			for (auto x_index{ 0U }; x_index < x_segments; ++x_index)
+			{
+				auto i = y_index * (x_segments + 1) + x_index;
+
+				indices[index++] = i;
+				indices[index++] = i + 1;
+				indices[index++] = i + (x_segments + 1) + 1;
+
+				indices[index++] = i;
+				indices[index++] = i + (x_segments + 1) + 1;
+				indices[index++] = i + (x_segments + 1);
+
+			}
+		}
+
+		plane_properties.indices = indices;
+
+		return plane_properties;
 	}
 }

@@ -91,6 +91,17 @@ namespace egkr
 		event::register_event(event_code::key_down, nullptr, application::on_event);
 		event::register_event(event_code::quit, nullptr, application::on_event);
 		event::register_event(event_code::resize, nullptr, application::on_resize);
+		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
+
+		if (!test_geometry_)
+		{
+			test_geometry_ = geometry_system::get_default();
+			if (!test_geometry_)
+			{
+				LOG_WARN("Automatic material load failed. Creating manually");
+
+			}
+		}
 		state_.is_running = true;
 
 	}
@@ -111,7 +122,18 @@ namespace egkr
 				state_.game->update(delta_time);
 
 				state_.game->render(delta_time);
-				state_.renderer->draw_frame({ delta_time});
+
+				static float angle = 0.F;
+				angle -= delta_time;
+
+				float4x4 model{ 1 };
+				model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
+
+				render_packet render_data{};
+				render_data.delta_time = delta_time;
+				render_data.world_geometry_data = { { test_geometry_ , model, delta_time} };
+
+				state_.renderer->draw_frame(render_data);
 			}
 			auto frame_duration = state_.platform->get_time() - frame_time;
 			if (limit_framerate_ && frame_duration < frame_time_)
@@ -126,6 +148,7 @@ namespace egkr
 
 	void application::shutdown()
 	{
+		test_geometry_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);
@@ -196,4 +219,17 @@ namespace egkr
 		return false;
 	}
 
+	bool application::on_debug_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& /*context*/)
+	{
+		if (code == event_code::debug01)
+		{
+			const std::array<std::string_view, 2> textures{ "RandomStones", "Seamless" };
+
+			static int choice = 0;
+			choice++;
+			choice %= textures.size();
+			test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
+		}
+		return false;
+	}
 }
