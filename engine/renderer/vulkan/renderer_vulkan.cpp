@@ -913,7 +913,7 @@ namespace egkr
 		material_pipeline_properties.viewport = viewport;
 		material_pipeline_properties.renderpass = context_.world_renderpass;
 		material_pipeline_properties.input_binding_description = get_binding_description<vertex_3d>();
-		material_pipeline_properties.input_attribute_description = get_attribute_description();
+		material_pipeline_properties.input_attribute_description = get_3d_attribute_description();
 		context_.material_shader = shader::create(&context_, material_pipeline_properties);
 
 		pipeline_properties ui_pipeline_properties{};
@@ -924,7 +924,7 @@ namespace egkr
 		ui_pipeline_properties.viewport = viewport;
 		ui_pipeline_properties.renderpass = context_.ui_renderpass;
 		ui_pipeline_properties.input_binding_description = get_binding_description<vertex_2d>();
-		ui_pipeline_properties.input_attribute_description = get_attribute_description();
+		ui_pipeline_properties.input_attribute_description = get_2d_attribute_description();
 
 		context_.ui_shader = shader::create(&context_, ui_pipeline_properties);
 

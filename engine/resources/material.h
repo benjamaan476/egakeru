@@ -8,11 +8,18 @@ namespace egkr
 {
 	constexpr static std::string_view default_material_name_{ "default" };
 
+	enum class material_type
+	{
+		world,
+		ui
+	};
+
 	struct material_properties
 	{
-		float4 diffuse_colour{};
 		std::string name{};
 		std::string diffuse_map_name{};
+		material_type type{};
+		float4 diffuse_colour{};
 	};
 
 	class material : public resource
@@ -40,5 +47,7 @@ namespace egkr
 
 		float4 diffuse_colour_{1.F};
 		texture_map diffuse_map_{};
+
+		material_type type_{};
 	};
 }

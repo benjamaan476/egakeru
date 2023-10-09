@@ -34,7 +34,8 @@ namespace egkr
 		const auto properties = generate_plane(10, 5, 8, 4, 2, 1, "default", "test_material");
 
 		geometry_system_->default_geometry_ = geometry::create(geometry_system_->renderer_context_, properties);
-		return false;
+
+		return true;
 	}
 
 	void geometry_system::shutdown()
@@ -59,7 +60,7 @@ namespace egkr
 		return geometry_system_->default_geometry_;
 	}
 
-	constexpr geometry_properties geometry_system::generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
+	geometry_properties geometry_system::generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
 	{
 		geometry_properties plane_properties{};
 		plane_properties.name = name;
@@ -88,7 +89,17 @@ namespace egkr
 			}
 		}
 
-		plane_properties.vertices = vertices;
+		plane_properties.vertex_count = vertices.size();
+		plane_properties.vertex_size = sizeof(vertex_3d);
+
+		auto size = plane_properties.vertex_count * plane_properties.vertex_size;
+
+		plane_properties.vertices = malloc(size);
+
+		auto* new_verts = (vertex_3d*)plane_properties.vertices;
+
+		std::copy(vertices.data(), vertices.data() + plane_properties.vertex_count, new_verts);
+
 
 		index = 0;
 		for (auto y_index{ 0U }; y_index < y_segments; ++y_index)

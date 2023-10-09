@@ -13,11 +13,20 @@ namespace egkr
 		uint32_t id{};
 		uint32_t generation{};
 
-		egkr::vector<vertex_3d> vertices{};
+		uint32_t vertex_size{};
+		uint32_t vertex_count{};
+		void* vertices{};
+
 		egkr::vector<uint32_t> indices{};
 
 		std::string name{};
 		std::string material_name{};
+
+		~geometry_properties()
+		{
+			//Dynamically allocated so needs to be freed
+			free(vertices);
+		}
 	};
 
 	class geometry : public resource

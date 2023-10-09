@@ -20,18 +20,18 @@ namespace egkr
 	{
 		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
 		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
-		const auto vertex_buffer_size = sizeof(vertex_3d) * 1024 * 1024;
+		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
 
+		vertex_count_ = properties.vertex_count;
 		vertex_buffer_ = buffer::create(context_, vertex_buffer_size, usage, flags, true);
 
 		const vk::BufferUsageFlags index_usage{vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
-		const auto index_buffer_size = sizeof(uint32_t) * 1024 * 1024;
+		const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
 
 		index_count_ = properties.indices.size();
 		index_buffer_ = buffer::create(context_, index_buffer_size, index_usage, flags, true);
-		vertex_count_ = properties.vertices.size();
-		upload_data_range(context, context->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, vertex_buffer_, 0, properties.vertices.size() * sizeof(vertex_3d), properties.vertices.data());
-		upload_data_range(context, context->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, index_buffer_, 0, properties.indices.size() * sizeof(uint32_t), properties.indices.data());
+		upload_data_range(context, context->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
+		upload_data_range(context, context->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, index_buffer_, 0, index_buffer_size, properties.indices.data());
 
 	}
 

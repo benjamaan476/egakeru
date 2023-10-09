@@ -43,6 +43,7 @@ namespace egkr
 	material_properties material_loader::load_configuration_file(std::string_view path)
 	{
 		material_properties properties{};
+		properties.type = material_type::world;
 
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
@@ -66,8 +67,6 @@ namespace egkr
 				//line = filesystem::read_line(handle, 511);
 				continue;
 			}
-
-
 
 			auto split_index = line_string.find_first_of('=');
 			if (split_index == std::string::npos)
@@ -101,6 +100,13 @@ namespace egkr
 				ss >> x >> y >> z >> w;
 
 				properties.diffuse_colour = { x, y, z, w };
+			}
+			else if (variable_name == "type")
+			{
+				if (value == "ui")
+				{
+					properties.type = material_type::ui;
+				}
 			}
 
 		}

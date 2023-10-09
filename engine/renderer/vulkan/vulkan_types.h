@@ -198,7 +198,7 @@ namespace egkr
 		return bindingDescription;
 	}
 
-	constexpr static egkr::vector<vk::VertexInputAttributeDescription> get_attribute_description() noexcept
+	constexpr static egkr::vector<vk::VertexInputAttributeDescription> get_3d_attribute_description() noexcept
 	{
 		egkr::vector<vk::VertexInputAttributeDescription> attributeDescriptions{};
 
@@ -223,5 +223,29 @@ namespace egkr
 		return attributeDescriptions;
 	}
 
+	constexpr static egkr::vector<vk::VertexInputAttributeDescription> get_2d_attribute_description() noexcept
+	{
+		egkr::vector<vk::VertexInputAttributeDescription> attributeDescriptions{};
+
+		vk::VertexInputAttributeDescription position{};
+		position
+			.setBinding(0)
+			.setLocation(0)
+			.setFormat(vk::Format::eR32G32Sfloat)
+			.setOffset(offsetof(vertex_2d, position));
+
+		attributeDescriptions.push_back(position);
+
+		vk::VertexInputAttributeDescription texture{};
+		texture
+			.setBinding(0)
+			.setLocation(1)
+			.setFormat(vk::Format::eR32G32Sfloat)
+			.setOffset(offsetof(vertex_2d, tex));
+
+		attributeDescriptions.push_back(texture);
+
+		return attributeDescriptions;
+	}
 
 }
