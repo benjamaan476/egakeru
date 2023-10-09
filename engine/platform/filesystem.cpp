@@ -73,6 +73,7 @@ namespace egkr
 		{
 			return {};
 		}
+		data[strcspn((char*)data.data(), "\n")] = 0;
 		return data;
 	}
 

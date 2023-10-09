@@ -6,14 +6,15 @@
 
 namespace egkr
 {
-	material::shared_ptr material::create(const void* renderer_context)
+	material::shared_ptr material::create(const void* renderer_context, const material_properties& properties)
 	{
-		return vulkan_material::create((vulkan_context*)renderer_context);
+		return vulkan_material::create((vulkan_context*)renderer_context, properties);
 	}
 
-	material::material()
+	material::material(const material_properties& properties)
 		: resource(0, 0)
 	{
+		type_ = properties.type;
 		diffuse_map_.use = texture_use::map_diffuse;
 		diffuse_map_.texture = texture_system::get_default_texture();
 	}

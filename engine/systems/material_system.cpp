@@ -87,7 +87,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(material_system_->renderer_context_);
+		auto new_material = material::create(material_system_->renderer_context_, properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -106,7 +106,12 @@ namespace egkr
 
 	bool material_system::create_default_material()
 	{
-		material_system_->default_material_ = material::create(material_system_->renderer_context_);
+		material_properties properties{};
+		properties.name = "default";
+		properties.type = material_type::world;
+		properties.diffuse_map_name = "default_texture";
+		properties.diffuse_colour = float4{ 1.F };
+		material_system_->default_material_ = material::create(material_system_->renderer_context_, properties);
 		return true;
 	}
 
@@ -122,7 +127,7 @@ namespace egkr
 		}
 
 
-			auto temp_material = material::create(material_system_->renderer_context_);
+			auto temp_material = material::create(material_system_->renderer_context_, properties);
 
 			material.reset();
 			material = std::move(temp_material);

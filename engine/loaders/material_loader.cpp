@@ -103,7 +103,7 @@ namespace egkr
 			}
 			else if (variable_name == "type")
 			{
-				if (value == "ui")
+				if (strcmp(value.c_str(), "ui") == 0)
 				{
 					properties.type = material_type::ui;
 				}

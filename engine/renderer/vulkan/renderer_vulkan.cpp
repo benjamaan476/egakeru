@@ -591,7 +591,20 @@ namespace egkr
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		context_.material_shader->set_model(data.model);
+		const auto& material = data.geometry->get_material();
+
+		switch (material->get_material_type())
+		{
+		case material_type::world:
+			context_.material_shader->set_model(data.model);
+			context_.material_shader->apply_material(data);
+			break;
+		case material_type::ui:
+			context_.ui_shader->set_model(data.model);
+			context_.ui_shader->apply_material(data);
+			break;
+
+		}
 
 		if (data.geometry->get_material())
 		{

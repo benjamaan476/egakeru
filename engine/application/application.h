@@ -45,6 +45,7 @@ namespace egkr
 		inline static std::chrono::milliseconds frame_time_{16ms};
 
 		inline static geometry::shared_ptr test_geometry_{};
+		inline static geometry::shared_ptr test_ui_geometry_{};
 	};
 
 	static application::unique_ptr application_;

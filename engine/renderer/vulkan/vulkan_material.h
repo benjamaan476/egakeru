@@ -10,9 +10,9 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr <vulkan_material>;
-		static shared_ptr create(const vulkan_context* context);
+		static shared_ptr create(const vulkan_context* context, const material_properties& properties);
 
-		explicit vulkan_material(const vulkan_context* context);
+		explicit vulkan_material(const vulkan_context* context, const material_properties& properties);
 		~vulkan_material();
 
 		void destroy();

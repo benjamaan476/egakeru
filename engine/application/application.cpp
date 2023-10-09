@@ -102,6 +102,27 @@ namespace egkr
 
 			}
 		}
+
+		std::vector<vertex_2d> vertices{4};
+
+		vertices[0] = { {0.F, 512.F}, {0.F, 0.F} };
+		vertices[1] = { {512.F, 512.F}, {1.F, 0.F} };
+		vertices[2] = { {512.F, 0.F}, {1.F, 1.F} };
+		vertices[3] = { {0.F, 0.F}, {0.F, 1.F} };
+
+		std::vector<uint32_t> indices{0, 2, 1, 0, 1, 2};
+
+		geometry_properties ui_properties{};
+		ui_properties.name = "test_ui";
+		ui_properties.material_name = "ui_material";
+		ui_properties.vertex_count = 4;
+		ui_properties.vertex_size = sizeof(vertex_2d);
+		ui_properties.vertices = malloc(sizeof(vertex_2d) * 4);
+		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
+		ui_properties.indices = indices;
+
+		test_ui_geometry_ = geometry::create(state_.renderer->get_backend_context(), ui_properties);
+
 		state_.is_running = true;
 
 	}
@@ -124,7 +145,7 @@ namespace egkr
 				state_.game->render(delta_time);
 
 				static float angle = 0.F;
-				angle -= delta_time;
+				//angle -= delta_time;
 
 				float4x4 model{ 1 };
 				model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
@@ -132,6 +153,7 @@ namespace egkr
 				render_packet render_data{};
 				render_data.delta_time = delta_time;
 				render_data.world_geometry_data = { { test_geometry_ , model, delta_time} };
+				render_data.ui_geometry_data = { { test_ui_geometry_ , model, delta_time} };
 
 				state_.renderer->draw_frame(render_data);
 			}

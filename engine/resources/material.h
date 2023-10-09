@@ -26,9 +26,9 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<material>;
-		static shared_ptr create(const void* renderer_context);
+		static shared_ptr create(const void* renderer_context, const material_properties& properties);
 
-		material();
+		explicit material(const material_properties& properties);
 		~material() = default;
 
 		void set_name(const std::string& name) { name_ = name; }
@@ -41,6 +41,8 @@ namespace egkr
 
 		void set_diffuse_map(const texture_map& map) { diffuse_map_ = map; }
 		[[nodiscard]] const auto& get_diffuse_map() const { return diffuse_map_; }
+
+		const auto& get_material_type() const { return type_; }
 	private:
 		uint32_t internal_id_{invalid_id};
 		std::string name_{default_material_name_};
