@@ -105,12 +105,12 @@ namespace egkr
 
 		std::vector<vertex_2d> vertices{4};
 
-		vertices[0] = { {0.F, 512.F}, {0.F, 0.F} };
-		vertices[1] = { {512.F, 512.F}, {1.F, 0.F} };
-		vertices[2] = { {512.F, 0.F}, {1.F, 1.F} };
-		vertices[3] = { {0.F, 0.F}, {0.F, 1.F} };
+		vertices[0] = { {0.F, 512.F}, {0.F, 1.F} };
+		vertices[1] = { {512.F, 512.F}, {1.F, 1.F} };
+		vertices[2] = { {512.F, 0.F}, {1.F, 0.F} };
+		vertices[3] = { {0.F, 0.F}, {0.F, 0.F} };
 
-		std::vector<uint32_t> indices{0, 2, 1, 0, 1, 2};
+		std::vector<uint32_t> indices{0, 1, 2, 0, 2, 3};
 
 		geometry_properties ui_properties{};
 		ui_properties.name = "test_ui";
@@ -171,6 +171,7 @@ namespace egkr
 	void application::shutdown()
 	{
 		test_geometry_.reset();
+		test_ui_geometry_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);

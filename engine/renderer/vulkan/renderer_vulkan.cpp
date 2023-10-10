@@ -906,6 +906,7 @@ namespace egkr
 		context_.swapchain->recreate();
 
 		context_.world_renderpass->set_extent({ 0, 0, context_.framebuffer_width, context_.framebuffer_height });
+		context_.ui_renderpass->set_extent({ 0, 0, context_.framebuffer_width, context_.framebuffer_height });
 
 		context_.swapchain->regenerate_framebuffers();
 

@@ -62,7 +62,7 @@ namespace egkr
 			std::string line_string{ line.begin(), line.end() };
 			trim(line_string);
 
-			if (line.empty() || line[0] == '#' || line[0] == '\n')
+			if (line.empty() || line[0] == '#' || line[0] == '\0')
 			{
 				//line = filesystem::read_line(handle, 511);
 				continue;

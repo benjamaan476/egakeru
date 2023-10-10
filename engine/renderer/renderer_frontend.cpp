@@ -14,8 +14,9 @@ namespace egkr
 
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
-		world_projection_ = glm::perspective(glm::radians(45.0F), platform->get_framebuffer_size().x / (float)platform->get_framebuffer_size().y, 0.1F, 1000.F);
-		ui_projection_ = glm::ortho(0, platform->get_framebuffer_size().x, platform->get_framebuffer_size().y, 0, -100, 100);
+		const auto& size = platform->get_framebuffer_size();
+		world_projection_ = glm::perspective(glm::radians(45.0F), size.x / (float)size.y, 0.1F, 1000.F);
+		ui_projection_ = glm::ortho(0.F, (float)size.x, (float)size.y, 0.F, -100.F, 100.F);
 
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });
@@ -49,7 +50,7 @@ namespace egkr
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
 		world_projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
-		ui_projection_ = glm::ortho(0, (int32_t)width, (int32_t)height, 0, -100, 100);
+		ui_projection_ = glm::ortho(0.f, (float)width, (float)height, 0.F, -100.F, 100.F);
 		backend_->resize(width, height);
 	}
 

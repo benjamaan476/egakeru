@@ -28,10 +28,10 @@ namespace egkr
 
 		float near_clip_{0.1F};
 		float far_clip_{ 1000.F };
-		float4x4 world_projection_{};
-		float4x4 world_view_{};
-		float4x4 ui_projection_{};
-		float4x4 ui_view_{};
+		float4x4 world_projection_{1.F};
+		float4x4 world_view_{1.F};
+		float4x4 ui_projection_{1.F};
+		float4x4 ui_view_{1.F};
 		//TODO temp
 	};
 }
