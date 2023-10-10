@@ -24,12 +24,12 @@ namespace egkr
 	{
 	public:
 		using unique_ptr = std::unique_ptr<application>;
-		API static unique_ptr create(game::unique_ptr game);
+		API static bool create(game::unique_ptr game);
 		//Don't call this directly, only here to shutup clang
 		explicit application(game::unique_ptr game);
 
-		static API void run();
-		static void shutdown();
+		API static void run();
+		void static shutdown();
 
 		const auto& get_state() const { return state_; }
 	private:
@@ -37,16 +37,15 @@ namespace egkr
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
 		static bool on_debug_event(event_code code, void* sender, void* listener, const event_context& context);
-		inline static bool is_initialised_{false};
-		inline static app_state state_{};
-		inline static std::chrono::nanoseconds last_time_{};
+		bool is_initialised_{false};
+		app_state state_{};
+		std::chrono::nanoseconds last_time_{};
 
-		inline static bool limit_framerate_{false};
-		inline static std::chrono::milliseconds frame_time_{16ms};
+	    bool limit_framerate_{false};
+		std::chrono::milliseconds frame_time_{16ms};
 
-		inline static geometry::shared_ptr test_geometry_{};
-		inline static geometry::shared_ptr test_ui_geometry_{};
+		geometry::shared_ptr test_geometry_{};
+		geometry::shared_ptr test_ui_geometry_{};
 	};
 
-	static application::unique_ptr application_;
 }

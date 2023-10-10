@@ -33,6 +33,7 @@ namespace egkr
 
 		return std::make_shared<resource>(resource_properties);
 	}
+
 	bool material_loader::unload(const resource::shared_ptr& resource)
 	{
 		auto* data = (material_properties*)resource->get_data();
@@ -108,9 +109,7 @@ namespace egkr
 					properties.type = material_type::ui;
 				}
 			}
-
 		}
-
 		return properties;
 	}
 }

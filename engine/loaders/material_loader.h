@@ -19,7 +19,7 @@ namespace egkr
 		bool unload(const resource::shared_ptr& resource) override;
 
 	private:
-		material_properties load_configuration_file(std::string_view path);
+		static material_properties load_configuration_file(std::string_view path);
 
 	};
 }

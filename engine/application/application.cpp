@@ -10,22 +10,25 @@ using namespace std::chrono_literals;
 
 namespace egkr
 {
-	application::unique_ptr application::create(game::unique_ptr game)
+
+	static application::unique_ptr application_;
+	bool application::create(game::unique_ptr game)
 	{
-		if (!is_initialised_)
+		if (!application_)
 		{
-			return std::make_unique<application>(std::move(game));
+			application_ = std::make_unique<application>(std::move(game));
+			application_->state_.game->set_application(application_.get());
+			return true;
 		}
 
 		LOG_WARN("Application already initialised");
-		return nullptr;
+		return false;
 	}
 
 	application::application(game::unique_ptr game)
 	{
-
-		state_.width_ = game->get_application_configuration().width_;
-		state_.height_ = game->get_application_configuration().height_;
+		state_.width_ = game->get_application_configuration().width;
+		state_.height_ = game->get_application_configuration().height;
 		state_.name = game->get_application_configuration().name;
 		state_.game = std::move(game);
 
@@ -124,25 +127,26 @@ namespace egkr
 		test_ui_geometry_ = geometry::create(state_.renderer->get_backend_context(), ui_properties);
 
 		state_.is_running = true;
-
+		is_initialised_ = true;
 	}
 
 	void application::run()
 	{
-		while (state_.is_running)
+		auto& state = application_->state_;
+		while (state.is_running)
 		{
-			auto time = state_.platform->get_time();
-			std::chrono::duration<double, std::ratio<1, 1>> delta = time - last_time_;
+			auto time = state.platform->get_time();
+			std::chrono::duration<double, std::ratio<1, 1>> delta = time - application_->last_time_;
 			auto delta_time = delta.count();
 
 			auto frame_time = time;
-			state_.platform->pump();
+			state.platform->pump();
 
-			if (!state_.is_suspended)
+			if (!state.is_suspended)
 			{
-				state_.game->update(delta_time);
+				state.game->update(delta_time);
 
-				state_.game->render(delta_time);
+				state.game->render(delta_time);
 
 				static float angle = 0.F;
 				//angle -= delta_time;
@@ -152,26 +156,26 @@ namespace egkr
 
 				render_packet render_data{};
 				render_data.delta_time = delta_time;
-				render_data.world_geometry_data = { { test_geometry_ , model, delta_time} };
-				render_data.ui_geometry_data = { { test_ui_geometry_ , model, delta_time} };
+				render_data.world_geometry_data = { { application_->test_geometry_ , model, delta_time} };
+				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , model, delta_time} };
 
-				state_.renderer->draw_frame(render_data);
+				state.renderer->draw_frame(render_data);
 			}
-			auto frame_duration = state_.platform->get_time() - frame_time;
-			if (limit_framerate_ && frame_duration < frame_time_)
+			auto frame_duration = state.platform->get_time() - frame_time;
+			if (application_->limit_framerate_ && frame_duration < application_->frame_time_)
 			{
-				auto time_remaining = frame_time_ - frame_duration;
-				state_.platform->sleep(time_remaining);
+				auto time_remaining = application_->frame_time_ - frame_duration;
+				state.platform->sleep(time_remaining);
 			}
 
-			last_time_ = time;
+			application_->last_time_ = time;
 		}
 	}
 
 	void application::shutdown()
 	{
-		test_geometry_.reset();
-		test_ui_geometry_.reset();
+		application_->test_geometry_.reset();
+		application_->test_ui_geometry_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);
@@ -180,15 +184,15 @@ namespace egkr
 		geometry_system::shutdown();
 		material_system::shutdown();
 		texture_system::shutdown();
-		state_.renderer->shutdown();
-		state_.platform->shutdown();
+		application_->state_.renderer->shutdown();
+		application_->state_.platform->shutdown();
 	}
 
 	bool application::on_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
 	{
 		if (code == event_code::quit)
 		{
-		state_.is_running = false;
+			application_->state_.is_running = false;
 		}
 
 		if (code == event_code::key_down)
@@ -199,7 +203,7 @@ namespace egkr
 			switch (key)
 			{
 			case egkr::key::esc:
-				state_.is_running = false;
+				application_->state_.is_running = false;
 				break;
 			default:
 				break;
@@ -217,25 +221,25 @@ namespace egkr
 			const auto& width = context_array[0];
 			const auto& height = context_array[1];
 
-			if (state_.width_ != (uint32_t)width || state_.height_ != (uint32_t)height)
+			if (application_->state_.width_ != (uint32_t)width || application_->state_.height_ != (uint32_t)height)
 			{
-				state_.width_ = (uint32_t)width;
-				state_.height_ = (uint32_t)height;
+				application_->state_.width_ = (uint32_t)width;
+				application_->state_.height_ = (uint32_t)height;
 
 				if (width == 0 && height == 0)
 				{
-					state_.is_suspended = true;
+					application_->state_.is_suspended = true;
 					return false;
 				}
 
-				if (state_.is_suspended)
+				if (application_->state_.is_suspended)
 				{
-					state_.is_suspended = false;
+					application_->state_.is_suspended = false;
 				}
 
 
-				state_.game->resize(width, height);
-				state_.renderer->on_resize(width, height);
+				application_->state_.game->resize(width, height);
+				application_->state_.renderer->on_resize(width, height);
 
 			}
 		}
@@ -251,7 +255,7 @@ namespace egkr
 			static int choice = 0;
 			choice++;
 			choice %= textures.size();
-			test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
+			application_->test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
 		}
 		return false;
 	}
