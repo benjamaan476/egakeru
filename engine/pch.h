@@ -71,3 +71,8 @@ static inline void trim(std::string &s) {
 	inline e operator~ (e a) { return static_cast<e>(~static_cast<int>(a));} \
 	inline bool isSet(e val, e flag) { return (val & flag) != static_cast<e>(0); } \
 	inline void flipBit(e& val, e flag) { val = isSet(val, flag) ? (val & (~flag)) : (val | flag); }
+
+static inline uint64_t get_aligned(uint64_t operand, uint64_t granularity)
+{
+	return ((operand + (granularity - 1)) & ~(granularity - 1));
+}

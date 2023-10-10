@@ -6,6 +6,7 @@
 
 namespace egkr
 {
+
 	static material_system::unique_ptr material_system_{};
 
 	bool material_system::create(const void* renderer_context)

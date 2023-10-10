@@ -6,6 +6,24 @@
 
 namespace egkr
 {
+	struct material_shader_uniform_location
+	{
+		uint16_t projection{};
+		uint16_t view{};
+		uint16_t diffuse_colour{};
+		uint16_t diffuse_texture{};
+		uint16_t model{};
+	};
+
+	struct ui_shader_uniform_location
+	{
+		uint16_t projection{};
+		uint16_t view{};
+		uint16_t diffuse_colour{};
+		uint16_t diffuse_texture{};
+		uint16_t model{};
+	};
+
 	class material_system
 	{
 	public:
@@ -31,6 +49,12 @@ namespace egkr
 		material::shared_ptr default_material_{};
 		egkr::vector<material::shared_ptr> registered_materials_{};
 		std::unordered_map<std::string, material_reference> registered_materials_by_name_{};
+
+		material_shader_uniform_location material_locations_{};
+		ui_shader_uniform_location ui_locations_{};
+
+		uint32_t material_shader_id_{};
+		uint32_t ui_shader_id_{};
 
 	};
 }

@@ -18,7 +18,7 @@ namespace egkr
 	{
 		std::string name{};
 		std::string diffuse_map_name{};
-		material_type type{};
+		std::string shader_name{};
 		float4 diffuse_colour{};
 	};
 
