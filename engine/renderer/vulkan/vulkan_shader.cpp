@@ -1,4 +1,4 @@
-#include "shader.h"
+#include "vulkan_shader.h"
 #include <format>
 #include <ranges>
 
@@ -7,7 +7,6 @@
 
 #include "systems/texture_system.h"
 #include "systems/resource_system.h"
-#include "shader.h"
 
 namespace egkr
 {

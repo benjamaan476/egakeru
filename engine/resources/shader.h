@@ -8,11 +8,6 @@
 
 namespace egkr
 {
-	struct range
-	{
-		uint32_t offset{};
-		uint32_t size{};
-	};
 	enum class shader_stage
 	{
 		vertex = 1,
@@ -118,7 +113,7 @@ namespace egkr
 		void bind_globals();
 		void bind_instance();
 
-		const auto get_bound_scope() const {return bound_scope_; }
+		const auto& get_bound_scope() const {return bound_scope_; }
 		void set_bound_scope(shader_scope scope);
 
 		void set_bound_instance_id(uint32_t instance_id);
@@ -126,8 +121,6 @@ namespace egkr
 		bool add_attribute(const attribute_configuration& configuration);
 		bool add_sampler(const uniform_configuration& configuration);
 		bool add_uniform(const uniform_configuration& configuration);
-		uint32_t get_shader_id(std::string_view name);
-
 
 		void add_uniform(std::string_view uniform_name, uint32_t size, shader_uniform_type type, shader_scope scope, uint32_t set_location, bool is_sampler);
 		bool is_uniform_name_valid(std::string_view uniform_name);
@@ -161,7 +154,6 @@ namespace egkr
 		egkr::vector<shader_attribute> attributes_{};
 		shader_state state_{shader_state::not_created};
 
-		uint8_t  push_constant_range_uniform_count_{};
 		egkr::vector<range> push_const_ranges_{32};
 		uint16_t attribute_stride_{};
 

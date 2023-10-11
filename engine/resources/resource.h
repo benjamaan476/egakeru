@@ -9,6 +9,7 @@ namespace egkr
 		binary,
 		image,
 		material,
+		shader,
 		stataic_mesh,
 		custom
 	};

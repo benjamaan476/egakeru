@@ -16,6 +16,7 @@ namespace egkr
 		egkr::vector<vk::VertexInputAttributeDescription> input_attribute_description{};
 		vk::Viewport viewport{};
 		vk::Rect2D scissor{};
+		egkr::vector<range> push_constant_ranges{};
 		bool is_wireframe{};
 		bool depth_test_enabled{};
 	};

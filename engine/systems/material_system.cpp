@@ -3,6 +3,7 @@
 #include "texture_system.h"
 #include "platform/filesystem.h"
 #include "systems/resource_system.h"
+#include "systems/shader_system.h"
 
 namespace egkr
 {
@@ -105,11 +106,55 @@ namespace egkr
 		return new_material;
 	}
 
+	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view)
+	{
+		if (shader_id == material_system_->material_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->material_locations_.projection, &projection);
+			shader_system::set_uniform(material_system_->material_locations_.view, &view);
+		}
+		else
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.projection, &projection);
+			shader_system::set_uniform(material_system_->ui_locations_.view, &view);
+		}
+		shader_system::apply_global();
+	}
+
+	void material_system::apply_instance(const material::shared_ptr& material)
+	{
+		shader_system::bind_instance(material->get_internal_id());
+
+		if (material->get_shader_id() == material_system_->material_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
+			shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, &material->get_diffuse_map());
+		}
+		else if (material->get_shader_id() == material_system_->ui_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.diffuse_colour, &material->get_diffuse_colour());
+			shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, &material->get_diffuse_map());
+		}
+		shader_system::apply_instance();
+	}
+
+	void material_system::apply_local(const material::shared_ptr& material, const float4x4& model)
+	{
+		auto shader_id = material->get_shader_id();
+		if (shader_id == material_system_->material_shader_id_)
+		{
+			return shader_system::set_uniform(material_system_->material_locations_.model, &model);
+		}
+		else if (shader_id == material_system_->ui_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.model, &model);
+		}
+	}
+
 	bool material_system::create_default_material()
 	{
 		material_properties properties{};
 		properties.name = "default";
-		properties.type = material_type::world;
 		properties.diffuse_map_name = "default_texture";
 		properties.diffuse_colour = float4{ 1.F };
 		material_system_->default_material_ = material::create(material_system_->renderer_context_, properties);

@@ -47,7 +47,7 @@ namespace egkr
 		shader_system_->shaders_.push_back(shader);
 		shader_system_->shader_id_by_name_[properties.name] = id;
 		
-		return 
+		return  shader;
 	}
 
 	uint32_t shader_system::get_shader_id(std::string_view shader_name)
@@ -161,7 +161,7 @@ namespace egkr
 		set_uniform(sampler_id, texture.get());
 	}
 
-	void shader_system::bind_instance(uint32_t isntance_id)
+	void shader_system::bind_instance(uint32_t instance_id)
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
 		shader->set_bound_instance_id(instance_id);
@@ -169,6 +169,6 @@ namespace egkr
 	}
 	uint32_t shader_system::new_shader_id()
 	{
-		return 0;
+		return shader_system_->shaders_.size();
 	}
 }

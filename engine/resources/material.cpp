@@ -1,6 +1,7 @@
 #include "material.h"
 
 #include "systems/texture_system.h"
+#include "systems/shader_system.h"
 #include "resources/material.h"
 #include "renderer/vulkan/vulkan_material.h"
 
@@ -12,11 +13,11 @@ namespace egkr
 	}
 
 	material::material(const material_properties& properties)
-		: resource(0, 0)
+		: resource(0, 0), name_{ properties.name }, diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
-		type_ = properties.type;
 		diffuse_map_.use = texture_use::map_diffuse;
 		diffuse_map_.texture = texture_system::get_default_texture();
+		shader_id_ = shader_system::get_shader_id(shader_name_);
 	}
 
 	void material::set_diffuse_colour(const float4 diffuse)

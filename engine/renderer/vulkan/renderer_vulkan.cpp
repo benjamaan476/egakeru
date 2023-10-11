@@ -920,6 +920,7 @@ namespace egkr
 		const vk::Viewport viewport(0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height, 0.F, 1.F);
 		const vk::Rect2D scissor({ 0U, 0U }, { context_.framebuffer_width, context_.framebuffer_height});
 
+
 		pipeline_properties material_pipeline_properties{};
 		material_pipeline_properties.shader_name = "Builtin.MaterialShader";
 		material_pipeline_properties.is_wireframe = false;

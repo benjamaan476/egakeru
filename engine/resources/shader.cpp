@@ -12,10 +12,7 @@ namespace egkr
 	}
 
 	shader::shader(const void* renderer_context, const shader_properties& properties)
-		: resource(0, 0), name_{ properties.name }, use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_
-	{
-		renderer_context_
-	}
+		: resource(0, 0), name_{ properties.name }, use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
 	{
 		//TODO make backend renderer shader
 		state_ = shader_state::uninitialised;
@@ -140,25 +137,78 @@ namespace egkr
 
 	bool shader::add_uniform(const uniform_configuration& configuration)
 	{
-	}
+		if (!is_uniform_add_state_valid() || !is_uniform_name_valid(configuration.name))
+		{
+			return false;
+		}
 
-	uint32_t shader::get_shader_id(std::string_view name)
-	{
-		return 0;
+		add_uniform(configuration.name, configuration.size, configuration.type, configuration.scope, 0, false);
 	}
 
 	void shader::add_uniform(std::string_view uniform_name, uint32_t size, shader_uniform_type type, shader_scope scope, uint32_t set_location, bool is_sampler)
 	{
+		shader_uniform uniform{};
+		uniform.index = uniforms_.size();
+		uniform.scope = scope;
+		uniform.type = type;
+		
+		bool is_global = scope == shader_scope::global;
+		uniform.location = is_sampler ? set_location : uniform.index;
+
+		if (scope != shader_scope::local)
+		{
+			uniform.set_index = (uint8_t)scope;
+			uniform.offset = is_sampler ? 0 : is_global ? globol_ubo_size_ : ubo_size_;
+			uniform.size = is_sampler ? 0 : size;
+		}
+		else
+		{
+			if (scope == shader_scope::local && !use_locals_)
+			{
+				LOG_ERROR("Local scope not supported by this shader");
+				return;
+			}
+			uniform.set_index = invalid_id;
+			range r{ get_aligned(push_constant_size_, 4), get_aligned(size, 4) };
+			uniform.offset = r.offset;
+			uniform.size = r.size;
+
+			push_const_ranges_.push_back(r);
+		
+		}
+		uniforms_.push_back(uniform);
+		uniform_id_by_name_[uniform_name.data()] = uniform.index;
+
+		if (!is_sampler)
+		{
+			if (scope == shader_scope::global)
+			{
+				globol_ubo_size_ += uniform.size;
+			}
+			else if (scope == shader_scope::instance)
+			{
+				ubo_size_ += uniform.size;
+			}
+		}
 	}
 
 	bool shader::is_uniform_name_valid(std::string_view uniform_name)
 	{
-		return false;
+		if (uniform_id_by_name_.contains(uniform_name.data()))
+		{
+			LOG_INFO("Uniform already exists: {}", uniform_name.data());
+			return false;
+		}
+		return true;
 	}
 
 	bool shader::is_uniform_add_state_valid()
 	{
-		return false;
+		if (state_ != shader_state::uninitialised)
+		{
+			return false;
+		}
+		return true;
 	}
 
 	void shader::use()

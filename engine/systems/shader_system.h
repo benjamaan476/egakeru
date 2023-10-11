@@ -44,6 +44,7 @@ namespace egkr
 		static void set_sampler(uint32_t sampler_id, const texture::shared_ptr& texture);
 
 		static void bind_instance(uint32_t isntance_id);
+
 	private:
 		static uint32_t new_shader_id();
 	private:

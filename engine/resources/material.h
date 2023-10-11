@@ -42,7 +42,8 @@ namespace egkr
 		void set_diffuse_map(const texture_map& map) { diffuse_map_ = map; }
 		[[nodiscard]] const auto& get_diffuse_map() const { return diffuse_map_; }
 
-		const auto& get_material_type() const { return type_; }
+		const auto& get_shader_id() const { return shader_id_; }
+		const auto& get_shader_name() const { return shader_name_; }
 	private:
 		uint32_t internal_id_{invalid_id};
 		std::string name_{default_material_name_};
@@ -50,6 +51,7 @@ namespace egkr
 		float4 diffuse_colour_{1.F};
 		texture_map diffuse_map_{};
 
-		material_type type_{};
+		std::string shader_name_{};
+		uint32_t shader_id_{};
 	};
 }

@@ -39,6 +39,10 @@ namespace egkr
 
 		static material::shared_ptr acquire(std::string_view name);
 		static material::shared_ptr acquire(const material_properties& properties);
+
+		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view);
+		static void apply_instance(const material::shared_ptr& material);
+		static void apply_local(const material::shared_ptr& material, const float4x4& model);
 	private:
 		static bool create_default_material();
 		static bool load_material(const material_properties& properties, material::shared_ptr& material);
