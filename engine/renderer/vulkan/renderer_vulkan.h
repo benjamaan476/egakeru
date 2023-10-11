@@ -29,6 +29,16 @@ namespace egkr
 
 		const void* get_context() const final { return &context_; }
 
+		bool populate_material(material* material) override;
+		void free_material(material* texture) override;
+
+		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) override;
+		void free_texture(texture* texture) override;
+
+		bool populate_geometry(geometry* geometry) override;
+		void free_geometry(geometry* geometry) override;
+
+
 	private:
 		bool init_instance();
 		bool create_debug_messenger();

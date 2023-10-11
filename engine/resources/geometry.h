@@ -43,10 +43,6 @@ namespace egkr
 		const auto& get_material() const { return material_;}
 
 	private:
-		uint32_t id_{invalid_id};
-		uint32_t generation_{invalid_id};
-
-		std::string name_{};
 		material::shared_ptr material_{};
 	};
 }

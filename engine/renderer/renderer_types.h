@@ -1,9 +1,9 @@
 #pragma once
 #include "pch.h"
 
-#include "platform/platform.h"
-
 #include "resources/geometry.h"
+
+#include "platform/platform.h"
 
 #include "vertex_types.h"
 
@@ -70,6 +70,16 @@ namespace egkr
 		virtual void end_frame() = 0;
 
 		virtual const void* get_context() const = 0;
+
+		virtual bool populate_material(material* material) = 0;
+		virtual void free_material(material* texture) = 0;
+
+		virtual bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) = 0;
+		virtual void free_texture(texture* texture) = 0;
+
+		virtual bool populate_geometry(geometry* geometry) = 0;
+		virtual void free_geometry(geometry* geometry) = 0
+ 
 
 	private:
 		platform::shared_ptr platform_;

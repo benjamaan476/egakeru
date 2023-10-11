@@ -1,14 +1,21 @@
 #include "material.h"
 
+#include "renderer/renderer_frontend.h"
+
 #include "systems/texture_system.h"
-#include "resources/material.h"
-#include "renderer/vulkan/vulkan_material.h"
 
 namespace egkr
 {
-	material::shared_ptr material::create(const void* renderer_context, const material_properties& properties)
+	material::shared_ptr material::create(const renderer_frontend* renderer, const material_properties& properties)
 	{
-		return vulkan_material::create((vulkan_context*)renderer_context, properties);
+		auto mat = std::make_shared<material>(properties);
+		if (!renderer->populate_material(mat.get()))
+		{
+			LOG_ERROR("Failed to populate material");
+			return nullptr;
+		}
+
+		return mat;
 	}
 
 	material::material(const material_properties& properties)

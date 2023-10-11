@@ -5,6 +5,8 @@
 #include "swapchain.h"
 #include "pipeline.h"
 
+#include "vulkan_material.h"
+
 namespace egkr
 {
 
@@ -947,5 +949,116 @@ namespace egkr
 	void renderer_vulkan::create_material_buffers()
 	{
 	}
+
+	bool renderer_vulkan::populate_material(material* material)
+	{
+		vulkan_material_state state{};
+		switch (material->get_material_type())
+		{
+		case material_type::world:
+
+			if (!context_.material_shader->acquire_resource(&state))
+			{
+				LOG_ERROR("Failed to acquire shader resource");
+				return false;
+			}
+			LOG_INFO("Acquired shader resource");
+			break;
+		case material_type::ui:
+			if (!context_.ui_shader->acquire_resource(&state))
+			{
+				LOG_ERROR("Failed to acquire shader resource");
+				return false;
+			}
+			break;
+
+		}
+		material->data = new vulkan_material_state();
+		*(vulkan_material_state*)material->data = state;
+		return true;
+	}
+
+	void renderer_vulkan::free_material(material* material)
+	{
+		delete (vulkan_material_state*)material->data;
+	}
+
+
+	bool renderer_vulkan::populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data)
+	{
+		vulkan_texture_state state{};
+		state.context = &context_;
+		if (data)
+		{
+			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
+			auto staging_buffer = buffer::create(&context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+			staging_buffer->load_data(0, image_size, 0, data);
+
+			image_properties image_properties{};
+			image_properties.tiling = vk::ImageTiling::eOptimal;
+			image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+			image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+			image_properties.image_format = vk::Format::eR8G8B8A8Srgb;
+			image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+
+			state.image = image::create(&context_, properties.width, properties.height, image_properties, true);
+
+			command_buffer single_use{};
+			single_use.begin_single_use(&context_, context_.device.graphics_command_pool);
+
+			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+			state.image->copy_from_buffer(single_use, staging_buffer);
+			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			single_use.end_single_use(&context_, context_.device.graphics_command_pool, context_.device.graphics_queue);
+
+			vk::SamplerCreateInfo sampler_info{};
+			sampler_info
+				.setMinFilter(vk::Filter::eLinear)
+				.setMagFilter(vk::Filter::eLinear)
+				.setAddressModeU(vk::SamplerAddressMode::eRepeat)
+				.setAddressModeV(vk::SamplerAddressMode::eRepeat)
+				.setAddressModeW(vk::SamplerAddressMode::eRepeat)
+				.setAnisotropyEnable(true)
+				.setMaxAnisotropy(16)
+				.setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
+				.setUnnormalizedCoordinates(false)
+				.setCompareEnable(false)
+				.setMipmapMode(vk::SamplerMipmapMode::eLinear);
+
+			state.sampler = context_.device.logical_device.createSampler(sampler_info, context_.allocator);
+		}
+
+		texture->data = new vulkan_texture_state();
+		*(vulkan_texture_state*)texture->data = state;
+
+		return true;
+	}
+
+	void renderer_vulkan::free_texture(texture* texture)
+	{
+		context_.device.logical_device.waitIdle();
+		auto state = (vulkan_texture_state*)texture->data;
+		if (state->sampler)
+		{
+			context_.device.logical_device.destroySampler(state->sampler, context_.allocator);
+			state->sampler = VK_NULL_HANDLE;
+		}
+		if (state->image)
+		{
+			state->image.reset();
+		}
+
+		delete (vulkan_texture_state*)texture->data;
+		texture->data = nullptr;
+	}
+
+	bool renderer_vulkan::populate_geometry(geometry* geometry)
+	{
+	}
+	void renderer_vulkan::free_geometry(geometry* geometry)
+	{
+	}
+
 }
 

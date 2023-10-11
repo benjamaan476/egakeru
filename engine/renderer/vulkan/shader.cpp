@@ -46,7 +46,7 @@ namespace egkr
 
 		auto shader_resource = resource_system::load(shader_filename, resource_type::binary);
 		
-		auto* code = (binary_resource_properties*)shader_resource->get_data();
+		auto* code = (binary_resource_properties*)shader_resource->data;
 
 		vk::ShaderModuleCreateInfo create_info{};
 		create_info
@@ -225,15 +225,18 @@ namespace egkr
 
 	void shader::apply_material(const geometry_render_data& data)
 	{
-		auto& object = material_shader_instance_states_[data.geometry->get_material()->get_internal_id()];
+		const auto& material = data.geometry->get_material();
+		const auto* material_state = (vulkan_material_state*)material->data;
+
+		auto& object = material_shader_instance_states_[material_state->internal_id];
 		auto& object_set = object.descriptor_sets[context_->image_index];
 
 		std::array<vk::WriteDescriptorSet, material_shader_descriptor_count> write_set{};
 		auto range = sizeof(material_instance_uniform_buffer_object);
-		auto offset = sizeof(material_instance_uniform_buffer_object) * data.geometry->get_material()->get_internal_id();
+		auto offset = sizeof(material_instance_uniform_buffer_object) * material_state->internal_id;
 
 		material_instance_uniform_buffer_object obo{};
-		obo.diffuse_colour = data.geometry->get_material()->get_diffuse_colour();
+		obo.diffuse_colour = material->get_diffuse_colour();
 
 		object_uniform_buffer_->load_data(offset, range, 0, &obo);
 
@@ -241,7 +244,7 @@ namespace egkr
 		uint32_t descriptor_count{};
 
 		auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
-		if (generation == invalid_id || generation != data.geometry->get_material()->get_generation())
+		if (generation == invalid_id || generation != material->get_generation())
 		{
 			vk::DescriptorBufferInfo buffer_info{};
 			buffer_info
@@ -280,21 +283,21 @@ namespace egkr
 					break;
 			}
 
-			auto texture = std::dynamic_pointer_cast<vulkan_texture>(tex);
-			if (texture->get_generation() == invalid_id)
+			auto texture_state = (vulkan_texture_state*)tex->data;
+			if (tex->get_generation() == invalid_id)
 			{
-				texture = std::dynamic_pointer_cast<vulkan_texture>(texture_system::get_default_texture());
+				//texture = std::dynamic_pointer_cast<vulkan_texture>(texture_system::get_default_texture());
 			}
 
 			auto& generation = object.descriptor_states[descriptor_index].generation[context_->image_index];
 			auto& descriptor_id = object.descriptor_states[descriptor_index].id[context_->image_index];
 
-			if (texture && (texture->get_id() != descriptor_id || texture->get_generation() != generation || generation == invalid_id))
+			if (texture_state && (tex->get_id() != descriptor_id || tex->get_generation() != generation || generation == invalid_id))
 			{
 				image_infos[sampler_index]
 					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-					.setImageView(texture->get_view())
-					.setSampler(texture->get_sampler());
+					.setImageView(texture_state->image->get_view())
+					.setSampler(texture_state->sampler);
 
 
 				vk::WriteDescriptorSet sampler_write{};
@@ -308,10 +311,10 @@ namespace egkr
 				write_set[descriptor_count] = sampler_write;
 				++descriptor_count;
 
-				if (texture->get_generation() != invalid_id)
+				if (tex->get_generation() != invalid_id)
 				{
-					generation = texture->get_generation();
-					descriptor_id = texture->get_id();
+					generation = tex->get_generation();
+					descriptor_id = tex->get_id();
 				}
 
 				++descriptor_index;
@@ -328,12 +331,12 @@ namespace egkr
 		command_buffer.get_handle().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_->get_layout(), 1, object_set, nullptr);
 	}
 
-	bool shader::acquire_resource(vulkan_material::shared_ptr& material)
+	bool shader::acquire_resource(vulkan_material_state* material)
 	{
-		material->set_internal_id(object_uniform_buffer_index_);
+		material->internal_id = object_uniform_buffer_index_;
 		++object_uniform_buffer_index_;
 
-		material_shader_instance_state& object_state = material_shader_instance_states_[material->get_internal_id()];
+		material_shader_instance_state& object_state = material_shader_instance_states_[material->internal_id];
 
 		std::array<vk::DescriptorSetLayout, 3> object_descriptor_set_layout{object_descriptor_set_layout_, object_descriptor_set_layout_, object_descriptor_set_layout_};
 		vk::DescriptorSetAllocateInfo allocate_info{};

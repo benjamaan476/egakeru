@@ -100,4 +100,35 @@ namespace egkr
 	{
 		world_view_ = view;
 	}
+
+	bool renderer_frontend::populate_material(material* material) const
+	{
+		return backend_->populate_material(material);
+	}
+
+	void renderer_frontend::free_material(material* texture) const
+	{
+		return backend_->free_material(texture);
+	}
+
+	bool renderer_frontend::populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) const
+	{
+		return backend_->populate_texture(texture, properties, data);
+	}
+
+	void renderer_frontend::free_texture(texture* texture) const
+	{
+		backend_->free_texture(texture);
+	}
+
+	bool renderer_frontend::populate_geometry(geometry* geometry) const
+	{
+		backend_->populate_geometry(geometry);
+	}
+
+	void renderer_frontend::free_geometry(geometry* geometry) const
+	{
+		backend_->free_geometry(geometry);
+	}
+
 }

@@ -6,12 +6,12 @@ namespace egkr
 {
 	static texture_system::unique_ptr texture_system_{};
 
-	void texture_system::create(const void* renderer_context, const texture_system_configuration& properties)
+	void texture_system::create(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
 	{
 		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
 	}
 
-	texture_system::texture_system(const void* renderer_context, const texture_system_configuration& properties)
+	texture_system::texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
 		:renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
 	{
 		if (max_texture_count_ == 0)
@@ -64,7 +64,16 @@ namespace egkr
 
 	void texture_system::shutdown()
 	{
-		texture_system_->default_texture_.reset();
+		if (texture_system_->default_texture_)
+		{
+			texture_system_->renderer_context_->free_texture(texture_system_->default_texture_.get());
+			texture_system_->default_texture_.reset();
+		}
+
+		for (auto& texture : texture_system_->registered_textures_)
+		{
+			texture_system_->renderer_context_->free_texture(texture.get());
+		}
 		texture_system_->registered_textures_.clear();
 		texture_system_->registered_textures_by_name_.clear();
 	}
@@ -127,7 +136,7 @@ namespace egkr
 
 		auto image = resource_system::load(filename, resource_type::image);
 
-		auto properties = (texture_properties*)image->get_data();
+		auto properties = (texture_properties*)image->data;
 
 		properties->id = texture->get_id();
 		auto temp_texture = texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);

@@ -47,7 +47,7 @@ namespace egkr
 
 	bool binary_loader::unload(const resource::shared_ptr& resource)
 	{
-		auto* data = (binary_resource_properties*)resource->get_data();
+		auto* data = (binary_resource_properties*)resource->data;
 		data->data.clear();
 		delete data;
 		return false;

@@ -3,6 +3,9 @@
 #include "renderer_types.h"
 #include "event.h"
 
+#include "resources/material.h"
+#include "resources/texture.h"
+
 namespace egkr
 {
 	class renderer_frontend
@@ -20,6 +23,15 @@ namespace egkr
 
 		//TODO Hack
 		API void set_view(const float4x4& view);
+
+		bool populate_material(material* material) const;
+		void free_material(material* texture) const;
+
+		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) const;
+		void free_texture(texture* texture) const;
+
+		bool populate_geometry(geometry* geometry) const;
+		void free_geometry(geometry* geometry) const;
 
 		auto get_backend_context() const { return backend_->get_context(); }
 

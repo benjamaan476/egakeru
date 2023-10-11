@@ -60,7 +60,7 @@ namespace egkr
 
 		resource_system_configuration resource_system_configuration{};
 		resource_system_configuration.max_loader_count = 6;
-		resource_system_configuration.base_path = "../assets/";
+		resource_system_configuration.base_path = "../../../../assets/";
 
 		if (!resource_system::create(resource_system_configuration))
 		{
@@ -75,8 +75,8 @@ namespace egkr
 
 
 
-		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
-		if(!material_system::create(state_.renderer->get_backend_context()))
+		texture_system::create(state_.renderer.get(), {1024});
+		if(!material_system::create(state_.renderer.get()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
