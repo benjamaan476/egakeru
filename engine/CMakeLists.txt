@@ -51,7 +51,7 @@ target_link_system_libraries(
 
 
 set(SHADER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
-set(SHADER_BINARY_DIR ${CMAKE_BINARY_DIR}/assets/shaders)
+set(SHADER_BINARY_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
 
 file(GLOB SHADERS
     ${SHADER_SOURCE_DIR}/*.frag

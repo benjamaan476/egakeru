@@ -8,8 +8,7 @@ namespace egkr
 	}
 
 	resource::resource(const resource_properties& properties)
-		: id_{0}, generation_{0}, name_{properties.name}, full_path_{properties.full_path}, resource_type_{properties.type}, data_{properties.data}
+		: data{ properties.data }, id_{0}, generation_{0}, name_{properties.name}, full_path_{properties.full_path}, resource_type_{properties.type}
 	{
-
 	}
 }

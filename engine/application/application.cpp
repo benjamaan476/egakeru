@@ -60,7 +60,7 @@ namespace egkr
 
 		resource_system_configuration resource_system_configuration{};
 		resource_system_configuration.max_loader_count = 6;
-		resource_system_configuration.base_path = "../assets/";
+		resource_system_configuration.base_path = "../../../../assets/";
 
 		if (!resource_system::create(resource_system_configuration))
 		{
@@ -75,13 +75,13 @@ namespace egkr
 
 
 
-		texture_system::create(state_.renderer->get_backend_context(), { 1024 });
-		if(!material_system::create(state_.renderer->get_backend_context()))
+		texture_system::create(state_.renderer.get(), {1024});
+		if(!material_system::create(state_.renderer.get()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
 
-		if (!geometry_system::create(state_.renderer->get_backend_context()))
+		if (!geometry_system::create(state_.renderer.get()))
 		{
 			LOG_FATAL("Failed to create geometry system");
 		}
@@ -124,7 +124,7 @@ namespace egkr
 		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 		ui_properties.indices = indices;
 
-		test_ui_geometry_ = geometry::create(state_.renderer->get_backend_context(), ui_properties);
+		test_ui_geometry_ = geometry::create(state_.renderer.get(), ui_properties);
 
 		state_.is_running = true;
 		is_initialised_ = true;

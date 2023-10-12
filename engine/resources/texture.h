@@ -2,6 +2,8 @@
 
 #include "pch.h"
 #include "resource.h"
+
+
 namespace egkr
 {
 
@@ -24,21 +26,17 @@ namespace egkr
 		const void* data{};
 	};
 
+	class renderer_frontend;
 	class texture : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<texture>;
 
-		static shared_ptr create(const void* context, const texture_properties& properties, const uint8_t* data);
+		static shared_ptr create(const renderer_frontend* context, const texture_properties& properties, const uint8_t* data);
 		explicit texture(const texture_properties& properties);
+		~texture();
 
-		virtual ~texture() = default;
-
-
-		virtual void destroy() = 0;
-
-	private:
-		std::string name_{};
+		void destroy(const renderer_frontend* renderer);
 	};
 
 	struct texture_map

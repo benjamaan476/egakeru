@@ -39,13 +39,15 @@ namespace egkr
 		const auto& get_id() const { return id_; }
 		void set_id(uint32_t id) { id_ = id; }
 
-		const auto* get_data() const { return data_;}
 
 		const auto& get_generation() const { return generation_; }
 		void increment_generation() { ++generation_; }
 		void set_generation(uint32_t generation) { generation_ = generation; }
 
 		const auto& get_type() const { return resource_type_; }
+
+		void* data{};
+
 	private:
 		uint32_t id_{ invalid_id };
 		uint32_t generation_{ invalid_id };
@@ -54,6 +56,6 @@ namespace egkr
 		std::string full_path_{};
 
 		resource_type resource_type_{};
-		void* data_{};
+		// Renderer specific data
 	};
 }

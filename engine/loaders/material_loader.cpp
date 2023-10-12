@@ -36,7 +36,7 @@ namespace egkr
 
 	bool material_loader::unload(const resource::shared_ptr& resource)
 	{
-		auto* data = (material_properties*)resource->get_data();
+		auto* data = (material_properties*)resource->data;
 		delete data;
 		return false;
 	}
