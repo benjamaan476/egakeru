@@ -4,6 +4,7 @@
 
 #include "../renderer_types.h"
 #include "vulkan_types.h"
+#include "vulkan_shader.h"
 
 namespace egkr
 {
@@ -22,14 +23,11 @@ namespace egkr
 		bool begin_frame(double delta_time) final;
 		bool begin_renderpass(builtin_renderpass renderpass) final;
 		bool end_renderpass(builtin_renderpass renderpass) final;
-		void update_world_state(const float4x4& projection, const float4x4& view, const float3& view_position, const float4& ambient_colour, int32_t mode) final;
-		void update_ui_state(const float4x4& projection, const float4x4& view, const float3& view_position, const float4& ambient_colour, int32_t mode) final;
 		void draw_geometry(const geometry_render_data& model) final;
 		void end_frame() final;
 
 		const void* get_context() const final { return &context_; }
 
-		bool populate_material(material* material) override;
 		void free_material(material* texture) override;
 
 		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) override;
@@ -46,7 +44,6 @@ namespace egkr
 		bool bind_shader_instances(shader* shader, uint32_t instance_id) override;
 		bool apply_shader_globals(shader* shader) override;
 		bool apply_shader_instances(shader* shader) override;
-		bool apply_shader_locals(shader* shader) override;
 		uint32_t acquire_shader_isntance_resources(shader* shader) override;
 
 		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) override;
@@ -65,8 +62,7 @@ namespace egkr
 
 		bool recreate_swapchain();
 
-		void create_shaders();
-		void create_material_buffers();
+		vulkan_shader_stage create_module(shader* shader, const vulkan_shader_stage_configuration& configuration);
 
 	private:
 		vulkan_context context_{};

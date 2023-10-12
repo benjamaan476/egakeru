@@ -7,7 +7,7 @@ namespace egkr
 {
 	struct vulkan_material_state
 	{
-		uint32_t internal_id{invalid_id};
+		uint32_t internal_id{invalid_32_id};
 	};
 
 }

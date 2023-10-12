@@ -101,7 +101,7 @@ namespace egkr
 
 				properties.diffuse_colour = { x, y, z, w };
 			}
-			else if (variable_name == "shader_name")
+			else if (variable_name == "shader")
 			{
 				properties.shader_name = value;
 			}

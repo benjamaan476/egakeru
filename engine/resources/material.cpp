@@ -3,18 +3,13 @@
 #include "renderer/renderer_frontend.h"
 
 #include "systems/texture_system.h"
+#include "systems/shader_system.h"
 
 namespace egkr
 {
-	material::shared_ptr material::create(const renderer_frontend* renderer, const material_properties& properties)
+	material::shared_ptr material::create(const material_properties& properties)
 	{
 		auto mat = std::make_shared<material>(properties);
-		if (!renderer->populate_material(mat.get()))
-		{
-			LOG_ERROR("Failed to populate material");
-			return nullptr;
-		}
-
 		return mat;
 	}
 

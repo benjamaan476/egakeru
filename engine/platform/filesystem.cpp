@@ -67,13 +67,16 @@ namespace egkr
 			return {};
 		}
 
-		egkr::vector<uint8_t> data(max_size);
-		auto ret = fgets((char*)data.data(), data.size(), handle.handle);
+		char buff[max_size];
+		auto ret = fgets(buff, max_size, handle.handle);
+
 		if (ret == nullptr)
 		{
 			return {};
 		}
-		data[strcspn((char*)data.data(), "\n")] = 0;
+		buff[strcspn(buff, "\n")] = 0;
+		auto len = strlen(buff);
+		egkr::vector<uint8_t> data(buff, buff + len);
 		return data;
 	}
 

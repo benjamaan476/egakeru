@@ -9,6 +9,8 @@
 #include "fence.h"
 #include "buffer.h"
 
+#include "renderer/vertex_types.h"
+
 namespace egkr
 {
 

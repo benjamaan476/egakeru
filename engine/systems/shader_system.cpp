@@ -8,7 +8,7 @@ namespace egkr
 	bool shader_system::create(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
 	{
 		shader_system_ = std::make_unique<shader_system>(renderer_context, configuration);
-		return init();
+		return true;
 	}
 
 	shader_system::shader_system(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
@@ -51,20 +51,20 @@ namespace egkr
 		return  shader;
 	}
 
-	uint32_t shader_system::get_shader_id(std::string_view shader_name)
+	uint32_t shader_system::get_shader_id(const std::string& shader_name)
 	{
-		if (shader_system_->shader_id_by_name_.contains(shader_name.data()))
+		if (shader_system_->shader_id_by_name_.contains(shader_name))
 		{
 			return shader_system_->shader_id_by_name_[shader_name.data()];
 		}
 
 		LOG_WARN("Shader {} not registered with shader system", shader_name.data());
-		return invalid_id;
+		return invalid_32_id;
 	}
 
-	shader::shared_ptr shader_system::get_shader(std::string_view shader_name)
+	shader::shared_ptr shader_system::get_shader(const std::string& shader_name)
 	{
-		if (auto id = get_shader_id(shader_name) != invalid_id)
+		if (auto id = get_shader_id(shader_name); id != invalid_32_id)
 		{
 			return get_shader(id);
 		}
@@ -84,26 +84,28 @@ namespace egkr
 		return shader_system_->shaders_[shader_id];
 	}
 
-	void shader_system::use(std::string_view shader_name)
+	bool shader_system::use(const std::string& shader_name)
 	{
-		if (auto id = get_shader_id(shader_name) != invalid_id)
+		if (auto id = get_shader_id(shader_name) != invalid_32_id)
 		{
 			use(id);
 		}
 
 		LOG_ERROR("Invalid shader use: {}", shader_name.data());
+		return true;
 	}
 
-	void shader_system::use(uint32_t shader_id)
+	bool shader_system::use(uint32_t shader_id)
 	{
 		if (shader_system_->current_shader_id_ != shader_id)
 		{
 			auto shader = get_shader(shader_id);
 			shader_system_->current_shader_id_ = shader_id;
 
-			shader->use();
-			shader->bind_globals();
+			shader_system_->renderer_context_->use_shader(shader.get());
+			shader_system_->renderer_context_->bind_shader_globals(shader.get());
 		}
+		return true;
 	}
 
 	void shader_system::apply_global()
@@ -116,12 +118,6 @@ namespace egkr
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
 		shader_system_->renderer_context_->apply_shader_instances(shader.get());
-	}
-
-	void shader_system::apply_local()
-	{
-		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader_system_->renderer_context_->apply_shader_locals(shader.get());
 	}
 
 	void shader_system::set_uniform(std::string_view uniform_name, const void* data)
@@ -140,16 +136,16 @@ namespace egkr
 		{
 			if (uniform.scope == shader_scope::global)
 			{
-				shader->bind_globals();
+				shader_system_->renderer_context_->bind_shader_globals(shader.get());
 			}
 			else if (uniform.scope == shader_scope::instance)
 			{
-				shader->bind_instance();
+				shader_system_->renderer_context_->bind_shader_instances(shader.get(), shader->get_bound_instance_id());
 			}
 		}
 
 		shader->set_bound_scope(uniform.scope);
-		return shader->set_uniform(uniform, data);
+		shader_system_->renderer_context_->set_uniform(shader.get(), uniform, data);
 	}
 
 	void shader_system::set_sampler(std::string_view sampler_name, const texture::shared_ptr& texture)

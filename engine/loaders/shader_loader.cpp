@@ -18,10 +18,10 @@ namespace egkr
 	resource::shared_ptr shader_loader::load(std::string_view name)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s" };
+		constexpr std::string_view format_string{ "%s/%s%s" };
 
 		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data());
+		sprintf_s(filename, format_string.data(), base_path.data(), name.data(), ".shadercfg");
 
 		const auto properties = load_configuration_file(filename);
 
@@ -60,7 +60,7 @@ namespace egkr
 			std::string line_string{ line.begin(), line.end() };
 			trim(line_string);
 
-			if (line.empty() || line[0] == '#' || line[0] == '\0')
+			if (line[0] == '#' || line[0] == '\0')
 			{
 				//line = filesystem::read_line(handle, 511);
 				continue;
@@ -79,7 +79,7 @@ namespace egkr
 			auto value = line_string.substr(split_index + 1);
 			trim(value);
 
-			if (variable_name == "version")
+			if (variable_name.compare("version") == 0)
 			{
 				//TODO version
 			}
@@ -87,14 +87,15 @@ namespace egkr
 			{
 				properties.name = value;
 			}
-			else if (variable_name == "renderpass_name")
+			else if (variable_name == "renderpass")
 			{
 				properties.renderpass_name = value;
 			}
 			else if (variable_name == "stages")
 			{
 				std::string stage{};
-				while (auto offset = value.find_first_of(',') != std::string::npos)
+				auto offset = value.find_first_of(',');
+				while (offset != std::string::npos)
 				{
 					stage = value.substr(0, offset);
 					shader_stages shader_stage;
@@ -121,34 +122,70 @@ namespace egkr
 					}
 					properties.stages.push_back(shader_stage);
 					value = value.substr(offset + 1);
+					offset = value.find_first_of(',');
 				}
+
+				stage = value.substr(0, offset);
+				shader_stages shader_stage;
+				if (stage == "frag" || strcmp(stage.data(),"fragment") == 0)
+				{
+					shader_stage = shader_stages::fragment;
+				}
+				else if (stage == "vert" || stage == "vertex")
+				{
+					shader_stage = shader_stages::vertex;
+				}
+				else if (stage == "geom" || stage == "geometry")
+				{
+					shader_stage = shader_stages::geometry;
+				}
+				else if (stage == "compute")
+				{
+					shader_stage = shader_stages::compute;
+				}
+				else
+				{
+					LOG_ERROR("Unrecognised shader type: {}", stage);
+					continue;
+				}
+				properties.stages.push_back(shader_stage);
+
 			}
-			else if (variable_name == "stage_files")
+			else if (variable_name == "stagefiles")
 			{
-				while (auto offset = value.find_first_of(',') != std::string::npos)
+				auto offset = value.find_first_of(',');
+				while (offset != std::string::npos)
 				{
 					std::string filename = value.substr(0, offset);
 					properties.stage_filenames.push_back(filename);
 					value = value.substr(offset + 1);
+					offset = value.find_first_of(',');
+
 				}
+
+				std::string filename = value.substr(0, offset);
+				properties.stage_filenames.push_back(filename);
+				value = value.substr(offset + 1);
+
 			}
 			else if (variable_name == "use_instance")
 			{
-				if (value == "true")
+				if (value == "true" || strcmp(value.data(), "1") == 0)
 				{
 					properties.use_instance = true;
 				}
 			}
 			else if (variable_name == "use_local")
 			{
-				if (value == "true")
+				if (value == "true" || strcmp(value.data(), "1") == 0)
 				{
 					properties.use_local = true;
 				}
 			}
 			else if (variable_name == "attribute")
 			{
-				if (auto offset = value.find_first_of(',') == std::string::npos)
+				auto offset = value.find_first_of(',');
+				if (offset == std::string::npos)
 				{
 					LOG_ERROR("Invalid attribute: {}", value);
 				}
@@ -221,7 +258,8 @@ namespace egkr
 			}
 			else if (variable_name == "uniform")
 			{
-				if (auto offset = value.find_first_of(',') == std::string::npos)
+				auto offset = value.find_first_of(',');
+				if (offset == std::string::npos)
 				{
 					LOG_ERROR("Invalid uniform: {}", value);
 				}
@@ -290,7 +328,7 @@ namespace egkr
 						uniform.type = shader_uniform_type::mat4x4;
 						uniform.size = 64;
 					}
-					else if (type == "sampler")
+					else if (type == "samp")
 					{
 						uniform.type = shader_uniform_type::sampler;
 						uniform.size = 0;

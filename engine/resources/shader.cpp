@@ -4,14 +4,16 @@
 
 namespace egkr
 {
-	shader::shared_ptr egkr::shader::create(const void* renderer_context, const shader_properties& properties)
+	shader::shared_ptr egkr::shader::create(const renderer_frontend* renderer_context, const shader_properties& properties)
 	{
 		auto shade = std::make_shared<shader>(renderer_context, properties);
-		
+
+		auto renderpass_id = renderer_context->get_renderpass_id(properties.renderpass_name);
+		renderer_context->populate_shader(shade.get(), (uint32_t)renderpass_id, properties.stage_filenames, properties.stages);
 		return shade;
 	}
 
-	shader::shader(const void* renderer_context, const shader_properties& properties)
+	shader::shader(const renderer_frontend* renderer_context, const shader_properties& properties)
 		: resource(0, 0), name_{ properties.name }, use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
 	{
 		//TODO make backend renderer shader
@@ -42,7 +44,7 @@ namespace egkr
 			return uniforms_[uniform_id_by_name_[uniform_name.data()]].index;
 		}
 
-		return invalid_id;
+		return invalid_32_id;
 	}
 
 	const shader_uniform& shader::get_uniform(uint32_t index)
@@ -98,6 +100,8 @@ namespace egkr
 		attribute_stride_ += size;
 
 		attributes_.emplace_back(configuration.name, size, configuration.type);
+
+		return true;
 	}
 
 	bool shader::add_sampler(const uniform_configuration& configuration)
@@ -124,7 +128,7 @@ namespace egkr
 		if (configuration.scope == shader_scope::global)
 		{
 			location = global_textures_.size();
-			global_textures_.push_back(texture_system::get_default_texture());
+			global_textures_.push_back(texture_system::get_default_texture().get());
 		}
 		else
 		{
@@ -133,6 +137,7 @@ namespace egkr
 		}
 
 		add_uniform(configuration.name, 0, configuration.type, configuration.scope, location, true);
+		return true;
 	}
 
 	bool shader::add_uniform(const uniform_configuration& configuration)
@@ -143,6 +148,7 @@ namespace egkr
 		}
 
 		add_uniform(configuration.name, configuration.size, configuration.type, configuration.scope, 0, false);
+		return true;
 	}
 
 	void shader::add_uniform(std::string_view uniform_name, uint32_t size, shader_uniform_type type, shader_scope scope, uint32_t set_location, bool is_sampler)
@@ -158,7 +164,7 @@ namespace egkr
 		if (scope != shader_scope::local)
 		{
 			uniform.set_index = (uint8_t)scope;
-			uniform.offset = is_sampler ? 0 : is_global ? globol_ubo_size_ : ubo_size_;
+			uniform.offset = is_sampler ? 0 : is_global ? global_ubo_size_ : ubo_size_;
 			uniform.size = is_sampler ? 0 : size;
 		}
 		else
@@ -168,7 +174,7 @@ namespace egkr
 				LOG_ERROR("Local scope not supported by this shader");
 				return;
 			}
-			uniform.set_index = invalid_id;
+			uniform.set_index = invalid_8_id;
 			range r{ get_aligned(push_constant_size_, 4), get_aligned(size, 4) };
 			uniform.offset = r.offset;
 			uniform.size = r.size;
@@ -183,7 +189,7 @@ namespace egkr
 		{
 			if (scope == shader_scope::global)
 			{
-				globol_ubo_size_ += uniform.size;
+				global_ubo_size_ += uniform.size;
 			}
 			else if (scope == shader_scope::instance)
 			{
@@ -211,10 +217,8 @@ namespace egkr
 		return true;
 	}
 
-	void shader::use()
+	void shader::set_global_texture(uint32_t index, texture* texture)
 	{
-		const auto& image_index = context_->image_index;
-		context_->graphics_command_buffers[image_index].get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->get_handle());
+		global_textures_[index] = texture;
 	}
-
 }

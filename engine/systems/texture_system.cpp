@@ -12,7 +12,7 @@ namespace egkr
 	}
 
 	texture_system::texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
-		:renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
+		: renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
 	{
 		if (max_texture_count_ == 0)
 		{
@@ -22,8 +22,10 @@ namespace egkr
 
 		registered_textures_.reserve(max_texture_count_);
 		registered_textures_by_name_.reserve(max_texture_count_);
+	}
 
-
+	bool texture_system::init()
+	{
 		texture_properties default_texture_properties{};
 		default_texture_properties.width = 32;
 		default_texture_properties.height = 32;
@@ -53,13 +55,9 @@ namespace egkr
 				}
 			}
 		}
+		texture_system_->default_texture_ = texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
 
-		default_texture_ = texture::create(renderer_context, default_texture_properties, (uint8_t*)data.data());
-	}
-
-	bool texture_system::init()
-	{
-		return false;
+		return true;
 	}
 
 	void texture_system::shutdown()
@@ -104,7 +102,7 @@ namespace egkr
 		auto new_texture = texture::create(texture_system_->renderer_context_, {.id = texture_id}, nullptr);
 		load_texture(texture_name, new_texture);
 
-		if (new_texture->get_generation() == invalid_id)
+		if (new_texture->get_generation() == invalid_32_id)
 		{
 			LOG_ERROR("Texture not found in texture system.");
 			return nullptr;
@@ -132,7 +130,7 @@ namespace egkr
 
 	bool texture_system::load_texture(std::string_view filename, texture::shared_ptr& texture)
 	{
-		texture->set_generation(invalid_id);
+		texture->set_generation(invalid_32_id);
 
 		auto image = resource_system::load(filename, resource_type::image);
 

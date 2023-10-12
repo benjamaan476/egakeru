@@ -1,9 +1,7 @@
 #pragma once
 #include "pch.h"
 
-#include "resource.h"
 #include "texture.h"
-#include "shader.h"
 
 #include <unordered_map>
 
@@ -102,17 +100,12 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<shader>;
-		static shared_ptr create(const void* renderer_context, const shader_properties& properties);
+		static shared_ptr create(const renderer_frontend* renderer_context, const shader_properties& properties);
 
-		shader(const void* renderer_context, const shader_properties& properties);
+		shader(const renderer_frontend* renderer_context, const shader_properties& properties);
 
 		uint32_t get_uniform_index(std::string_view uniform_name);
 		const shader_uniform& get_uniform(uint32_t index);
-		void set_uniform(const shader_uniform& uniform, const void* value);
-		void use();
-
-		void bind_globals();
-		void bind_instance();
 
 		const auto& get_bound_scope() const {return bound_scope_; }
 		void set_bound_scope(shader_scope scope);
@@ -127,14 +120,20 @@ namespace egkr
 		const auto& get_push_constant_ranges() const { return push_const_ranges_; }
 
 		const auto& get_global_ubo_stride() const { return global_ubo_stride_; }
+		const auto& get_global_ubo_size() const { return global_ubo_size_; }
 		void set_global_ubo_stride(uint64_t stride) { global_ubo_stride_ = stride; }
 
 		const auto& get_ubo_stride() const { return ubo_stride_; }
+		const auto& get_ubo_size() const { return ubo_size_; }
 		void set_ubo_stride(uint64_t stride) { ubo_stride_ = stride; }
 
 		const auto& get_global_ubo_offset() const { return global_ubo_offset_; }
 		void set_bound_ubo_offset(uint64_t offset) { bound_ubo_offset_ = offset; }
 		const auto& get_bound_ubo_offset() const { return bound_ubo_offset_; }
+
+		void set_global_texture(uint32_t index, texture* texture);
+
+		const auto& get_attribute_stride() const { return attribute_stride_; }
 	private:
 		bool add_attribute(const attribute_configuration& configuration);
 		bool add_sampler(const uniform_configuration& configuration);
@@ -150,7 +149,7 @@ namespace egkr
 		bool use_locals_{};
 		uint64_t requried_ubo_alignment_{};
 
-		uint64_t globol_ubo_size_{};
+		uint64_t global_ubo_size_{};
 		uint64_t global_ubo_stride_{};
 		uint64_t global_ubo_offset_{};
 
@@ -159,7 +158,7 @@ namespace egkr
 
 		uint64_t push_constant_size_{};
 		uint64_t push_constan_stride_{};
-		egkr::vector<texture::shared_ptr> global_textures_{};
+		egkr::vector<texture*> global_textures_{};
 
 		uint8_t instance_texture_count_{};
 		shader_scope bound_scope_{};
@@ -172,9 +171,9 @@ namespace egkr
 		egkr::vector<shader_attribute> attributes_{};
 		shader_state state_{shader_state::not_created};
 
-		egkr::vector<range> push_const_ranges_{32};
+		egkr::vector<range> push_const_ranges_;
 		uint16_t attribute_stride_{};
 
-		const void* renderer_context_{};
+		const renderer_frontend* renderer_context_{};
 	};
 }

@@ -27,16 +27,15 @@ namespace egkr
 		static bool init();
 		static bool shutdown();
 		static shader::shared_ptr create_shader(const shader_properties& properties);
-		static uint32_t get_shader_id(std::string_view shader_name);
-		static shader::shared_ptr get_shader(std::string_view shader_name);
+		static uint32_t get_shader_id(const std::string& shader_name);
+		static shader::shared_ptr get_shader(const std::string&  shader_name);
 		static shader::shared_ptr get_shader(uint32_t shader_id);
 
-		static void use(std::string_view shader_name);
-		static void use(uint32_t shader_id);
+		static bool use(const std::string& shader_name);
+		static bool use(uint32_t shader_id);
 
 		static void apply_global();
 		static void apply_instance();
-		static void apply_local();
 
 		static void set_uniform(std::string_view uniform_name, const void* data);
 		static void set_uniform(uint32_t instance_id, const void* data);

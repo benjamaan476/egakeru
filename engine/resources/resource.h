@@ -49,8 +49,8 @@ namespace egkr
 		void* data{};
 
 	private:
-		uint32_t id_{ invalid_id };
-		uint32_t generation_{ invalid_id };
+		uint32_t id_{ invalid_32_id };
+		uint32_t generation_{ invalid_32_id };
 
 		std::string name_{};
 		std::string full_path_{};

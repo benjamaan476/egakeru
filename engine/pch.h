@@ -41,7 +41,9 @@ namespace egkr
 	using float4x4 = glm::mat4x4;
 }
 
-constexpr static const uint32_t invalid_id = std::numeric_limits<uint32_t>::max();
+constexpr static const uint32_t invalid_32_id = std::numeric_limits<uint32_t>::max();
+constexpr static const uint16_t invalid_16_id = std::numeric_limits<uint16_t>::max();
+constexpr static const uint8_t invalid_8_id = std::numeric_limits<uint8_t>::max();
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
@@ -61,6 +63,7 @@ static inline void rtrim(std::string &s) {
 static inline void trim(std::string &s) {
     rtrim(s);
     ltrim(s);
+	s.shrink_to_fit();
 }
 
 #define ENUM_CLASS_OPERATORS(e) \
@@ -74,8 +77,8 @@ static inline void trim(std::string &s) {
 
 	struct range
 	{
-		uint32_t offset{};
-		uint32_t size{};
+		uint64_t offset{};
+		uint64_t size{};
 	};
 
 static inline uint64_t get_aligned(uint64_t operand, uint64_t granularity)

@@ -49,8 +49,8 @@ namespace egkr
 	
 	struct vulkan_descriptor_state
 	{
-		std::array<uint8_t, 3> ids{ invalid_id };
-		std::array<uint8_t, 3> generations{ invalid_id };
+		std::array<uint8_t, 3> ids{ invalid_8_id };
+		std::array<uint8_t, 3> generations{ invalid_8_id };
 
 	};
 
@@ -73,14 +73,14 @@ namespace egkr
 		uint64_t offset{};
 		vulkan_shader_descriptor_set_state descriptor_set_state{};
 
-		egkr::vector<texture::shared_ptr> instance_textures{};
+		egkr::vector<texture*> instance_textures{};
 	};
 
 	struct vulkan_shader_state
 	{
 		const vulkan_context* context_{};
 
-		uint32_t id{invalid_id};
+		uint32_t id{invalid_32_id};
 		vulkan_shader_configuration configuration{};
 		renderpass::shared_ptr renderpass{};
 		egkr::vector<vulkan_shader_stage> stages;

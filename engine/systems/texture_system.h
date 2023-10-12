@@ -23,7 +23,7 @@ namespace egkr
 		static void create(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
 
 		texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
-		bool init();
+		static bool init();
 		static void shutdown();
 
 		static texture::shared_ptr acquire(std::string_view texture_name);
