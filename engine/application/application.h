@@ -4,6 +4,9 @@
 #include "platform/platform.h"
 #include "game/game.h"
 #include "event.h"
+
+#include "resources/geometry.h"
+
 #include "renderer/renderer_frontend.h"
 
 namespace egkr

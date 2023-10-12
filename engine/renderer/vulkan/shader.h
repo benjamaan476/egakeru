@@ -59,7 +59,7 @@ namespace egkr
 
 		void apply_material(const geometry_render_data& data);
 
-		[[nodiscard]] bool acquire_resource(vulkan_material::shared_ptr& material);
+		[[nodiscard]] bool acquire_resource(vulkan_material_state* material);
 		void release_resource(uint32_t object_id);
 		
 		egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;

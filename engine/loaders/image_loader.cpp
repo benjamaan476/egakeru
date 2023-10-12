@@ -86,7 +86,7 @@ namespace egkr
 
 	bool egkr::image_loader::unload(const resource::shared_ptr& resource)
 	{
-		auto* data = (texture_properties*)resource->get_data();
+		auto* data = (texture_properties*)resource->data;
 		delete data;
 
 		return true;

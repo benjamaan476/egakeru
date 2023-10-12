@@ -5,21 +5,9 @@
 
 namespace egkr
 {
-	struct vulkan_context;
-	class vulkan_material : public material
+	struct vulkan_material_state
 	{
-	public:
-		using shared_ptr = std::shared_ptr <vulkan_material>;
-		static shared_ptr create(const vulkan_context* context, const material_properties& properties);
-
-		explicit vulkan_material(const vulkan_context* context, const material_properties& properties);
-		~vulkan_material();
-
-		void destroy();
-
-
-	private:
-		const vulkan_context* context_{};
-
+		uint32_t internal_id{invalid_id};
 	};
+
 }

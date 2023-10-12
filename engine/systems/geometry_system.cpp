@@ -3,14 +3,14 @@
 namespace egkr
 {
 	static geometry_system::unique_ptr geometry_system_{};
-	bool geometry_system::create(const void* renderer_context)
+	bool geometry_system::create(const renderer_frontend* renderer_context)
 	{
 		geometry_system_ = std::make_unique<geometry_system>(renderer_context);
 		geometry_system_->init();
 		return true;
 	}
 
-	geometry_system::geometry_system(const void* renderer_context)
+	geometry_system::geometry_system(const renderer_frontend* renderer_context)
 		: renderer_context_{ renderer_context }, max_geometry_count_{ 4096 }
 	{
 	}
@@ -40,7 +40,16 @@ namespace egkr
 
 	void geometry_system::shutdown()
 	{
-		geometry_system_->default_geometry_.reset();
+		if (geometry_system_->default_geometry_)
+		{
+			geometry_system_->renderer_context_->free_geometry(geometry_system_->default_geometry_.get());
+			geometry_system_->default_geometry_.reset();
+		}
+
+		for (auto geometry : geometry_system_->registered_geometries_)
+		{
+			geometry_system_->renderer_context_->free_geometry(geometry.get());
+		}
 		geometry_system_->registered_geometries_.clear();
 
 	}
@@ -53,6 +62,11 @@ namespace egkr
 	geometry::shared_ptr geometry_system::acquire(const geometry_properties& /*properties*/)
 	{
 		return geometry::shared_ptr();
+	}
+
+	void geometry_system::release_geometry(const geometry::shared_ptr& geometry)
+	{
+		geometry_system_->renderer_context_->free_geometry(geometry.get());
 	}
 
 	geometry::shared_ptr geometry_system::get_default()

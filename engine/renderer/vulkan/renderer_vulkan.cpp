@@ -5,6 +5,9 @@
 #include "swapchain.h"
 #include "pipeline.h"
 
+#include "vulkan_material.h"
+#include "vulkan_geometry.h"
+
 namespace egkr
 {
 
@@ -591,7 +594,10 @@ namespace egkr
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		const auto& material = data.geometry->get_material();
+		const auto& geometry = data.geometry;
+		const auto& state = (vulkan_geometry_state*)geometry->data;
+
+		const auto& material = geometry->get_material();
 
 		switch (material->get_material_type())
 		{
@@ -606,12 +612,25 @@ namespace egkr
 
 		}
 
-		if (data.geometry->get_material())
+		if (geometry->get_material())
 		{
 			context_.material_shader->apply_material(data);
 		}
 
-		data.geometry->draw();
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		vk::DeviceSize offset{ 0 };
+		command_buffer.get_handle().bindVertexBuffers(0, state->vertex_buffer_->get_handle(), offset);
+
+		command_buffer.get_handle().bindIndexBuffer(state->index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
+
+		if (state->index_count_)
+		{
+			command_buffer.get_handle().drawIndexed(state->index_count_, 1, 0, 0, 0);
+		}
+		else
+		{
+			command_buffer.get_handle().draw(state->vertex_count_, 0, 0, 0);
+		}
 
 	}
 
@@ -947,5 +966,149 @@ namespace egkr
 	void renderer_vulkan::create_material_buffers()
 	{
 	}
+
+	bool renderer_vulkan::populate_material(material* material)
+	{
+		vulkan_material_state state{};
+		switch (material->get_material_type())
+		{
+		case material_type::world:
+
+			if (!context_.material_shader->acquire_resource(&state))
+			{
+				LOG_ERROR("Failed to acquire shader resource");
+				return false;
+			}
+			LOG_INFO("Acquired shader resource");
+			break;
+		case material_type::ui:
+			if (!context_.ui_shader->acquire_resource(&state))
+			{
+				LOG_ERROR("Failed to acquire shader resource");
+				return false;
+			}
+			break;
+
+		}
+		material->data = new vulkan_material_state();
+		*(vulkan_material_state*)material->data = state;
+		return true;
+	}
+
+	void renderer_vulkan::free_material(material* material)
+	{
+		delete (vulkan_material_state*)material->data;
+	}
+
+
+	bool renderer_vulkan::populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data)
+	{
+		vulkan_texture_state state{};
+		state.context = &context_;
+		if (data)
+		{
+			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
+			auto staging_buffer = buffer::create(&context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+			staging_buffer->load_data(0, image_size, 0, data);
+
+			image_properties image_properties{};
+			image_properties.tiling = vk::ImageTiling::eOptimal;
+			image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+			image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+			image_properties.image_format = vk::Format::eR8G8B8A8Srgb;
+			image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+
+			state.image = image::create(&context_, properties.width, properties.height, image_properties, true);
+
+			command_buffer single_use{};
+			single_use.begin_single_use(&context_, context_.device.graphics_command_pool);
+
+			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+			state.image->copy_from_buffer(single_use, staging_buffer);
+			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			single_use.end_single_use(&context_, context_.device.graphics_command_pool, context_.device.graphics_queue);
+
+			vk::SamplerCreateInfo sampler_info{};
+			sampler_info
+				.setMinFilter(vk::Filter::eLinear)
+				.setMagFilter(vk::Filter::eLinear)
+				.setAddressModeU(vk::SamplerAddressMode::eRepeat)
+				.setAddressModeV(vk::SamplerAddressMode::eRepeat)
+				.setAddressModeW(vk::SamplerAddressMode::eRepeat)
+				.setAnisotropyEnable(true)
+				.setMaxAnisotropy(16)
+				.setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
+				.setUnnormalizedCoordinates(false)
+				.setCompareEnable(false)
+				.setMipmapMode(vk::SamplerMipmapMode::eLinear);
+
+			state.sampler = context_.device.logical_device.createSampler(sampler_info, context_.allocator);
+		}
+
+		texture->data = new vulkan_texture_state();
+		*(vulkan_texture_state*)texture->data = state;
+
+		return true;
+	}
+
+	void renderer_vulkan::free_texture(texture* texture)
+	{
+		context_.device.logical_device.waitIdle();
+		auto state = (vulkan_texture_state*)texture->data;
+		if (state->sampler)
+		{
+			context_.device.logical_device.destroySampler(state->sampler, context_.allocator);
+			state->sampler = VK_NULL_HANDLE;
+		}
+		if (state->image)
+		{
+			state->image.reset();
+		}
+
+		delete (vulkan_texture_state*)texture->data;
+		texture->data = nullptr;
+	}
+
+	bool renderer_vulkan::populate_geometry(geometry* geometry, const geometry_properties& properties)
+	{
+		geometry->data = new vulkan_geometry_state();
+		auto state = (vulkan_geometry_state*)geometry->data;
+
+		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
+		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
+		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
+
+		state->vertex_count_ = properties.vertex_count;
+		state->vertex_buffer_ = buffer::create(&context_, vertex_buffer_size, usage, flags, true);
+
+		const vk::BufferUsageFlags index_usage{vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
+		const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
+
+		state->index_count_ = properties.indices.size();
+		state->index_buffer_ = buffer::create(&context_, index_buffer_size, index_usage, flags, true);
+		upload_data_range(&context_, context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, state->vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
+		upload_data_range(&context_, context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, state->index_buffer_, 0, index_buffer_size, properties.indices.data());
+
+		return true;
+	}
+
+	void renderer_vulkan::free_geometry(geometry* geometry)
+	{
+		context_.device.logical_device.waitIdle();
+
+		auto state = (vulkan_geometry_state*)geometry->data;
+		if (state)
+		{
+
+			state->vertex_buffer_.reset();
+			state->index_buffer_.reset();
+
+			delete state;
+			state = nullptr;
+		}
+
+	}
+
 }
 

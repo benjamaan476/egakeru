@@ -8,14 +8,14 @@ namespace egkr
 {
 	static material_system::unique_ptr material_system_{};
 
-	bool material_system::create(const void* renderer_context)
+	bool material_system::create(const renderer_frontend* renderer)
 	{
-		material_system_ = std::make_unique<material_system>(renderer_context);
+		material_system_ = std::make_unique<material_system>(renderer);
 		return material_system::init();
 	}
 
-	material_system::material_system(const void* renderer_context)
-		: renderer_context_{ renderer_context }, max_material_count_{ 1024 }
+	material_system::material_system(const renderer_frontend* renderer)
+		: renderer_{ renderer }, max_material_count_{ 1024 }
 	{
 	}
 
@@ -47,8 +47,18 @@ namespace egkr
 
 	void material_system::shutdown()
 	{
-		material_system_->default_material_.reset();
+		if (material_system_->default_material_)
+		{
+			material_system_->renderer_->free_material(material_system_->default_material_.get());
+			material_system_->default_material_.reset();
+		}
+
+		for (auto& material : material_system_->registered_materials_)
+		{
+			material_system_->renderer_->free_material(material.get());
+		}
 		material_system_->registered_materials_.clear();
+
 		material_system_->registered_materials_by_name_.clear();
 	}
 
@@ -56,7 +66,7 @@ namespace egkr
 	{
 		auto material_resource = resource_system::load(name, resource_type::material);
 
-		auto* material_config = (material_properties*)material_resource->get_data();
+		auto* material_config = (material_properties*)material_resource->data;
 
 		auto material = acquire(*material_config);
 
@@ -87,7 +97,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(material_system_->renderer_context_, properties);
+		auto new_material = material::create(material_system_->renderer_, properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -111,7 +121,7 @@ namespace egkr
 		properties.type = material_type::world;
 		properties.diffuse_map_name = "default_texture";
 		properties.diffuse_colour = float4{ 1.F };
-		material_system_->default_material_ = material::create(material_system_->renderer_context_, properties);
+		material_system_->default_material_ = material::create(material_system_->renderer_, properties);
 		return true;
 	}
 
@@ -127,7 +137,7 @@ namespace egkr
 		}
 
 
-			auto temp_material = material::create(material_system_->renderer_context_, properties);
+			auto temp_material = material::create(material_system_->renderer_, properties);
 
 			material.reset();
 			material = std::move(temp_material);
@@ -140,7 +150,7 @@ namespace egkr
 				material->increment_generation();
 			}
 		material->set_diffuse_colour(properties.diffuse_colour);
-		material->set_name(properties.name);
+		//material->set_name(properties.name);
 		material->set_diffuse_map({ std::move(texture),texture_use::map_diffuse });
 
 		return true;

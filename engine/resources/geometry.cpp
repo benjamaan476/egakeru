@@ -1,25 +1,28 @@
 #include "geometry.h"
 
-#include "renderer/vulkan/vulkan_geometry.h"
-#include "renderer/vulkan/vulkan_types.h"
-
 #include "systems/material_system.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
-	geometry::shared_ptr geometry::create(const void* context, const geometry_properties& properties)
+	geometry::shared_ptr geometry::create(const renderer_frontend* context, const geometry_properties& properties)
 	{
-		return std::make_shared<vulkan_geometry>((vulkan_context*)context, properties);
+		auto geom = std::make_shared<geometry>(properties);
+		context->populate_geometry(geom.get(), properties);
+
+		return geom;
 	}
 
 	geometry::geometry(const geometry_properties& properties)
-		: resource(0, 0), id_{ properties.id }, generation_{properties.generation}
+		: resource(properties.id, properties.generation)
 	{
 		material_ = material_system::acquire(properties.material_name);
 	}
 
-	geometry::~geometry()
-	{
+	geometry::~geometry() = default;
 
+	void geometry::destroy(const renderer_frontend* renderer)
+	{
+		renderer->free_geometry(this);
 	}
 }

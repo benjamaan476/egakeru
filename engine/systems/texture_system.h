@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include "renderer/renderer_frontend.h"
 #include "renderer/renderer_types.h"
 
 #include "resources/texture.h"
@@ -19,9 +20,9 @@ namespace egkr
 		using unique_ptr = std::unique_ptr<texture_system>;
 		using texture_handle = uint32_t;
 
-		static void create(const void* renderer_context, const texture_system_configuration& properties);
+		static void create(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
 
-		texture_system(const void* renderer_context, const texture_system_configuration& properties);
+		texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
 		bool init();
 		static void shutdown();
 
@@ -34,7 +35,7 @@ namespace egkr
 
 
 	private:
-		const void* renderer_context_{};
+		const renderer_frontend* renderer_context_{};
 		texture::shared_ptr default_texture_{};
 
 		egkr::vector<texture::shared_ptr> registered_textures_{};

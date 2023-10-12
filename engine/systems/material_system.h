@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "resources/material.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
@@ -11,9 +12,9 @@ namespace egkr
 	public:
 		using material_reference = uint32_t;
 		using unique_ptr = std::unique_ptr<material_system>;
-		static bool create(const void* renderer_context);
+		static bool create(const renderer_frontend* renderer);
 
-		material_system(const void* renderer_context);
+		material_system(const renderer_frontend* renderer);
 		~material_system();
 
 		static bool init();
@@ -25,7 +26,7 @@ namespace egkr
 		static bool create_default_material();
 		static bool load_material(const material_properties& properties, material::shared_ptr& material);
 	private:
-		const void* renderer_context_{};
+		const renderer_frontend* renderer_{};
 		uint32_t max_material_count_{};
 
 		material::shared_ptr default_material_{};
