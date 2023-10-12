@@ -5,6 +5,7 @@
 
 #include "resources/material.h"
 #include "resources/texture.h"
+#include "resources/shader.h"
 
 namespace egkr
 {
@@ -32,6 +33,19 @@ namespace egkr
 
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) const;
 		void free_geometry(geometry* geometry) const;
+
+		bool populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const;
+		void free_shader(shader* shader) const;
+
+		bool use_shader(shader* shader) const;
+		bool bind_shader_globals(shader* shader) const;
+		bool bind_shader_instances(shader* shader, uint32_t instance_id) const;
+		bool apply_shader_globals(shader* shader) const;
+		bool apply_shader_instances(shader* shader) const;
+		bool apply_shader_locals(shader* shader) const;
+		uint32_t acquire_shader_isntance_resources(shader* shader) const;
+
+		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value);
 
 		auto get_backend_context() const { return backend_->get_context(); }
 

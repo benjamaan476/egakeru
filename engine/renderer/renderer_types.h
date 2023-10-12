@@ -79,8 +79,20 @@ namespace egkr
 
 		virtual bool populate_geometry(geometry* geometry, const geometry_properties& properties) = 0;
 		virtual void free_geometry(geometry* geometry) = 0;
- 
 
+		virtual bool populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) = 0;
+		virtual void free_shader(shader* shader) = 0;
+
+
+		virtual bool use_shader(shader* shader) = 0;
+		virtual bool bind_shader_globals(shader* shader) = 0;
+		virtual bool bind_shader_instances(shader* shader, uint32_t instance_id) = 0;
+		virtual bool apply_shader_globals(shader* shader) = 0;
+		virtual bool apply_shader_instances(shader* shader) = 0;
+		virtual bool apply_shader_locals(shader* shader) = 0;
+		virtual uint32_t acquire_shader_isntance_resources(shader* shader) = 0;
+
+		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
 	private:
 		platform::shared_ptr platform_;
 	};

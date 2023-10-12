@@ -3,12 +3,13 @@
 
 #include "resource.h"
 #include "texture.h"
+#include "shader.h"
 
 #include <unordered_map>
 
 namespace egkr
 {
-	enum class shader_stage
+	enum class shader_stages
 	{
 		vertex = 1,
 		geometry = 2,
@@ -67,7 +68,7 @@ namespace egkr
 		egkr::vector<attribute_configuration> attributes{};
 		egkr::vector<uniform_configuration> uniforms{};
 		std::string renderpass_name{};
-		egkr::vector<shader_stage> stages{};
+		egkr::vector<shader_stages> stages{};
 		egkr::vector<std::string> stage_names{};
 		egkr::vector<std::string> stage_filenames{};
 	};
@@ -116,7 +117,24 @@ namespace egkr
 		const auto& get_bound_scope() const {return bound_scope_; }
 		void set_bound_scope(shader_scope scope);
 
+		const auto& get_bound_instance_id() const { return bound_instance_id_; }
 		void set_bound_instance_id(uint32_t instance_id);
+
+		auto has_instances() const { return use_instances_; }
+
+		const auto& get_attributes() const { return attributes_; }
+		const auto& get_uniforms() const { return uniforms_; }
+		const auto& get_push_constant_ranges() const { return push_const_ranges_; }
+
+		const auto& get_global_ubo_stride() const { return global_ubo_stride_; }
+		void set_global_ubo_stride(uint64_t stride) { global_ubo_stride_ = stride; }
+
+		const auto& get_ubo_stride() const { return ubo_stride_; }
+		void set_ubo_stride(uint64_t stride) { ubo_stride_ = stride; }
+
+		const auto& get_global_ubo_offset() const { return global_ubo_offset_; }
+		void set_bound_ubo_offset(uint64_t offset) { bound_ubo_offset_ = offset; }
+		const auto& get_bound_ubo_offset() const { return bound_ubo_offset_; }
 	private:
 		bool add_attribute(const attribute_configuration& configuration);
 		bool add_sampler(const uniform_configuration& configuration);

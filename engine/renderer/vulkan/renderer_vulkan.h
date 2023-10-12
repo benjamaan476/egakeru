@@ -38,7 +38,18 @@ namespace egkr
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) override;
 		void free_geometry(geometry* geometry) override;
 
+		bool populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) override;
+		void free_shader(shader* shader) override;
 
+		bool use_shader(shader* shader) override;
+		bool bind_shader_globals(shader* shader) override;
+		bool bind_shader_instances(shader* shader, uint32_t instance_id) override;
+		bool apply_shader_globals(shader* shader) override;
+		bool apply_shader_instances(shader* shader) override;
+		bool apply_shader_locals(shader* shader) override;
+		uint32_t acquire_shader_isntance_resources(shader* shader) override;
+
+		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) override;
 	private:
 		bool init_instance();
 		bool create_debug_messenger();

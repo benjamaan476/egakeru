@@ -3,8 +3,10 @@
 #include "pipeline.h"
 #include "renderer/renderer_types.h"
 #include "buffer.h"
-#include "vulkan_texture.h"
 
+#include "resources/shader.h"
+
+#include "vulkan_texture.h"
 #include "vulkan_material.h"
 
 #include <vulkan/vulkan.hpp>
@@ -16,75 +18,102 @@ namespace egkr
 	constexpr static uint32_t material_shader_descriptor_count{ 2 };
 	constexpr static uint32_t material_shader_sampler_count{ 1 };
 
-	enum class shader_stages
+	constexpr static uint8_t BINDING_INDEX_UBO{ 0 };
+	constexpr static uint8_t BINDING_INDEX_SAMPLER{ 1 };
+
+	constexpr static uint8_t DESCRIPTOR_SET_INDEX_GLOBAL{ 0 };
+	constexpr static uint8_t DESCRIPTOR_SET_INDEX_INSTANCE{ 1 };
+
+	struct vulkan_descriptor_set_configuration
 	{
-		vert,
-		frag
+		egkr::vector<vk::DescriptorSetLayoutBinding> bindings{};
 	};
 
-	struct shader_stage
+	struct vulkan_shader_stage_configuration
 	{
-		vk::ShaderModuleCreateInfo shader_create_info{};
-		vk::ShaderModule handle{};
-		vk::PipelineShaderStageCreateInfo stage_create_info{};
+		vk::ShaderStageFlagBits stage{};
+		std::string filename{};
 	};
 
+	struct vulkan_shader_configuration
+	{
+		uint8_t stage_count{};
+		egkr::vector<vulkan_shader_stage_configuration> stages{};
+		egkr::vector<vk::DescriptorPoolSize> pool_sizes{};
+
+		uint16_t max_descriptor_set_count{};
+		//0 = global, 1 = instance
+		std::array<vulkan_descriptor_set_configuration, 2> descriptor_sets{};
+		egkr::vector<vk::VertexInputAttributeDescription> attributes{};
+	};
+	
 	struct vulkan_descriptor_state
 	{
-		std::array<uint32_t, 3> generation{ invalid_id, invalid_id, invalid_id };
-		std::array<uint32_t, 3> id{ invalid_id, invalid_id, invalid_id };
+		std::array<uint8_t, 3> ids{ invalid_id };
+		std::array<uint8_t, 3> generations{ invalid_id };
+
 	};
 
-	struct material_shader_instance_state
+	struct vulkan_shader_stage
 	{
-		std::vector<vk::DescriptorSet> descriptor_sets{};
-		std::array<vulkan_descriptor_state, material_shader_descriptor_count> descriptor_states{};
+		vk::ShaderModuleCreateInfo create_info{};
+		vk::ShaderModule handle{};
+		vk::PipelineShaderStageCreateInfo shader_stage_create_info{};
 	};
 
-
-	struct vulkan_context;
-	class shader
+	struct vulkan_shader_descriptor_set_state
 	{
-	public: 
-		using shared_ptr = std::shared_ptr<shader>;
-		API static shared_ptr create(const vulkan_context* context, pipeline_properties& pipeline_properties);
-		static shader_stage create_shader_module(const vulkan_context* context, std::string_view shader_name, shader_stages stage, std::string_view shader_type);
+		egkr::vector<vk::DescriptorSet> descriptor_sets{ 3 };
+		egkr::vector<vulkan_descriptor_state> descriptor_states{};
+	};
 
-		explicit shader(const vulkan_context* context, pipeline_properties& pipeline_propertiest);
-		~shader();
+	struct vulkan_shader_instance_state
+	{
+		uint32_t id{};
+		uint64_t offset{};
+		vulkan_shader_descriptor_set_state descriptor_set_state{};
 
-		void use();
-		void update_global_state(const material_shader_uniform_buffer_object& ubo);
-		void set_model(const float4x4& model);
+		egkr::vector<texture::shared_ptr> instance_textures{};
+	};
 
-		void apply_material(const geometry_render_data& data);
-
-		[[nodiscard]] bool acquire_resource(vulkan_material_state* material);
-		void release_resource(uint32_t object_id);
-		
-		egkr::vector<vk::PipelineShaderStageCreateInfo> get_shader_stages() const;
-
-		void destroy();
-
-	private:
+	struct vulkan_shader_state
+	{
 		const vulkan_context* context_{};
-		std::unordered_map<shader_stages, shader_stage> stages_{};
-		pipeline::shared_ptr pipeline_{};
 
-		material_shader_uniform_buffer_object global_ubo_{};
-		vk::DescriptorPool global_descriptor_pool_{};
-		vk::DescriptorSetLayout global_descriptor_set_layout_{};
-		egkr::vector<vk::DescriptorSet> global_descriptor_set_{};
+		uint32_t id{invalid_id};
+		vulkan_shader_configuration configuration{};
+		renderpass::shared_ptr renderpass{};
+		egkr::vector<vulkan_shader_stage> stages;
 
-		vk::DescriptorPool object_descriptor_pool_{};
-		vk::DescriptorSetLayout object_descriptor_set_layout_{};
-		buffer::shared_ptr object_uniform_buffer_{};
+		vk::DescriptorPool descriptor_pool{};
 
-		std::array<texture_use, material_shader_sampler_count> sampler_uses_{};
-		std::array<material_shader_instance_state, max_material_count> material_shader_instance_states_{};
-		uint32_t object_uniform_buffer_index_{};
-		egkr::vector<vk::DescriptorSet> object_descriptor_set_{};
+		//0 = global, 1 = instance
+		egkr::vector<vk::DescriptorSetLayout> descriptor_set_layout{2};
 
-		buffer::shared_ptr global_uniform_buffer_{};
+		// one poer frame
+		egkr::vector<vk::DescriptorSet> global_descriptor_sets{ 3 };
+
+		buffer::shared_ptr uniform_buffer{};
+
+		pipeline::shared_ptr pipeline{};
+
+		egkr::vector<vulkan_shader_instance_state> instance_states{};
+
+		void* mapped_uniform_buffer_memory{};
 	};
+
+	static std::unordered_map<shader_attribute_type, vk::Format> vulkan_attribute_types
+	{
+		{shader_attribute_type::float32_1, vk::Format::eR32Sfloat},
+		{shader_attribute_type::float32_2, vk::Format::eR32G32Sfloat},
+		{shader_attribute_type::float32_3, vk::Format::eR32G32B32Sfloat},
+		{shader_attribute_type::float32_4, vk::Format::eR32G32B32A32Sfloat},
+		{shader_attribute_type::int8, vk::Format::eR8Sint},
+		{shader_attribute_type::uint8, vk::Format::eR8Uint},
+		{shader_attribute_type::int16, vk::Format::eR16Sint},
+		{shader_attribute_type::uint16, vk::Format::eR16Uint},
+		{shader_attribute_type::int32, vk::Format::eR32Sint},
+		{shader_attribute_type::uint32, vk::Format::eR32Uint},
+	};
+
 }

@@ -1,16 +1,17 @@
 #include "shader_system.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
 	static shader_system::unique_ptr shader_system_{};
 
-	bool shader_system::create(const void* renderer_context, const shader_system_configuration& configuration)
+	bool shader_system::create(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
 	{
 		shader_system_ = std::make_unique<shader_system>(renderer_context, configuration);
 		return init();
 	}
 
-	shader_system::shader_system(const void* renderer_context, const shader_system_configuration& configuration)
+	shader_system::shader_system(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
 		: renderer_context_{ renderer_context }, configuration_{ configuration }
 	{
 	}
@@ -108,19 +109,19 @@ namespace egkr
 	void shader_system::apply_global()
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader->apply_globals();
+		shader_system_->renderer_context_->apply_shader_globals(shader.get());
 	}
 
 	void shader_system::apply_instance()
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader->apply_instance();
+		shader_system_->renderer_context_->apply_shader_instances(shader.get());
 	}
 
 	void shader_system::apply_local()
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader->apply_locals();
+		shader_system_->renderer_context_->apply_shader_locals(shader.get());
 	}
 
 	void shader_system::set_uniform(std::string_view uniform_name, const void* data)

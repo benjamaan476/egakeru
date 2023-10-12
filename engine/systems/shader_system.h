@@ -20,9 +20,9 @@ namespace egkr
 	{
 	public:
 		using unique_ptr = std::unique_ptr<shader_system>;
-		static bool create(const void* renderer_context, const shader_system_configuration& configuration);
+		static bool create(const renderer_frontend* renderer_context, const shader_system_configuration& configuration);
 
-		shader_system(const void* renderer_context, const shader_system_configuration& configuration);
+		shader_system(const renderer_frontend* renderer_context, const shader_system_configuration& configuration);
 
 		static bool init();
 		static bool shutdown();
@@ -48,7 +48,7 @@ namespace egkr
 	private:
 		static uint32_t new_shader_id();
 	private:
-		const void* renderer_context_{};
+		const renderer_frontend* renderer_context_{};
 		shader_system_configuration configuration_{};
 
 		std::unordered_map<std::string, uint32_t> shader_id_by_name_{};

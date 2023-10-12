@@ -131,4 +131,52 @@ namespace egkr
 		backend_->free_geometry(geometry);
 	}
 
+	bool renderer_frontend::populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
+	{
+		return backend_->populate_shader(shader, renderpass_id, stage_filenames, shader_stages);
+	}
+	void renderer_frontend::free_shader(shader* shader) const
+	{
+		backend_->free_shader(shader);
+	}
+
+	bool renderer_frontend::use_shader(shader* shader) const
+	{
+		backend_->use_shader(shader);
+	}
+
+	bool renderer_frontend::bind_shader_globals(shader* shader) const
+	{
+		backend_->bind_shader_globals(shader);
+	}
+
+	bool renderer_frontend::bind_shader_instances(shader* shader, uint32_t instance_id) const
+	{
+		backend_->bind_shader_instances(shader, instance_id);
+	}
+
+	bool renderer_frontend::apply_shader_globals(shader* shader) const
+	{
+		backend_->apply_shader_globals(shader);
+	}
+
+	bool renderer_frontend::apply_shader_instances(shader* shader) const
+	{
+		backend_->apply_shader_instances(shader);
+	}
+
+	bool renderer_frontend::apply_shader_locals(shader* shader) const
+	{
+		backend_->apply_shader_locals(shader);
+	}
+
+	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader) const
+	{
+		backend_->acquire_shader_isntance_resources(shader);
+	}
+
+	bool renderer_frontend::set_uniform(shader* shader, const shader_uniform& uniform, const void* value)
+	{
+		backend_->set_uniform(shader, uniform, value);
+	}
 }

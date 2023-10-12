@@ -30,7 +30,7 @@ namespace egkr
 		resource_properties.name = name;
 		resource_properties.full_path = filename;
 
-		resource_properties.data = malloc(sizeof(properties));
+		resource_properties.data = new shader_properties();
 		*(shader_properties*)resource_properties.data = properties;
 
 		return std::make_shared<resource>(resource_properties);
@@ -38,9 +38,10 @@ namespace egkr
 
 	bool shader_loader::unload(const resource::shared_ptr& resource)
 	{
-		free((shader_properties*)resource->get_data());
-		return false;
+		delete (shader_properties*)resource->data;
+		return true;
 	}
+
 	shader_properties shader_loader::load_configuration_file(std::string_view path)
 	{
 		shader_properties properties{};
@@ -96,22 +97,22 @@ namespace egkr
 				while (auto offset = value.find_first_of(',') != std::string::npos)
 				{
 					stage = value.substr(0, offset);
-					shader_stage shader_stage;
+					shader_stages shader_stage;
 					if (stage == "frag" || stage == "fragment")
 					{
-						shader_stage = shader_stage::fragment;
+						shader_stage = shader_stages::fragment;
 					}
 					else if (stage == "vert" || stage == "vertex")
 					{
-						shader_stage = shader_stage::vertex;
+						shader_stage = shader_stages::vertex;
 					}
 					else if (stage == "geom" || stage == "geometry")
 					{
-						shader_stage = shader_stage::geometry;
+						shader_stage = shader_stages::geometry;
 					}
 					else if (stage == "compute")
 					{
-						shader_stage = shader_stage::compute;
+						shader_stage = shader_stages::compute;
 					}
 					else
 					{

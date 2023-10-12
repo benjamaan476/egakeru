@@ -7,7 +7,6 @@
 #include "renderpass.h"
 #include "command_buffer.h"
 #include "fence.h"
-#include "vulkan_shader.h"
 #include "buffer.h"
 
 namespace egkr
