@@ -21,14 +21,14 @@ namespace egkr
 
 	};
 
-	struct vulkan_context;
-	class vulkan_geometry : public geometry
+	inline static void upload_data_range(const vulkan_context* context, vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data)
 	{
-	public:
-		explicit vulkan_geometry(const vulkan_context* context, const geometry_properties& properties);
-		~vulkan_geometry() override;
+		const vk::MemoryPropertyFlags memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+		const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eTransferSrc;
 
-		void draw() const override;
-	private:
-};
+		auto staging_buffer = buffer::create(context, size, usage, memory_flags, true);
+
+		staging_buffer->load_data(offset, size, 0, data);
+		staging_buffer->copy_to(pool, fence, queue, staging_buffer->get_handle(), 0, buffer->get_handle(), 0, size);
+	}
 }

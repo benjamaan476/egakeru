@@ -29,16 +29,17 @@ namespace egkr
 		}
 	};
 
+	class renderer_frontend;
 	class geometry : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<geometry>;
-		static shared_ptr create(const void* context, const geometry_properties& properties);
+		static shared_ptr create(const renderer_frontend* context, const geometry_properties& properties);
 
 		explicit geometry(const geometry_properties& properties);
 		virtual ~geometry();
 
-		virtual void draw() const = 0;
+		void destroy(const renderer_frontend* renderer);
 
 		const auto& get_material() const { return material_;}
 

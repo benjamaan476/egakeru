@@ -121,9 +121,9 @@ namespace egkr
 		backend_->free_texture(texture);
 	}
 
-	bool renderer_frontend::populate_geometry(geometry* geometry) const
+	bool renderer_frontend::populate_geometry(geometry* geometry, const geometry_properties& properties) const
 	{
-		backend_->populate_geometry(geometry);
+		return backend_->populate_geometry(geometry, properties);
 	}
 
 	void renderer_frontend::free_geometry(geometry* geometry) const

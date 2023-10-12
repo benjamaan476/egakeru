@@ -6,6 +6,7 @@
 #include "pipeline.h"
 
 #include "vulkan_material.h"
+#include "vulkan_geometry.h"
 
 namespace egkr
 {
@@ -593,7 +594,10 @@ namespace egkr
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
-		const auto& material = data.geometry->get_material();
+		const auto& geometry = data.geometry;
+		const auto& state = (vulkan_geometry_state*)geometry->data;
+
+		const auto& material = geometry->get_material();
 
 		switch (material->get_material_type())
 		{
@@ -608,12 +612,25 @@ namespace egkr
 
 		}
 
-		if (data.geometry->get_material())
+		if (geometry->get_material())
 		{
 			context_.material_shader->apply_material(data);
 		}
 
-		data.geometry->draw();
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		vk::DeviceSize offset{ 0 };
+		command_buffer.get_handle().bindVertexBuffers(0, state->vertex_buffer_->get_handle(), offset);
+
+		command_buffer.get_handle().bindIndexBuffer(state->index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
+
+		if (state->index_count_)
+		{
+			command_buffer.get_handle().drawIndexed(state->index_count_, 1, 0, 0, 0);
+		}
+		else
+		{
+			command_buffer.get_handle().draw(state->vertex_count_, 0, 0, 0);
+		}
 
 	}
 
@@ -1053,11 +1070,44 @@ namespace egkr
 		texture->data = nullptr;
 	}
 
-	bool renderer_vulkan::populate_geometry(geometry* geometry)
+	bool renderer_vulkan::populate_geometry(geometry* geometry, const geometry_properties& properties)
 	{
+		geometry->data = new vulkan_geometry_state();
+		auto state = (vulkan_geometry_state*)geometry->data;
+
+		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
+		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
+		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
+
+		state->vertex_count_ = properties.vertex_count;
+		state->vertex_buffer_ = buffer::create(&context_, vertex_buffer_size, usage, flags, true);
+
+		const vk::BufferUsageFlags index_usage{vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
+		const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
+
+		state->index_count_ = properties.indices.size();
+		state->index_buffer_ = buffer::create(&context_, index_buffer_size, index_usage, flags, true);
+		upload_data_range(&context_, context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, state->vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
+		upload_data_range(&context_, context_.device.graphics_command_pool, VK_NULL_HANDLE, context_.device.graphics_queue, state->index_buffer_, 0, index_buffer_size, properties.indices.data());
+
+		return true;
 	}
+
 	void renderer_vulkan::free_geometry(geometry* geometry)
 	{
+		context_.device.logical_device.waitIdle();
+
+		auto state = (vulkan_geometry_state*)geometry->data;
+		if (state)
+		{
+
+			state->vertex_buffer_.reset();
+			state->index_buffer_.reset();
+
+			delete state;
+			state = nullptr;
+		}
+
 	}
 
 }

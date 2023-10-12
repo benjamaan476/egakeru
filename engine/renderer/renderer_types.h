@@ -77,8 +77,8 @@ namespace egkr
 		virtual bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) = 0;
 		virtual void free_texture(texture* texture) = 0;
 
-		virtual bool populate_geometry(geometry* geometry) = 0;
-		virtual void free_geometry(geometry* geometry) = 0
+		virtual bool populate_geometry(geometry* geometry, const geometry_properties& properties) = 0;
+		virtual void free_geometry(geometry* geometry) = 0;
  
 
 	private:

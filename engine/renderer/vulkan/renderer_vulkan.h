@@ -35,7 +35,7 @@ namespace egkr
 		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) override;
 		void free_texture(texture* texture) override;
 
-		bool populate_geometry(geometry* geometry) override;
+		bool populate_geometry(geometry* geometry, const geometry_properties& properties) override;
 		void free_geometry(geometry* geometry) override;
 
 
