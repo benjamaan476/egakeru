@@ -33,6 +33,10 @@ namespace egkr
 
 	bool shader_system::shutdown()
 	{
+		for (const auto& shader : shader_system_->shaders_)
+		{
+			shader_system_->renderer_context_->free_shader(shader.get());
+		}
 		shader_system_->shaders_.clear();
 		shader_system_->shader_id_by_name_.clear();
 		return true;

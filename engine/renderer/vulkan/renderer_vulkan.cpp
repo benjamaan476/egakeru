@@ -446,7 +446,9 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
+			context_.ui_renderpass->destroy();
 			context_.ui_renderpass.reset();
+			context_.world_renderpass->destroy();
 			context_.world_renderpass.reset();
 			context_.world_framebuffers.clear();
 			context_.swapchain.reset();
@@ -963,6 +965,7 @@ namespace egkr
 		}
 		if (state->image)
 		{
+			state->image->destroy();
 			state->image.reset();
 		}
 
@@ -1000,8 +1003,9 @@ namespace egkr
 		auto state = (vulkan_geometry_state*)geometry->data;
 		if (state)
 		{
-
+			state->vertex_buffer_->destroy();
 			state->vertex_buffer_.reset();
+			state->index_buffer_->destroy();
 			state->index_buffer_.reset();
 
 			delete state;
@@ -1208,8 +1212,46 @@ namespace egkr
 		return false;
 	}
 
-	void renderer_vulkan::free_shader(shader* /*shader*/)
+	void renderer_vulkan::free_shader(shader* shader)
 	{
+		auto state = (vulkan_shader_state*)shader->data;
+		state->uniform_buffer->unlock();
+		state->uniform_buffer->destroy();
+		state->uniform_buffer.reset();
+
+		for (const auto& layout : state->descriptor_set_layout)
+		{
+			context_.device.logical_device.destroyDescriptorSetLayout(layout, context_.allocator);
+		}
+		state->descriptor_set_layout.clear();
+
+		if (!state->global_descriptor_sets.empty())
+		{
+			context_.device.logical_device.freeDescriptorSets(state->descriptor_pool, state->global_descriptor_sets);
+			state->global_descriptor_sets.clear();
+		}
+
+		for (const auto& d : state->instance_states)
+		{
+			for (const auto& set : d.descriptor_set_state.descriptor_sets)
+			{
+				context_.device.logical_device.freeDescriptorSets(state->descriptor_pool, set);
+			}
+		}
+
+
+		if (state->descriptor_pool)
+		{
+			context_.device.logical_device.destroyDescriptorPool(state->descriptor_pool, context_.allocator);
+			state->descriptor_pool = VK_NULL_HANDLE;
+		}
+
+		state->pipeline->destroy();
+
+		for (const auto& stage : state->stages)
+		{
+			context_.device.logical_device.destroyShaderModule(stage.handle, context_.allocator);
+		}
 
 	}
 
