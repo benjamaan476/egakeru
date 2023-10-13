@@ -83,7 +83,7 @@ namespace egkr
 		{
 			if (backend_->begin_renderpass(builtin_renderpass::world))
 			{
-				if (shader_system::use(material_shader_id))
+				if (!shader_system::use(material_shader_id))
 				{
 					LOG_ERROR("Failed to use material shader");
 					return;
@@ -109,7 +109,7 @@ namespace egkr
 
 				if (backend_->begin_renderpass(builtin_renderpass::ui))
 				{
-					if (shader_system::use(ui_shader_id))
+					if (!shader_system::use(ui_shader_id))
 					{
 						LOG_ERROR("Failed to use material shader");
 						return;

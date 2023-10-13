@@ -58,8 +58,8 @@ namespace egkr
 		material_shader_uniform_location material_locations_{};
 		ui_shader_uniform_location ui_locations_{};
 
-		uint32_t material_shader_id_{};
-		uint32_t ui_shader_id_{};
+		uint32_t material_shader_id_{invalid_32_id};
+		uint32_t ui_shader_id_{invalid_32_id};
 
 	};
 }

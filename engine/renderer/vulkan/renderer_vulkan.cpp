@@ -1013,7 +1013,7 @@ namespace egkr
 	bool renderer_vulkan::populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages)
 	{
 		renderpass::shared_ptr renderpass{};
-		if (renderpass_id == 1)
+		if (renderpass_id == 0)
 		{
 			renderpass = context_.world_renderpass;
 		}
@@ -1193,6 +1193,8 @@ namespace egkr
 		shader->set_ubo_stride(get_aligned(shader->get_ubo_size(), 256));
 
 		state->uniform_buffer = buffer::create(&context_, shader->get_global_ubo_stride() + (shader->get_ubo_stride() * max_material_count), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+		
+
 		state->mapped_uniform_buffer_memory = state->uniform_buffer->lock(0, VK_WHOLE_SIZE, 0);
 
 		egkr::vector<vk::DescriptorSetLayout> global_layouts = { state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL] };
@@ -1309,11 +1311,12 @@ namespace egkr
 		}
 		++descriptor_index;
 
+		vk::WriteDescriptorSet sampler{};
+		auto total_sampler_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
+		egkr::vector<vk::DescriptorImageInfo> image_infos{total_sampler_count};
 		if (state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
 		{
-			auto total_sampler_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
 			uint32_t update_sampler_count{};
-			egkr::vector<vk::DescriptorImageInfo> image_infos{};
 
 			for (auto i{ 0U }; i < total_sampler_count; ++i)
 			{
@@ -1326,12 +1329,11 @@ namespace egkr
 					.setImageView(texture_data->image->get_view())
 					.setSampler(texture_data->sampler);
 
-				image_infos.push_back(image_info);
+				image_infos[i] = image_info;
 
 				++update_sampler_count;
 			}
 
-			vk::WriteDescriptorSet sampler{};
 			sampler
 				.setDstSet(object_descriptor_set)
 				.setDstBinding(descriptor_index)
@@ -1364,7 +1366,7 @@ namespace egkr
 
 		instance_state.instance_textures = egkr::vector<texture*>(instance_texture_count, texture_system::get_default_texture().get());
 
-		vulkan_shader_descriptor_set_state set_state{};
+		instance_state.offset = shader->get_global_ubo_stride();
 
 		egkr::vector<vk::DescriptorSetLayout> layouts{ state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE] };
 
@@ -1375,7 +1377,6 @@ namespace egkr
 
 		instance_state.descriptor_set_state.descriptor_sets = context_.device.logical_device.allocateDescriptorSets(alloc_info);
 
-		instance_state.descriptor_set_state = set_state;
 		state->instance_states.push_back(instance_state);
 		return instance_id;
 	}
@@ -1400,12 +1401,12 @@ namespace egkr
 			{
 				// Is local, using push constants. Do this immediately.
 				auto& command_buffer = context_.graphics_command_buffers[context_.image_index].get_handle();
-				vkCmdPushConstants(command_buffer, internal->pipeline->get_layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, uniform.offset, uniform.size, value);
+				command_buffer.pushConstants(internal->pipeline->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset,  uniform.size, value);
 			}
 			else
 			{
 				// Map the appropriate memory location and copy the data over.
-				auto addr = (uint64_t*)internal->mapped_uniform_buffer_memory;
+				auto addr = (uint8_t*)internal->mapped_uniform_buffer_memory;
 				addr += shader->get_bound_ubo_offset() + uniform.offset;
 
 				memcpy(addr, value, uniform.size);

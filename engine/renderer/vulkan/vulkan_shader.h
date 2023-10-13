@@ -49,8 +49,8 @@ namespace egkr
 	
 	struct vulkan_descriptor_state
 	{
-		std::array<uint8_t, 3> ids{ invalid_8_id };
-		std::array<uint8_t, 3> generations{ invalid_8_id };
+		std::array<uint8_t, 3> ids{ invalid_8_id, invalid_8_id, invalid_8_id };
+		std::array<uint8_t, 3> generations{ invalid_8_id, invalid_8_id, invalid_8_id };
 
 	};
 
@@ -64,7 +64,7 @@ namespace egkr
 	struct vulkan_shader_descriptor_set_state
 	{
 		egkr::vector<vk::DescriptorSet> descriptor_sets{ 3 };
-		egkr::vector<vulkan_descriptor_state> descriptor_states{};
+		egkr::vector<vulkan_descriptor_state> descriptor_states{3};
 	};
 
 	struct vulkan_shader_instance_state

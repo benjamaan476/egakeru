@@ -13,7 +13,7 @@ namespace egkr
 	bool resource_system::create(const resource_system_configuration& properties)
 	{
 		resource_system_ = std::make_unique<resource_system>(properties);
-		return resource_system_->init();
+		return true;
 	}
 
 	resource_system::resource_system(const resource_system_configuration& properties)

@@ -52,6 +52,6 @@ namespace egkr
 
 		std::unordered_map<std::string, uint32_t> shader_id_by_name_{};
 		egkr::vector<shader::shared_ptr> shaders_{};
-		uint32_t current_shader_id_{};
+		uint32_t current_shader_id_{invalid_32_id};
 	};
 }
