@@ -7,6 +7,11 @@
 
 #include "vulkan_material.h"
 #include "vulkan_geometry.h"
+#include "vulkan_shader.h"
+#include "resources/shader.h"
+
+#include "systems/texture_system.h"
+#include "systems/resource_system.h"
 
 namespace egkr
 {
@@ -415,15 +420,6 @@ namespace egkr
 			context_.in_flight_fences[i] = fence::create(&context_, true);
 		}
 
-
-
-		create_shaders();
-		create_material_buffers();
-
-		//TODO temp code
-
-
-		//TODO end temp code
 		return true;
 	}
 
@@ -432,9 +428,6 @@ namespace egkr
 		if (context_.instance)
 		{
 			context_.device.logical_device.waitIdle();
-
-			context_.ui_shader->destroy();
-			context_.material_shader->destroy();
 
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
@@ -453,7 +446,9 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
+			context_.ui_renderpass->destroy();
 			context_.ui_renderpass.reset();
+			context_.world_renderpass->destroy();
 			context_.world_renderpass.reset();
 			context_.world_framebuffers.clear();
 			context_.swapchain.reset();
@@ -549,18 +544,6 @@ namespace egkr
 			return false;
 		}
 
-		switch (renderpass)
-		{
-		case egkr::builtin_renderpass::world:
-			context_.material_shader->use();
-			break;
-		case egkr::builtin_renderpass::ui:
-			context_.ui_shader->use();
-			break;
-		default:
-			break;
-		}
-
 		return true;
 	}
 
@@ -582,40 +565,20 @@ namespace egkr
 		return true;
 	}
 
-	void renderer_vulkan::update_world_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
-	{
-		context_.material_shader->update_global_state({ projection, view });
-	}
+	//void renderer_vulkan::update_world_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	//{
+	//	context_.material_shader->update_global_state({ projection, view });
+	//}
 
-	void renderer_vulkan::update_ui_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
-	{
-		context_.ui_shader->update_global_state({ projection, view });
-	}
+	//void renderer_vulkan::update_ui_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
+	//{
+	//	context_.ui_shader->update_global_state({ projection, view });
+	//}
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
 		const auto& geometry = data.geometry;
 		const auto& state = (vulkan_geometry_state*)geometry->data;
-
-		const auto& material = geometry->get_material();
-
-		switch (material->get_material_type())
-		{
-		case material_type::world:
-			context_.material_shader->set_model(data.model);
-			context_.material_shader->apply_material(data);
-			break;
-		case material_type::ui:
-			context_.ui_shader->set_model(data.model);
-			context_.ui_shader->apply_material(data);
-			break;
-
-		}
-
-		if (geometry->get_material())
-		{
-			context_.material_shader->apply_material(data);
-		}
 
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		vk::DeviceSize offset{ 0 };
@@ -934,67 +897,6 @@ namespace egkr
 		return true;
 	}
 
-	void renderer_vulkan::create_shaders()
-	{
-		const vk::Viewport viewport(0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height, 0.F, 1.F);
-		const vk::Rect2D scissor({ 0U, 0U }, { context_.framebuffer_width, context_.framebuffer_height});
-
-		pipeline_properties material_pipeline_properties{};
-		material_pipeline_properties.shader_name = "Builtin.MaterialShader";
-		material_pipeline_properties.is_wireframe = false;
-		material_pipeline_properties.scissor = scissor;
-		material_pipeline_properties.viewport = viewport;
-		material_pipeline_properties.renderpass = context_.world_renderpass;
-		material_pipeline_properties.input_binding_description = get_binding_description<vertex_3d>();
-		material_pipeline_properties.input_attribute_description = get_3d_attribute_description();
-		context_.material_shader = shader::create(&context_, material_pipeline_properties);
-
-		pipeline_properties ui_pipeline_properties{};
-		ui_pipeline_properties.shader_name = "Builtin.UIShader";
-		ui_pipeline_properties.is_wireframe = false;
-		ui_pipeline_properties.depth_test_enabled = false;
-		ui_pipeline_properties.scissor = scissor;
-		ui_pipeline_properties.viewport = viewport;
-		ui_pipeline_properties.renderpass = context_.ui_renderpass;
-		ui_pipeline_properties.input_binding_description = get_binding_description<vertex_2d>();
-		ui_pipeline_properties.input_attribute_description = get_2d_attribute_description();
-
-		context_.ui_shader = shader::create(&context_, ui_pipeline_properties);
-
-	}
-
-	void renderer_vulkan::create_material_buffers()
-	{
-	}
-
-	bool renderer_vulkan::populate_material(material* material)
-	{
-		vulkan_material_state state{};
-		switch (material->get_material_type())
-		{
-		case material_type::world:
-
-			if (!context_.material_shader->acquire_resource(&state))
-			{
-				LOG_ERROR("Failed to acquire shader resource");
-				return false;
-			}
-			LOG_INFO("Acquired shader resource");
-			break;
-		case material_type::ui:
-			if (!context_.ui_shader->acquire_resource(&state))
-			{
-				LOG_ERROR("Failed to acquire shader resource");
-				return false;
-			}
-			break;
-
-		}
-		material->data = new vulkan_material_state();
-		*(vulkan_material_state*)material->data = state;
-		return true;
-	}
-
 	void renderer_vulkan::free_material(material* material)
 	{
 		delete (vulkan_material_state*)material->data;
@@ -1063,6 +965,7 @@ namespace egkr
 		}
 		if (state->image)
 		{
+			state->image->destroy();
 			state->image.reset();
 		}
 
@@ -1100,8 +1003,9 @@ namespace egkr
 		auto state = (vulkan_geometry_state*)geometry->data;
 		if (state)
 		{
-
+			state->vertex_buffer_->destroy();
 			state->vertex_buffer_.reset();
+			state->index_buffer_->destroy();
 			state->index_buffer_.reset();
 
 			delete state;
@@ -1110,5 +1014,477 @@ namespace egkr
 
 	}
 
+	bool renderer_vulkan::populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages)
+	{
+		renderpass::shared_ptr renderpass{};
+		if (renderpass_id == 0)
+		{
+			renderpass = context_.world_renderpass;
+		}
+		else
+		{
+			renderpass = context_.ui_renderpass;
+		}
+
+		egkr::vector<vk::ShaderStageFlagBits> stages{};
+		for (const auto stage : shader_stages)
+		{
+			switch (stage)
+			{
+			case shader_stages::fragment:
+				stages.push_back(vk::ShaderStageFlagBits::eFragment);
+				break;
+			case shader_stages::vertex:
+				stages.push_back(vk::ShaderStageFlagBits::eVertex);
+				break;
+			case shader_stages::geometry:
+				stages.push_back(vk::ShaderStageFlagBits::eGeometry);
+				break;
+			case shader_stages::compute:
+				stages.push_back(vk::ShaderStageFlagBits::eCompute);
+				break;
+			default:
+				LOG_ERROR("Unrecognised shader stage");
+				return false;
+			}
+		}
+
+		shader->data = new vulkan_shader_state();
+		auto state = (vulkan_shader_state*)shader->data;
+		state->renderpass = renderpass;
+		state->configuration.max_descriptor_set_count = 1024;
+
+		for (auto i{ 0U }; i < stages.size(); ++i)
+		{
+			auto& stage = stages[i];
+			auto& name = stage_filenames[i];
+			state->configuration.stages.emplace_back(stage, name);
+		}
+
+		state->configuration.pool_sizes.push_back(vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1024));
+		state->configuration.pool_sizes.push_back(vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 4096));
+
+		vulkan_descriptor_set_configuration global_descriptor_set_configuration{};
+
+		vk::DescriptorSetLayoutBinding ubo{};
+		ubo
+			.setBinding(BINDING_INDEX_UBO)
+			.setDescriptorCount(1)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+
+		global_descriptor_set_configuration.bindings.push_back(ubo);
+
+		state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL] = global_descriptor_set_configuration;
+
+		if (shader->has_instances())
+		{
+			vulkan_descriptor_set_configuration instance_descriptor_set_configuration{};
+			vk::DescriptorSetLayoutBinding instance_ubo{};
+			instance_ubo
+				.setBinding(BINDING_INDEX_UBO)
+				.setDescriptorCount(1)
+				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+				.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+		
+			instance_descriptor_set_configuration.bindings.push_back(instance_ubo);
+			state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE] = instance_descriptor_set_configuration;
+		}
+
+		for (auto i{ 0U }; i < stages.size(); ++i)
+		{
+			state->stages.push_back(create_module(shader, state->configuration.stages[i]));
+		}
+
+		const auto& attributes = shader->get_attributes();
+
+		uint32_t offset{ 0 };
+		for (auto i{ 0U }; i < attributes.size(); ++i)
+		{
+			vk::VertexInputAttributeDescription attribute{};
+			attribute
+				.setLocation(i)
+				.setBinding(0)
+				.setOffset(offset)
+				.setFormat(vulkan_attribute_types[attributes[i].type]);
+			state->configuration.attributes.push_back(attribute);
+
+			offset += attributes[i].size;
+		}
+
+		for (const auto& uniform : shader->get_uniforms())
+		{
+			if (uniform.type == shader_uniform_type::sampler)
+			{
+				const uint32_t set_index = uniform.scope == shader_scope::global ? DESCRIPTOR_SET_INDEX_GLOBAL : DESCRIPTOR_SET_INDEX_INSTANCE;
+				auto& set_configuration = state->configuration.descriptor_sets[set_index];
+
+				if (set_configuration.bindings.size() < 2)
+				{
+					vk::DescriptorSetLayoutBinding sampler{};
+					sampler
+						.setBinding(BINDING_INDEX_SAMPLER)
+						.setDescriptorCount(1)
+						.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+						.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+					set_configuration.bindings.push_back(sampler);
+				}
+				else
+				{
+					set_configuration.bindings[BINDING_INDEX_SAMPLER].descriptorCount++;
+				}
+			}
+		}
+
+		vk::DescriptorPoolCreateInfo pool_info{};
+		pool_info
+			.setPoolSizes(state->configuration.pool_sizes)
+			.setMaxSets(state->configuration.max_descriptor_set_count)
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
+
+		state->descriptor_pool = context_.device.logical_device.createDescriptorPool(pool_info, context_.allocator);
+
+		for (auto i{ 0U }; i < state->configuration.descriptor_sets.size(); i++)
+		{
+			vk::DescriptorSetLayoutCreateInfo layout_info{};
+			layout_info
+				.setBindings(state->configuration.descriptor_sets[i].bindings);
+
+			state->descriptor_set_layout[i] = context_.device.logical_device.createDescriptorSetLayout(layout_info, context_.allocator);
+		}
+
+		vk::Viewport viewport{};
+		viewport
+			.setX(0.F)
+			.setY(context_.framebuffer_height)
+			.setWidth(context_.framebuffer_width)
+			.setHeight(-context_.framebuffer_height)
+			.setMinDepth(0.F)
+			.setMaxDepth(1.F);
+
+		vk::Rect2D scissor{};
+		scissor
+			.setExtent({ context_.framebuffer_width, context_.framebuffer_height })
+			.setOffset({ 0, 0 });
+
+		egkr::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos{};
+		for (const auto& stage : state->stages)
+		{
+			stage_create_infos.push_back(stage.shader_stage_create_info);
+		}
+
+		vk::VertexInputBindingDescription binding_desc{};
+		binding_desc
+			.setBinding(0)
+			.setStride(shader->get_attribute_stride())
+			.setInputRate(vk::VertexInputRate::eVertex);
+
+		pipeline_properties pipeline_properties{};
+		pipeline_properties.renderpass = renderpass;
+		pipeline_properties.descriptor_set_layout = state->descriptor_set_layout;
+		pipeline_properties.shader_stage_info = stage_create_infos;
+		pipeline_properties.is_wireframe = false;
+		pipeline_properties.depth_test_enabled = true;
+		pipeline_properties.scissor = scissor;
+		pipeline_properties.viewport = viewport;
+		pipeline_properties.push_constant_ranges = shader->get_push_constant_ranges();
+		pipeline_properties.input_binding_description = binding_desc;
+		pipeline_properties.input_attribute_description = state->configuration.attributes;
+
+		state->pipeline = pipeline::create(&context_, pipeline_properties);
+
+		shader->set_global_ubo_stride(get_aligned(shader->get_global_ubo_size(), 256));
+		shader->set_ubo_stride(get_aligned(shader->get_ubo_size(), 256));
+
+		state->uniform_buffer = buffer::create(&context_, shader->get_global_ubo_stride() + (shader->get_ubo_stride() * max_material_count), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+		
+
+		state->mapped_uniform_buffer_memory = state->uniform_buffer->lock(0, VK_WHOLE_SIZE, 0);
+
+		egkr::vector<vk::DescriptorSetLayout> global_layouts = { state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL] };
+
+		vk::DescriptorSetAllocateInfo alloc_info{};
+		alloc_info
+			.setDescriptorPool(state->descriptor_pool)
+			.setSetLayouts(global_layouts);
+
+		state->global_descriptor_sets = context_.device.logical_device.allocateDescriptorSets(alloc_info);
+		return false;
+	}
+
+	void renderer_vulkan::free_shader(shader* shader)
+	{
+		auto state = (vulkan_shader_state*)shader->data;
+		state->uniform_buffer->unlock();
+		state->uniform_buffer->destroy();
+		state->uniform_buffer.reset();
+
+		for (const auto& layout : state->descriptor_set_layout)
+		{
+			context_.device.logical_device.destroyDescriptorSetLayout(layout, context_.allocator);
+		}
+		state->descriptor_set_layout.clear();
+
+		if (!state->global_descriptor_sets.empty())
+		{
+			context_.device.logical_device.freeDescriptorSets(state->descriptor_pool, state->global_descriptor_sets);
+			state->global_descriptor_sets.clear();
+		}
+
+		for (const auto& d : state->instance_states)
+		{
+			for (const auto& set : d.descriptor_set_state.descriptor_sets)
+			{
+				context_.device.logical_device.freeDescriptorSets(state->descriptor_pool, set);
+			}
+		}
+
+
+		if (state->descriptor_pool)
+		{
+			context_.device.logical_device.destroyDescriptorPool(state->descriptor_pool, context_.allocator);
+			state->descriptor_pool = VK_NULL_HANDLE;
+		}
+
+		state->pipeline->destroy();
+
+		for (const auto& stage : state->stages)
+		{
+			context_.device.logical_device.destroyShaderModule(stage.handle, context_.allocator);
+		}
+
+	}
+
+	bool renderer_vulkan::use_shader(shader* shader)
+	{
+		auto state = (vulkan_shader_state*)shader->data;
+
+		state->pipeline->bind(context_.graphics_command_buffers[context_.image_index], vk::PipelineBindPoint::eGraphics);
+		return true;
+	}
+
+	bool renderer_vulkan::bind_shader_globals(shader* shader)
+	{
+		shader->set_bound_ubo_offset(shader->get_global_ubo_offset());
+		return false;
+	}
+
+	bool renderer_vulkan::bind_shader_instances(shader* shader, uint32_t instance_id)
+	{
+		auto state = (vulkan_shader_state*)shader->data;
+		shader->set_bound_instance_id(instance_id);
+
+		shader->set_bound_ubo_offset(state->instance_states[instance_id].offset);
+		return true;
+	}
+
+	bool renderer_vulkan::apply_shader_globals(shader* shader)
+	{
+		const auto image_index = context_.image_index;
+		auto state = (vulkan_shader_state*)shader->data;
+		auto& command_buffer = context_.graphics_command_buffers[image_index].get_handle();
+		auto& global_descriptor = state->global_descriptor_sets[image_index];
+
+		vk::DescriptorBufferInfo buffer_info{};
+		buffer_info
+			.setBuffer(state->uniform_buffer->get_handle())
+			.setOffset(shader->get_global_ubo_offset())
+			.setRange(shader->get_global_ubo_stride());
+
+		vk::WriteDescriptorSet ubo_write{};
+		ubo_write
+			.setDstSet(global_descriptor)
+			.setDstBinding(0)
+			.setDstArrayElement(0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(1)
+			.setBufferInfo(buffer_info);
+
+		egkr::vector<vk::WriteDescriptorSet> writes{ ubo_write };
+
+		context_.device.logical_device.updateDescriptorSets(writes, nullptr);
+		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, state->pipeline->get_layout(), 0, 1, &global_descriptor, 0, nullptr);
+
+		return true;
+	}
+
+	bool renderer_vulkan::apply_shader_instances(shader* shader)
+	{
+		if (!shader->has_instances())
+		{
+			LOG_ERROR("This shader does not use instances");
+			return false;
+		}
+
+		const auto image_index = context_.image_index;
+		auto state = (vulkan_shader_state*)shader->data;
+		auto& command_buffer = context_.graphics_command_buffers[image_index].get_handle();
+
+		auto& object_state = state->instance_states[shader->get_bound_instance_id()];
+		auto& object_descriptor_set = object_state.descriptor_set_state.descriptor_sets[image_index];
+
+		egkr::vector<vk::WriteDescriptorSet> writes{};
+
+		uint32_t descriptor_count{};
+		uint32_t descriptor_index{};
+
+		auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
+
+		if (instance_ubo_generation == invalid_8_id)
+		{
+			vk::DescriptorBufferInfo buffer_info{};
+			buffer_info
+				.setBuffer(state->uniform_buffer->get_handle())
+				.setOffset(object_state.offset)
+				.setRange(shader->get_ubo_stride());
+
+			vk::WriteDescriptorSet ubo{};
+			ubo
+				.setDstSet(object_descriptor_set)
+				.setDstBinding(descriptor_index)
+				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+				.setDescriptorCount(1)
+				.setBufferInfo(buffer_info);
+
+			writes.push_back(ubo);
+			descriptor_count++;
+
+			instance_ubo_generation = 1;
+		}
+		++descriptor_index;
+
+		vk::WriteDescriptorSet sampler{};
+		auto total_sampler_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
+		egkr::vector<vk::DescriptorImageInfo> image_infos{total_sampler_count};
+		if (state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
+		{
+			uint32_t update_sampler_count{};
+
+			for (auto i{ 0U }; i < total_sampler_count; ++i)
+			{
+				auto& texture = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
+				auto texture_data = (vulkan_texture_state*)texture->data;
+
+				vk::DescriptorImageInfo image_info{};
+				image_info
+					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+					.setImageView(texture_data->image->get_view())
+					.setSampler(texture_data->sampler);
+
+				image_infos[i] = image_info;
+
+				++update_sampler_count;
+			}
+
+			sampler
+				.setDstSet(object_descriptor_set)
+				.setDstBinding(descriptor_index)
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				.setDescriptorCount(update_sampler_count)
+				.setImageInfo(image_infos);
+
+			writes.push_back(sampler);
+			++descriptor_count;
+
+		}
+
+		if (descriptor_count > 0)
+		{
+			context_.device.logical_device.updateDescriptorSets(writes, nullptr);
+		}
+
+		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, state->pipeline->get_layout(), 1, object_descriptor_set, nullptr);
+		return true;
+	}
+
+	uint32_t renderer_vulkan::acquire_shader_isntance_resources(shader* shader)
+	{
+		auto state = (vulkan_shader_state*)shader->data;
+
+		auto instance_id = state->instance_states.size();
+
+		vulkan_shader_instance_state instance_state;
+		uint32_t instance_texture_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
+
+		instance_state.instance_textures = egkr::vector<texture*>(instance_texture_count, texture_system::get_default_texture().get());
+
+		instance_state.offset = shader->get_global_ubo_stride();
+
+		egkr::vector<vk::DescriptorSetLayout> layouts{ state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE] };
+
+		vk::DescriptorSetAllocateInfo alloc_info{};
+		alloc_info
+			.setDescriptorPool(state->descriptor_pool)
+			.setSetLayouts(layouts);
+
+		instance_state.descriptor_set_state.descriptor_sets = context_.device.logical_device.allocateDescriptorSets(alloc_info);
+
+		state->instance_states.push_back(instance_state);
+		return instance_id;
+	}
+
+	bool renderer_vulkan::set_uniform(shader* shader, const shader_uniform& uniform, const void* value)
+	{
+		auto internal = (vulkan_shader_state*)shader->data;
+		if (uniform.type == shader_uniform_type::sampler)
+		{
+			if (uniform.scope == shader_scope::global)
+			{
+				shader->set_global_texture(uniform.location, (texture*)value);
+			}
+			else
+			{
+				internal->instance_states[shader->get_bound_instance_id()].instance_textures[uniform.location] = (texture*)value;
+			}
+		}
+		else
+		{
+			if (uniform.scope == shader_scope::local)
+			{
+				// Is local, using push constants. Do this immediately.
+				auto& command_buffer = context_.graphics_command_buffers[context_.image_index].get_handle();
+				command_buffer.pushConstants(internal->pipeline->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset,  uniform.size, value);
+			}
+			else
+			{
+				// Map the appropriate memory location and copy the data over.
+				auto addr = (uint8_t*)internal->mapped_uniform_buffer_memory;
+				addr += shader->get_bound_ubo_offset() + uniform.offset;
+
+				memcpy(addr, value, uniform.size);
+				if (addr)
+				{
+				}
+			}
+		}
+		return true;
+	}
+
+	vulkan_shader_stage renderer_vulkan::create_module(shader* /*shader*/, const vulkan_shader_stage_configuration& configuration)
+	{
+		auto resource = resource_system::load(configuration.filename, resource_type::binary);
+		auto* code = (binary_resource_properties*)resource->data;
+
+		vulkan_shader_stage shader_stage{};
+
+		vk::ShaderModuleCreateInfo create_info{};
+		create_info
+			.setCodeSize(code->data.size())
+			.setPCode((const uint32_t*)(code->data.data()));
+		shader_stage.handle = context_.device.logical_device.createShaderModule(create_info, context_.allocator);
+		shader_stage.create_info = create_info;
+
+		resource_system::unload(resource);
+
+		vk::PipelineShaderStageCreateInfo pipeline_create_info{};
+		pipeline_create_info
+			.setStage(configuration.stage)
+			.setModule(shader_stage.handle)
+			.setPName("main");
+
+		shader_stage.shader_stage_create_info = pipeline_create_info;
+
+		return shader_stage;
+	}
 }
 

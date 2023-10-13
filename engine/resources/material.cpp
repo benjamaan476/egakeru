@@ -3,27 +3,22 @@
 #include "renderer/renderer_frontend.h"
 
 #include "systems/texture_system.h"
+#include "systems/shader_system.h"
 
 namespace egkr
 {
-	material::shared_ptr material::create(const renderer_frontend* renderer, const material_properties& properties)
+	material::shared_ptr material::create(const material_properties& properties)
 	{
 		auto mat = std::make_shared<material>(properties);
-		if (!renderer->populate_material(mat.get()))
-		{
-			LOG_ERROR("Failed to populate material");
-			return nullptr;
-		}
-
 		return mat;
 	}
 
 	material::material(const material_properties& properties)
-		: resource(0, 0)
+		: resource(0, 0), name_{ properties.name }, diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
-		type_ = properties.type;
 		diffuse_map_.use = texture_use::map_diffuse;
 		diffuse_map_.texture = texture_system::get_default_texture();
+		shader_id_ = shader_system::get_shader_id(shader_name_);
 	}
 
 	void material::set_diffuse_colour(const float4 diffuse)

@@ -26,6 +26,7 @@ namespace egkr
 
 		if (depth_attachment_)
 		{
+			depth_attachment_->destroy();
 			depth_attachment_.reset();
 		}
 		for (auto i{ 0U }; i < image_count_; ++i)

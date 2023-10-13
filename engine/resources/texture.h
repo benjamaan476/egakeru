@@ -20,7 +20,7 @@ namespace egkr
 		uint32_t height{};
 		uint32_t channel_count{};
 
-		uint32_t generation{invalid_id};
+		uint32_t generation{invalid_32_id};
 		bool has_transparency{};
 
 		const void* data{};

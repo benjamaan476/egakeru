@@ -2,6 +2,7 @@
 #include "pch.h"
 
 #include "resources/geometry.h"
+#include "resources/shader.h"
 
 #include "platform/platform.h"
 
@@ -9,6 +10,9 @@
 
 namespace egkr
 {
+	static std::string BUILTIN_SHADER_NAME_MATERIAL{"Shader.Builtin.Material"};
+	static std::string BUILTIN_SHADER_NAME_UI{"Shader.Builtin.UI"};
+
 	enum class backend_type
 	{
 		vulkan,
@@ -64,14 +68,11 @@ namespace egkr
 		virtual bool begin_frame(double delta_time) = 0;
 		virtual bool begin_renderpass(builtin_renderpass renderpass) = 0;
 		virtual bool end_renderpass(builtin_renderpass renderpass) = 0;
-		virtual void update_world_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
-		virtual void update_ui_state(const float4x4& projection, const float4x4& view, const float3& view_postion, const float4& ambient_colour, int32_t mode) = 0;
 		virtual void draw_geometry(const geometry_render_data& model) = 0;
 		virtual void end_frame() = 0;
 
 		virtual const void* get_context() const = 0;
 
-		virtual bool populate_material(material* material) = 0;
 		virtual void free_material(material* texture) = 0;
 
 		virtual bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) = 0;
@@ -79,8 +80,19 @@ namespace egkr
 
 		virtual bool populate_geometry(geometry* geometry, const geometry_properties& properties) = 0;
 		virtual void free_geometry(geometry* geometry) = 0;
- 
 
+		virtual bool populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) = 0;
+		virtual void free_shader(shader* shader) = 0;
+
+
+		virtual bool use_shader(shader* shader) = 0;
+		virtual bool bind_shader_globals(shader* shader) = 0;
+		virtual bool bind_shader_instances(shader* shader, uint32_t instance_id) = 0;
+		virtual bool apply_shader_globals(shader* shader) = 0;
+		virtual bool apply_shader_instances(shader* shader) = 0;
+		virtual uint32_t acquire_shader_isntance_resources(shader* shader) = 0;
+
+		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
 	private:
 		platform::shared_ptr platform_;
 	};

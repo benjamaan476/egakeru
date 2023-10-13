@@ -3,15 +3,17 @@
 #include "texture_system.h"
 #include "platform/filesystem.h"
 #include "systems/resource_system.h"
+#include "systems/shader_system.h"
 
 namespace egkr
 {
+
 	static material_system::unique_ptr material_system_{};
 
 	bool material_system::create(const renderer_frontend* renderer)
 	{
 		material_system_ = std::make_unique<material_system>(renderer);
-		return material_system::init();
+		return true;
 	}
 
 	material_system::material_system(const renderer_frontend* renderer)
@@ -97,7 +99,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(material_system_->renderer_, properties);
+		auto new_material = material::create(properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -108,20 +110,93 @@ namespace egkr
 		//{
 		//	new_material->increment_generation();
 		//}
+		
+		auto shader = shader_system::get_shader(new_material->get_shader_id());
+		if (material_system_->material_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_MATERIAL)
+		{
+			material_system_->material_shader_id_ = shader->get_id();
+			material_shader_uniform_location locations{};
+			locations.projection = shader->get_uniform_index("projection");
+			locations.view = shader->get_uniform_index("view");
+			locations.diffuse_colour = shader->get_uniform_index("diffuse_colour");
+			locations.diffuse_texture = shader->get_uniform_index("diffuse_texture");
+			locations.model = shader->get_uniform_index("model");
+			material_system_->material_locations_ = locations;
+		}
+		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_UI)
+		{
+			material_system_->ui_shader_id_ = shader->get_id();
+			ui_shader_uniform_location locations{};
+			locations.projection = shader->get_uniform_index("projection");
+			locations.view = shader->get_uniform_index("view");
+			locations.diffuse_colour = shader->get_uniform_index("diffuse_colour");
+			locations.diffuse_texture = shader->get_uniform_index("diffuse_texture");
+			locations.model = shader->get_uniform_index("model");
+			material_system_->ui_locations_ = locations;
+		}
 
 		material_system_->registered_materials_.push_back(new_material);
 		material_system_->registered_materials_by_name_[properties.name.data()] = material_id;
 		return new_material;
 	}
 
+	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view)
+	{
+		if (shader_id == material_system_->material_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->material_locations_.projection, &projection);
+			shader_system::set_uniform(material_system_->material_locations_.view, &view);
+		}
+		else
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.projection, &projection);
+			shader_system::set_uniform(material_system_->ui_locations_.view, &view);
+		}
+		shader_system::apply_global();
+	}
+
+	void material_system::apply_instance(const material::shared_ptr& material)
+	{
+		shader_system::bind_instance(material->get_internal_id());
+
+		if (material->get_shader_id() == material_system_->material_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
+			shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+		}
+		else if (material->get_shader_id() == material_system_->ui_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.diffuse_colour, &material->get_diffuse_colour());
+			shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+		}
+		shader_system::apply_instance();
+	}
+
+	void material_system::apply_local(const material::shared_ptr& material, const float4x4& model)
+	{
+		auto shader_id = material->get_shader_id();
+		if (shader_id == material_system_->material_shader_id_)
+		{
+			return shader_system::set_uniform(material_system_->material_locations_.model, &model);
+		}
+		else if (shader_id == material_system_->ui_shader_id_)
+		{
+			shader_system::set_uniform(material_system_->ui_locations_.model, &model);
+		}
+	}
+
 	bool material_system::create_default_material()
 	{
 		material_properties properties{};
 		properties.name = "default";
-		properties.type = material_type::world;
 		properties.diffuse_map_name = "default_texture";
 		properties.diffuse_colour = float4{ 1.F };
-		material_system_->default_material_ = material::create(material_system_->renderer_, properties);
+		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
+		material_system_->default_material_ = material::create(properties);
+
+		auto mat_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_MATERIAL);
+		material_system_->default_material_->set_internal_id(material_system_->renderer_->acquire_shader_isntance_resources(mat_shader.get()));
+
 		return true;
 	}
 
@@ -136,20 +211,24 @@ namespace egkr
 			texture = texture_system::get_default_texture();
 		}
 
+		auto shader = shader_system::get_shader(properties.shader_name);
+		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get());
 
-			auto temp_material = material::create(material_system_->renderer_, properties);
 
-			material.reset();
-			material = std::move(temp_material);
-			if (material->get_generation() == invalid_id)
-			{
-				material->set_generation(0);
-			}
-			else
-			{
-				material->increment_generation();
-			}
+		auto temp_material = material::create(properties);
+
+		material.reset();
+		material = std::move(temp_material);
+		if (material->get_generation() == invalid_32_id)
+		{
+			material->set_generation(0);
+		}
+		else
+		{
+			material->increment_generation();
+		}
 		material->set_diffuse_colour(properties.diffuse_colour);
+		material->set_internal_id(id);
 		//material->set_name(properties.name);
 		material->set_diffuse_map({ std::move(texture),texture_use::map_diffuse });
 

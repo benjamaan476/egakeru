@@ -44,7 +44,6 @@ namespace egkr
 	material_properties material_loader::load_configuration_file(std::string_view path)
 	{
 		material_properties properties{};
-		properties.type = material_type::world;
 
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
@@ -102,12 +101,9 @@ namespace egkr
 
 				properties.diffuse_colour = { x, y, z, w };
 			}
-			else if (variable_name == "type")
+			else if (variable_name == "shader")
 			{
-				if (strcmp(value.c_str(), "ui") == 0)
-				{
-					properties.type = material_type::ui;
-				}
+				properties.shader_name = value;
 			}
 		}
 		return properties;

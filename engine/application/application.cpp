@@ -5,6 +5,7 @@
 #include "systems/texture_system.h"
 #include "systems/material_system.h"
 #include "systems/geometry_system.h"
+#include "systems/shader_system.h"
 
 using namespace std::chrono_literals;
 
@@ -58,6 +59,8 @@ namespace egkr
 			return;
 		}
 
+		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
+
 		resource_system_configuration resource_system_configuration{};
 		resource_system_configuration.max_loader_count = 6;
 		resource_system_configuration.base_path = "../../../../assets/";
@@ -66,17 +69,10 @@ namespace egkr
 		{
 			LOG_FATAL("Failed to create resource system");
 		}
-
-		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
-		if (!state_.renderer->init())
-		{
-			LOG_FATAL("Failed to initialise renderer");
-		}
-
-
-
-		texture_system::create(state_.renderer.get(), {1024});
-		if(!material_system::create(state_.renderer.get()))
+		resource_system::init();
+		
+		texture_system::create(state_.renderer.get(), { 1024 });
+		if (!material_system::create(state_.renderer.get()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
@@ -85,6 +81,30 @@ namespace egkr
 		{
 			LOG_FATAL("Failed to create geometry system");
 		}
+
+
+
+		shader_system_configuration shader_system_configuration{};
+		shader_system_configuration.max_global_textures = 31;
+		shader_system_configuration.max_instance_textures = 31;
+		shader_system_configuration.max_shader_count = 1024;
+		shader_system_configuration.max_uniform_count = 128;
+
+		if (!shader_system::create(state_.renderer.get(), shader_system_configuration))
+		{
+			LOG_FATAL("Failed to create shader system");
+		}
+
+		if (!state_.renderer->init())
+		{
+			LOG_FATAL("Failed to initialise renderer");
+		}
+
+		shader_system::init();
+		texture_system::init();
+		material_system::init();
+		geometry_system::init();
+
 
 		if (!state_.game->init())
 		{
@@ -184,6 +204,7 @@ namespace egkr
 		geometry_system::shutdown();
 		material_system::shutdown();
 		texture_system::shutdown();
+		shader_system::shutdown();
 		application_->state_.renderer->shutdown();
 		application_->state_.platform->shutdown();
 	}

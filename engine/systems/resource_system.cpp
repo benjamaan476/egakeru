@@ -4,6 +4,7 @@
 #include "loaders/material_loader.h"
 #include "loaders/binary_loader.h"
 #include "loaders/text_loader.h"
+#include "loaders/shader_loader.h"
 
 namespace egkr
 {
@@ -12,7 +13,7 @@ namespace egkr
 	bool resource_system::create(const resource_system_configuration& properties)
 	{
 		resource_system_ = std::make_unique<resource_system>(properties);
-		return resource_system_->init();
+		return true;
 	}
 
 	resource_system::resource_system(const resource_system_configuration& properties)
@@ -64,6 +65,13 @@ namespace egkr
 			text_loader_properties.path = base_path;
 
 			register_loader(text_loader::create(text_loader_properties));
+		}
+		{
+			loader_properties shader_loader_properties{};
+			shader_loader_properties.custom_type = {};
+			shader_loader_properties.path = base_path + "shaders";
+
+			register_loader(shader_loader::create(shader_loader_properties));
 		}
 		return true;
 	}

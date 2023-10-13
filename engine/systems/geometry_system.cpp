@@ -6,7 +6,6 @@ namespace egkr
 	bool geometry_system::create(const renderer_frontend* renderer_context)
 	{
 		geometry_system_ = std::make_unique<geometry_system>(renderer_context);
-		geometry_system_->init();
 		return true;
 	}
 

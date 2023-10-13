@@ -7,8 +7,9 @@
 #include "renderpass.h"
 #include "command_buffer.h"
 #include "fence.h"
-#include "shader.h"
 #include "buffer.h"
+
+#include "renderer/vertex_types.h"
 
 namespace egkr
 {
@@ -102,13 +103,8 @@ namespace egkr
 		uint32_t framebuffer_size_generation{};
 		uint32_t framebuffer_last_size_generation{};
 
-		shader::shared_ptr material_shader{};
-		shader::shared_ptr ui_shader{};
-
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
-
-
 	};
 
 	struct queue_family_indices
@@ -121,8 +117,6 @@ namespace egkr
 			return graphics_family.has_value() && present_family.has_value();
 		}
 	};
-
-
 
 	static inline swapchain_support_details query_swapchain_support(vk::SurfaceKHR surface, const vk::PhysicalDevice& physical_device)
 	{

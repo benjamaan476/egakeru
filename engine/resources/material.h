@@ -18,7 +18,7 @@ namespace egkr
 	{
 		std::string name{};
 		std::string diffuse_map_name{};
-		material_type type{};
+		std::string shader_name{};
 		float4 diffuse_colour{};
 	};
 
@@ -27,7 +27,7 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<material>;
-		static shared_ptr create(const renderer_frontend* renderer, const material_properties& properties);
+		static shared_ptr create(const material_properties& properties);
 
 		explicit material(const material_properties& properties);
 		~material() = default;
@@ -38,13 +38,18 @@ namespace egkr
 		void set_diffuse_map(const texture_map& map) { diffuse_map_ = map; }
 		[[nodiscard]] const auto& get_diffuse_map() const { return diffuse_map_; }
 
-		const auto& get_material_type() const { return type_; }
+		const auto& get_shader_id() const { return shader_id_; }
+		const auto& get_shader_name() const { return shader_name_; }
 
+		const auto& get_internal_id() const {return internal_id_; }
+		void set_internal_id(uint32_t id) { internal_id_ = id; }
 	private:
+		std::string name_{default_material_name_};
 		float4 diffuse_colour_{1.F};
 		texture_map diffuse_map_{};
 
-		material_type type_{};
-
+		std::string shader_name_{};
+		uint32_t shader_id_{invalid_32_id};
+		uint32_t internal_id_{ invalid_32_id };
 	};
 }

@@ -79,7 +79,18 @@ namespace egkr
 			.setTopology(vk::PrimitiveTopology::eTriangleList)
 			.setPrimitiveRestartEnable(false);
 
-		vk::PushConstantRange push_constant_range(vk::ShaderStageFlagBits::eVertex, 0, sizeof(float4x4) * 2);
+		egkr::vector<vk::PushConstantRange> push_constant_range{};
+
+		for (const auto& range : properties.push_constant_ranges)
+		{
+			vk::PushConstantRange push_range{};
+			push_range
+				.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
+				.setOffset(range.offset)
+				.setSize(range.size);
+
+			push_constant_range.push_back(push_range);
+		}
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_create_info{};
 		pipeline_layout_create_info

@@ -3,6 +3,10 @@
 
 #include "systems/texture_system.h"
 #include "systems/geometry_system.h"
+#include "systems/resource_system.h"
+#include "systems/material_system.h"
+#include "systems/shader_system.h"
+
 #include "vulkan/renderer_vulkan.h"
 
 namespace egkr
@@ -39,6 +43,25 @@ namespace egkr
 	{
 		auto backen_init = backend_->init();
 
+		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
+		auto shader = (shader_properties*)resource->data;
+
+		shader_system::create_shader(*shader);
+
+		resource_system::unload(resource);
+
+		material_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_MATERIAL);
+
+		auto ui_resource = resource_system::load(BUILTIN_SHADER_NAME_UI, resource_type::shader);
+		auto ui_shader = (shader_properties*)ui_resource->data;
+
+		shader_system::create_shader(*ui_shader);
+
+		resource_system::unload(ui_resource);
+
+		ui_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_UI);
+
+
 		return backen_init;
 	}
 
@@ -60,11 +83,20 @@ namespace egkr
 		{
 			if (backend_->begin_renderpass(builtin_renderpass::world))
 			{
-				backend_->update_world_state(world_projection_, world_view_, {}, {}, 0);
+				if (!shader_system::use(material_shader_id))
+				{
+					LOG_ERROR("Failed to use material shader");
+					return;
+				}
+
+				material_system::apply_global(material_shader_id, world_projection_, world_view_);
 
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
+					material_system::apply_instance(render_data.geometry->get_material());
+
+					material_system::apply_local(render_data.geometry->get_material(), render_data.model);
 					backend_->draw_geometry(render_data);
 				}
 
@@ -77,10 +109,19 @@ namespace egkr
 
 				if (backend_->begin_renderpass(builtin_renderpass::ui))
 				{
-					backend_->update_ui_state(ui_projection_, ui_view_, {}, {}, 0);
+					if (!shader_system::use(ui_shader_id))
+					{
+						LOG_ERROR("Failed to use material shader");
+						return;
+					}
+
+					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_);
 
 					for (const auto& render_data : packet.ui_geometry_data)
 					{
+						material_system::apply_instance(render_data.geometry->get_material());
+
+						material_system::apply_local(render_data.geometry->get_material(), render_data.model);
 						backend_->draw_geometry(render_data);
 					}
 
@@ -99,11 +140,6 @@ namespace egkr
 	void renderer_frontend::set_view(const float4x4& view)
 	{
 		world_view_ = view;
-	}
-
-	bool renderer_frontend::populate_material(material* material) const
-	{
-		return backend_->populate_material(material);
 	}
 
 	void renderer_frontend::free_material(material* texture) const
@@ -131,4 +167,64 @@ namespace egkr
 		backend_->free_geometry(geometry);
 	}
 
+	bool renderer_frontend::populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
+	{
+		return backend_->populate_shader(shader, renderpass_id, stage_filenames, shader_stages);
+	}
+	void renderer_frontend::free_shader(shader* shader) const
+	{
+		backend_->free_shader(shader);
+	}
+
+	bool renderer_frontend::use_shader(shader* shader) const
+	{
+		return backend_->use_shader(shader);
+	}
+
+	bool renderer_frontend::bind_shader_globals(shader* shader) const
+	{
+		return backend_->bind_shader_globals(shader);
+	}
+
+	bool renderer_frontend::bind_shader_instances(shader* shader, uint32_t instance_id) const
+	{
+		return backend_->bind_shader_instances(shader, instance_id);
+	}
+
+	bool renderer_frontend::apply_shader_globals(shader* shader) const
+	{
+		return backend_->apply_shader_globals(shader);
+	}
+
+	bool renderer_frontend::apply_shader_instances(shader* shader) const
+	{
+		return backend_->apply_shader_instances(shader);
+	}
+
+	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader) const
+	{
+		return backend_->acquire_shader_isntance_resources(shader);
+	}
+
+	bool renderer_frontend::set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const
+	{
+		return backend_->set_uniform(shader, uniform, value);
+	}
+
+	builtin_renderpass renderer_frontend::get_renderpass_id(std::string_view renderpass_name) const
+	{
+		if (renderpass_name == "Renderpass.Builtin.World")
+		{
+			return builtin_renderpass::world;
+		}
+		else if (renderpass_name == "Renderpass.Builtin.UI")
+		{
+			return builtin_renderpass::ui;
+		}
+		else
+		{
+			LOG_ERROR("Unknown renderpass name requested: {}", renderpass_name.data());
+			return builtin_renderpass::world;
+		}
+	}
 }

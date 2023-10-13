@@ -5,6 +5,7 @@
 
 #include "resources/material.h"
 #include "resources/texture.h"
+#include "resources/shader.h"
 
 namespace egkr
 {
@@ -24,7 +25,6 @@ namespace egkr
 		//TODO Hack
 		API void set_view(const float4x4& view);
 
-		bool populate_material(material* material) const;
 		void free_material(material* texture) const;
 
 		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) const;
@@ -33,7 +33,19 @@ namespace egkr
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) const;
 		void free_geometry(geometry* geometry) const;
 
-		auto get_backend_context() const { return backend_->get_context(); }
+		bool populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const;
+		void free_shader(shader* shader) const;
+
+		bool use_shader(shader* shader) const;
+		bool bind_shader_globals(shader* shader) const;
+		bool bind_shader_instances(shader* shader, uint32_t instance_id) const;
+		bool apply_shader_globals(shader* shader) const;
+		bool apply_shader_instances(shader* shader) const;
+		uint32_t acquire_shader_isntance_resources(shader* shader) const;
+
+		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const;
+
+		builtin_renderpass get_renderpass_id(std::string_view renderpass_name) const;
 
 	private:
 		renderer_backend::unique_ptr backend_{};
@@ -44,6 +56,8 @@ namespace egkr
 		float4x4 world_view_{1.F};
 		float4x4 ui_projection_{1.F};
 		float4x4 ui_view_{1.F};
+		uint32_t material_shader_id{};
+		uint32_t ui_shader_id{};
 		//TODO temp
 	};
 }
