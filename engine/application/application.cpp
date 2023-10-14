@@ -169,7 +169,7 @@ namespace egkr
 				state.game->render(delta_time);
 
 				static float angle = 0.F;
-				//angle -= delta_time;
+				angle -= delta_time;
 
 				float4x4 model{ 1 };
 				model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
@@ -177,7 +177,7 @@ namespace egkr
 				render_packet render_data{};
 				render_data.delta_time = delta_time;
 				render_data.world_geometry_data = { { application_->test_geometry_ , model, delta_time} };
-				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , model, delta_time} };
+				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , float4x4{1.F}, delta_time} };
 
 				state.renderer->draw_frame(render_data);
 			}

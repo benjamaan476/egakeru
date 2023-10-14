@@ -17,9 +17,11 @@ public:
 private:
 	void recalculate_view_matrix();
 	void camera_yaw(float amount);
+	void camera_pitch(float amount);
 private:
 	bool view_dirty{true};
-	egkr::float3 position_{0, 0, 30};
-	egkr::float3 rotation_{};
+	egkr::float3 position_{30, 0, 0};
+	egkr::float3 front{-1.F, 0.F, 0.F};
+	egkr::float3 rotation_{0.F, 0.F, 0.F};
 	egkr::float4x4 view_{};
 };

@@ -118,6 +118,7 @@ namespace egkr
 			material_shader_uniform_location locations{};
 			locations.projection = shader->get_uniform_index("projection");
 			locations.view = shader->get_uniform_index("view");
+			locations.ambient_colour = shader->get_uniform_index("ambient_colour");
 			locations.diffuse_colour = shader->get_uniform_index("diffuse_colour");
 			locations.diffuse_texture = shader->get_uniform_index("diffuse_texture");
 			locations.model = shader->get_uniform_index("model");
@@ -140,12 +141,13 @@ namespace egkr
 		return new_material;
 	}
 
-	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view)
+	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour)
 	{
 		if (shader_id == material_system_->material_shader_id_)
 		{
 			shader_system::set_uniform(material_system_->material_locations_.projection, &projection);
 			shader_system::set_uniform(material_system_->material_locations_.view, &view);
+			shader_system::set_uniform(material_system_->material_locations_.ambient_colour, &ambient_colour);
 		}
 		else
 		{

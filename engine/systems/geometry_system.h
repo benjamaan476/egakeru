@@ -29,6 +29,7 @@ namespace egkr
 		static geometry::shared_ptr get_default();
 	private:
 		static geometry_properties generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
+		static geometry_properties generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
 
 	private:
 		const renderer_frontend* renderer_context_{};

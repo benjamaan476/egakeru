@@ -11,6 +11,7 @@ namespace egkr
 	{
 		uint16_t projection{};
 		uint16_t view{};
+		uint16_t ambient_colour{};
 		uint16_t diffuse_colour{};
 		uint16_t diffuse_texture{};
 		uint16_t model{};
@@ -41,7 +42,7 @@ namespace egkr
 		static material::shared_ptr acquire(std::string_view name);
 		static material::shared_ptr acquire(const material_properties& properties);
 
-		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view);
+		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour);
 		static void apply_instance(const material::shared_ptr& material);
 		static void apply_local(const material::shared_ptr& material, const float4x4& model);
 	private:

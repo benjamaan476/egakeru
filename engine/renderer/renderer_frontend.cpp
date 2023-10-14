@@ -89,8 +89,7 @@ namespace egkr
 					return;
 				}
 
-				material_system::apply_global(material_shader_id, world_projection_, world_view_);
-
+				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_);
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
@@ -115,7 +114,7 @@ namespace egkr
 						return;
 					}
 
-					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_);
+					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {});
 
 					for (const auto& render_data : packet.ui_geometry_data)
 					{

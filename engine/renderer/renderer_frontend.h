@@ -58,6 +58,7 @@ namespace egkr
 		float4x4 ui_view_{1.F};
 		uint32_t material_shader_id{};
 		uint32_t ui_shader_id{};
+		float4 ambient_colour_{ 0.25F, 0.25F, 0.25F, 1.F };
 		//TODO temp
 	};
 }

@@ -30,7 +30,7 @@ namespace egkr
 		geometry_system_->registered_geometries_.reserve(geometry_system_->max_geometry_count_);
 		
 
-		const auto properties = generate_plane(10, 5, 8, 4, 2, 1, "default", "test_material");
+		const auto properties = generate_cube(5, 5, 5, 2, 2, "default", "test_material");
 
 		geometry_system_->default_geometry_ = geometry::create(geometry_system_->renderer_context_, properties);
 
@@ -97,7 +97,7 @@ namespace egkr
 				auto tex_x = x / (float)x_segments;
 				tex_x *= tile_x;
 
-				vertices[index] = { {width * x_pos, height * y_pos, 0.F},  {tex_x, tex_y} };
+				vertices[index] = { {width * x_pos, height * y_pos, 0.F}, {0.F, 0.F, 1.F}, {tex_x, tex_y} };
 				++index;
 			}
 		}
@@ -135,5 +135,121 @@ namespace egkr
 		plane_properties.indices = indices;
 
 		return plane_properties;
+	}
+	geometry_properties geometry_system::generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
+	{
+		geometry_properties properties{};
+		properties.name = name;
+		properties.material_name = material_name;
+
+		std::vector<vertex_3d> vertices{};
+		std::vector<uint32_t> indices{};
+
+		const float half_width{ width / 2 };
+		const float half_height{ height / 2 };
+		const float half_depth{ depth / 2 };
+		//TOP
+		{
+			vertices.emplace_back(float3{ -half_width, -half_height, half_depth }, float3{ 0, 0, 1 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ half_width, -half_height, half_depth }, float3{ 0, 0, 1 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ half_width, half_height, half_depth }, float3{ 0, 0, 1 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ -half_width, half_height, half_depth }, float3{ 0, 0, 1 }, float2{ 0, tile_y });
+
+			indices.push_back(0);
+			indices.push_back(1);
+			indices.push_back(2);
+			indices.push_back(0);
+			indices.push_back(2);
+			indices.push_back(3);
+		}
+
+		//BOTTOM
+		{
+			vertices.emplace_back(float3{ half_width, -half_height, -half_depth }, float3{ 0, 0, -1 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ -half_width, -half_height, -half_depth }, float3{ 0, 0, -1 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ -half_width, half_height, -half_depth }, float3{ 0, 0, -1 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ half_width, half_height, -half_depth }, float3{ 0, 0, -1 }, float2{ 0, tile_y });
+
+			indices.push_back(4 + 0);
+			indices.push_back(4 + 1);
+			indices.push_back(4 + 2);
+			indices.push_back(4 + 0);
+			indices.push_back(4 + 2);
+			indices.push_back(4 + 3);
+		}
+
+		//LEFT
+		{
+			vertices.emplace_back(float3{ -half_width, half_height, -half_depth }, float3{ -1, 0, 0 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ -half_width, -half_height, -half_depth }, float3{ -1, 0, 0 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ -half_width, -half_height, half_depth }, float3{ -1, 0, 0 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ -half_width, half_height, half_depth }, float3{ -1, 0, 0 }, float2{ 0, tile_y });
+
+			indices.push_back(8 + 0);
+			indices.push_back(8 + 1);
+			indices.push_back(8 + 2);
+			indices.push_back(8 + 0);
+			indices.push_back(8 + 2);
+			indices.push_back(8 + 3);
+		}
+
+		//RIGHT
+		{
+			vertices.emplace_back(float3{ half_width, -half_height, -half_depth }, float3{ 1, 0, 0 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ half_width, half_height, -half_depth }, float3{ 1, 0, 0 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ half_width, half_height, half_depth }, float3{ 1, 0, 0 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ half_width, -half_height, half_depth }, float3{ 1, 0, 0 }, float2{ 0, tile_y });
+
+			indices.push_back(12 + 0);
+			indices.push_back(12 + 1);
+			indices.push_back(12 + 2);
+			indices.push_back(12 + 0);
+			indices.push_back(12 + 2);
+			indices.push_back(12 + 3);
+		}
+
+		//FRONT
+		{
+			vertices.emplace_back(float3{ half_width, half_height, -half_depth }, float3{ 0, 1, 0 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ -half_width, half_height, -half_depth }, float3{ 0, 1, 0 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ -half_width, half_height, half_depth }, float3{ 0, 1, 0 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ half_width, half_height, half_depth }, float3{ 0, 1, 0 }, float2{ 0, tile_y });
+
+			indices.push_back(16  + 0);
+			indices.push_back(16  + 1);
+			indices.push_back(16  + 2);
+			indices.push_back(16  + 0);
+			indices.push_back(16  + 2);
+			indices.push_back(16  + 3);
+		}
+
+		//BACK
+		{
+			vertices.emplace_back(float3{ -half_width, -half_height, -half_depth }, float3{ 0, -1, 0 }, float2{ 0, 0 });
+			vertices.emplace_back(float3{ half_width, -half_height, -half_depth }, float3{ 0, -1, 0 }, float2{ tile_x, 0 });
+			vertices.emplace_back(float3{ half_width, -half_height, half_depth }, float3{ 0, -1, 0 }, float2{ tile_x, tile_y });
+			vertices.emplace_back(float3{ -half_width, -half_height, half_depth }, float3{ 0, -1, 0 }, float2{ 0, tile_y });
+
+			indices.push_back(20 + 0);
+			indices.push_back(20 + 1);
+			indices.push_back(20 + 2);
+			indices.push_back(20 + 0);
+			indices.push_back(20 + 2);
+			indices.push_back(20 + 3);
+		}
+
+
+		properties.indices = indices;
+		properties.vertex_count = vertices.size();
+		properties.vertex_size = sizeof(vertex_3d);
+
+		auto size = properties.vertex_count * properties.vertex_size;
+		properties.vertices = malloc(size);
+
+		auto* new_verts = (vertex_3d*)properties.vertices;
+
+		std::copy(vertices.data(), vertices.data() + properties.vertex_count, new_verts);
+
+		return properties;
 	}
 }
