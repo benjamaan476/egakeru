@@ -12,4 +12,6 @@ struct vertex_3d
 	egkr::float3 position{};
 	egkr::float3 normal{};
 	egkr::float2 tex{};
+	egkr::float4 colour{};
+	egkr::float4 tangent{};
 };

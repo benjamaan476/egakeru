@@ -19,6 +19,7 @@ namespace egkr
 		std::string name{};
 		std::string diffuse_map_name{};
 		std::string specular_map_name{};
+		std::string normal_map_name{};
 		std::string shader_name{};
 		float shininess{};
 		float4 diffuse_colour{};
@@ -43,6 +44,9 @@ namespace egkr
 		void set_specular_map(const texture_map& map) { specular_map_ = map; }
 		[[nodiscard]] const auto& get_specular_map() const { return specular_map_; }
 
+		void set_normal_map(const texture_map& map) { normal_map_ = map; }
+		[[nodiscard]] const auto& get_normal_map() const { return normal_map_; }
+
 		void set_shininess(float shininess) { shininess_ = shininess; }
 		const auto& get_shininess() const { return shininess_; }
 
@@ -56,6 +60,7 @@ namespace egkr
 		float4 diffuse_colour_{1.F};
 		texture_map diffuse_map_{};
 		texture_map specular_map_{};
+		texture_map normal_map_{};
 
 		std::string shader_name_{};
 		uint32_t shader_id_{invalid_32_id};

@@ -3,6 +3,8 @@
 layout (location = 0) in vec3 in_position;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_tex;
+layout (location = 3) in vec4 in_colour;
+layout (location = 4) in vec4 in_tangent;
 
 layout(location = 0) out flat int mode;
 layout(location = 1) out struct dto
@@ -12,6 +14,8 @@ layout(location = 1) out struct dto
 	vec3 view_position;
 	vec3 frag_position;
 	vec2 tex;
+	vec4 colour;
+	vec3 tangent;
 } out_dto;
 
 layout (set = 0, binding = 0) uniform global_uniform_object
@@ -34,5 +38,7 @@ void main()
 	out_dto.view_position = global_ubo.view_position;
 	out_dto.frag_position = vec3(u_push_constant.model * vec4(in_position, 1.0));
 	out_dto.tex = in_tex;
+	out_dto.colour = in_colour;
+	out_dto.tangent = normalize(vec3(u_push_constant.model * in_tangent).xyz);
 	gl_Position = global_ubo.projection * global_ubo.view * u_push_constant.model * vec4(in_position, 1);
 }

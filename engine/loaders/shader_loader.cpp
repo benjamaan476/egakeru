@@ -360,6 +360,10 @@ namespace egkr
 					properties.uniforms.push_back(uniform);
 				}
 			}
+			else
+			{
+				LOG_ERROR("Unrecognised entry: {}, with value: {}, on line {} of {}", variable_name, value, line_number, path.data());
+			}
 		}
 		return properties;
 	}

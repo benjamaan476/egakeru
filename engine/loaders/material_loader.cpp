@@ -97,6 +97,10 @@ namespace egkr
 			{
 				properties.specular_map_name = value;
 			}
+			else if (variable_name == "normal_map_name")
+			{
+				properties.normal_map_name = value;
+			}
 			else if (variable_name == "diffuse_colour")
 			{
 				std::stringstream ss{ value };
@@ -115,6 +119,10 @@ namespace egkr
 				float shininess{};
 				ss >> shininess;
 				properties.shininess = shininess;
+			}
+			else
+			{
+				LOG_ERROR("Unknown variable: {}, with value: {}, on line {} of {}", variable_name, value, line_number, path.data());
 			}
 		}
 		return properties;

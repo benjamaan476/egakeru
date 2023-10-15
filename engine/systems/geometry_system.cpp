@@ -32,7 +32,7 @@ namespace egkr
 		
 
 		auto properties = generate_cube(5, 5, 5, 1, 1, "default", "test_material");
-		//generate_tangents(properties.vertices, properties.indices);
+		generate_tangents(properties.vertices, properties.indices);
 		geometry_system_->default_geometry_ = geometry::create(geometry_system_->renderer_context_, properties);
 
 		return true;

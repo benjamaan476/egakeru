@@ -123,6 +123,7 @@ namespace egkr
 			locations.diffuse_colour = shader->get_uniform_index("diffuse_colour");
 			locations.diffuse_texture = shader->get_uniform_index("diffuse_texture");
 			locations.specular_texture = shader->get_uniform_index("specular_texture");
+			locations.normal_texture = shader->get_uniform_index("normal_texture");
 			locations.view_position = shader->get_uniform_index("view_position");
 			locations.model = shader->get_uniform_index("model");
 			material_system_->material_locations_ = locations;
@@ -170,6 +171,7 @@ namespace egkr
 			shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
 			shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
 			shader_system::set_uniform(material_system_->material_locations_.specular_texture, material->get_specular_map().texture.get());
+			shader_system::set_uniform(material_system_->material_locations_.normal_texture, material->get_normal_map().texture.get());
 			shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
 		}
 		else if (material->get_shader_id() == material_system_->ui_shader_id_)
@@ -199,6 +201,7 @@ namespace egkr
 		properties.name = "default";
 		properties.diffuse_map_name = "default_texture";
 		properties.specular_map_name = "default_specular_texture";
+		properties.normal_map_name = "default_normal_texture";
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
 		material_system_->default_material_ = material::create(properties);
@@ -227,8 +230,14 @@ namespace egkr
 			specular_texture = texture_system::get_default_specular_texture();
 		}
 
-		
+		auto normal_texture = texture_system::acquire(properties.normal_map_name);
+		if (normal_texture == nullptr)
+		{
+			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.normal_map_name.data(), properties.name.data());
+			normal_texture = texture_system::get_default_normal_texture();
+		}
 
+		
 		auto shader = shader_system::get_shader(properties.shader_name);
 		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get());
 
@@ -251,6 +260,7 @@ namespace egkr
 		//material->set_name(properties.name);
 		material->set_diffuse_map({ std::move(diffuse_texture),texture_use::map_diffuse });
 		material->set_specular_map({ std::move(specular_texture), texture_use::map_specular });
+		material->set_normal_map({ std::move(normal_texture), texture_use::map_normal });
 		return true;
 	}
 }

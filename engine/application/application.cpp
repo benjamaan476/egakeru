@@ -169,7 +169,7 @@ namespace egkr
 				state.game->render(delta_time);
 
 				static float angle = 0.F;
-				angle -= delta_time;
+				//angle -= delta_time;
 
 				float4x4 model{ 1 };
 				model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
