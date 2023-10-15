@@ -34,7 +34,7 @@ namespace egkr
 		static shared_ptr create(const resource_properties& properties);
 
 		explicit resource(const resource_properties& properties);
-		resource(uint32_t id, uint32_t generation) : id_{ id }, generation_{ generation } {}
+		resource(uint32_t id, uint32_t generation, std::string_view name) : id_{ id }, generation_{ generation }, name_{name} {}
 
 		const auto& get_id() const { return id_; }
 		void set_id(uint32_t id) { id_ = id; }
@@ -45,6 +45,8 @@ namespace egkr
 		void set_generation(uint32_t generation) { generation_ = generation; }
 
 		const auto& get_type() const { return resource_type_; }
+
+		const auto& get_name() const { return name_; }
 
 		void* data{};
 

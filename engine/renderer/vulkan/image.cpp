@@ -85,6 +85,7 @@ namespace egkr
 	void image::destroy()
 	{
 		const auto& logical_device = context_->device.logical_device;
+		logical_device.waitIdle();
 		if (view_)
 		{
 			logical_device.destroyImageView(view_, context_->allocator);

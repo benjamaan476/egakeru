@@ -73,7 +73,7 @@ void sandbox_game::update(double delta_time)
 	recalculate_view_matrix();
 
 	//TODO Hack
-	app->get_state().renderer->set_view(view_);
+	app->get_state().renderer->set_view(view_, position_);
 }
 
 void sandbox_game::render(double /*delta_time*/)

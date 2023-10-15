@@ -13,7 +13,7 @@ namespace egkr
 	}
 
 	texture::texture(const texture_properties& properties)
-		: resource{properties.id, properties.generation}
+		: resource{properties.id, properties.generation, properties.name}
 	{
 	}
 

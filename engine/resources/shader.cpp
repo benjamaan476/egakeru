@@ -14,7 +14,7 @@ namespace egkr
 	}
 
 	shader::shader(const renderer_frontend* renderer_context, const shader_properties& properties)
-		: resource(0, 0), name_{ properties.name }, use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
+		: resource(0, 0, properties.name), use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
 	{
 		//TODO make backend renderer shader
 		state_ = shader_state::uninitialised;

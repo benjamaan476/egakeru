@@ -14,7 +14,7 @@ namespace egkr
 	}
 
 	material::material(const material_properties& properties)
-		: resource(0, 0), name_{ properties.name }, diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
+		: resource(0, 0, properties.name), diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
 		diffuse_map_.use = texture_use::map_diffuse;
 		diffuse_map_.texture = texture_system::get_default_texture();

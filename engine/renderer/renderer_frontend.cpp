@@ -89,7 +89,7 @@ namespace egkr
 					return;
 				}
 
-				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_);
+				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_, camera_position_);
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
@@ -114,7 +114,7 @@ namespace egkr
 						return;
 					}
 
-					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {});
+					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {}, {});
 
 					for (const auto& render_data : packet.ui_geometry_data)
 					{
@@ -136,9 +136,10 @@ namespace egkr
 		}
 	}
 
-	void renderer_frontend::set_view(const float4x4& view)
+	void renderer_frontend::set_view(const float4x4& view, const float3& camera_position)
 	{
 		world_view_ = view;
+		camera_position_ = camera_position;
 	}
 
 	void renderer_frontend::free_material(material* texture) const

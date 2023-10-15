@@ -93,6 +93,10 @@ namespace egkr
 			{
 				properties.diffuse_map_name = value;
 			}
+			else if (variable_name == "specular_map_name")
+			{
+				properties.specular_map_name = value;
+			}
 			else if (variable_name == "diffuse_colour")
 			{
 				std::stringstream ss{ value };
@@ -104,6 +108,13 @@ namespace egkr
 			else if (variable_name == "shader")
 			{
 				properties.shader_name = value;
+			}
+			else if (variable_name == "shininess")
+			{
+				std::stringstream ss{value};
+				float shininess{};
+				ss >> shininess;
+				properties.shininess = shininess;
 			}
 		}
 		return properties;

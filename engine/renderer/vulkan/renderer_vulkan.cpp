@@ -1214,6 +1214,7 @@ namespace egkr
 
 	void renderer_vulkan::free_shader(shader* shader)
 	{
+		context_.device.logical_device.waitIdle();
 		auto state = (vulkan_shader_state*)shader->data;
 		state->uniform_buffer->unlock();
 		state->uniform_buffer->destroy();

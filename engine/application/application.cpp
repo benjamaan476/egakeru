@@ -201,10 +201,10 @@ namespace egkr
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
-		geometry_system::shutdown();
-		material_system::shutdown();
-		texture_system::shutdown();
 		shader_system::shutdown();
+		texture_system::shutdown();
+		material_system::shutdown();
+		geometry_system::shutdown();
 		application_->state_.renderer->shutdown();
 		application_->state_.platform->shutdown();
 	}
@@ -272,11 +272,13 @@ namespace egkr
 		if (code == event_code::debug01)
 		{
 			const std::array<std::string_view, 2> textures{ "RandomStones", "Seamless" };
+			const std::array<std::string_view, 2> spec_textures{ "RandomStones_spec", "Seamless_spec" };
 
 			static int choice = 0;
 			choice++;
 			choice %= textures.size();
 			application_->test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
+			application_->test_geometry_->get_material()->set_specular_map({ texture_system::acquire(spec_textures[choice]), texture_use::map_diffuse });
 		}
 		return false;
 	}

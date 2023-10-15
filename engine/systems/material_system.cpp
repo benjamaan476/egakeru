@@ -118,9 +118,12 @@ namespace egkr
 			material_shader_uniform_location locations{};
 			locations.projection = shader->get_uniform_index("projection");
 			locations.view = shader->get_uniform_index("view");
+			locations.shininess = shader->get_uniform_index("shininess");
 			locations.ambient_colour = shader->get_uniform_index("ambient_colour");
 			locations.diffuse_colour = shader->get_uniform_index("diffuse_colour");
 			locations.diffuse_texture = shader->get_uniform_index("diffuse_texture");
+			locations.specular_texture = shader->get_uniform_index("specular_texture");
+			locations.view_position = shader->get_uniform_index("view_position");
 			locations.model = shader->get_uniform_index("model");
 			material_system_->material_locations_ = locations;
 		}
@@ -141,13 +144,14 @@ namespace egkr
 		return new_material;
 	}
 
-	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour)
+	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position)
 	{
 		if (shader_id == material_system_->material_shader_id_)
 		{
 			shader_system::set_uniform(material_system_->material_locations_.projection, &projection);
 			shader_system::set_uniform(material_system_->material_locations_.view, &view);
 			shader_system::set_uniform(material_system_->material_locations_.ambient_colour, &ambient_colour);
+			shader_system::set_uniform(material_system_->material_locations_.view_position, &view_position);
 		}
 		else
 		{
@@ -165,6 +169,8 @@ namespace egkr
 		{
 			shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
 			shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+			shader_system::set_uniform(material_system_->material_locations_.specular_texture, material->get_specular_map().texture.get());
+			shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
 		}
 		else if (material->get_shader_id() == material_system_->ui_shader_id_)
 		{
@@ -192,6 +198,7 @@ namespace egkr
 		material_properties properties{};
 		properties.name = "default";
 		properties.diffuse_map_name = "default_texture";
+		properties.specular_map_name = "default_specular_texture";
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
 		material_system_->default_material_ = material::create(properties);
@@ -206,12 +213,21 @@ namespace egkr
 	{
 
 		//Get diffuse map
-		auto texture = texture_system::acquire(properties.diffuse_map_name);
-		if (texture == nullptr)
+		auto diffuse_texture = texture_system::acquire(properties.diffuse_map_name);
+		if (diffuse_texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.diffuse_map_name.data(), properties.name.data());
-			texture = texture_system::get_default_texture();
+			diffuse_texture = texture_system::get_default_texture();
 		}
+
+		auto specular_texture = texture_system::acquire(properties.specular_map_name);
+		if (specular_texture == nullptr)
+		{
+			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.specular_map_name.data(), properties.name.data());
+			specular_texture = texture_system::get_default_specular_texture();
+		}
+
+		
 
 		auto shader = shader_system::get_shader(properties.shader_name);
 		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get());
@@ -230,10 +246,11 @@ namespace egkr
 			material->increment_generation();
 		}
 		material->set_diffuse_colour(properties.diffuse_colour);
+		material->set_shininess(properties.shininess);
 		material->set_internal_id(id);
 		//material->set_name(properties.name);
-		material->set_diffuse_map({ std::move(texture),texture_use::map_diffuse });
-
+		material->set_diffuse_map({ std::move(diffuse_texture),texture_use::map_diffuse });
+		material->set_specular_map({ std::move(specular_texture), texture_use::map_specular });
 		return true;
 	}
 }

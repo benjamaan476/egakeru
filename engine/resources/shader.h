@@ -144,7 +144,6 @@ namespace egkr
 		bool is_uniform_add_state_valid();
 
 	private:
-		std::string name_{};
 		bool use_instances_{};
 		bool use_locals_{};
 		uint64_t requried_ubo_alignment_{};

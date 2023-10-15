@@ -10,11 +10,14 @@ namespace egkr
 	enum class texture_use
 	{
 		unknown = 0,
-		map_diffuse
+		map_diffuse,
+		map_specular,
+		map_normal
 	};
 
 	struct texture_properties
 	{
+		std::string name{};
 		uint32_t id{};
 		uint32_t width{};
 		uint32_t height{};

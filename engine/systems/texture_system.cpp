@@ -27,6 +27,7 @@ namespace egkr
 	bool texture_system::init()
 	{
 		texture_properties default_texture_properties{};
+		default_texture_properties.name = "default_texture";
 		default_texture_properties.width = 32;
 		default_texture_properties.height = 32;
 		default_texture_properties.channel_count = 4;
@@ -55,7 +56,21 @@ namespace egkr
 				}
 			}
 		}
+
 		texture_system_->default_texture_ = texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
+
+
+		texture_properties default_specular_properties{};
+		default_specular_properties.name = "default_specular";
+		default_specular_properties.width = 16;
+		default_specular_properties.height = 16;
+		default_specular_properties.channel_count = 4;
+		default_specular_properties.has_transparency = false;
+
+		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
+		texture_system_->default_specular_texture_ = texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
+		
+
 
 		return true;
 	}
@@ -67,6 +82,13 @@ namespace egkr
 			texture_system_->renderer_context_->free_texture(texture_system_->default_texture_.get());
 			texture_system_->default_texture_.reset();
 		}
+
+		if (texture_system_->default_specular_texture_)
+		{
+			texture_system_->renderer_context_->free_texture(texture_system_->default_specular_texture_.get());
+			texture_system_->default_specular_texture_.reset();
+		}
+
 
 		for (auto& texture : texture_system_->registered_textures_)
 		{
@@ -128,12 +150,22 @@ namespace egkr
 		return texture_system_->default_texture_;
 	}
 
+	texture::shared_ptr texture_system::get_default_specular_texture()
+	{
+		return texture_system_->default_specular_texture_;
+	}
+
+
 	bool texture_system::load_texture(std::string_view filename, texture::shared_ptr& texture)
 	{
 		texture->set_generation(invalid_32_id);
 
 		auto image = resource_system::load(filename, resource_type::image);
 
+		if (!image)
+		{
+			return false;
+		}
 		auto properties = (texture_properties*)image->data;
 
 		properties->id = texture->get_id();
