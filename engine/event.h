@@ -18,6 +18,7 @@ namespace egkr
 
 		debug01,
 		debug02,
+		render_mode,
 		event_code_size
 	};
 

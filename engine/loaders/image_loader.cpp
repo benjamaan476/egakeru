@@ -28,7 +28,7 @@ namespace egkr
 		stbi_set_flip_vertically_on_load(true);
 
 		char buff[128];
-		sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".png");
+		sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".jpg");
 
 		int32_t width{};
 		int32_t height{};

@@ -19,6 +19,7 @@ namespace egkr
 		uint16_t normal_texture{};
 		uint16_t shininess{};
 		uint16_t model{};
+		uint16_t mode{};
 	};
 
 	struct ui_shader_uniform_location
@@ -46,7 +47,7 @@ namespace egkr
 		static material::shared_ptr acquire(std::string_view name);
 		static material::shared_ptr acquire(const material_properties& properties);
 
-		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position);
+		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode);
 		static void apply_instance(const material::shared_ptr& material);
 		static void apply_local(const material::shared_ptr& material, const float4x4& model);
 	private:

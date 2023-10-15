@@ -2,42 +2,41 @@
 #include "pch.h"
 #include "renderer/vertex_types.h"
 
-static void generate_tangents(void* vertices, const egkr::vector<uint32_t>& indices)
+static void generate_tangents(void* verts, const egkr::vector<uint32_t>& indices)
 {
-	auto* verts = (vertex_3d*)vertices;
+	auto* vertices = (vertex_3d*)verts;
 	for (auto i{ 0U }; i < indices.size(); i += 3)
 	{
-		auto& vertex1 = verts[indices[i + 0]];
-		auto& vertex2 = verts[indices[i + 1]];
-		auto& vertex3 = verts[indices[i + 2]];
+        auto i0 = indices[i + 0];
+        auto i1 = indices[i + 1];
+        auto i2 = indices[i + 2];
 
-		auto edge1 = vertex2.position - vertex1.position;
-		auto edge2 = vertex3.position - vertex1.position;
+        auto edge1 = vertices[i1].position - vertices[i0].position;
+        auto edge2 = vertices[i2].position - vertices[i0].position;
 
-		auto delta1 = vertex2.tex - vertex1.tex;
-		auto delta2 = vertex3.tex - vertex1.tex;
+        auto deltaU1 = vertices[i1].tex.x - vertices[i0].tex.x;
+        auto deltaV1 = vertices[i1].tex.y - vertices[i0].tex.y;
 
-		auto fc = 1.F / (delta1.x * delta2.y - delta2.x * delta1.y);
+        auto deltaU2 = vertices[i2].tex.x - vertices[i0].tex.x;
+        auto deltaV2 = vertices[i2].tex.y - vertices[i0].tex.y;
 
-		egkr::float3 tangent{};
-		tangent.x = fc * (delta2.y * edge1.x - delta1.y * edge2.x);
-		tangent.y = fc * (delta2.y * edge1.y - delta1.y * edge2.y);
-		tangent.z = fc * (delta2.y * edge1.z - delta1.y * edge2.z);
+        auto dividend = (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+        auto fc = 1.0f / dividend;
 
-		tangent = glm::normalize(tangent);
+        auto tangent = (egkr::float3){
+            (fc * (deltaV2 * edge1.x - deltaV1 * edge2.x)),
+            (fc * (deltaV2 * edge1.y - deltaV1 * edge2.y)),
+            (fc * (deltaV2 * edge1.z - deltaV1 * edge2.z)) };
 
-		auto sx = delta1.x;
-		auto sy = delta2.x;
-		auto tx = delta1.y;
-		auto ty = delta2.y;
+        tangent = glm::normalize(tangent);
 
-		auto handedness = (tx * sy - ty * sx) < 0 ? -1 : 1;
-
-		tangent *= handedness;
-
-		vertex1.tangent = { tangent, 1.F };
-		vertex2.tangent = { tangent, 1.F };
-		vertex3.tangent = { tangent, 1.F };
+        auto sx = deltaU1, sy = deltaU2;
+        auto tx = deltaV1, ty = deltaV2;
+        auto handedness = ((tx * sy - ty * sx) < 0.0f) ? -1.0f : 1.0f;
+        egkr::float4 t4 = { tangent, handedness };
+        vertices[i0].tangent = t4;
+        vertices[i1].tangent = t4;
+        vertices[i2].tangent = t4;
 	}
 }
 

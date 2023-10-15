@@ -47,6 +47,8 @@ namespace egkr
 
 		builtin_renderpass get_renderpass_id(std::string_view renderpass_name) const;
 
+		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
+
 	private:
 		renderer_backend::unique_ptr backend_{};
 
@@ -60,6 +62,7 @@ namespace egkr
 		uint32_t material_shader_id{};
 		uint32_t ui_shader_id{};
 		float4 ambient_colour_{ 0.25F, 0.25F, 0.25F, 1.F };
+		uint32_t mode_{};
 		//TODO temp
 	};
 }

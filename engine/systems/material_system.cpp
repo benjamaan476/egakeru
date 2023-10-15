@@ -126,6 +126,7 @@ namespace egkr
 			locations.normal_texture = shader->get_uniform_index("normal_texture");
 			locations.view_position = shader->get_uniform_index("view_position");
 			locations.model = shader->get_uniform_index("model");
+			locations.mode = shader->get_uniform_index("mode");
 			material_system_->material_locations_ = locations;
 		}
 		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_UI)
@@ -145,7 +146,7 @@ namespace egkr
 		return new_material;
 	}
 
-	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position)
+	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
 	{
 		if (shader_id == material_system_->material_shader_id_)
 		{
@@ -153,6 +154,7 @@ namespace egkr
 			shader_system::set_uniform(material_system_->material_locations_.view, &view);
 			shader_system::set_uniform(material_system_->material_locations_.ambient_colour, &ambient_colour);
 			shader_system::set_uniform(material_system_->material_locations_.view_position, &view_position);
+			shader_system::set_uniform(material_system_->material_locations_.mode, &mode);
 		}
 		else
 		{

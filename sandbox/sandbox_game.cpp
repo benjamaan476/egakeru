@@ -68,6 +68,25 @@ void sandbox_game::update(double delta_time)
 		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
 	}
 
+	if (egkr::input::is_key_down(egkr::key::key_0))
+	{
+		const uint32_t array_size{ 4 };
+		egkr::event_context context = std::array<uint32_t, array_size>{ 0U };
+		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
+	}
+	if (egkr::input::is_key_down(egkr::key::key_1))
+	{
+		const uint32_t array_size{ 4 };
+		egkr::event_context context = std::array<uint32_t, array_size>{ 1U };
+		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
+	}
+	if (egkr::input::is_key_down(egkr::key::key_2))
+	{
+		const uint32_t array_size{ 4 };
+		egkr::event_context context = std::array<uint32_t, array_size>{ 2U };
+		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
+	}
+
 	position_ += velocity * 50.F * (float)delta_time;
 
 	recalculate_view_matrix();

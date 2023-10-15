@@ -71,13 +71,27 @@ namespace egkr
 		texture_system_->default_specular_texture_ = texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
 		
 		texture_properties default_normal_properties{};
-		default_normal_properties.name = "default_specular";
+		default_normal_properties.name = "default_normal";
 		default_normal_properties.width = 16;
 		default_normal_properties.height = 16;
 		default_normal_properties.channel_count = 4;
 		default_normal_properties.has_transparency = false;
 
-		egkr::vector<uint32_t> normal_data(default_normal_properties.width * default_normal_properties.height, 0xFFFF8080);
+		egkr::vector<uint8_t> normal_data(default_normal_properties.width * default_normal_properties.height * default_normal_properties.channel_count);
+
+		for (auto row = 0; row < 16; ++row)
+		{
+			for (auto col = 0; col < 16; ++col)
+			{
+				auto index = (row * 16) + col;
+				auto index_bpp = index * default_normal_properties.channel_count;
+				// Set blue, z-axis by default and alpha.
+				normal_data[index_bpp + 0] = 128;
+				normal_data[index_bpp + 1] = 128;
+				normal_data[index_bpp + 2] = 255;
+				normal_data[index_bpp + 3] = 255;
+			}
+		}
 		texture_system_->default_normal_texture_ = texture::create(texture_system_->renderer_context_, default_normal_properties, (uint8_t*)normal_data.data());
 		
 		return true;

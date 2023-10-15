@@ -61,7 +61,7 @@ namespace egkr
 
 		ui_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_UI);
 
-
+		event::register_event(event_code::render_mode, this, on_event);
 		return backen_init;
 	}
 
@@ -89,7 +89,7 @@ namespace egkr
 					return;
 				}
 
-				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_, camera_position_);
+				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_, camera_position_, mode_);
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
@@ -105,7 +105,6 @@ namespace egkr
 					return;
 				}
 
-
 				if (backend_->begin_renderpass(builtin_renderpass::ui))
 				{
 					if (!shader_system::use(ui_shader_id))
@@ -114,7 +113,7 @@ namespace egkr
 						return;
 					}
 
-					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {}, {});
+					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {}, {}, 0);
 
 					for (const auto& render_data : packet.ui_geometry_data)
 					{
@@ -226,5 +225,17 @@ namespace egkr
 			LOG_ERROR("Unknown renderpass name requested: {}", renderpass_name.data());
 			return builtin_renderpass::world;
 		}
+	}
+
+	bool renderer_frontend::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)
+	{
+		if (code == event_code::render_mode)
+		{
+			const auto& context_array = std::get<std::array<uint32_t, 4>>(context);
+			const auto& mode = context_array[0];
+
+			((renderer_frontend*)listener)->mode_ = mode;
+		}
+		return false;
 	}
 }
