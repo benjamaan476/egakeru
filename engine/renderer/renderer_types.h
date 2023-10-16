@@ -40,12 +40,10 @@ namespace egkr
 	{
 		geometry::shared_ptr geometry{};
 		float4x4 model{};
-		double delta_time{};
 	};
 
 	struct render_packet
 	{
-		double delta_time{};
 		egkr::vector<geometry_render_data> world_geometry_data{};
 		egkr::vector<geometry_render_data> ui_geometry_data{};
 	};
@@ -65,7 +63,7 @@ namespace egkr
 		virtual bool init() = 0;
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
-		virtual bool begin_frame(double delta_time) = 0;
+		virtual bool begin_frame() = 0;
 		virtual bool begin_renderpass(builtin_renderpass renderpass) = 0;
 		virtual bool end_renderpass(builtin_renderpass renderpass) = 0;
 		virtual void draw_geometry(const geometry_render_data& model) = 0;
@@ -93,8 +91,13 @@ namespace egkr
 		virtual uint32_t acquire_shader_isntance_resources(shader* shader) = 0;
 
 		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
+
+		uint32_t get_frame_number() const { return frame_number_; }
+	protected:
+		void new_frame() { ++frame_number_; }
 	private:
 		platform::shared_ptr platform_;
+		uint32_t frame_number_{ invalid_32_id };
 	};
 
 

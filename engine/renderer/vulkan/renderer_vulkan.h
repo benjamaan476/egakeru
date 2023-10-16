@@ -20,7 +20,7 @@ namespace egkr
 		bool init() final;
 		void shutdown() final;
 		void resize(uint32_t width_, uint32_t height_) final;
-		bool begin_frame(double delta_time) final;
+		bool begin_frame() final;
 		bool begin_renderpass(builtin_renderpass renderpass) final;
 		bool end_renderpass(builtin_renderpass renderpass) final;
 		void draw_geometry(const geometry_render_data& model) final;
@@ -68,7 +68,6 @@ namespace egkr
 		vulkan_context context_{};
 
 		platform::shared_ptr platform_{};
-		uint32_t frame_number_{};
 
 #ifdef NDEBUG
 		const bool enable_validation_layers_ = false;

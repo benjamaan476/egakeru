@@ -5,7 +5,10 @@
 #include "systems/texture_system.h"
 #include "systems/material_system.h"
 #include "systems/geometry_system.h"
+#include "systems/geometry_utils.h"
 #include "systems/shader_system.h"
+
+#include "resources/transform.h"
 
 using namespace std::chrono_literals;
 
@@ -116,15 +119,21 @@ namespace egkr
 		event::register_event(event_code::resize, nullptr, application::on_resize);
 		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
 
-		if (!test_geometry_)
-		{
-			test_geometry_ = geometry_system::get_default();
-			if (!test_geometry_)
-			{
-				LOG_WARN("Automatic material load failed. Creating manually");
+		auto cube_1 = geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
+		generate_tangents(cube_1.vertices, cube_1.indices);
 
-			}
-		}
+		transform transform_1 = transform::create();
+		auto mesh_1 = mesh::create(geometry_system::acquire(cube_1), transform_1);
+		meshes_.push_back(mesh_1);
+
+		auto cube_2 = geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material");
+		generate_tangents(cube_2.vertices, cube_2.indices);
+
+		transform model_2 = transform::create({ 10.F, 0.F, 0.F });
+		model_2.set_parent(&mesh_1->model());
+		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
+		meshes_.push_back(mesh_2);
+
 
 		std::vector<vertex_2d> vertices{4};
 
@@ -168,16 +177,23 @@ namespace egkr
 
 				state.game->render(delta_time);
 
-				static float angle = 0.F;
-				angle -= delta_time;
-
-				float4x4 model{ 1 };
-				model = glm::rotate(model, angle, { 0.F, 0.F, 1.F });
-
 				render_packet render_data{};
-				render_data.delta_time = delta_time;
-				render_data.world_geometry_data = { { application_->test_geometry_ , model, delta_time} };
-				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , float4x4{1.F}, delta_time} };
+
+				auto& model = application_->meshes_[0]->model();
+				glm::quat q({ 0, 0, 0.5F * delta_time });
+				model.rotate(q);
+
+				auto& model_2 = application_->meshes_[1]->model();
+				model_2.rotate(q);
+
+				for (auto& mesh : application_->meshes_)
+				{
+					for (auto& geom : mesh->get_geometries())
+					{
+						render_data.world_geometry_data.emplace_back(geom, mesh->model().get_world());
+					}
+				}
+				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , float4x4{1.F}} };
 
 				state.renderer->draw_frame(render_data);
 			}
@@ -194,7 +210,14 @@ namespace egkr
 
 	void application::shutdown()
 	{
-		application_->test_geometry_.reset();
+		for (auto& mesh : application_->meshes_)
+		{
+			for (auto& geometry : mesh->get_geometries())
+			{
+				geometry_system::release_geometry(geometry);
+			}
+		}
+
 		application_->test_ui_geometry_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
@@ -271,14 +294,14 @@ namespace egkr
 	{
 		if (code == event_code::debug01)
 		{
-			const std::array<std::string_view, 2> textures{ "RandomStones", "Seamless" };
-			const std::array<std::string_view, 2> spec_textures{ "RandomStones_spec", "Seamless_spec" };
+			const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
 			static int choice = 0;
 			choice++;
-			choice %= textures.size();
-			application_->test_geometry_->get_material()->set_diffuse_map({ texture_system::acquire(textures[choice]), texture_use::map_diffuse });
-			application_->test_geometry_->get_material()->set_specular_map({ texture_system::acquire(spec_textures[choice]), texture_use::map_diffuse });
+			choice %= materials.size();
+
+			auto material = material_system::acquire(materials[choice]);
+			application_->meshes_[0]->get_geometries()[0]->set_material(material);
 		}
 		return false;
 	}

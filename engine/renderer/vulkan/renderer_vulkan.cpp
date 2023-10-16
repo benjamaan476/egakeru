@@ -483,8 +483,9 @@ namespace egkr
 		++context_.framebuffer_size_generation;
 	}
 
-	bool renderer_vulkan::begin_frame(double /*delta_time*/)
+	bool renderer_vulkan::begin_frame()
 	{
+		new_frame();
 		if (context_.recreating_swapchain)
 		{
 			context_.device.logical_device.waitIdle();
@@ -524,7 +525,6 @@ namespace egkr
 
 
 
-		++frame_number_;
 		return true;
 	}
 

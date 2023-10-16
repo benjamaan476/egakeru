@@ -16,11 +16,11 @@ namespace egkr
 
 	struct material_properties
 	{
-		std::string name{};
-		std::string diffuse_map_name{};
+		std::string name{"default"};
+		std::string diffuse_map_name{"default_texture"};
 		std::string specular_map_name{};
 		std::string normal_map_name{};
-		std::string shader_name{};
+		std::string shader_name{"Shader.Builtin.Material"};
 		float shininess{};
 		float4 diffuse_colour{};
 	};
@@ -55,6 +55,9 @@ namespace egkr
 
 		const auto& get_internal_id() const {return internal_id_; }
 		void set_internal_id(uint32_t id) { internal_id_ = id; }
+
+		[[nodiscard]] auto get_render_frame() const { return render_frame_number_; }
+		void set_render_frame(uint32_t frame) { render_frame_number_ = frame; }
 	private:
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
@@ -65,5 +68,6 @@ namespace egkr
 		std::string shader_name_{};
 		uint32_t shader_id_{invalid_32_id};
 		uint32_t internal_id_{ invalid_32_id };
+		uint32_t render_frame_number_{ invalid_32_id };
 	};
 }

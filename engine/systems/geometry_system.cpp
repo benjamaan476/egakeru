@@ -59,9 +59,9 @@ namespace egkr
 		return geometry::shared_ptr();
 	}
 
-	geometry::shared_ptr geometry_system::acquire(const geometry_properties& /*properties*/)
+	geometry::shared_ptr geometry_system::acquire(const geometry_properties& properties)
 	{
-		return geometry::shared_ptr();
+		return geometry::create(geometry_system_->renderer_context_, properties);
 	}
 
 	void geometry_system::release_geometry(const geometry::shared_ptr& geometry)

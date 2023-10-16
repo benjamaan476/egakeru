@@ -42,6 +42,7 @@ namespace egkr
 		void destroy(const renderer_frontend* renderer);
 
 		const auto& get_material() const { return material_;}
+		void set_material(const material::shared_ptr& material);
 
 	private:
 		material::shared_ptr material_{};

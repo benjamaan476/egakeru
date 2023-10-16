@@ -79,7 +79,7 @@ namespace egkr
 
 	void renderer_frontend::draw_frame(const render_packet& packet)
 	{
-		if (backend_->begin_frame(packet.delta_time))
+		if (backend_->begin_frame())
 		{
 			if (backend_->begin_renderpass(builtin_renderpass::world))
 			{
@@ -93,9 +93,14 @@ namespace egkr
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
-					material_system::apply_instance(render_data.geometry->get_material());
+					auto& material = render_data.geometry->get_material();
+					if (material->get_render_frame() != backend_->get_frame_number())
+					{
+						material_system::apply_instance(material);
+						material->set_render_frame(backend_->get_frame_number());
+					}
+						material_system::apply_local(material, render_data.model);
 
-					material_system::apply_local(render_data.geometry->get_material(), render_data.model);
 					backend_->draw_geometry(render_data);
 				}
 

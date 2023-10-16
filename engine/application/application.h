@@ -6,6 +6,7 @@
 #include "event.h"
 
 #include "resources/geometry.h"
+#include "resources/mesh.h"
 
 #include "renderer/renderer_frontend.h"
 
@@ -47,7 +48,7 @@ namespace egkr
 	    bool limit_framerate_{false};
 		std::chrono::milliseconds frame_time_{16ms};
 
-		geometry::shared_ptr test_geometry_{};
+		egkr::vector<mesh::shared_ptr> meshes_;
 		geometry::shared_ptr test_ui_geometry_{};
 	};
 

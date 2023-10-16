@@ -25,4 +25,9 @@ namespace egkr
 	{
 		renderer->free_geometry(this);
 	}
+
+	void geometry::set_material(const material::shared_ptr& material)
+	{
+		material_ = material;
+	}
 }

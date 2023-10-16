@@ -1,0 +1,8 @@
+#material file
+version=0.1
+name=seamless
+diffuse_colour=1.0 1.0 1.0 1.0
+diffuse_map_name=seamless
+specular_map_name=seamless_spec
+shader=Shader.Builtin.Material
+shininess=64.0
