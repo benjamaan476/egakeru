@@ -180,7 +180,7 @@ namespace egkr
 	{
 		for (const auto& available_format : available_formats)
 		{
-			if (available_format.format == vk::Format::eB8G8R8A8Srgb && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+			if (available_format.format == vk::Format::eB8G8R8A8Unorm && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
 			{
 				return available_format;
 			}

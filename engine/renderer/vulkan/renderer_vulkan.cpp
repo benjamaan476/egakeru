@@ -913,11 +913,13 @@ namespace egkr
 			auto staging_buffer = buffer::create(&context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
 			staging_buffer->load_data(0, image_size, 0, data);
 
+			auto image_format = vk::Format::eR8G8B8A8Unorm;
+
 			image_properties image_properties{};
 			image_properties.tiling = vk::ImageTiling::eOptimal;
 			image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
 			image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-			image_properties.image_format = vk::Format::eR8G8B8A8Srgb;
+			image_properties.image_format = image_format;
 			image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
 
 			state.image = image::create(&context_, properties.width, properties.height, image_properties, true);
@@ -925,9 +927,9 @@ namespace egkr
 			command_buffer single_use{};
 			single_use.begin_single_use(&context_, context_.device.graphics_command_pool);
 
-			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+			state.image->transition_layout(single_use, image_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 			state.image->copy_from_buffer(single_use, staging_buffer);
-			state.image->transition_layout(single_use, vk::Format::eR8G8B8Srgb, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+			state.image->transition_layout(single_use, image_format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 			single_use.end_single_use(&context_, context_.device.graphics_command_pool, context_.device.graphics_queue);
 

@@ -2,8 +2,8 @@
 version=0.1
 name=test_material
 diffuse_colour=1.0 1.0 1.0 1.0
-diffuse_map_name=orange_lines_512
-specular_map_name=orange_lines_512_spec
+diffuse_map_name=BricksReclaimedWhitewashedOffset001_COL_1K_SPECULAR
+specular_map_name=BricksReclaimedWhitewashedOffset001_GLOSS_1K_SPECULAR
 normal_map_name=BricksReclaimedWhitewashedOffset001_NRM_1K_SPECULAR
 shader=Shader.Builtin.Material
 shininess=64.0

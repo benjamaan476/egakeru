@@ -31,7 +31,7 @@ directional_light dir_light = {
 
 // TODO: feed in from cpu
 point_light p_light_0 = {
-    vec3(-5.5, 0.0, -5.5),
+    vec3(-5.5, -5.5, 0.0),
     vec4(0.0, 1.0, 0.0, 1.0),
     1.0, // Constant
     0.35, // Linear
@@ -40,7 +40,7 @@ point_light p_light_0 = {
 
 // TODO: feed in from cpu
 point_light p_light_1 = {
-    vec3(5.5, 0.0, -5.5),
+    vec3(5.5, -5.5, 0.0),
     vec4(1.0, 0.0, 0.0, 1.0),
     1.0, // Constant
     0.35, // Linear
