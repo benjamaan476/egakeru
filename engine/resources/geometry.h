@@ -22,10 +22,18 @@ namespace egkr
 		std::string name{};
 		std::string material_name{};
 
+		float3 center{};
+		float3 min_extent{};
+		float3 max_extent{};
+
+		void release()
+		{
+			free(vertices);
+		}
+
 		~geometry_properties()
 		{
 			//Dynamically allocated so needs to be freed
-			free(vertices);
 		}
 	};
 

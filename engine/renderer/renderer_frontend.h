@@ -40,7 +40,7 @@ namespace egkr
 		bool bind_shader_globals(shader* shader) const;
 		bool bind_shader_instances(shader* shader, uint32_t instance_id) const;
 		bool apply_shader_globals(shader* shader) const;
-		bool apply_shader_instances(shader* shader) const;
+		bool apply_shader_instances(shader* shader, bool needs_update) const;
 		uint32_t acquire_shader_isntance_resources(shader* shader) const;
 
 		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const;

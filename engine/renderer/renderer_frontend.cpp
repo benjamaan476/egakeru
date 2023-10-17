@@ -94,9 +94,9 @@ namespace egkr
 				for (const auto& render_data : packet.world_geometry_data)
 				{
 					auto& material = render_data.geometry->get_material();
-					if (material->get_render_frame() != backend_->get_frame_number())
+					bool needs_update = material->get_render_frame() != backend_->get_frame_number();
 					{
-						material_system::apply_instance(material);
+						material_system::apply_instance(material, needs_update);
 						material->set_render_frame(backend_->get_frame_number());
 					}
 						material_system::apply_local(material, render_data.model);
@@ -122,9 +122,12 @@ namespace egkr
 
 					for (const auto& render_data : packet.ui_geometry_data)
 					{
-						material_system::apply_instance(render_data.geometry->get_material());
+						auto material = render_data.geometry->get_material();
+						bool needs_update = material->get_render_frame() != backend_->get_frame_number();
 
-						material_system::apply_local(render_data.geometry->get_material(), render_data.model);
+						material_system::apply_instance(material, needs_update);
+
+						material_system::apply_local(material, render_data.model);
 						backend_->draw_geometry(render_data);
 					}
 
@@ -200,9 +203,9 @@ namespace egkr
 		return backend_->apply_shader_globals(shader);
 	}
 
-	bool renderer_frontend::apply_shader_instances(shader* shader) const
+	bool renderer_frontend::apply_shader_instances(shader* shader, bool needs_update) const
 	{
-		return backend_->apply_shader_instances(shader);
+		return backend_->apply_shader_instances(shader, needs_update);
 	}
 
 	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader) const

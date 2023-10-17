@@ -58,7 +58,17 @@ namespace egkr
 		}
 
 		texture_system_->default_texture_ = texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
+		{
+			texture_properties default__diffuse_properties{};
+			default__diffuse_properties.name = "default_specular";
+			default__diffuse_properties.width = 16;
+			default__diffuse_properties.height = 16;
+			default__diffuse_properties.channel_count = 4;
+			default__diffuse_properties.has_transparency = false;
 
+			egkr::vector<uint32_t> diffuse_data(default__diffuse_properties.width * default__diffuse_properties.height, 0xFFFFFFFF);
+			texture_system_->default_diffuse_texture_ = texture::create(texture_system_->renderer_context_, default__diffuse_properties, (uint8_t*)diffuse_data.data());
+		}
 
 		texture_properties default_specular_properties{};
 		default_specular_properties.name = "default_specular";
@@ -109,6 +119,12 @@ namespace egkr
 		{
 			texture_system_->renderer_context_->free_texture(texture_system_->default_specular_texture_.get());
 			texture_system_->default_specular_texture_.reset();
+		}
+
+		if (texture_system_->default_diffuse_texture_)
+		{
+			texture_system_->renderer_context_->free_texture(texture_system_->default_diffuse_texture_.get());
+			texture_system_->default_diffuse_texture_.reset();
 		}
 
 		if (texture_system_->default_normal_texture_)
@@ -175,6 +191,11 @@ namespace egkr
 	texture::shared_ptr texture_system::get_default_texture()
 	{
 		return texture_system_->default_texture_;
+	}
+
+	texture::shared_ptr texture_system::get_default_diffuse_texture()
+	{
+		return texture_system_->default_diffuse_texture_;
 	}
 
 	texture::shared_ptr texture_system::get_default_specular_texture()

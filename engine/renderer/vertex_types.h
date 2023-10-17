@@ -14,4 +14,9 @@ struct vertex_3d
 	egkr::float2 tex{};
 	egkr::float4 colour{};
 	egkr::float4 tangent{};
+
+	bool operator==(const vertex_3d& rhs) const
+	{
+		return position == rhs.position && normal == rhs.normal && tex == rhs.tex && colour == rhs.colour && tangent == rhs.tangent;
+	}
 };

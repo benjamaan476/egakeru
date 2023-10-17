@@ -5,6 +5,7 @@
 #include "loaders/binary_loader.h"
 #include "loaders/text_loader.h"
 #include "loaders/shader_loader.h"
+#include "loaders/mesh_loader.h"
 
 namespace egkr
 {
@@ -72,6 +73,13 @@ namespace egkr
 			shader_loader_properties.path = base_path + "shaders";
 
 			register_loader(shader_loader::create(shader_loader_properties));
+		}
+		{
+			loader_properties mesh_loader_properties{};
+			mesh_loader_properties.custom_type = {};
+			mesh_loader_properties.path = base_path + "meshes";
+
+			register_loader(mesh_loader::create(mesh_loader_properties));
 		}
 		return true;
 	}

@@ -118,10 +118,10 @@ namespace egkr
 		shader_system_->renderer_context_->apply_shader_globals(shader.get());
 	}
 
-	void shader_system::apply_instance()
+	void shader_system::apply_instance(bool needs_update)
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader_system_->renderer_context_->apply_shader_instances(shader.get());
+		shader_system_->renderer_context_->apply_shader_instances(shader.get(), needs_update);
 	}
 
 	void shader_system::set_uniform(std::string_view uniform_name, const void* data)

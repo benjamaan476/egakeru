@@ -30,6 +30,7 @@ namespace egkr
 		void release(std::string_view texture_name);
 
 		static texture::shared_ptr get_default_texture();
+		static texture::shared_ptr get_default_diffuse_texture();
 		static texture::shared_ptr get_default_specular_texture();
 		static texture::shared_ptr get_default_normal_texture();
 	private:
@@ -39,6 +40,7 @@ namespace egkr
 	private:
 		const renderer_frontend* renderer_context_{};
 		texture::shared_ptr default_texture_{};
+		texture::shared_ptr default_diffuse_texture_{};
 		texture::shared_ptr default_specular_texture_{};
 		texture::shared_ptr default_normal_texture_{};
 

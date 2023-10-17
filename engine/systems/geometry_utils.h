@@ -58,3 +58,48 @@ static void generate_tangents(void* verts, const egkr::vector<uint32_t>& indices
 	//		vertex3->normal = normal;
 	//	}
 	//}
+
+static void reassign_index(uint32_t index_count, uint32_t* indices, uint32_t from, uint32_t to)
+{
+    for (auto i{ 0U }; i < index_count; ++i)
+    {
+        if (indices[i] == from)
+        {
+            indices[i] = to;
+        }
+        else if (indices[i] > from)
+        {
+            indices[i]--;
+        }
+    }
+}
+
+inline static egkr::vector<vertex_3d> deduplicate_vertices(uint32_t vertex_count, vertex_3d* vertices, egkr::vector<uint32_t>& indices)
+{
+    egkr::vector<vertex_3d> new_vertices{vertex_count};
+    uint32_t found_count{};
+
+    uint32_t out_vert_count{};
+    for (auto v{ 0U }; v < vertex_count; ++v)
+    {
+        bool found{};
+        for (auto u{ 0U }; u < out_vert_count; ++u)
+        {
+            if (vertices[v] == vertices[u])
+            {
+                reassign_index(indices.size(), indices.data(), v - found_count, u);
+                found = true;
+                ++found_count;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            new_vertices[out_vert_count] = vertices[v];
+            out_vert_count++;
+        }
+    }
+
+    return { new_vertices.begin(), new_vertices.begin() + out_vert_count };
+}

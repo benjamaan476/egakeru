@@ -17,9 +17,9 @@ namespace egkr
 	struct material_properties
 	{
 		std::string name{"default"};
-		std::string diffuse_map_name{"default_texture"};
-		std::string specular_map_name{};
-		std::string normal_map_name{};
+		std::string diffuse_map_name{"default_diffuse_texture"};
+		std::string specular_map_name{"default_specular_texture"};
+		std::string normal_map_name{"default_normal_texture"};
 		std::string shader_name{"Shader.Builtin.Material"};
 		float shininess{};
 		float4 diffuse_colour{};

@@ -50,6 +50,6 @@ namespace egkr
 		auto* data = (binary_resource_properties*)resource->data;
 		data->data.clear();
 		delete data;
-		return false;
+		return true;
 	}
 }

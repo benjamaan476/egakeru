@@ -72,6 +72,7 @@ namespace egkr
 
 		if (ret == nullptr)
 		{
+			LOG_INFO("{}, {}", feof(handle.handle), ferror(handle.handle));
 			return {};
 		}
 		buff[strcspn(buff, "\n")] = 0;

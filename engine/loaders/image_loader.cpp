@@ -1,10 +1,10 @@
 #include "image_loader.h"
 
 #include "resources/texture.h"
+#include "platform/filesystem.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <filesystem>
 
 namespace egkr
 {
@@ -28,7 +28,25 @@ namespace egkr
 		stbi_set_flip_vertically_on_load(true);
 
 		char buff[128];
-		sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".png");
+		egkr::vector<std::string_view> extensions{".tga", ".png", ".jpg", ".bmp"};
+
+		auto found{ false };
+		for (const auto& extension : extensions)
+		{
+			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), extension.data());
+
+			if (filesystem::does_path_exist(buff))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			LOG_ERROR("File not found: {}", buff);
+			return {};
+		}
 
 		int32_t width{};
 		int32_t height{};

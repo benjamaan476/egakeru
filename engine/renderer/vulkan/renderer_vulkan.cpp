@@ -1311,7 +1311,7 @@ namespace egkr
 		return true;
 	}
 
-	bool renderer_vulkan::apply_shader_instances(shader* shader)
+	bool renderer_vulkan::apply_shader_instances(shader* shader, bool needs_update)
 	{
 		if (!shader->has_instances())
 		{
@@ -1326,76 +1326,78 @@ namespace egkr
 		auto& object_state = state->instance_states[shader->get_bound_instance_id()];
 		auto& object_descriptor_set = object_state.descriptor_set_state.descriptor_sets[image_index];
 
-		egkr::vector<vk::WriteDescriptorSet> writes{};
-
-		uint32_t descriptor_count{};
-		uint32_t descriptor_index{};
-
-		auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
-
-		if (instance_ubo_generation == invalid_8_id)
+		if (needs_update)
 		{
-			vk::DescriptorBufferInfo buffer_info{};
-			buffer_info
-				.setBuffer(state->uniform_buffer->get_handle())
-				.setOffset(object_state.offset)
-				.setRange(shader->get_ubo_stride());
+			egkr::vector<vk::WriteDescriptorSet> writes{};
 
-			vk::WriteDescriptorSet ubo{};
-			ubo
-				.setDstSet(object_descriptor_set)
-				.setDstBinding(descriptor_index)
-				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-				.setDescriptorCount(1)
-				.setBufferInfo(buffer_info);
+			uint32_t descriptor_count{};
+			uint32_t descriptor_index{};
 
-			writes.push_back(ubo);
-			descriptor_count++;
+			auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
 
-			instance_ubo_generation = 1;
-		}
-		++descriptor_index;
-
-		vk::WriteDescriptorSet sampler{};
-		auto total_sampler_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
-		egkr::vector<vk::DescriptorImageInfo> image_infos{total_sampler_count};
-		if (state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
-		{
-			uint32_t update_sampler_count{};
-
-			for (auto i{ 0U }; i < total_sampler_count; ++i)
+			if (instance_ubo_generation == invalid_8_id)
 			{
-				auto& texture = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
-				auto texture_data = (vulkan_texture_state*)texture->data;
+				vk::DescriptorBufferInfo buffer_info{};
+				buffer_info
+					.setBuffer(state->uniform_buffer->get_handle())
+					.setOffset(object_state.offset)
+					.setRange(shader->get_ubo_stride());
 
-				vk::DescriptorImageInfo image_info{};
-				image_info
-					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-					.setImageView(texture_data->image->get_view())
-					.setSampler(texture_data->sampler);
+				vk::WriteDescriptorSet ubo{};
+				ubo
+					.setDstSet(object_descriptor_set)
+					.setDstBinding(descriptor_index)
+					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+					.setDescriptorCount(1)
+					.setBufferInfo(buffer_info);
 
-				image_infos[i] = image_info;
+				writes.push_back(ubo);
+				descriptor_count++;
 
-				++update_sampler_count;
+				instance_ubo_generation = 1;
+			}
+			++descriptor_index;
+
+			vk::WriteDescriptorSet sampler{};
+			auto total_sampler_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
+			egkr::vector<vk::DescriptorImageInfo> image_infos{total_sampler_count};
+			if (state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
+			{
+				uint32_t update_sampler_count{};
+
+				for (auto i{ 0U }; i < total_sampler_count; ++i)
+				{
+					auto& texture = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
+					auto texture_data = (vulkan_texture_state*)texture->data;
+
+					vk::DescriptorImageInfo image_info{};
+					image_info
+						.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+						.setImageView(texture_data->image->get_view())
+						.setSampler(texture_data->sampler);
+
+					image_infos[i] = image_info;
+
+					++update_sampler_count;
+				}
+
+				sampler
+					.setDstSet(object_descriptor_set)
+					.setDstBinding(descriptor_index)
+					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+					.setDescriptorCount(update_sampler_count)
+					.setImageInfo(image_infos);
+
+				writes.push_back(sampler);
+				++descriptor_count;
+
 			}
 
-			sampler
-				.setDstSet(object_descriptor_set)
-				.setDstBinding(descriptor_index)
-				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-				.setDescriptorCount(update_sampler_count)
-				.setImageInfo(image_infos);
-
-			writes.push_back(sampler);
-			++descriptor_count;
-
+			if (descriptor_count > 0)
+			{
+				context_.device.logical_device.updateDescriptorSets(writes, nullptr);
+			}
 		}
-
-		if (descriptor_count > 0)
-		{
-			context_.device.logical_device.updateDescriptorSets(writes, nullptr);
-		}
-
 		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, state->pipeline->get_layout(), 1, object_descriptor_set, nullptr);
 		return true;
 	}

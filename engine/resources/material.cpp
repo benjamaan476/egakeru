@@ -17,7 +17,9 @@ namespace egkr
 		: resource(0, 0, properties.name), diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
 		diffuse_map_.use = texture_use::map_diffuse;
-		diffuse_map_.texture = texture_system::get_default_texture();
+		diffuse_map_.texture = texture_system::get_default_diffuse_texture();
+		specular_map_ = { texture_system::get_default_specular_texture(), texture_use::map_specular };
+		normal_map_ = { texture_system::get_default_normal_texture(), texture_use::map_normal };
 		shader_id_ = shader_system::get_shader_id(shader_name_);
 	}
 

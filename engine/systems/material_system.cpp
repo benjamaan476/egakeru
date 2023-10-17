@@ -164,24 +164,27 @@ namespace egkr
 		shader_system::apply_global();
 	}
 
-	void material_system::apply_instance(const material::shared_ptr& material)
+	void material_system::apply_instance(const material::shared_ptr& material, bool needs_update)
 	{
 		shader_system::bind_instance(material->get_internal_id());
 
-		if (material->get_shader_id() == material_system_->material_shader_id_)
+		if (needs_update)
 		{
-			shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
-			shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
-			shader_system::set_uniform(material_system_->material_locations_.specular_texture, material->get_specular_map().texture.get());
-			shader_system::set_uniform(material_system_->material_locations_.normal_texture, material->get_normal_map().texture.get());
-			shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
+			if (material->get_shader_id() == material_system_->material_shader_id_)
+			{
+				shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
+				shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+				shader_system::set_uniform(material_system_->material_locations_.specular_texture, material->get_specular_map().texture.get());
+				shader_system::set_uniform(material_system_->material_locations_.normal_texture, material->get_normal_map().texture.get());
+				shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
+			}
+			else if (material->get_shader_id() == material_system_->ui_shader_id_)
+			{
+				shader_system::set_uniform(material_system_->ui_locations_.diffuse_colour, &material->get_diffuse_colour());
+				shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+			}
 		}
-		else if (material->get_shader_id() == material_system_->ui_shader_id_)
-		{
-			shader_system::set_uniform(material_system_->ui_locations_.diffuse_colour, &material->get_diffuse_colour());
-			shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
-		}
-		shader_system::apply_instance();
+		shader_system::apply_instance(needs_update);
 	}
 
 	void material_system::apply_local(const material::shared_ptr& material, const float4x4& model)

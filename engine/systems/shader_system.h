@@ -35,7 +35,7 @@ namespace egkr
 		static bool use(uint32_t shader_id);
 
 		static void apply_global();
-		static void apply_instance();
+		static void apply_instance(bool needs_update);
 
 		static void set_uniform(std::string_view uniform_name, const void* data);
 		static void set_uniform(uint32_t instance_id, const void* data);

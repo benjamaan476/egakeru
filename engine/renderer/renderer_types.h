@@ -87,7 +87,7 @@ namespace egkr
 		virtual bool bind_shader_globals(shader* shader) = 0;
 		virtual bool bind_shader_instances(shader* shader, uint32_t instance_id) = 0;
 		virtual bool apply_shader_globals(shader* shader) = 0;
-		virtual bool apply_shader_instances(shader* shader) = 0;
+		virtual bool apply_shader_instances(shader* shader, bool needs_update) = 0;
 		virtual uint32_t acquire_shader_isntance_resources(shader* shader) = 0;
 
 		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
