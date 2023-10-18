@@ -72,11 +72,14 @@ namespace egkr
 
 		if (ret == nullptr)
 		{
-			LOG_INFO("{}, {}", feof(handle.handle), ferror(handle.handle));
 			return {};
 		}
 		buff[strcspn(buff, "\n")] = 0;
 		auto len = strlen(buff);
+		if (len == 0)
+		{
+			return { '\0' };
+		}
 		egkr::vector<uint8_t> data(buff, buff + len);
 		return data;
 	}

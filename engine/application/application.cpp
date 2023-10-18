@@ -138,11 +138,17 @@ namespace egkr
 		auto mesh_resource = resource_system::load("ico", resource_type::mesh);
 
 		auto geometry_config = (egkr::vector<geometry_properties>*)mesh_resource->data;
-		generate_tangents(geometry_config->at(0).vertices, geometry_config->at(0).indices);
 		transform obj = transform::create({ 15, 1, 0 });
-		auto geom = mesh::create(geometry_system::acquire(geometry_config->at(0)), obj);
+		auto mesh = mesh::create();
+		mesh->set_model(obj);
 
-		meshes_.push_back(geom);
+		for (const auto& geom : *geometry_config)
+		{
+			generate_tangents(geom.vertices, geom.indices);
+			mesh->add_geometry(geometry_system::acquire(geom));
+		}
+
+		meshes_.push_back(mesh);
 
 		resource_system::unload(mesh_resource);
 

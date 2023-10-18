@@ -49,7 +49,7 @@ namespace egkr
 		switch (found_type.file_type)
 		{
 		case mesh_file_type::obj:
-			resource_data = import_obj(handle, name.data());
+			resource_data = import_obj(handle, filename);
 			break;
 		case mesh_file_type::esm:
 			resource_data = load_esm(handle);
@@ -239,8 +239,9 @@ namespace egkr
 		if (!material_filename.empty())
 		{
 			std::filesystem::path full_material_path{esm_filename.data()};
-			auto root_dir = full_material_path.root_directory();
-			root_dir += material_filename;
+			full_material_path = std::filesystem::absolute(full_material_path);
+			auto root_dir = full_material_path.parent_path();
+			root_dir += "\\" + material_filename;
 
 			if (!import_obj_material_library(root_dir.string()))
 			{
@@ -353,8 +354,101 @@ namespace egkr
 		return properties;
 	}
 
-	bool mesh_loader::import_obj_material_library(std::string_view /*filepath*/)
+	bool mesh_loader::import_obj_material_library(std::string_view filepath)
 	{
+		auto file = filesystem::open(filepath, file_mode::read, false);
+		material_properties current_properties{};
+
+		bool hit_name{};
+		while (true)
+		{
+			auto line = filesystem::read_line(file, 511);
+			if (line.empty())
+			{
+				break;
+			}
+
+			std::string line_string{ line.begin(), line.end() };
+			trim(line_string);
+
+			uint8_t first_char = line[0];
+			switch (first_char)
+			{
+			case '#': continue;
+			case 'K':
+			{
+				uint8_t second_char{ line[1] };
+				switch (second_char)
+				{
+				case 'a':
+				case 'd':
+				{
+					char waste[3]{};
+					std::string format{ "%s %f %f %f" };
+					sscanf_s(line_string.data(), format.data(), waste, 3, &current_properties.diffuse_colour.r, &current_properties.diffuse_colour.g, &current_properties.diffuse_colour.b);
+					current_properties.diffuse_colour.a = 1.F;
+				} break;
+				case 's': break;
+				}
+			} break;
+			case 'N':
+			{
+				char waste[3]{};
+				std::string format{ "%s %f" };
+				sscanf_s(line_string.data(), format.data(), waste, 3, &current_properties.shininess);
+			} break;
+			case 'm':
+			{
+				char map_type[10]{};
+				char texture_filename[128]{};
+				std::string format{ "%s %s" };
+				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
+
+				if (strncmp(map_type, "map_Kd", 7) == 0)
+				{
+					current_properties.diffuse_map_name = texture_filename;
+				}
+				else if (strncmp(map_type, "map_Ks", 7) == 0)
+				{
+					current_properties.specular_map_name = texture_filename;
+				}
+				else if (strncmp(map_type, "map_bump", 9) == 0)
+				{
+					current_properties.normal_map_name = texture_filename;
+				}
+			} break;
+			case 'b':
+			{
+				char map_type[10]{};
+				char texture_filename[128]{};
+				std::string format{ "%s %s" };
+				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
+				current_properties.normal_map_name = texture_filename;
+			} break;
+			case 'n':
+			{
+				char waste[7]{};
+				char material_name[128]{};
+				auto format{ "%s %s" };
+				sscanf_s(line_string.data(), format, waste, sizeof(waste), material_name, sizeof(material_name));
+
+				current_properties.shader_name = "Sahder.Builtin.Material";
+				if (current_properties.shininess == 0)
+				{
+					current_properties.shininess = 8.F;
+				}
+
+				if (hit_name)
+				{
+					write_emt(filepath, current_properties);
+				}
+				hit_name = true;
+				current_properties.name = material_name;
+			} break;
+
+			}
+		}
+
 		return false;
 	}
 

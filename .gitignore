@@ -33,3 +33,7 @@ $RECYCLE.BIN/
 ehthumbs.db
 Thumbs.db
 .spv
+/assets/shaders/Builtin.MaterialShader.frag.spv
+/assets/shaders/Builtin.MaterialShader.vert.spv
+/assets/shaders/Builtin.UIShader.frag.spv
+/assets/shaders/Builtin.UIShader.vert.spv

@@ -8,8 +8,15 @@ namespace egkr
 	geometry::shared_ptr geometry::create(const renderer_frontend* context, const geometry_properties& properties)
 	{
 		auto geom = std::make_shared<geometry>(properties);
-		context->populate_geometry(geom.get(), properties);
 
+		if (properties.vertex_count)
+		{
+			context->populate_geometry(geom.get(), properties);
+		}
+		else
+		{
+			LOG_WARN("Geometry has no vertex data. Not populating");
+		}
 		return geom;
 	}
 

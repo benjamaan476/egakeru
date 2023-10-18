@@ -579,22 +579,23 @@ namespace egkr
 	{
 		const auto& geometry = data.geometry;
 		const auto& state = (vulkan_geometry_state*)geometry->data;
-
-		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
-		vk::DeviceSize offset{ 0 };
-		command_buffer.get_handle().bindVertexBuffers(0, state->vertex_buffer_->get_handle(), offset);
-
-		command_buffer.get_handle().bindIndexBuffer(state->index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
-
-		if (state->index_count_)
+		if (state)
 		{
-			command_buffer.get_handle().drawIndexed(state->index_count_, 1, 0, 0, 0);
-		}
-		else
-		{
-			command_buffer.get_handle().draw(state->vertex_count_, 0, 0, 0);
-		}
+			auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+			vk::DeviceSize offset{ 0 };
+			command_buffer.get_handle().bindVertexBuffers(0, state->vertex_buffer_->get_handle(), offset);
 
+			command_buffer.get_handle().bindIndexBuffer(state->index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
+
+			if (state->index_count_)
+			{
+				command_buffer.get_handle().drawIndexed(state->index_count_, 1, 0, 0, 0);
+			}
+			else
+			{
+				command_buffer.get_handle().draw(state->vertex_count_, 0, 0, 0);
+			}
+		}
 	}
 
 	void renderer_vulkan::end_frame()
