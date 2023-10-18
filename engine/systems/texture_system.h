@@ -8,6 +8,9 @@
 namespace egkr
 {
 	constexpr static std::string_view default_texture_name{"default"};
+	constexpr static std::string_view default_diffuse_name{"default_diffuse_texture"};
+	constexpr static std::string_view default_specular_name{"default_specular_texture"};
+	constexpr static std::string_view default_normal_name{"default_normal_texture"};
 
 	struct texture_system_configuration
 	{

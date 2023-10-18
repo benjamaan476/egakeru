@@ -1,4 +1,5 @@
 #include "material_loader.h"
+#include "systems/texture_system.h"
 #include "platform/filesystem.h"
 
 namespace egkr
@@ -48,10 +49,10 @@ namespace egkr
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
 		{
-			LOG_ERROR("Failed to open material file: {}", path.data());
 			properties.diffuse_colour = float4{ 1.F };
-			properties.diffuse_map_name = "default";
-			properties.diffuse_map_name = "default";
+			properties.diffuse_map_name = default_diffuse_name;
+			properties.specular_map_name = default_specular_name;
+			properties.normal_map_name = default_normal_name;
 			return properties;
 		}
 

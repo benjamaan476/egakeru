@@ -100,6 +100,6 @@ inline static egkr::vector<vertex_3d> deduplicate_vertices(uint32_t vertex_count
             out_vert_count++;
         }
     }
-
+    LOG_INFO("Removed {} vertices. Original/Remaining: {}/{}", found_count, vertex_count, out_vert_count);
     return { new_vertices.begin(), new_vertices.begin() + out_vert_count };
 }

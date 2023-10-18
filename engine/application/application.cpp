@@ -135,10 +135,12 @@ namespace egkr
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
 
-		auto mesh_resource = resource_system::load("ico", resource_type::mesh);
+		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
 
 		auto geometry_config = (egkr::vector<geometry_properties>*)mesh_resource->data;
-		transform obj = transform::create({ 15, 1, 0 });
+		transform obj = transform::create({ 0, 0, 0 });
+		obj.set_scale({ 0.1F, 0.1F, 0.1F });
+		obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
 		auto mesh = mesh::create();
 		mesh->set_model(obj);
 

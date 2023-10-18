@@ -63,6 +63,7 @@ static inline void rtrim(std::string &s) {
 static inline void trim(std::string &s) {
     rtrim(s);
     ltrim(s);
+	s.erase(std::remove(s.begin(), s.end(), '\t'), s.end());
 	s.shrink_to_fit();
 }
 

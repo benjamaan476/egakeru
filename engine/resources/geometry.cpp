@@ -23,7 +23,14 @@ namespace egkr
 	geometry::geometry(const geometry_properties& properties)
 		: resource(properties.id, properties.generation, properties.name)
 	{
-		material_ = material_system::acquire(properties.material_name);
+		if (properties.material_name == default_material_name_)
+		{
+			material_ = material_system::get_default_material();
+		}
+		else
+		{
+			material_ = material_system::acquire(properties.material_name);
+		}
 	}
 
 	geometry::~geometry() = default;

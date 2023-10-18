@@ -91,12 +91,11 @@ namespace egkr
 		tex_coords.reserve(16384);
 
 		egkr::vector<mesh_group_data> groups{1};
-		uint32_t group_id{};
 		groups.reserve(4);
 
 		std::string name{};
 		std::string material_filename{};
-		//uint32_t current_material_name_count{};
+		uint32_t current_material_name_count{};
 		egkr::vector<std::string> material_names{32};
 
 		std::array<char, 2> previous_first_chars{};
@@ -149,7 +148,7 @@ namespace egkr
 				}
 				break;
 				}
-			}
+			} break;
 			case 's':
 				break;
 			case 'f':
@@ -167,7 +166,8 @@ namespace egkr
 					sscanf_s(line_string.data(), format.data(), waste, 2, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index, &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index, &face.vertices[2].normal_index);
 				}
 
-				groups[group_id].faces.push_back(face);
+				auto group_index = groups.size() - 1;
+				groups[group_index].faces.push_back(face);
 			}
 			break;
 			case 'm':
@@ -184,9 +184,12 @@ namespace egkr
 				mesh_group_data new_group{};
 				new_group.faces.reserve(16384);
 				groups.push_back(new_group);
-				++group_id;
-				material_names.push_back(material_filename);
-				//current_material_name_count++;
+
+				char waste[8]{};
+				char material[128]{};
+				sscanf_s(line_string.data(), "%s %s", waste, 8, material, sizeof(material));
+				material_names[current_material_name_count] = material;
+				current_material_name_count++;
 			}
 			break;
 			case 'g':
@@ -194,19 +197,19 @@ namespace egkr
 				auto group_count = groups.size();
 				for (auto i{ 0U }; i < group_count; ++i)
 				{
-					geometry_properties properties{};
-					properties.name = name;
+					auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
+					geometry_properties.name = name;
 
 					if (i > 0)
 					{
-						properties.name += std::to_string(i);
+						geometry_properties.name += std::to_string(i);
 					}
-					properties.material_name = material_names[i];
-					auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
+					geometry_properties.material_name = material_names[i];
 					geometries.push_back(geometry_properties);
+					material_names[i].clear();
 				}
+				current_material_name_count = 0;
 				groups.clear();
-
 				char waste[2]{};
 				char names[128]{};
 				sscanf_s(line_string.data(), "%s %s", waste, 2, names, 128);
@@ -224,15 +227,14 @@ namespace egkr
 		auto group_count = groups.size();
 		for (auto i{ 0U }; i < group_count; ++i)
 		{
-			geometry_properties properties{};
-			properties.name = name;
+			auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
+			geometry_properties.name = name;
 
 			if (i > 0)
 			{
-				properties.name += std::to_string(i);
+				geometry_properties.name += std::to_string(i);
 			}
-			properties.material_name = material_names[i];
-			auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
+			geometry_properties.material_name = material_names[i];
 			geometries.push_back(std::move(geometry_properties));
 		}
 
@@ -249,17 +251,17 @@ namespace egkr
 			}
 		}
 
-		for (auto& geometry : geometries)
+		//for (auto& geometry : geometries)
 		{
-			auto unique_verts = deduplicate_vertices(geometry.vertex_count, (vertex_3d*)geometry.vertices, geometry.indices);
+			//auto unique_verts = deduplicate_vertices(geometry.vertex_count, (vertex_3d*)geometry.vertices, geometry.indices);
+			//geometry.vertex_count = unique_verts.size();
 
-			delete (vertex_3d*)geometry.vertices;
+			//delete (vertex_3d*)geometry.vertices;
 
-			auto size = geometry.vertex_count * geometry.vertex_size;
-			geometry.vertices = malloc(size);
-			auto* new_verts = (vertex_3d*)geometry.vertices;
+			//auto size = geometry.vertex_count * geometry.vertex_size;
+			//geometry.vertices = malloc(size);
 
-			std::copy(unique_verts.data(), unique_verts.data() + geometry.vertex_count, new_verts);
+			//std::copy(unique_verts.data(), unique_verts.data() + geometry.vertex_count, (vertex_3d*)geometry.vertices);
 		}
 
 		write_esm(esm_filename, geometries);
@@ -371,13 +373,13 @@ namespace egkr
 			std::string line_string{ line.begin(), line.end() };
 			trim(line_string);
 
-			uint8_t first_char = line[0];
+			auto first_char = line_string[0];
 			switch (first_char)
 			{
 			case '#': continue;
 			case 'K':
 			{
-				uint8_t second_char{ line[1] };
+				auto second_char{ line_string[1] };
 				switch (second_char)
 				{
 				case 'a':
@@ -404,17 +406,20 @@ namespace egkr
 				std::string format{ "%s %s" };
 				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
 
+				std::filesystem::path filepath{ texture_filename };
+				filepath = filepath.stem();
+				filepath.replace_extension();
 				if (strncmp(map_type, "map_Kd", 7) == 0)
 				{
-					current_properties.diffuse_map_name = texture_filename;
+					current_properties.diffuse_map_name = filepath.string();
 				}
 				else if (strncmp(map_type, "map_Ks", 7) == 0)
 				{
-					current_properties.specular_map_name = texture_filename;
+					current_properties.specular_map_name = filepath.string();
 				}
 				else if (strncmp(map_type, "map_bump", 9) == 0)
 				{
-					current_properties.normal_map_name = texture_filename;
+					current_properties.normal_map_name = filepath.string();
 				}
 			} break;
 			case 'b':
@@ -423,7 +428,11 @@ namespace egkr
 				char texture_filename[128]{};
 				std::string format{ "%s %s" };
 				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
-				current_properties.normal_map_name = texture_filename;
+
+				std::filesystem::path filepath{ texture_filename };
+				filepath = filepath.stem();
+				filepath.replace_extension();
+				current_properties.normal_map_name = filepath.string();
 			} break;
 			case 'n':
 			{
@@ -432,7 +441,7 @@ namespace egkr
 				auto format{ "%s %s" };
 				sscanf_s(line_string.data(), format, waste, sizeof(waste), material_name, sizeof(material_name));
 
-				current_properties.shader_name = "Sahder.Builtin.Material";
+				current_properties.shader_name = "Shader.Builtin.Material";
 				if (current_properties.shininess == 0)
 				{
 					current_properties.shininess = 8.F;
@@ -440,7 +449,10 @@ namespace egkr
 
 				if (hit_name)
 				{
-					write_emt(filepath, current_properties);
+					std::filesystem::path full_material_path{filepath};
+					full_material_path = std::filesystem::absolute(full_material_path);
+					auto root_dir = full_material_path.parent_path();
+					write_emt(root_dir.string(), current_properties);
 				}
 				hit_name = true;
 				current_properties.name = material_name;
@@ -449,7 +461,20 @@ namespace egkr
 			}
 		}
 
-		return false;
+				current_properties.shader_name = "Shader.Builtin.Material";
+				if (current_properties.shininess == 0)
+				{
+					current_properties.shininess = 8.F;
+				}
+
+				if (hit_name)
+				{
+					std::filesystem::path full_material_path{filepath};
+					full_material_path = std::filesystem::absolute(full_material_path);
+					auto root_dir = full_material_path.parent_path();
+					write_emt(root_dir.string(), current_properties);
+				}
+		return true;
 	}
 
 	egkr::vector<geometry_properties> mesh_loader::load_esm(const file_handle& /*file_handle*/)
@@ -462,8 +487,56 @@ namespace egkr
 		return true;
 	}
 
-	bool mesh_loader::write_emt(std::string_view /*directory*/, const material_properties& /*properties*/)
+	bool mesh_loader::write_emt(std::string_view directory, const material_properties& properties)
 	{
+		std::string_view format{ "%s/../materials/%s%s" };
+
+		char filename[128]{};
+			sprintf_s(filename, format.data(), directory.data(), properties.name.data(), ".emt");
+			auto handle = filesystem::open(filename, file_mode::write, false);
+
+			egkr::vector<uint8_t> line(128);
+
+			sprintf((char*)line.data(), "# %s", properties.name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "# auto generated material");
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "version = 0.1");
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "name=%s", properties.name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "diffuse_colour=%.6f %.6f %.6f %.6f", properties.diffuse_colour.r, properties.diffuse_colour.g, properties.diffuse_colour.b, properties.diffuse_colour.a);
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "diffuse_map_name=%s", properties.diffuse_map_name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "specular_map_name=%s", properties.specular_map_name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "normal_map_name=%s", properties.normal_map_name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "shader=%s", properties.shader_name.data());
+			filesystem::write_line(handle, line);
+			line.clear();
+
+			sprintf((char*)line.data(), "shininess=%.6f", properties.shininess);
+			filesystem::write_line(handle, line);
+			line.clear();
+
 		return true;
 	}
 }

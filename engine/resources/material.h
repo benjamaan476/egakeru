@@ -61,9 +61,9 @@ namespace egkr
 	private:
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
-		texture_map diffuse_map_{};
-		texture_map specular_map_{};
-		texture_map normal_map_{};
+		texture_map diffuse_map_{ {}, texture_use::map_diffuse };
+		texture_map specular_map_{ {}, texture_use::map_specular };
+		texture_map normal_map_{ {}, texture_use::map_normal };
 
 		std::string shader_name_{};
 		uint32_t shader_id_{invalid_32_id};

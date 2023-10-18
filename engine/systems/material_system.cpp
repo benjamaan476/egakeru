@@ -64,6 +64,11 @@ namespace egkr
 		material_system_->registered_materials_by_name_.clear();
 	}
 
+	material::shared_ptr material_system::get_default_material()
+	{
+		return material_system_->default_material_;
+	}
+
 	material::shared_ptr material_system::acquire(std::string_view name)
 	{
 		auto material_resource = resource_system::load(name, resource_type::material);
@@ -204,9 +209,9 @@ namespace egkr
 	{
 		material_properties properties{};
 		properties.name = "default";
-		properties.diffuse_map_name = "default_texture";
-		properties.specular_map_name = "default_specular_texture";
-		properties.normal_map_name = "default_normal_texture";
+		properties.diffuse_map_name = default_diffuse_name;
+		properties.specular_map_name = default_specular_name;
+		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
 		material_system_->default_material_ = material::create(properties);

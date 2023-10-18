@@ -13,7 +13,7 @@ namespace egkr
 	file_handle filesystem::open(std::string_view path, file_mode mode, bool is_binary)
 	{
 		auto absolute_filepath = std::filesystem::absolute(path);
-		if (!does_path_exist(path))
+		if (!does_path_exist(path) && (mode & file_mode::read))
 		{
 			LOG_WARN("Invalid file path, does not exist: {}", path.data());
 			return { {}, "", false };

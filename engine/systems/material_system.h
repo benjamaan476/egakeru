@@ -44,6 +44,7 @@ namespace egkr
 		static bool init();
 		static void shutdown();
 
+		static material::shared_ptr get_default_material();
 		static material::shared_ptr acquire(std::string_view name);
 		static material::shared_ptr acquire(const material_properties& properties);
 
