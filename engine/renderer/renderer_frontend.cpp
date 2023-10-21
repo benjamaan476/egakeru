@@ -208,10 +208,21 @@ namespace egkr
 		return backend_->apply_shader_instances(shader, needs_update);
 	}
 
-	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader) const
+	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) const
 	{
-		return backend_->acquire_shader_isntance_resources(shader);
+		return backend_->acquire_shader_isntance_resources(shader, texture_maps);
 	}
+
+	void renderer_frontend::acquire_texture_map(texture_map* map) const
+	{
+		return backend_->acquire_texture_map(map);
+	}
+
+	void renderer_frontend::release_texture_map(const texture_map* map) const
+	{
+		return backend_->release_texture_map(map);
+	}
+
 
 	bool renderer_frontend::set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const
 	{

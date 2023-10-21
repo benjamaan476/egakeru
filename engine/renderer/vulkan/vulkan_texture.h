@@ -10,6 +10,5 @@ namespace egkr
 	{
 		const vulkan_context* context{};
 		image::shared_ptr image;
-		vk::Sampler sampler{};
 	};
 }

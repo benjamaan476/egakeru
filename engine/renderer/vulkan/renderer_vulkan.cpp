@@ -15,6 +15,37 @@
 
 namespace egkr
 {
+	vk::SamplerAddressMode convert_repeat_type(std::string_view axis, texture_repeat repeat)
+	{
+		switch (repeat)
+		{
+		case egkr::texture_repeat::repeat:
+			return vk::SamplerAddressMode::eRepeat;
+		case egkr::texture_repeat::mirrored_repeat:
+			return vk::SamplerAddressMode::eMirroredRepeat;
+		case egkr::texture_repeat::clamp_to_edge:
+			return vk::SamplerAddressMode::eClampToEdge;
+		case egkr::texture_repeat::clamp_to_border:
+			return vk::SamplerAddressMode::eClampToBorder;
+		default:
+			LOG_WARN("Unknown address mode specified for {}. Defaulting to repeat.", axis.data());
+			return vk::SamplerAddressMode::eRepeat;
+		}
+	}
+
+	vk::Filter convert_filter_type(std::string_view op, texture_filter filter)
+	{
+		switch (filter)
+		{
+		case egkr::texture_filter::nearest:
+			return vk::Filter::eNearest;
+		case egkr::texture_filter::linear:
+			return vk::Filter::eLinear;
+		default:
+			LOG_WARN("Unknown filter tyoe for {}. Defaulting to nearest", op.data());
+			return vk::Filter::eNearest;
+		}
+	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -900,6 +931,7 @@ namespace egkr
 
 	void renderer_vulkan::free_material(material* material)
 	{
+		release_texture_map(&material->get_diffuse_map());
 		delete (vulkan_material_state*)material->data;
 	}
 
@@ -934,21 +966,6 @@ namespace egkr
 
 			single_use.end_single_use(&context_, context_.device.graphics_command_pool, context_.device.graphics_queue);
 
-			vk::SamplerCreateInfo sampler_info{};
-			sampler_info
-				.setMinFilter(vk::Filter::eLinear)
-				.setMagFilter(vk::Filter::eLinear)
-				.setAddressModeU(vk::SamplerAddressMode::eRepeat)
-				.setAddressModeV(vk::SamplerAddressMode::eRepeat)
-				.setAddressModeW(vk::SamplerAddressMode::eRepeat)
-				.setAnisotropyEnable(true)
-				.setMaxAnisotropy(16)
-				.setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
-				.setUnnormalizedCoordinates(false)
-				.setCompareEnable(false)
-				.setMipmapMode(vk::SamplerMipmapMode::eLinear);
-
-			state.sampler = context_.device.logical_device.createSampler(sampler_info, context_.allocator);
 		}
 
 		texture->data = new vulkan_texture_state();
@@ -961,11 +978,6 @@ namespace egkr
 	{
 		context_.device.logical_device.waitIdle();
 		auto state = (vulkan_texture_state*)texture->data;
-		if (state->sampler)
-		{
-			context_.device.logical_device.destroySampler(state->sampler, context_.allocator);
-			state->sampler = VK_NULL_HANDLE;
-		}
 		if (state->image)
 		{
 			state->image->destroy();
@@ -1368,14 +1380,16 @@ namespace egkr
 
 				for (auto i{ 0U }; i < total_sampler_count; ++i)
 				{
-					auto& texture = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
-					auto texture_data = (vulkan_texture_state*)texture->data;
+					auto& texture_map = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
+					auto sampler = (vk::Sampler*)texture_map->internal_data;
+
+					auto texture_data = (vulkan_texture_state*)texture_map->texture->data;
 
 					vk::DescriptorImageInfo image_info{};
 					image_info
 						.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
 						.setImageView(texture_data->image->get_view())
-						.setSampler(texture_data->sampler);
+						.setSampler(*sampler);
 
 					image_infos[i] = image_info;
 
@@ -1403,16 +1417,15 @@ namespace egkr
 		return true;
 	}
 
-	uint32_t renderer_vulkan::acquire_shader_isntance_resources(shader* shader)
+	uint32_t renderer_vulkan::acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps)
 	{
 		auto state = (vulkan_shader_state*)shader->data;
 
 		auto instance_id = state->instance_states.size();
 
 		vulkan_shader_instance_state instance_state;
-		uint32_t instance_texture_count = state->configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
 
-		instance_state.instance_textures = egkr::vector<texture*>(instance_texture_count, texture_system::get_default_texture().get());
+		instance_state.instance_textures = texture_maps;
 
 		instance_state.offset = shader->get_global_ubo_stride();
 
@@ -1429,6 +1442,41 @@ namespace egkr
 		return instance_id;
 	}
 
+	void renderer_vulkan::acquire_texture_map(texture_map* map)
+	{
+		vk::SamplerCreateInfo create_info{};
+		create_info
+			.setMinFilter(convert_filter_type("min", map->minify))
+			.setMagFilter(convert_filter_type("mag", map->magnify))
+			.setAddressModeU(convert_repeat_type("u", map->repeat_u))
+			.setAddressModeV(convert_repeat_type("v", map->repeat_u))
+			.setAddressModeW(convert_repeat_type("w", map->repeat_u))
+			.setAnisotropyEnable(true)
+			.setMaxAnisotropy(16)
+			.setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
+			.setUnnormalizedCoordinates(false)
+			.setCompareEnable(false)
+			.setMipmapMode(vk::SamplerMipmapMode::eLinear);
+
+		map->internal_data = new vk::Sampler();
+		*(vk::Sampler*)map->internal_data = context_.device.logical_device.createSampler(create_info, context_.allocator);
+	}
+
+	void renderer_vulkan::release_texture_map(const texture_map* map)
+	{
+		if (!map || !map->internal_data)
+		{
+			LOG_WARN("Tried to release an invalid texture map");
+			return;
+		}
+
+		context_.device.logical_device.destroySampler(*(vk::Sampler*)map->internal_data, context_.allocator);
+		delete (vk::Sampler*)map->internal_data;
+		//TODO fix resource destruction
+	//	map->internal_data = nullptr;
+
+	}
+
 	bool renderer_vulkan::set_uniform(shader* shader, const shader_uniform& uniform, const void* value)
 	{
 		auto internal = (vulkan_shader_state*)shader->data;
@@ -1436,11 +1484,11 @@ namespace egkr
 		{
 			if (uniform.scope == shader_scope::global)
 			{
-				shader->set_global_texture(uniform.location, (texture*)value);
+				shader->set_global_texture(uniform.location, (texture_map*)value);
 			}
 			else
 			{
-				internal->instance_states[shader->get_bound_instance_id()].instance_textures[uniform.location] = (texture*)value;
+				internal->instance_states[shader->get_bound_instance_id()].instance_textures[uniform.location] = (texture_map*)value;
 			}
 		}
 		else

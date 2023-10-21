@@ -31,7 +31,7 @@ namespace egkr
 		default_texture_properties.width = 32;
 		default_texture_properties.height = 32;
 		default_texture_properties.channel_count = 4;
-		default_texture_properties.has_transparency = true;
+		default_texture_properties.flags = {};
 
 		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
 
@@ -64,7 +64,7 @@ namespace egkr
 			default__diffuse_properties.width = 16;
 			default__diffuse_properties.height = 16;
 			default__diffuse_properties.channel_count = 4;
-			default__diffuse_properties.has_transparency = false;
+			default__diffuse_properties.flags = {};
 
 			egkr::vector<uint32_t> diffuse_data(default__diffuse_properties.width * default__diffuse_properties.height, 0xFFFFFFFF);
 			texture_system_->default_diffuse_texture_ = texture::create(texture_system_->renderer_context_, default__diffuse_properties, (uint8_t*)diffuse_data.data());
@@ -75,7 +75,7 @@ namespace egkr
 		default_specular_properties.width = 16;
 		default_specular_properties.height = 16;
 		default_specular_properties.channel_count = 4;
-		default_specular_properties.has_transparency = false;
+		default_specular_properties.flags = {};
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
 		texture_system_->default_specular_texture_ = texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
@@ -85,7 +85,7 @@ namespace egkr
 		default_normal_properties.width = 16;
 		default_normal_properties.height = 16;
 		default_normal_properties.channel_count = 4;
-		default_normal_properties.has_transparency = false;
+		default_normal_properties.flags = {};
 
 		egkr::vector<uint8_t> normal_data(default_normal_properties.width * default_normal_properties.height * default_normal_properties.channel_count);
 

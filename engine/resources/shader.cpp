@@ -127,8 +127,19 @@ namespace egkr
 
 		if (configuration.scope == shader_scope::global)
 		{
+			auto default_map = std::make_shared<texture_map>();
+			default_map->minify = texture_filter::linear;
+			default_map->magnify = texture_filter::linear;
+			default_map->repeat_u = texture_repeat::repeat;
+			default_map->repeat_v = texture_repeat::repeat;
+			default_map->repeat_w = texture_repeat::repeat;
+
+
+			renderer_context_->acquire_texture_map(default_map.get());
+
+			default_map->texture = texture_system::get_default_texture();
 			location = global_textures_.size();
-			global_textures_.push_back(texture_system::get_default_texture().get());
+			global_textures_.push_back(std::move(default_map));
 		}
 		else
 		{
@@ -217,8 +228,8 @@ namespace egkr
 		return true;
 	}
 
-	void shader::set_global_texture(uint32_t index, texture* texture)
+	void shader::set_global_texture(uint32_t index, texture_map* map)
 	{
-		global_textures_[index] = texture;
+		global_textures_[index] = std::shared_ptr<texture_map>(map);
 	}
 }

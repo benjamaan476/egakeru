@@ -178,15 +178,15 @@ namespace egkr
 			if (material->get_shader_id() == material_system_->material_shader_id_)
 			{
 				shader_system::set_uniform(material_system_->material_locations_.diffuse_colour, &material->get_diffuse_colour());
-				shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
-				shader_system::set_uniform(material_system_->material_locations_.specular_texture, material->get_specular_map().texture.get());
-				shader_system::set_uniform(material_system_->material_locations_.normal_texture, material->get_normal_map().texture.get());
+				shader_system::set_uniform(material_system_->material_locations_.diffuse_texture, &material->get_diffuse_map());
+				shader_system::set_uniform(material_system_->material_locations_.specular_texture, &material->get_specular_map());
+				shader_system::set_uniform(material_system_->material_locations_.normal_texture, &material->get_normal_map());
 				shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
 			}
 			else if (material->get_shader_id() == material_system_->ui_shader_id_)
 			{
 				shader_system::set_uniform(material_system_->ui_locations_.diffuse_colour, &material->get_diffuse_colour());
-				shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, material->get_diffuse_map().texture.get());
+				shader_system::set_uniform(material_system_->ui_locations_.diffuse_texture, &material->get_diffuse_map());
 			}
 		}
 		shader_system::apply_instance(needs_update);
@@ -215,41 +215,73 @@ namespace egkr
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
 		material_system_->default_material_ = material::create(properties);
+		egkr::vector<texture_map*> texture_maps{&material_system_->default_material_->get_diffuse_map(), &material_system_->default_material_->get_specular_map(), &material_system_->default_material_->get_normal_map()};
+
+		for (auto map : texture_maps)
+		{
+			material_system_->renderer_->acquire_texture_map(map);
+		}
 
 		auto mat_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_MATERIAL);
-		material_system_->default_material_->set_internal_id(material_system_->renderer_->acquire_shader_isntance_resources(mat_shader.get()));
+		material_system_->default_material_->set_internal_id(material_system_->renderer_->acquire_shader_isntance_resources(mat_shader.get(), texture_maps));
 
 		return true;
 	}
 
 	bool material_system::load_material(const material_properties& properties, material::shared_ptr& material)
 	{
+		texture_map diffuse_map{};
+		diffuse_map.minify = texture_filter::linear;
+		diffuse_map.magnify = texture_filter::linear;
+		diffuse_map.repeat_u = texture_repeat::repeat;
+		diffuse_map.repeat_v = texture_repeat::repeat;
+		diffuse_map.repeat_w = texture_repeat::repeat;
+
+		//TODO return success
+		material_system_->renderer_->acquire_texture_map(&diffuse_map);
 
 		//Get diffuse map
-		auto diffuse_texture = texture_system::acquire(properties.diffuse_map_name);
-		if (diffuse_texture == nullptr)
+		diffuse_map.texture = texture_system::acquire(properties.diffuse_map_name);
+		if (diffuse_map.texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.diffuse_map_name.data(), properties.name.data());
-			diffuse_texture = texture_system::get_default_texture();
+			diffuse_map.texture = texture_system::get_default_texture();
 		}
 
-		auto specular_texture = texture_system::acquire(properties.specular_map_name);
-		if (specular_texture == nullptr)
+		texture_map specular_map{};
+		specular_map.minify = texture_filter::linear;
+		specular_map.magnify = texture_filter::linear;
+		specular_map.repeat_u = texture_repeat::repeat;
+		specular_map.repeat_v = texture_repeat::repeat;
+		specular_map.repeat_w = texture_repeat::repeat;
+		material_system_->renderer_->acquire_texture_map(&specular_map);
+
+
+		specular_map.texture = texture_system::acquire(properties.specular_map_name);
+		if (specular_map.texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.specular_map_name.data(), properties.name.data());
-			specular_texture = texture_system::get_default_specular_texture();
+			specular_map.texture = texture_system::get_default_specular_texture();
 		}
 
-		auto normal_texture = texture_system::acquire(properties.normal_map_name);
-		if (normal_texture == nullptr)
+		texture_map normal_map{};
+		normal_map.minify = texture_filter::linear;
+		normal_map.magnify = texture_filter::linear;
+		normal_map.repeat_u = texture_repeat::repeat;
+		normal_map.repeat_v = texture_repeat::repeat;
+		normal_map.repeat_w = texture_repeat::repeat;
+		material_system_->renderer_->acquire_texture_map(&normal_map);
+
+		normal_map.texture = texture_system::acquire(properties.normal_map_name);
+		if (normal_map.texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.normal_map_name.data(), properties.name.data());
-			normal_texture = texture_system::get_default_normal_texture();
+			normal_map.texture = texture_system::get_default_normal_texture();
 		}
 
-		
+		egkr::vector<texture_map*> maps{&diffuse_map, & specular_map, & normal_map};
 		auto shader = shader_system::get_shader(properties.shader_name);
-		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get());
+		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get(), maps);
 
 
 		auto temp_material = material::create(properties);
@@ -268,9 +300,9 @@ namespace egkr
 		material->set_shininess(properties.shininess);
 		material->set_internal_id(id);
 		//material->set_name(properties.name);
-		material->set_diffuse_map({ std::move(diffuse_texture),texture_use::map_diffuse });
-		material->set_specular_map({ std::move(specular_texture), texture_use::map_specular });
-		material->set_normal_map({ std::move(normal_texture), texture_use::map_normal });
+		material->set_diffuse_map(diffuse_map);
+		material->set_specular_map(specular_map);
+		material->set_normal_map(normal_map);
 		return true;
 	}
 }

@@ -73,7 +73,7 @@ namespace egkr
 		uint64_t offset{};
 		vulkan_shader_descriptor_set_state descriptor_set_state{};
 
-		egkr::vector<texture*> instance_textures{};
+		egkr::vector<texture_map*> instance_textures{};
 	};
 
 	struct vulkan_shader_state

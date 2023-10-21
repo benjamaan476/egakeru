@@ -41,7 +41,10 @@ namespace egkr
 		bool bind_shader_instances(shader* shader, uint32_t instance_id) const;
 		bool apply_shader_globals(shader* shader) const;
 		bool apply_shader_instances(shader* shader, bool needs_update) const;
-		uint32_t acquire_shader_isntance_resources(shader* shader) const;
+		uint32_t acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) const;
+
+		void acquire_texture_map(texture_map* map) const;
+		void release_texture_map(const texture_map* map) const;
 
 		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const;
 

@@ -73,7 +73,7 @@ namespace egkr
 
 					if (image_data[index + 3] < 255)
 					{
-						properties.has_transparency = true;
+						properties.flags |= texture_flags::has_transparency;
 						break;
 					}
 				}
