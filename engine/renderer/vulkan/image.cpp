@@ -79,7 +79,7 @@ namespace egkr
 
 	image::~image()
 	{
-		destroy();
+		//destroy();
 	}
 
 	void image::destroy()

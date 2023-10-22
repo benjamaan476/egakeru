@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "image.h"
 #include "framebuffer.h"
+#include "resources/texture.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -29,7 +30,6 @@ namespace egkr
 
 		const auto& get_format() const { return format_; }
 		const auto& get_image_count() const { return image_count_; }
-		const auto& get_image_view(uint8_t image_index) const { return image_views_[image_index]; }
 		const auto& get_depth_attachment() const { return depth_attachment_; }
 		const auto& get_max_frames_in_flight() const { return max_frames_in_flight_; }
 
@@ -51,8 +51,7 @@ namespace egkr
 		vk::Extent2D extent_{};
 		vk::SwapchainKHR swapchain_{};
 
-		egkr::vector<vk::Image> images_{};
-		egkr::vector<vk::ImageView> image_views_{};
+		egkr::vector<texture::shared_ptr> render_textures_{};
 		image::shared_ptr depth_attachment_{};
 
 		uint32_t image_count_{};

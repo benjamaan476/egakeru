@@ -6,7 +6,6 @@
 
 #include "resources/shader.h"
 
-#include "vulkan_texture.h"
 #include "vulkan_material.h"
 
 #include <vulkan/vulkan.hpp>

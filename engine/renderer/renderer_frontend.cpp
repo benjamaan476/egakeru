@@ -159,6 +159,21 @@ namespace egkr
 		return backend_->populate_texture(texture, properties, data);
 	}
 
+bool renderer_frontend::populate_writable_texture(texture* texture) const
+{
+	return backend_->populate_writeable_texture(texture);
+}
+
+bool renderer_frontend::resize_texture(texture* texture, uint32_t width, uint32_t height) const
+{
+	return backend_->resize_texture(texture, width, height);
+}
+
+bool renderer_frontend::texture_write_data(texture * texture, uint64_t offset, uint32_t size, const uint8_t * data) const
+{
+return backend_->texture_write_data(texture, offset, size, data);
+}
+
 	void renderer_frontend::free_texture(texture* texture) const
 	{
 		backend_->free_texture(texture);
@@ -218,7 +233,7 @@ namespace egkr
 		return backend_->acquire_texture_map(map);
 	}
 
-	void renderer_frontend::release_texture_map(const texture_map* map) const
+	void renderer_frontend::release_texture_map(texture_map* map) const
 	{
 		return backend_->release_texture_map(map);
 	}

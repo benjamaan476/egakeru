@@ -59,10 +59,24 @@ namespace egkr
 		using shared_ptr = std::shared_ptr<texture>;
 
 		static shared_ptr create(const renderer_frontend* context, const texture_properties& properties, const uint8_t* data);
-		explicit texture(const texture_properties& properties);
+		texture(const renderer_frontend* renderer, const texture_properties& properties);
 		~texture();
 
-		void destroy(const renderer_frontend* renderer);
+		void destroy();
+
+		void set_flags(texture_flags flags) { properties_.flags = flags;}
+		void set_width(uint32_t width) { properties_.width = width;}
+		void set_height(uint32_t height) { properties_.height = height;}
+		void set_channel_count(uint32_t channel_count) { properties_.channel_count = channel_count;}
+
+		[[nodiscard]] const auto& get_flags() const { return properties_.flags;}
+		[[nodiscard]] const auto& get_width() const { return properties_.width;}
+		[[nodiscard]] const auto& get_height() const { return properties_.height;}
+		[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count;}
+
+	private:
+		const renderer_frontend* renderer_{};
+		texture_properties properties_{};
 	};
 
 	struct texture_map

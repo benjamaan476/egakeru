@@ -11,6 +11,32 @@ namespace egkr
 		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
 	}
 
+	texture::shared_ptr texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
+	{
+		uint32_t id{ invalid_32_id };
+		texture_properties properties{};
+		properties.name = name;
+		properties.width = width;
+		properties.height = height;
+		properties.channel_count = channel_count;
+		properties.flags |= has_transparency ? texture_flags::has_transparency : (texture_flags)0;
+		properties.flags |= is_writeable ? texture_flags::is_writable : (texture_flags)0;
+		properties.flags |= texture_flags::is_wrapped;
+		properties.data = internal_data;
+
+		auto t = texture::create(texture_system_->renderer_context_, properties, nullptr);
+
+		if (register_texture)
+		{
+			id = texture_system_->registered_textures_.size();
+			texture_system_->registered_textures_.push_back(t);
+		}
+
+		t->set_id(id);
+
+		return t;
+	}
+
 	texture_system::texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
 		: renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
 	{
@@ -141,6 +167,29 @@ namespace egkr
 		texture_system_->registered_textures_by_name_.clear();
 	}
 
+	void texture_system::resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
+	{
+		if (texture)
+		{
+			if ((texture->get_flags() & texture_flags::is_writable) != texture_flags::is_writable)
+			{
+				LOG_WARN("Tried to resize a non-writeable texture");
+				return;
+			}
+
+			texture->set_width(width);
+			texture->set_height(height);
+
+			if ((texture->get_flags() & texture_flags::is_wrapped) != texture_flags::is_writable && regenerate_internal_data)
+			{
+				texture_system_->renderer_context_->resize_texture(texture, width, height);
+				return;
+			}
+
+			texture->increment_generation();
+		}
+	}
+
 
 	texture::shared_ptr texture_system::acquire(std::string_view texture_name)
 	{
@@ -179,8 +228,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_texture = texture::create(texture_system_->renderer_context_, {.id = texture_id}, nullptr);
-		load_texture(texture_name, new_texture);
+	auto new_texture =load_texture(texture_name, texture_id);
 
 		if (new_texture->get_generation() == invalid_32_id)
 		{
@@ -191,6 +239,27 @@ namespace egkr
 		texture_system_->registered_textures_.push_back(new_texture);
 		texture_system_->registered_textures_by_name_[texture_name.data()] = texture_id;
 		return new_texture;
+	}
+
+	texture::shared_ptr texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
+	{
+		if (texture_system_->registered_textures_by_name_.contains(name.data()))
+		{
+			auto texture_handle = texture_system_->registered_textures_by_name_[name.data()];
+			auto texture = texture_system_->registered_textures_[texture_handle];
+
+			texture->set_width(width);
+			texture->set_height(height);
+			texture->set_channel_count(channel_count);
+
+			auto flags = texture_flags::is_writable;
+			flags |= has_transparency ? texture_flags::has_transparency : (texture_flags)0;
+			texture->set_flags(flags);
+
+			texture_system_->renderer_context_->populate_writable_texture(texture.get());
+			return texture;
+		}
+		return nullptr;
 	}
 
 	void texture_system::release(std::string_view texture_name)
@@ -224,25 +293,20 @@ namespace egkr
 	}
 
 
-	bool texture_system::load_texture(std::string_view filename, texture::shared_ptr& texture)
+	texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
 	{
-		texture->set_generation(invalid_32_id);
-
 		auto image = resource_system::load(filename, resource_type::image);
 
 		if (!image)
 		{
-			return false;
+			return nullptr;
 		}
 		auto properties = (texture_properties*)image->data;
 
-		properties->id = texture->get_id();
+		properties->id = id;
 		auto temp_texture = texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);
-		texture.reset();
-
-		texture = std::move(temp_texture);
 
 		resource_system::unload(std::move(image));
-		return true;
+		return temp_texture;
 	}
 }

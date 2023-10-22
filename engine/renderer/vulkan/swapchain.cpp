@@ -1,5 +1,6 @@
 #include "swapchain.h"
 #include "vulkan_types.h"
+#include "systems/texture_system.h"
 #include "image.h"
 
 namespace egkr
@@ -17,7 +18,7 @@ namespace egkr
 
 	swapchain::~swapchain()
 	{
-		destroy();
+	//	destroy();
 	}
 
 	void swapchain::destroy()
@@ -29,10 +30,16 @@ namespace egkr
 			depth_attachment_->destroy();
 			depth_attachment_.reset();
 		}
-		for (auto i{ 0U }; i < image_count_; ++i)
+
+		for (auto& texture : render_textures_)
 		{
-			context_->device.logical_device.destroyImageView(image_views_[i], context_->allocator);
+			if (texture->data)
+			{
+				delete (image*)texture->data;
+			}
 		}
+		render_textures_.clear();
+
 		image_count_ = 0;
 
 		if (swapchain_)
@@ -91,8 +98,9 @@ namespace egkr
 	{
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
+			auto img = (image*)render_textures_[i]->data;
 			//TODO configure based on attachment
-			const egkr::vector<vk::ImageView> world_attachments{image_views_[i], depth_attachment_->get_view() };
+			const egkr::vector<vk::ImageView> world_attachments{img->get_view(), depth_attachment_->get_view()};
 
 			framebuffer_properties world_framebuffer_properties{};
 			world_framebuffer_properties.attachments = world_attachments;
@@ -102,7 +110,7 @@ namespace egkr
 
 			context_->world_framebuffers[i] = framebuffer::create(context_, world_framebuffer_properties);
 
-			const egkr::vector<vk::ImageView> ui_attachments{ image_views_[i] };
+			const egkr::vector<vk::ImageView> ui_attachments{img->get_view()};
 			framebuffer_properties ui_framebuffer_properties{};
 			ui_framebuffer_properties.attachments = ui_attachments;
 			ui_framebuffer_properties.renderpass = context_->ui_renderpass;
@@ -173,7 +181,7 @@ namespace egkr
 			LOG_ERROR("Failed to create swapchain");
 		}
 
-		images_ = get_swapchain_images(swapchain_);
+		get_swapchain_images(swapchain_);
 	}
 
 	vk::SurfaceFormatKHR swapchain::choose_swapchain_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats)
@@ -231,9 +239,38 @@ namespace egkr
 			swapchain_images.emplace_back(image);
 		}
 
-		image_views_.resize(image_count_);
+		if (render_textures_.empty())
+		{
+			render_textures_.resize(image_count_);
+
+			for (auto i{ 0U }; i < image_count_; ++i)
+			{
+				void* internal_data = malloc(sizeof(image));
+				std::string name{ "__internal_vulkan_swapchain_image_0__" };
+				name[34] = '0' + (char)i;
+
+				render_textures_[i] = texture_system::wrap_internal(name, extent_.width, extent_.height, 4, false, true, false, internal_data);
+			}
+		}
+		else
+		{
+			for (auto i{ 0U }; i < image_count_; ++i)
+			{
+				texture_system::resize(render_textures_[i].get(), extent_.width, extent_.height, false);
+			}
+		}
+
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
+			auto img = (image*)render_textures_[i]->data;
+			img->set_image(swapchain_images[i]);
+			img->set_width(extent_.width);
+			img->set_height(extent_.height);
+		}
+
+		for (auto i{ 0U }; i < image_count_; ++i)
+		{
+			auto img = (image*)render_textures_[i]->data;
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -244,12 +281,12 @@ namespace egkr
 
 			vk::ImageViewCreateInfo image_view_info{};
 			image_view_info
-				.setImage(images[i])
+				.setImage(img->get_image())
 				.setViewType(vk::ImageViewType::e2D)
 				.setFormat(format_.format)
 				.setSubresourceRange(subresource);
 
-			image_views_[i] = context_->device.logical_device.createImageView(image_view_info, context_->allocator);
+			img->set_view(context_->device.logical_device.createImageView(image_view_info, context_->allocator));
 		}
 
 		auto has_valid_depth = detect_depth_format(context_->device);

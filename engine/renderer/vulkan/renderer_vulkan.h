@@ -31,6 +31,9 @@ namespace egkr
 		void free_material(material* texture) override;
 
 		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) override;
+		bool populate_writeable_texture(texture* texture) override;
+		bool resize_texture(texture* texture, uint32_t width, uint32_t height) override;
+		bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) override;
 		void free_texture(texture* texture) override;
 
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) override;
@@ -46,7 +49,7 @@ namespace egkr
 		bool apply_shader_instances(shader* shader, bool needs_update) override;
 		uint32_t acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) override;
 		void acquire_texture_map(texture_map* map) override;
-		void release_texture_map(const texture_map* map) override;
+		void release_texture_map(texture_map* map) override;
 
 		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) override;
 	private:

@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 
+
 #include "resource.h"
 #include "texture.h"
 
@@ -30,10 +31,10 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<material>;
-		static shared_ptr create(const material_properties& properties);
+		static shared_ptr create(const renderer_frontend* renderer, const material_properties& properties);
 
-		explicit material(const material_properties& properties);
-		~material() = default;
+		explicit material(const renderer_frontend* renderer, const material_properties& properties);
+		~material();
 
 		void set_diffuse_colour(const float4 diffuse);
 		[[nodiscard]] const auto& get_diffuse_colour() const { return diffuse_colour_; }
@@ -62,6 +63,7 @@ namespace egkr
 		[[nodiscard]] auto get_render_frame() const { return render_frame_number_; }
 		void set_render_frame(uint32_t frame) { render_frame_number_ = frame; }
 	private:
+		const renderer_frontend* renderer_{};
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
 		texture_map diffuse_map_{};

@@ -74,6 +74,9 @@ namespace egkr
 		virtual void free_material(material* texture) = 0;
 
 		virtual bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) = 0;
+		virtual bool populate_writeable_texture(texture* texture) = 0;
+		virtual bool resize_texture(texture* texture, uint32_t width, uint32_t height) = 0;
+		virtual bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) = 0;
 		virtual void free_texture(texture* texture) = 0;
 
 		virtual bool populate_geometry(geometry* geometry, const geometry_properties& properties) = 0;
@@ -90,7 +93,7 @@ namespace egkr
 		virtual bool apply_shader_instances(shader* shader, bool needs_update) = 0;
 		virtual uint32_t acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) = 0;
 		virtual void acquire_texture_map(texture_map* map) = 0;
-		virtual void release_texture_map(const texture_map* map) = 0;
+		virtual void release_texture_map(texture_map* map) = 0;
 
 		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
 

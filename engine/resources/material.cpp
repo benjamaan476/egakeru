@@ -7,16 +7,15 @@
 
 namespace egkr
 {
-	material::shared_ptr material::create(const material_properties& properties)
+	material::shared_ptr material::create(const renderer_frontend* renderer, const material_properties& properties)
 	{
-		auto mat = std::make_shared<material>(properties);
+		auto mat = std::make_shared<material>(renderer, properties);
 		return mat;
 	}
 
-	material::material(const material_properties& properties)
-		: resource(0, 0, properties.name), diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
+	material::material(const renderer_frontend* renderer, const material_properties& properties)
+		: resource(0, 0, properties.name), renderer_{renderer}, diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
-
 		if (properties.diffuse_map_name == default_diffuse_name)
 		{
 			diffuse_map_.texture = texture_system::get_default_diffuse_texture();
@@ -46,6 +45,10 @@ namespace egkr
 		shader_id_ = shader_system::get_shader_id(shader_name_);
 	}
 
+	material::~material()
+{
+		renderer_->free_material(this);
+}
 	void material::set_diffuse_colour(const float4 diffuse)
 	{
 		diffuse_colour_ = diffuse;

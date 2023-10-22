@@ -104,7 +104,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(properties);
+		auto new_material = material::create(material_system_->renderer_, properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -214,7 +214,7 @@ namespace egkr
 		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
-		material_system_->default_material_ = material::create(properties);
+		material_system_->default_material_ = material::create(material_system_->renderer_, properties);
 		egkr::vector<texture_map*> texture_maps{&material_system_->default_material_->get_diffuse_map(), &material_system_->default_material_->get_specular_map(), &material_system_->default_material_->get_normal_map()};
 
 		for (auto map : texture_maps)
@@ -284,7 +284,7 @@ namespace egkr
 		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get(), maps);
 
 
-		auto temp_material = material::create(properties);
+		auto temp_material = material::create(material_system_->renderer_, properties);
 
 		material.reset();
 		material = std::move(temp_material);
