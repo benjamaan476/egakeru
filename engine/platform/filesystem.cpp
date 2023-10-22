@@ -120,23 +120,6 @@ namespace egkr
 		return data;
 	}
 
-	uint64_t filesystem::write(file_handle& handle, const egkr::vector<uint8_t>& data)
-	{
-		if (!handle.is_valid)
-		{
-			LOG_WARN("Invalid file handle passed");
-			return {};
-		}
-
-		auto wrote_bytes = fwrite(data.data(), 1, data.size(), handle.handle);
-
-		if (wrote_bytes != data.size())
-		{
-			LOG_WARN("Written byte size does not match data size");
-		}
-
-		return data.size();
-	}
 
 	egkr::vector<uint8_t> filesystem::read_all(file_handle& handle)
 	{

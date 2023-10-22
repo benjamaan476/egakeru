@@ -14,7 +14,7 @@ namespace egkr
 
 	resource::shared_ptr mesh_loader::load(std::string_view name)
 	{
-		egkr::vector<supported_file_type> file_types{/*{".esm", mesh_file_type::esm, true},*/ { ".obj", mesh_file_type::obj, false }};
+		egkr::vector<supported_file_type> file_types{{".esm", mesh_file_type::esm, true}, { ".obj", mesh_file_type::obj, false }};
 
 		bool found{};
 		supported_file_type found_type{};
@@ -199,6 +199,11 @@ namespace egkr
 				{
 					auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
 					geometry_properties.name = name;
+					if (geometry_properties.vertex_count == 0)
+					{
+						LOG_WARN("Geometry generated with no vertices. Skipping");
+						continue;
+					}
 
 					if (i > 0)
 					{
@@ -228,6 +233,12 @@ namespace egkr
 		for (auto i{ 0U }; i < group_count; ++i)
 		{
 			auto geometry_properties = process_subobject(positions, normals, tex_coords, groups[i].faces);
+
+			if (geometry_properties.vertex_count == 0)
+			{
+				LOG_WARN("Geometry generated with no vertices. Skipping");
+				continue;
+			}
 			geometry_properties.name = name;
 
 			if (i > 0)
@@ -251,20 +262,23 @@ namespace egkr
 			}
 		}
 
-		//for (auto& geometry : geometries)
+		for (auto& geometry : geometries)
 		{
-			//auto unique_verts = deduplicate_vertices(geometry.vertex_count, (vertex_3d*)geometry.vertices, geometry.indices);
-			//geometry.vertex_count = unique_verts.size();
+			auto unique_verts = deduplicate_vertices(geometry.vertex_count, (vertex_3d*)geometry.vertices, geometry.indices);
+			geometry.vertex_count = unique_verts.size();
 
-			//delete (vertex_3d*)geometry.vertices;
+			delete (vertex_3d*)geometry.vertices;
 
-			//auto size = geometry.vertex_count * geometry.vertex_size;
-			//geometry.vertices = malloc(size);
+			auto size = geometry.vertex_count * geometry.vertex_size;
+			geometry.vertices = malloc(size);
 
-			//std::copy(unique_verts.data(), unique_verts.data() + geometry.vertex_count, (vertex_3d*)geometry.vertices);
+			std::copy(unique_verts.data(), unique_verts.data() + geometry.vertex_count, (vertex_3d*)geometry.vertices);
 		}
 
-		write_esm(esm_filename, geometries);
+		std::filesystem::path esm{esm_filename};
+		esm.replace_extension();
+
+		write_esm(esm.string(), geometries);
 		return geometries;
 	}
 
@@ -477,13 +491,87 @@ namespace egkr
 		return true;
 	}
 
-	egkr::vector<geometry_properties> mesh_loader::load_esm(const file_handle& /*file_handle*/)
+	egkr::vector<geometry_properties> mesh_loader::load_esm(file_handle& file_handle)
 	{
-		return egkr::vector<geometry_properties>();
+		if (!file_handle.is_valid)
+		{
+			LOG_ERROR("Invalid file handle used");
+			return {};
+		}
+
+		size_t property_count{};
+		filesystem::read(file_handle, &property_count, 1);
+
+		egkr::vector<geometry_properties> geoms;
+		for (auto i{ 0U }; i < property_count; ++i)
+		{
+			geometry_properties property{};
+
+			size_t name_length{};
+			filesystem::read(file_handle, &name_length, 1);
+
+			property.name.resize(name_length);
+			filesystem::read(file_handle, property.name.data(), name_length);
+
+			//property.name = std::string(name);
+
+			size_t material_name_length{};
+			filesystem::read(file_handle, &material_name_length, 1);
+
+			property.material_name.resize(material_name_length);
+			filesystem::read(file_handle, property.material_name.data(), material_name_length);
+
+			filesystem::read(file_handle, &property.vertex_count, 1);
+			filesystem::read(file_handle, &property.vertex_size, 1);
+
+			auto size = property.vertex_count * property.vertex_size;
+			property.vertices = malloc(size);
+			
+			filesystem::read(file_handle, property.vertices, property.vertex_size, property.vertex_count);
+			//std::copy((uint8_t*)property.vertices, (uint8_t*)property.vertices + size, verts.data());
+
+			size_t index_count{};
+			filesystem::read(file_handle, &index_count, 1);
+
+			property.indices.resize(index_count);
+			filesystem::read(file_handle, property.indices.data(), index_count);
+
+			filesystem::read(file_handle, &property.center, 1);
+			filesystem::read(file_handle, &property.min_extent, 1);
+			filesystem::read(file_handle, &property.max_extent, 1);
+			geoms.push_back(property);
+		}
+
+		return geoms;
 	}
 
-	bool mesh_loader::write_esm(std::string_view /*path*/, const egkr::vector<geometry_properties>& /*properties*/)
+	bool mesh_loader::write_esm(std::string_view path, const egkr::vector<geometry_properties>& properties)
 	{
+		auto filename = path.data() + std::string(".esm");
+		auto handle = filesystem::open(filename, file_mode::write, true);
+
+		filesystem::write(handle, properties.size(), 1);
+
+		for (const auto& property : properties)
+		{
+			filesystem::write(handle, property.name.size(), 1);
+			filesystem::write(handle, property.name.data(), 1, property.name.size());
+
+			filesystem::write(handle, property.material_name.size(), 1);
+			filesystem::write(handle, property.material_name.data(), 1, property.material_name.size());
+
+			filesystem::write(handle, property.vertex_count, 1);
+			filesystem::write(handle, property.vertex_size, 1);
+			filesystem::write(handle, property.vertices, property.vertex_size, property.vertex_count);
+
+			filesystem::write(handle, property.indices.size(), 1);
+			filesystem::write(handle, property.indices.data(), sizeof(uint32_t), property.indices.size());
+
+			filesystem::write(handle, property.center, 1);
+			filesystem::write(handle, property.min_extent, 1);
+			filesystem::write(handle, property.max_extent, 1);
+
+		}
 		return true;
 	}
 
