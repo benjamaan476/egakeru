@@ -7,6 +7,7 @@
 #include "systems/geometry_system.h"
 #include "systems/geometry_utils.h"
 #include "systems/shader_system.h"
+#include "systems/camera_system.h"
 
 #include "resources/transform.h"
 #include "resources/geometry.h"
@@ -99,6 +100,11 @@ namespace egkr
 			LOG_FATAL("Failed to create shader system");
 		}
 
+		if (!camera_system::create(state_.renderer.get(), { 31 }))
+		{
+			LOG_FATAL("Failed to create camera system");
+		}
+
 		if (!state_.renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
@@ -108,6 +114,7 @@ namespace egkr
 		texture_system::init();
 		material_system::init();
 		geometry_system::init();
+		camera_system::init();
 
 
 		if (!state_.game->init())

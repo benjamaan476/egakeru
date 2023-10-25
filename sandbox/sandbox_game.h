@@ -1,9 +1,7 @@
 #pragma once
 
 #include "game/game.h"
-
-//TODO Hack
-#include "renderer/renderer_frontend.h"
+#include "systems/camera_system.h"
 
 class sandbox_game final : public egkr::game
 {
@@ -15,13 +13,5 @@ public:
 	void resize(uint32_t width, uint32_t height) final;
 
 private:
-	void recalculate_view_matrix();
-	void camera_yaw(float amount);
-	void camera_pitch(float amount);
-private:
-	bool view_dirty{true};
-	egkr::float3 position_{30, 0, 0};
-	egkr::float3 front{-1.F, 0.F, 0.F};
-	egkr::float3 rotation_{0.F, 0.F, 0.F};
-	egkr::float4x4 view_{};
+	egkr::camera::shared_ptr camera_{};
 };

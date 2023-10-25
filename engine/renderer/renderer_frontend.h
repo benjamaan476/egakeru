@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "renderer_types.h"
 #include "event.h"
+#include "renderer/camera.h"
 
 #include "resources/material.h"
 #include "resources/texture.h"
@@ -21,9 +22,6 @@ namespace egkr
 		API void shutdown();
 		API void on_resize(uint32_t width, uint32_t height);
 		API void draw_frame(const render_packet& packet);
-
-		//TODO Hack
-		API void set_view(const float4x4& view, const float3& camera_position);
 
 		void free_material(material* texture) const;
 
@@ -58,11 +56,10 @@ namespace egkr
 	private:
 		renderer_backend::unique_ptr backend_{};
 
+		camera::shared_ptr world_camera_{};
 		float near_clip_{0.1F};
 		float far_clip_{ 1000.F };
 		float4x4 world_projection_{1.F};
-		float4x4 world_view_{1.F};
-		float3 camera_position_{};
 		float4x4 ui_projection_{1.F};
 		float4x4 ui_view_{1.F};
 		uint32_t material_shader_id{};

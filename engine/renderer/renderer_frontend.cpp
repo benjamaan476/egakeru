@@ -6,6 +6,7 @@
 #include "systems/resource_system.h"
 #include "systems/material_system.h"
 #include "systems/shader_system.h"
+#include "systems/camera_system.h"
 
 #include "vulkan/renderer_vulkan.h"
 
@@ -89,7 +90,12 @@ namespace egkr
 					return;
 				}
 
-				material_system::apply_global(material_shader_id, world_projection_, world_view_, ambient_colour_, camera_position_, mode_);
+				if (!world_camera_)
+				{
+					world_camera_ = camera_system::get_default();
+				}
+
+				material_system::apply_global(material_shader_id, world_projection_, world_camera_->get_view(), ambient_colour_, world_camera_->get_position(), mode_);
 
 				for (const auto& render_data : packet.world_geometry_data)
 				{
@@ -141,12 +147,6 @@ namespace egkr
 
 			backend_->end_frame();
 		}
-	}
-
-	void renderer_frontend::set_view(const float4x4& view, const float3& camera_position)
-	{
-		world_view_ = view;
-		camera_position_ = camera_position;
 	}
 
 	void renderer_frontend::free_material(material* texture) const
