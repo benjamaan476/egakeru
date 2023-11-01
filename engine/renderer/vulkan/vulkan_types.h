@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "swapchain.h"
-#include "renderpass.h"
+#include "vulkan_renderpass.h"
 #include "command_buffer.h"
 #include "fence.h"
 #include "buffer.h"
@@ -47,6 +47,7 @@ namespace egkr
 		vk::PhysicalDevice physical_device{};
 		vk::Device logical_device{};
 		vk::Format depth_format{};
+		uint8_t depth_channel_count{};
 
 		uint32_t graphics_queue_index{};
 		vk::Queue graphics_queue{};
@@ -82,10 +83,8 @@ namespace egkr
 		vk::SurfaceKHR surface{};
 		swapchain::shared_ptr swapchain{};
 
-		egkr::vector<framebuffer::unique_ptr> world_framebuffers{3};
-		renderpass::shared_ptr world_renderpass{};
-		renderpass::shared_ptr ui_renderpass{};
-
+		egkr::vector<render_target::shared_ptr> world_render_targets{3};
+		std::unordered_map<std::string, renderpass> renderpass_by_name{};
 		egkr::vector<command_buffer> graphics_command_buffers{};
 
 		egkr::vector<vk::Semaphore> image_available_semaphore{};
@@ -105,6 +104,7 @@ namespace egkr
 
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
+		std::function<void(void)> on_render_target_refresh_required{};
 	};
 
 	struct queue_family_indices
@@ -131,21 +131,24 @@ namespace egkr
 	static inline bool detect_depth_format(vulkan_device& device)
 	{
 		const std::array<vk::Format, 3> depth_formats{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint};
-
+		const std::array<int, 3> depth_counts{ 4,4,3 };
 		auto flags = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
 
-		for (const auto format : depth_formats)
+		for (auto i{ 0U }; i < depth_formats.size(); ++i)
 		{
+			const auto& format = depth_formats[i];
 			const auto properties = device.physical_device.getFormatProperties(format);
 
 			if ((properties.linearTilingFeatures & flags) == flags)
 			{
 				device.depth_format = format;
+				device.depth_channel_count = depth_counts[i];
 				return true;
 			}
 			else if ((properties.optimalTilingFeatures & flags) == flags)
 			{
 				device.depth_format = format;
+				device.depth_channel_count = depth_counts[i];
 				return true;
 			}
 		}

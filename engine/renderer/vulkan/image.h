@@ -31,6 +31,7 @@ namespace egkr
 	public:
 		using shared_ptr = std::shared_ptr<image>;
 		API static shared_ptr create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view);
+		static image* create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const image_properties& properties, bool create_view);
 		void create_view(const image_properties& properties);
 
 		image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties);

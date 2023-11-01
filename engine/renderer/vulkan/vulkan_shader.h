@@ -81,7 +81,7 @@ namespace egkr
 
 		uint32_t id{invalid_32_id};
 		vulkan_shader_configuration configuration{};
-		renderpass::shared_ptr renderpass{};
+		vulkan_renderpass* renderpass{};
 		egkr::vector<vulkan_shader_stage> stages;
 
 		vk::DescriptorPool descriptor_pool{};

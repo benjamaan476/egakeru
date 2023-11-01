@@ -1,15 +1,15 @@
-#include "renderpass.h"
+#include "vulkan_renderpass.h"
 #include "command_buffer.h"
 #include "vulkan_types.h"
 
 namespace egkr
 {
-	renderpass::shared_ptr renderpass::create(const vulkan_context* context, const renderpass_properties& properties)
+	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const vulkan_context* context, const renderpass_properties& properties)
 	{
-		return std::make_shared<renderpass>(context, properties);
+		return std::make_shared<vulkan_renderpass>(context, properties);
 	}
 
-	renderpass::renderpass(const vulkan_context* context, const renderpass_properties& properties)
+	vulkan_renderpass::vulkan_renderpass(const vulkan_context* context, const renderpass_properties& properties)
 		: context_{ context }, 
 		render_extent_{ properties.render_extent },
 		clear_flags_{properties.clear_flags},
@@ -90,12 +90,12 @@ namespace egkr
 
 	}
 
-	renderpass::~renderpass()
+	vulkan_renderpass::~vulkan_renderpass()
 	{
 		destroy();
 	}
 
-	void renderpass::destroy()
+	void vulkan_renderpass::destroy()
 	{
 		if (renderpass_)
 		{
@@ -106,7 +106,7 @@ namespace egkr
 		context_ = nullptr;
 	}
 
-	void renderpass::begin(command_buffer& command_buffer, vk::Framebuffer framebuffer)
+	void vulkan_renderpass::begin(command_buffer& command_buffer, vk::Framebuffer framebuffer)
 	{
 		vk::Rect2D render_area{};
 		render_area
@@ -142,11 +142,11 @@ namespace egkr
 		command_buffer.begin_render_pass(begin_info);
 	}
 
-	void renderpass::end(command_buffer& command_buffer)
+	void vulkan_renderpass::end(command_buffer& command_buffer)
 	{
 		command_buffer.end_render_pass();
 	}
-	void renderpass::set_extent(uint4 extent)
+	void vulkan_renderpass::set_extent(uint4 extent)
 	{
 		render_extent_ = extent;
 	}

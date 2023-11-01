@@ -8,8 +8,8 @@ namespace egkr
 	{
 		auto shade = std::make_shared<shader>(renderer_context, properties);
 
-		auto renderpass_id = renderer_context->get_renderpass_id(properties.renderpass_name);
-		renderer_context->populate_shader(shade.get(), (uint32_t)renderpass_id, properties.stage_filenames, properties.stages);
+		auto renderpass = renderer_context->get_renderpass(properties.renderpass_name);
+		renderer_context->populate_shader(shade.get(), renderpass, properties.stage_filenames, properties.stages);
 		return shade;
 	}
 

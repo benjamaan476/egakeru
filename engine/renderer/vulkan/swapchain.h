@@ -2,8 +2,8 @@
 
 #include "pch.h"
 #include "image.h"
-#include "framebuffer.h"
 #include "resources/texture.h"
+#include "renderer/renderer_types.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -26,15 +26,14 @@ namespace egkr
 		uint32_t acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence);
 		void present(vk::Queue graphics_queue, vk::Queue present_queue, vk::Semaphore render_complete, uint32_t image_index);
 
-		void regenerate_framebuffers();
-
 		const auto& get_format() const { return format_; }
 		const auto& get_image_count() const { return image_count_; }
 		const auto& get_depth_attachment() const { return depth_attachment_; }
 		const auto& get_max_frames_in_flight() const { return max_frames_in_flight_; }
 
-		const auto& get_framebuffer(uint32_t frame) const { return framebuffer_[frame]; }
-		const auto& get_frame_buffer() const { return framebuffer_; }
+		const auto& get_render_texture(uint32_t frame) const { return render_textures_[frame]; }
+		const auto& get_framebuffer(uint32_t frame) const { return render_targets_[frame]; }
+		auto& get_render_targets() const { return render_targets_; }
 	private:
 
 		void create();
@@ -45,14 +44,14 @@ namespace egkr
 
 	private:
 		vulkan_context* context_;
-		egkr::vector<framebuffer::unique_ptr> framebuffer_{};
+		egkr::vector<render_target::shared_ptr> render_targets_{};
 
 		vk::SurfaceFormatKHR format_{};
 		vk::Extent2D extent_{};
 		vk::SwapchainKHR swapchain_{};
 
 		egkr::vector<texture::shared_ptr> render_textures_{};
-		image::shared_ptr depth_attachment_{};
+		texture::shared_ptr depth_attachment_{};
 
 		uint32_t image_count_{};
 		uint8_t max_frames_in_flight_{3};

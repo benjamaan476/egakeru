@@ -12,6 +12,21 @@
 
 namespace egkr
 {
+	void renderer_frontend::regenerate_render_targets()
+	{
+		for (auto i{ 0U }; i < window_attachment_count; ++i)
+		{
+			backend_->free_render_target(&world_render_targets_[i], false);
+			backend_->free_render_target(&ui_render_targets_[i], false);
+			auto colour = backend_->get_window_attachment(i);
+			auto depth = backend_->get_depth_attachment();
+
+			backend_->populate_render_target(&world_render_targets_[i], { colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
+			backend_->populate_render_target(&ui_render_targets_[i], { colour }, ui_renderpass_, framebuffer_width_, framebuffer_height_);
+		}
+
+	}
+
 	renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
 	{
 		return std::make_unique<renderer_frontend>(type, platform);
@@ -20,6 +35,8 @@ namespace egkr
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
 		const auto& size = platform->get_framebuffer_size();
+		framebuffer_width_ = size.x;
+		framebuffer_height_ = size.y;
 		world_projection_ = glm::perspective(glm::radians(45.0F), size.x / (float)size.y, 0.1F, 1000.F);
 		ui_projection_ = glm::ortho(0.F, (float)size.x, (float)size.y, 0.F, -100.F, 100.F);
 
@@ -42,7 +59,35 @@ namespace egkr
 
 	bool renderer_frontend::init()
 	{
-		auto backen_init = backend_->init();
+		egkr::vector<renderpass_configuration> renderpasses{};
+
+		renderpass_configuration world{};
+		world.name = "Renderpass.Builtin.World";
+		world.previous_name = "";
+		world.next_name = "ui";
+		world.clear_colour = { 0.F, 0.F, 0.2F, 1.F };
+		world.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
+		world.clear_flags = renderpass_clear_flags::all;
+		renderpasses.push_back(world);
+
+		renderpass_configuration ui{};
+		ui.name = "Renderpass.Builtin.UI";
+		ui.previous_name = "world";
+		ui.next_name = "";
+		ui.clear_flags = renderpass_clear_flags::none;
+		ui.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
+		renderpasses.push_back(ui);
+
+		renderer_backend_configuration configuration{};
+		configuration.on_render_target_refresh_required = std::bind(&renderer_frontend::regenerate_render_targets, this);
+		configuration.renderpass_configurations = renderpasses;
+
+		auto backen_init = backend_->init(configuration, window_attachment_count);
+
+		world_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.World");
+		ui_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.UI");
+
+		regenerate_render_targets();
 
 		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
 		auto shader = (shader_properties*)resource->data;
@@ -68,11 +113,27 @@ namespace egkr
 
 	void renderer_frontend::shutdown()
 	{
+		for (auto& target : world_renderpass_->render_targets)
+		{
+			backend_->free_render_target(target.get(), true);
+		}
+		for (auto& target : ui_renderpass_->render_targets)
+		{
+			backend_->free_render_target(target.get(), true);
+		}
 		backend_->shutdown();
 	}
 
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
+		framebuffer_width_ = width;
+		framebuffer_height_ = height;
+		world_renderpass_->render_area.z = width;
+		world_renderpass_->render_area.w = height;
+		ui_renderpass_->render_area.z = width;
+		ui_renderpass_->render_area.w = height;
+
+
 		world_projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
 		ui_projection_ = glm::ortho(0.f, (float)width, (float)height, 0.F, -100.F, 100.F);
 		backend_->resize(width, height);
@@ -82,7 +143,9 @@ namespace egkr
 	{
 		if (backend_->begin_frame())
 		{
-			if (backend_->begin_renderpass(builtin_renderpass::world))
+			auto attachment_index = backend_->get_window_index();
+
+			if (backend_->begin_renderpass(world_renderpass_, &world_render_targets_[attachment_index]))
 			{
 				if (!shader_system::use(material_shader_id))
 				{
@@ -110,13 +173,13 @@ namespace egkr
 					backend_->draw_geometry(render_data);
 				}
 
-				if (!backend_->end_renderpass(builtin_renderpass::world))
+				if (!backend_->end_renderpass(world_renderpass_))
 				{
 					LOG_ERROR("Failed to end world renderpass");
 					return;
 				}
 
-				if (backend_->begin_renderpass(builtin_renderpass::ui))
+				if (backend_->begin_renderpass(ui_renderpass_, &ui_render_targets_[attachment_index]))
 				{
 					if (!shader_system::use(ui_shader_id))
 					{
@@ -137,7 +200,7 @@ namespace egkr
 						backend_->draw_geometry(render_data);
 					}
 
-					if (!backend_->end_renderpass(builtin_renderpass::ui))
+					if (!backend_->end_renderpass(ui_renderpass_))
 					{
 						LOG_ERROR("Failed to end ui renderpass");
 						return;
@@ -189,9 +252,9 @@ return backend_->texture_write_data(texture, offset, size, data);
 		backend_->free_geometry(geometry);
 	}
 
-	bool renderer_frontend::populate_shader(shader* shader, uint32_t renderpass_id, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
+	bool renderer_frontend::populate_shader(shader* shader, renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
 	{
-		return backend_->populate_shader(shader, renderpass_id, stage_filenames, shader_stages);
+		return backend_->populate_shader(shader, renderpass, stage_filenames, shader_stages);
 	}
 	void renderer_frontend::free_shader(shader* shader) const
 	{
@@ -244,21 +307,18 @@ return backend_->texture_write_data(texture, offset, size, data);
 		return backend_->set_uniform(shader, uniform, value);
 	}
 
-	builtin_renderpass renderer_frontend::get_renderpass_id(std::string_view renderpass_name) const
+	renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const
 	{
-		if (renderpass_name == "Renderpass.Builtin.World")
-		{
-			return builtin_renderpass::world;
-		}
-		else if (renderpass_name == "Renderpass.Builtin.UI")
-		{
-			return builtin_renderpass::ui;
-		}
-		else
-		{
-			LOG_ERROR("Unknown renderpass name requested: {}", renderpass_name.data());
-			return builtin_renderpass::world;
-		}
+		return backend_->get_renderpass(renderpass_name);
+	}
+	void renderer_frontend::populate_render_target(render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass* renderpass, uint32_t width, uint32_t height) const
+	{
+		backend_->populate_render_target(render_target, attachments, renderpass, width, height);
+	}
+	
+	void renderer_frontend::free_render_target(render_target* render_target, bool free_internal_memory) const
+	{
+		backend_->free_render_target(render_target, free_internal_memory);
 	}
 
 	bool renderer_frontend::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)

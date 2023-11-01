@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "command_buffer.h"
+#include "renderer/renderer_types.h"
 
 namespace egkr
 {
@@ -16,15 +17,7 @@ namespace egkr
 		not_allocated
 	};
 
-	enum renderpass_clear_flags
-	{
-		none,
-		colour = 0x01,
-		depth = 0x02,
-		stencil = 0x04
-	};
 
-	ENUM_CLASS_OPERATORS(renderpass_clear_flags)
 
 	struct renderpass_properties
 	{
@@ -40,14 +33,14 @@ namespace egkr
 
 	};
 
-	class renderpass : std::enable_shared_from_this<renderpass>
+	class vulkan_renderpass : std::enable_shared_from_this<vulkan_renderpass>
 	{
 	public:
-		using shared_ptr = std::shared_ptr<renderpass>;
+		using shared_ptr = std::shared_ptr<vulkan_renderpass>;
 		static shared_ptr create(const vulkan_context* context, const renderpass_properties& properties);
 
-		renderpass(const vulkan_context* context, const renderpass_properties& properties);
-		~renderpass();
+		vulkan_renderpass(const vulkan_context* context, const renderpass_properties& properties);
+		~vulkan_renderpass();
 
 		void destroy();
 
@@ -57,11 +50,10 @@ namespace egkr
 		void set_extent(uint4 extent);
 
 		const auto& get_handle() { return renderpass_; }
-	private:
-		const vulkan_context* context_{};
-		vk::RenderPass renderpass_{};
-		uint4 render_extent_{};
 
+		const vulkan_context* context_{};
+		uint4 render_extent_{};
+		vk::RenderPass renderpass_{};
 		renderpass_clear_flags clear_flags_{};
 		float4 clear_colour_{};
 		float_t depth_{};

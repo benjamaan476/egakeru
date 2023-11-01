@@ -14,6 +14,18 @@ namespace egkr
 		return img;
 	}
 
+	image* image::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const image_properties& properties, bool create_view)
+	{
+		auto img = new image(context, width, height, properties);
+
+
+		if (create_view)
+		{
+			img->create_view(properties);
+		}
+		return img;
+	}
+
 	void image::create_view(const image_properties& properties)
 	{
 		vk::ImageSubresourceRange subresource{};

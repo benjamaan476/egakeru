@@ -24,8 +24,7 @@ namespace egkr
 		properties.flags |= texture_flags::is_wrapped;
 		properties.data = internal_data;
 
-		auto t = texture::create(texture_system_->renderer_context_, properties, nullptr);
-
+		auto t = std::shared_ptr<texture>(new texture(texture_system_->renderer_context_, properties));
 		if (register_texture)
 		{
 			id = texture_system_->registered_textures_.size();

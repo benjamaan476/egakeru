@@ -23,7 +23,7 @@ namespace egkr
 
 	void swapchain::destroy()
 	{
-		framebuffer_.clear();
+		render_targets_.clear();
 
 		if (depth_attachment_)
 		{
@@ -94,33 +94,6 @@ namespace egkr
 		context_->current_frame = (context_->current_frame + 1) % max_frames_in_flight_;
 	}
 
-	void swapchain::regenerate_framebuffers()
-	{
-		for (auto i{ 0U }; i < image_count_; ++i)
-		{
-			auto img = (image*)render_textures_[i]->data;
-			//TODO configure based on attachment
-			const egkr::vector<vk::ImageView> world_attachments{img->get_view(), depth_attachment_->get_view()};
-
-			framebuffer_properties world_framebuffer_properties{};
-			world_framebuffer_properties.attachments = world_attachments;
-			world_framebuffer_properties.renderpass = context_->world_renderpass;
-			world_framebuffer_properties.width_ = context_->framebuffer_width;
-			world_framebuffer_properties.height_ = context_->framebuffer_height;
-
-			context_->world_framebuffers[i] = framebuffer::create(context_, world_framebuffer_properties);
-
-			const egkr::vector<vk::ImageView> ui_attachments{img->get_view()};
-			framebuffer_properties ui_framebuffer_properties{};
-			ui_framebuffer_properties.attachments = ui_attachments;
-			ui_framebuffer_properties.renderpass = context_->ui_renderpass;
-			ui_framebuffer_properties.width_ = context_->framebuffer_width;
-			ui_framebuffer_properties.height_ = context_->framebuffer_height;
-
-			framebuffer_[i] = framebuffer::create(context_, ui_framebuffer_properties);
-		}
-	}
-
 	void swapchain::create()
 	{
 		auto swapchain_support = query_swapchain_support(context_->surface, context_->device.physical_device);
@@ -131,7 +104,7 @@ namespace egkr
 
 		image_count_ = swapchain_support.capabilities.minImageCount + 1;
 		max_frames_in_flight_ = image_count_ - 1;
-		framebuffer_.resize(image_count_);
+		render_targets_.resize(image_count_);
 
 		if (swapchain_support.capabilities.maxImageCount > 0 && image_count_ > swapchain_support.capabilities.maxImageCount)
 		{
@@ -302,8 +275,9 @@ namespace egkr
 		depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
-		depth_attachment_ = image::create(context_, extent_.width, extent_.height, depth_image_properties, true);
+		auto img = image::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
 
+		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, img);
 		return swapchain_images;
 	}
 

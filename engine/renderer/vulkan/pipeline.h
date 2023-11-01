@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 
-#include "renderpass.h"
+#include "vulkan_renderpass.h"
 
 
 namespace egkr
@@ -9,7 +9,7 @@ namespace egkr
 	struct pipeline_properties
 	{
 		std::string_view shader_name{};
-		renderpass::shared_ptr renderpass{};
+		vulkan_renderpass* renderpass{};
 		std::vector<vk::DescriptorSetLayout> descriptor_set_layout{};
 		egkr::vector<vk::PipelineShaderStageCreateInfo> shader_stage_info{};
 		vk::VertexInputBindingDescription input_binding_description{};
