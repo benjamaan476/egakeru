@@ -59,22 +59,22 @@ namespace egkr
 
 	bool renderer_frontend::init()
 	{
-		egkr::vector<renderpass_configuration> renderpasses{};
+		egkr::vector<renderpass::configuration> renderpasses{};
 
-		renderpass_configuration world{};
+		renderpass::configuration world{};
 		world.name = "Renderpass.Builtin.World";
 		world.previous_name = "";
 		world.next_name = "ui";
 		world.clear_colour = { 0.F, 0.F, 0.2F, 1.F };
 		world.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
-		world.clear_flags = renderpass_clear_flags::all;
+		world.clear_flags = renderpass::clear_flags::all;
 		renderpasses.push_back(world);
 
-		renderpass_configuration ui{};
+		renderpass::configuration ui{};
 		ui.name = "Renderpass.Builtin.UI";
 		ui.previous_name = "world";
 		ui.next_name = "";
-		ui.clear_flags = renderpass_clear_flags::none;
+		ui.clear_flags = renderpass::clear_flags::none;
 		ui.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
 		renderpasses.push_back(ui);
 
@@ -113,11 +113,11 @@ namespace egkr
 
 	void renderer_frontend::shutdown()
 	{
-		for (auto& target : world_renderpass_->render_targets)
+		for (auto& target : world_renderpass_->get_render_targets())
 		{
 			backend_->free_render_target(target.get(), true);
 		}
-		for (auto& target : ui_renderpass_->render_targets)
+		for (auto& target : ui_renderpass_->get_render_targets())
 		{
 			backend_->free_render_target(target.get(), true);
 		}
@@ -128,10 +128,10 @@ namespace egkr
 	{
 		framebuffer_width_ = width;
 		framebuffer_height_ = height;
-		world_renderpass_->render_area.z = width;
-		world_renderpass_->render_area.w = height;
-		ui_renderpass_->render_area.z = width;
-		ui_renderpass_->render_area.w = height;
+		world_renderpass_->get_render_area().z = width;
+		world_renderpass_->get_render_area().w = height;
+		ui_renderpass_->get_render_area().z = width;
+		ui_renderpass_->get_render_area().w = height;
 
 
 		world_projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
@@ -145,7 +145,7 @@ namespace egkr
 		{
 			auto attachment_index = backend_->get_window_index();
 
-			if (backend_->begin_renderpass(world_renderpass_, &world_render_targets_[attachment_index]))
+			if(world_renderpass_->begin(&world_render_targets_[attachment_index]))
 			{
 				if (!shader_system::use(material_shader_id))
 				{
@@ -173,13 +173,13 @@ namespace egkr
 					backend_->draw_geometry(render_data);
 				}
 
-				if (!backend_->end_renderpass(world_renderpass_))
+				if (!world_renderpass_->end())
 				{
 					LOG_ERROR("Failed to end world renderpass");
 					return;
 				}
 
-				if (backend_->begin_renderpass(ui_renderpass_, &ui_render_targets_[attachment_index]))
+				if(ui_renderpass_->begin(&ui_render_targets_[attachment_index]))
 				{
 					if (!shader_system::use(ui_shader_id))
 					{
@@ -200,7 +200,7 @@ namespace egkr
 						backend_->draw_geometry(render_data);
 					}
 
-					if (!backend_->end_renderpass(ui_renderpass_))
+					if (!ui_renderpass_->end())
 					{
 						LOG_ERROR("Failed to end ui renderpass");
 						return;
@@ -252,7 +252,7 @@ return backend_->texture_write_data(texture, offset, size, data);
 		backend_->free_geometry(geometry);
 	}
 
-	bool renderer_frontend::populate_shader(shader* shader, renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
+	bool renderer_frontend::populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
 	{
 		return backend_->populate_shader(shader, renderpass, stage_filenames, shader_stages);
 	}
@@ -307,16 +307,16 @@ return backend_->texture_write_data(texture, offset, size, data);
 		return backend_->set_uniform(shader, uniform, value);
 	}
 
-	renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const
+	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const
 	{
 		return backend_->get_renderpass(renderpass_name);
 	}
-	void renderer_frontend::populate_render_target(render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass* renderpass, uint32_t width, uint32_t height) const
+	void renderer_frontend::populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const
 	{
 		backend_->populate_render_target(render_target, attachments, renderpass, width, height);
 	}
 	
-	void renderer_frontend::free_render_target(render_target* render_target, bool free_internal_memory) const
+	void renderer_frontend::free_render_target(render_target::render_target* render_target, bool free_internal_memory) const
 	{
 		backend_->free_render_target(render_target, free_internal_memory);
 	}

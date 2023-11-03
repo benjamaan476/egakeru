@@ -44,7 +44,7 @@ namespace egkr
 
 	private:
 		vulkan_context* context_;
-		egkr::vector<render_target::shared_ptr> render_targets_{};
+		egkr::vector<render_target::render_target::shared_ptr> render_targets_{};
 
 		vk::SurfaceFormatKHR format_{};
 		vk::Extent2D extent_{};

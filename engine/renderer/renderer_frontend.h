@@ -34,7 +34,7 @@ namespace egkr
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) const;
 		void free_geometry(geometry* geometry) const;
 
-		bool populate_shader(shader* shader, renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const;
+		bool populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const;
 		void free_shader(shader* shader) const;
 
 		bool use_shader(shader* shader) const;
@@ -49,9 +49,9 @@ namespace egkr
 
 		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const;
 
-		renderpass* get_renderpass(std::string_view renderpass_name) const;
-		void populate_render_target(render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass* renderpass, uint32_t width, uint32_t height) const;
-		void free_render_target(render_target* render_target, bool free_internal_memory) const;
+		renderpass::renderpass* get_renderpass(std::string_view renderpass_name) const;
+		void populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const;
+		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) const;
 
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 
@@ -59,10 +59,10 @@ namespace egkr
 	private:
 		renderer_backend::unique_ptr backend_{};
 		uint8_t window_attachment_count{};
-		renderpass* world_renderpass_{};
-		egkr::vector<render_target> world_render_targets_{3};
-		egkr::vector<render_target> ui_render_targets_{3};
-		renderpass* ui_renderpass_{};
+		renderpass::renderpass* world_renderpass_{};
+		egkr::vector<render_target::render_target> world_render_targets_{3};
+		egkr::vector<render_target::render_target> ui_render_targets_{3};
+		renderpass::renderpass* ui_renderpass_{};
 
 		uint32_t framebuffer_width_{};
 		uint32_t framebuffer_height_{};

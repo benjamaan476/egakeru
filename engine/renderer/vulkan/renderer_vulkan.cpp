@@ -438,12 +438,9 @@ namespace egkr
 				return false;
 			}
 
-			renderpass pass{};
-			pass.clear_flags = pass_configuration.clear_flags;
-			pass.clear_colour = pass_configuration.clear_colour;
-			pass.render_area = pass_configuration.render_area;
+			auto pass = vulkan_renderpass::create(this, &context_, pass_configuration);
 
-			populate_renderpass(&pass, 1.F, 0, !pass_configuration.previous_name.empty(), !pass_configuration.next_name.empty());
+			pass->populate(1.F, 0, !pass_configuration.previous_name.empty(), !pass_configuration.next_name.empty());
 			context_.renderpass_by_name[pass_configuration.name] = pass;
 		}
 
@@ -474,7 +471,7 @@ namespace egkr
 
 			for (auto& [name, pass] : context_.renderpass_by_name)
 			{
-				free_renderpass(&pass);
+				pass->free();
 			}
 			for (auto& target : context_.world_render_targets)
 			{
@@ -499,8 +496,7 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
-			auto& swap_targets = context_.swapchain->get_render_targets();
-			for (auto& target : swap_targets)
+			for (auto& target : context_.swapchain->get_render_targets())
 			{
 				free_render_target(target.get(), true);
 			}
@@ -577,68 +573,8 @@ namespace egkr
 		command_buffer.get_handle().setViewport(0, viewport);
 		command_buffer.get_handle().setScissor(0, scissor);
 
-
-
 		return true;
 	}
-
-	bool renderer_vulkan::begin_renderpass(renderpass* renderpass, render_target* render_target)
-	{
-		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
-
-		vulkan_renderpass* data = (vulkan_renderpass*)renderpass->internal_data;
-
-		vk::Rect2D render_area{};
-		render_area
-			.setOffset({ (int32_t)renderpass->render_area.x, (int32_t)renderpass->render_area.y })
-			.setExtent({ (uint32_t)renderpass->render_area.z, (uint32_t)renderpass->render_area.w });
-		vk::RenderPassBeginInfo begin_info{};
-		begin_info
-			.setRenderPass(data->get_handle())
-			.setFramebuffer(*(vk::Framebuffer*)(render_target->internal_framebuffer))
-			.setRenderArea(render_area);
-			
-		egkr::vector<vk::ClearValue> clear_colours{};
-		const bool do_clear_colour = renderpass->clear_flags & renderpass_clear_flags::colour;
-
-		if (do_clear_colour)
-		{
-			vk::ClearValue clear_colour{};
-			clear_colour.setColor(std::array<float, 4>{renderpass->clear_colour.r, renderpass->clear_colour.g, renderpass->clear_colour.b, renderpass->clear_colour.a, });
-			clear_colours.push_back(clear_colour);
-		}
-
-		const bool do_clear_depth = renderpass->clear_flags & renderpass_clear_flags::depth;
-		const bool do_clear_stencil = renderpass->clear_flags & renderpass_clear_flags::stencil;
-		if (do_clear_depth)
-		{
-			vk::ClearValue clear_depth{};
-			clear_depth.setDepthStencil({ data->depth_, do_clear_stencil ? data->stencil_ : 0 });
-			clear_colours.push_back(clear_depth);
-		}
-
-		begin_info.setClearValues(clear_colours);
-
-		command_buffer.begin_render_pass(begin_info);
-		return true;
-	}
-
-	bool renderer_vulkan::end_renderpass(renderpass* /*renderpass*/)
-	{
-		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
-		command_buffer.end_render_pass();
-		return true;
-	}
-
-	//void renderer_vulkan::update_world_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
-	//{
-	//	context_.material_shader->update_global_state({ projection, view });
-	//}
-
-	//void renderer_vulkan::update_ui_state(const float4x4& projection, const float4x4& view, const float3& /*view_position*/, const float4& /*ambient_colour*/, int32_t /*mode*/)
-	//{
-	//	context_.ui_shader->update_global_state({ projection, view });
-	//}
 
 	void renderer_vulkan::draw_geometry(const geometry_render_data& data)
 	{
@@ -1075,7 +1011,7 @@ namespace egkr
 		}
 	}
 
-	void renderer_vulkan::populate_render_target(render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass* renderpass, uint32_t width, uint32_t height)
+	void renderer_vulkan::populate_render_target(render_target::render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 	{
 		egkr::vector<vk::ImageView> image_views{};
 		for (const auto& attachment : attachments)
@@ -1084,7 +1020,7 @@ namespace egkr
 		}
 		vk::FramebufferCreateInfo create_info{};
 		create_info
-			.setRenderPass(((vulkan_renderpass*)(renderpass->internal_data))->get_handle())
+			.setRenderPass(((vulkan_renderpass*)renderpass)->get_handle())
 			.setAttachments(image_views)
 			.setWidth(width)
 			.setHeight(height)
@@ -1099,7 +1035,7 @@ namespace egkr
 			*(vk::Framebuffer*)render_target->internal_framebuffer = context_.device.logical_device.createFramebuffer(create_info, context_.allocator);
 	}
 
-	void renderer_vulkan::free_render_target(render_target* render_target, bool free_internal_memory)
+	void renderer_vulkan::free_render_target(render_target::render_target* render_target, bool free_internal_memory)
 	{
 		if (render_target)
 		{
@@ -1119,31 +1055,6 @@ namespace egkr
 				}
 				render_target->attachments.clear();
 			}
-		}
-	}
-
-	void renderer_vulkan::populate_renderpass(renderpass* renderpass, float depth, uint32_t stencil, bool has_previous, bool has_next)
-	{
-		renderpass_properties properties{};
-		properties.depth = depth;
-		properties.has_next_pass = has_next;
-		properties.has_previous_pass = has_previous;
-		properties.stencil = stencil;
-		properties.clear_colour = renderpass->clear_colour;
-		properties.clear_flags = renderpass->clear_flags;
-		properties.render_extent = renderpass->render_area;
-
-
-		renderpass->internal_data = new vulkan_renderpass(&context_, properties);
-	}
-
-	void renderer_vulkan::free_renderpass(renderpass* renderpass)
-	{
-		if (renderpass->internal_data)
-		{
-			((vulkan_renderpass*)renderpass->internal_data)->destroy();
-			delete (vulkan_renderpass*)renderpass->internal_data;
-			renderpass->internal_data = nullptr;
 		}
 	}
 
@@ -1191,7 +1102,7 @@ namespace egkr
 
 	}
 
-	bool renderer_vulkan::populate_shader(shader* shader, renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages)
+	bool renderer_vulkan::populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages)
 	{
 		egkr::vector<vk::ShaderStageFlagBits> stages{};
 		for (const auto stage : shader_stages)
@@ -1218,7 +1129,7 @@ namespace egkr
 
 		shader->data = new vulkan_shader_state();
 		auto state = (vulkan_shader_state*)shader->data;
-		state->renderpass = (vulkan_renderpass*)renderpass->internal_data;
+		state->renderpass = (vulkan_renderpass*)renderpass;
 		state->configuration.max_descriptor_set_count = 1024;
 
 		for (auto i{ 0U }; i < stages.size(); ++i)
@@ -1347,7 +1258,7 @@ namespace egkr
 			.setInputRate(vk::VertexInputRate::eVertex);
 
 		pipeline_properties pipeline_properties{};
-		pipeline_properties.renderpass = (vulkan_renderpass*)renderpass->internal_data;
+		pipeline_properties.renderpass = (vulkan_renderpass*)renderpass;
 		pipeline_properties.descriptor_set_layout = state->descriptor_set_layout;
 		pipeline_properties.shader_stage_info = stage_create_infos;
 		pipeline_properties.is_wireframe = false;
@@ -1687,11 +1598,11 @@ namespace egkr
 		return context_.image_index;
 	}
 
-	renderpass* renderer_vulkan::get_renderpass(std::string_view name)
+	renderpass::renderpass* renderer_vulkan::get_renderpass(std::string_view name)
 	{
 		if (context_.renderpass_by_name.contains(name.data()))
 		{
-			return &context_.renderpass_by_name[name.data()];
+			return context_.renderpass_by_name[name.data()].get();
 		}
 
 		LOG_ERROR("Attaempted to get unknown renderpass");

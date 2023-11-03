@@ -83,8 +83,8 @@ namespace egkr
 		vk::SurfaceKHR surface{};
 		swapchain::shared_ptr swapchain{};
 
-		egkr::vector<render_target::shared_ptr> world_render_targets{3};
-		std::unordered_map<std::string, renderpass> renderpass_by_name{};
+		egkr::vector<render_target::render_target::shared_ptr> world_render_targets{3};
+		std::unordered_map<std::string, renderpass::renderpass::shared_ptr> renderpass_by_name{};
 		egkr::vector<command_buffer> graphics_command_buffers{};
 
 		egkr::vector<vk::Semaphore> image_available_semaphore{};

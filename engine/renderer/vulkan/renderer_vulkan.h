@@ -15,14 +15,12 @@ namespace egkr
 		static renderer_backend::unique_ptr create(const platform::shared_ptr& platform);
 
 		explicit renderer_vulkan(platform::shared_ptr platform);
-		~renderer_vulkan();
+		~renderer_vulkan() override;
 
 		bool init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count) final;
 		void shutdown() final;
 		void resize(uint32_t width_, uint32_t height_) final;
 		bool begin_frame() final;
-		bool begin_renderpass(renderpass* renderpass, render_target* render_target) final;
-		bool end_renderpass(renderpass* renderpass) final;
 		void draw_geometry(const geometry_render_data& model) final;
 		void end_frame() final;
 
@@ -36,14 +34,12 @@ namespace egkr
 		bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) override;
 		void free_texture(texture* texture) override;
 
-		void populate_render_target(render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass* renderpass, uint32_t width, uint32_t height) override;
-		void free_render_target(render_target* render_target, bool free_internal_memory) override;
-		void populate_renderpass(renderpass* renderpass, float depth, uint32_t stencil, bool has_previous, bool has_next)override;
-		void free_renderpass(renderpass* renderpass)override;
+		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
+		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) override;
 		bool populate_geometry(geometry* geometry, const geometry_properties& properties) override;
 		void free_geometry(geometry* geometry) override;
 
-		bool populate_shader(shader* shader, renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) override;
+		bool populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) override;
 		void free_shader(shader* shader) override;
 
 		bool use_shader(shader* shader) override;
@@ -59,7 +55,7 @@ namespace egkr
 		texture::shared_ptr get_window_attachment(uint8_t index)override;
 		texture::shared_ptr get_depth_attachment()override;
 		uint8_t get_window_index()override;
-		renderpass* get_renderpass(std::string_view name) override;
+		renderpass::renderpass* get_renderpass(std::string_view name) override;
 	private:
 		bool init_instance();
 		bool create_debug_messenger();

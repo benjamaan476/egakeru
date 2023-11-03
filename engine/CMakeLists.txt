@@ -2,19 +2,8 @@ project(engine)
 include_directories(${engine_SOURCE_DIR})
 
 
-file(GLOB SOURCES
-    log/*.cpp
-    platform/*.cpp
-    platform/windows/*.cpp
-    application/*.cpp
-    game/*.cpp
-    event.cpp
-    input.cpp
-    renderer/*.cpp
-    renderer/vulkan/*.cpp
-    resources/*.cpp
-    systems/*.cpp
-    loaders/*.cpp
+file(GLOB_RECURSE SOURCES
+${engine_SOURCE_DIR}/*.cpp
 )
 
 set(HEADERS 
@@ -56,12 +45,6 @@ set(SHADER_BINARY_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
 file(GLOB SHADERS
     ${SHADER_SOURCE_DIR}/*.frag
     ${SHADER_SOURCE_DIR}/*.vert
-)
-
-add_custom_command(
-    COMMAND
-        ${CMAKE_COMMAND} -E make_directory ${SHADER_BINARY_DIR}
-    OUTPUT ${SHADER_BINARY_DIR}
 )
 
 foreach(source IN LISTS SHADERS)
