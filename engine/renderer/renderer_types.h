@@ -38,16 +38,11 @@ namespace egkr
 		float4 pad2{};
 	};
 
-	struct geometry_render_data
-	{
-		geometry::shared_ptr geometry{};
-		float4x4 model{};
-	};
 
 	struct render_packet
 	{
-		egkr::vector<geometry_render_data> world_geometry_data{};
-		egkr::vector<geometry_render_data> ui_geometry_data{};
+		egkr::vector<geometry::render_data> world_geometry_data{};
+		egkr::vector<geometry::render_data> ui_geometry_data{};
 	};
 
 	struct renderer_backend_configuration
@@ -68,23 +63,22 @@ namespace egkr
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame() = 0;
-		virtual void draw_geometry(const geometry_render_data& model) = 0;
+		virtual void draw_geometry(const geometry::render_data& model) = 0;
 		virtual void end_frame() = 0;
 
 		virtual const void* get_context() const = 0;
 
-		virtual void free_material(material* texture) = 0;
+		virtual void free_material(material* texture) const = 0;
 
 		virtual bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) = 0;
 		virtual bool populate_writeable_texture(texture* texture) = 0;
 		virtual bool resize_texture(texture* texture, uint32_t width, uint32_t height) = 0;
 		virtual bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) = 0;
-		virtual void free_texture(texture* texture) = 0;
+		virtual void free_texture(texture* texture) const = 0;
 		virtual void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
 		virtual void free_render_target(render_target::render_target* render_target, bool free_internal_memory) = 0;
 
-		virtual bool populate_geometry(geometry* geometry, const geometry_properties& properties) = 0;
-		virtual void free_geometry(geometry* geometry) = 0;
+		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
 
 		virtual bool populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) = 0;
 		virtual void free_shader(shader* shader) = 0;
@@ -97,7 +91,7 @@ namespace egkr
 		virtual bool apply_shader_instances(shader* shader, bool needs_update) = 0;
 		virtual uint32_t acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) = 0;
 		virtual void acquire_texture_map(texture_map* map) = 0;
-		virtual void release_texture_map(texture_map* map) = 0;
+		virtual void release_texture_map(texture_map* map) const = 0;
 
 		virtual bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) = 0;
 		virtual texture::shared_ptr get_window_attachment(uint8_t index) = 0;

@@ -44,7 +44,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		egkr::vector<geometry_properties> resource_data{};
+		egkr::vector<geometry::properties> resource_data{};
 
 		switch (found_type.file_type)
 		{
@@ -64,22 +64,22 @@ namespace egkr
 		properties.full_path = filename;
 		properties.type = resource_type::mesh;
 
-		properties.data = new egkr::vector<geometry_properties>();
-		*(egkr::vector<geometry_properties>*)properties.data = resource_data;
+		properties.data = new egkr::vector<geometry::properties>();
+		*(egkr::vector<geometry::properties>*)properties.data = resource_data;
 		return std::make_shared<resource>(properties);
 	}
 
 	bool mesh_loader::unload(const resource::shared_ptr& resource)
 	{
-		auto* data = (egkr::vector<geometry_properties>*)resource->data;
+		auto* data = (egkr::vector<geometry::properties>*)resource->data;
 		data->clear();
 		delete data;
 		return false;
 	}
 
-	egkr::vector<geometry_properties> mesh_loader::import_obj(file_handle& file_handle, std::string_view esm_filename)
+	egkr::vector<geometry::properties> mesh_loader::import_obj(file_handle& file_handle, std::string_view esm_filename)
 	{
-		egkr::vector<geometry_properties> geometries{};
+		egkr::vector<geometry::properties> geometries{};
 
 		egkr::vector<float3> positions{};
 		positions.reserve(16384);
@@ -282,9 +282,9 @@ namespace egkr
 		return geometries;
 	}
 
-	geometry_properties mesh_loader::process_subobject(egkr::vector<float3>& positions, const egkr::vector<float3>& normals, const egkr::vector<float2>& tex, egkr::vector<mesh_face_data> faces)
+	geometry::properties mesh_loader::process_subobject(egkr::vector<float3>& positions, const egkr::vector<float3>& normals, const egkr::vector<float2>& tex, egkr::vector<mesh_face_data> faces)
 	{
-		geometry_properties properties{};
+		geometry::properties properties{};
 		properties.material_name = "default";
 		egkr::vector<vertex_3d> vertices;
 		bool extent_set{};
@@ -491,7 +491,7 @@ namespace egkr
 		return true;
 	}
 
-	egkr::vector<geometry_properties> mesh_loader::load_esm(file_handle& file_handle)
+	egkr::vector<geometry::properties> mesh_loader::load_esm(file_handle& file_handle)
 	{
 		if (!file_handle.is_valid)
 		{
@@ -502,10 +502,10 @@ namespace egkr
 		size_t property_count{};
 		filesystem::read(file_handle, &property_count, 1);
 
-		egkr::vector<geometry_properties> geoms;
+		egkr::vector<geometry::properties> geoms;
 		for (auto i{ 0U }; i < property_count; ++i)
 		{
-			geometry_properties property{};
+			geometry::properties property{};
 
 			size_t name_length{};
 			filesystem::read(file_handle, &name_length, 1);
@@ -545,7 +545,7 @@ namespace egkr
 		return geoms;
 	}
 
-	bool mesh_loader::write_esm(std::string_view path, const egkr::vector<geometry_properties>& properties)
+	bool mesh_loader::write_esm(std::string_view path, const egkr::vector<geometry::properties>& properties)
 	{
 		auto filename = path.data() + std::string(".esm");
 		auto handle = filesystem::open(filename, file_mode::write, true);

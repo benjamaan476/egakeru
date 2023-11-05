@@ -31,9 +31,6 @@ namespace egkr
 		bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) const;
 		void free_texture(texture* texture) const;
 
-		bool populate_geometry(geometry* geometry, const geometry_properties& properties) const;
-		void free_geometry(geometry* geometry) const;
-
 		bool populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const;
 		void free_shader(shader* shader) const;
 
@@ -56,6 +53,7 @@ namespace egkr
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 
 		void regenerate_render_targets();
+		const auto& get_backend() const { return backend_; }
 	private:
 		renderer_backend::unique_ptr backend_{};
 		uint8_t window_attachment_count{};

@@ -21,22 +21,22 @@ namespace egkr
 		static bool init();
 		static void shutdown();
 
-		static geometry::shared_ptr acquire(uint32_t id);
-		static geometry::shared_ptr acquire(const geometry_properties& properties);
+		static geometry::geometry::shared_ptr acquire(uint32_t id);
+		static geometry::geometry::shared_ptr acquire(const geometry::properties& properties);
 
-		static void release_geometry(const geometry::shared_ptr& geometry);
+		static void release_geometry(const geometry::geometry::shared_ptr& geometry);
 
-		static geometry::shared_ptr get_default();
-		static geometry_properties generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
+		static geometry::geometry::shared_ptr get_default();
+		static geometry::properties generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
 	private:
-		static geometry_properties generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
+		static geometry::properties generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
 
 	private:
 		const renderer_frontend* renderer_context_{};
 		uint32_t max_geometry_count_{};
 
-		geometry::shared_ptr default_geometry_{};
-		egkr::vector<geometry::shared_ptr> registered_geometries_{};
+		geometry::geometry::shared_ptr default_geometry_{};
+		egkr::vector<geometry::geometry::shared_ptr> registered_geometries_{};
 
 
 	};

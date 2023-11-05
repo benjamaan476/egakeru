@@ -1,27 +1,17 @@
 #include "geometry.h"
 
 #include "systems/material_system.h"
-#include "renderer/renderer_frontend.h"
+#include "renderer/renderer_types.h"
 
-namespace egkr
+namespace egkr::geometry
 {
-	geometry::shared_ptr geometry::create(const renderer_frontend* context, const geometry_properties& properties)
+	geometry::shared_ptr geometry::create(const renderer_backend* backend, const properties& properties)
 	{
-		auto geom = std::make_shared<geometry>(properties);
-
-		if (properties.vertex_count)
-		{
-			context->populate_geometry(geom.get(), properties);
-		}
-		else
-		{
-			LOG_WARN("Geometry has no vertex data. Not populating");
-		}
-		return geom;
+		return backend->create_geometry(properties);
 	}
 
-	geometry::geometry(const geometry_properties& properties)
-		: resource(properties.id, properties.generation, properties.name)
+	geometry::geometry(const renderer_backend* backend, const properties& properties)
+		: resource(properties.id, properties.generation, properties.name), backend_{ backend }
 	{
 		if (properties.material_name == default_material_name_)
 		{
@@ -33,11 +23,9 @@ namespace egkr
 		}
 	}
 
-	geometry::~geometry() = default;
-
-	void geometry::destroy(const renderer_frontend* renderer)
+	void geometry::destroy()
 	{
-		renderer->free_geometry(this);
+		free();
 	}
 
 	void geometry::set_material(const material::shared_ptr& material)

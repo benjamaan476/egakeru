@@ -49,7 +49,7 @@ namespace egkr
 		std::chrono::milliseconds frame_time_{16ms};
 
 		egkr::vector<mesh::shared_ptr> meshes_;
-		geometry::shared_ptr test_ui_geometry_{};
+		geometry::geometry::shared_ptr test_ui_geometry_{};
 	};
 
 }

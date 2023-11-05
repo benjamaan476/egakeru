@@ -144,7 +144,7 @@ namespace egkr
 
 		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
 
-		auto geometry_config = (egkr::vector<geometry_properties>*)mesh_resource->data;
+		auto geometry_config = (egkr::vector<geometry::properties>*)mesh_resource->data;
 		transform obj = transform::create({ 0, 0, 0 });
 		obj.set_scale({ 0.1F, 0.1F, 0.1F });
 		obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
@@ -170,7 +170,7 @@ namespace egkr
 
 		std::vector<uint32_t> indices{0, 1, 2, 0, 2, 3};
 
-		geometry_properties ui_properties{};
+		geometry::properties ui_properties{};
 		ui_properties.name = "test_ui";
 		ui_properties.material_name = "ui_material";
 		ui_properties.vertex_count = 4;
@@ -179,7 +179,7 @@ namespace egkr
 		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 		ui_properties.indices = indices;
 
-		test_ui_geometry_ = geometry::create(state_.renderer.get(), ui_properties);
+		test_ui_geometry_ = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
 
 		state_.is_running = true;
 		is_initialised_ = true;
@@ -236,13 +236,7 @@ namespace egkr
 
 	void application::shutdown()
 	{
-		for (auto& mesh : application_->meshes_)
-		{
-			for (auto& geometry : mesh->get_geometries())
-			{
-				geometry_system::release_geometry(geometry);
-			}
-		}
+		application_->meshes_.clear();
 
 		application_->test_ui_geometry_.reset();
 

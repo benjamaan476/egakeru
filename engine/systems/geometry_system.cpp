@@ -33,7 +33,7 @@ namespace egkr
 
 		auto properties = generate_cube(10, 10, 10, 1, 1, "default", "test_material");
 		generate_tangents(properties.vertices, properties.indices);
-		geometry_system_->default_geometry_ = geometry::create(geometry_system_->renderer_context_, properties);
+		geometry_system_->default_geometry_ = geometry::geometry::create(geometry_system_->renderer_context_->get_backend().get(), properties);
 
 		return true;
 	}
@@ -42,41 +42,41 @@ namespace egkr
 	{
 		if (geometry_system_->default_geometry_)
 		{
-			geometry_system_->renderer_context_->free_geometry(geometry_system_->default_geometry_.get());
+			geometry_system_->default_geometry_->free();
 			geometry_system_->default_geometry_.reset();
 		}
 
 		for (auto geometry : geometry_system_->registered_geometries_)
 		{
-			geometry_system_->renderer_context_->free_geometry(geometry.get());
+			geometry->free();
 		}
 		geometry_system_->registered_geometries_.clear();
 
 	}
 
-	geometry::shared_ptr geometry_system::acquire(uint32_t /*id*/)
+	geometry::geometry::shared_ptr geometry_system::acquire(uint32_t /*id*/)
 	{
-		return geometry::shared_ptr();
+		return geometry::geometry::shared_ptr();
 	}
 
-	geometry::shared_ptr geometry_system::acquire(const geometry_properties& properties)
+	geometry::geometry::shared_ptr geometry_system::acquire(const geometry::properties& properties)
 	{
-		return geometry::create(geometry_system_->renderer_context_, properties);
+		return geometry::geometry::create(geometry_system_->renderer_context_->get_backend().get(), properties);
 	}
 
-	void geometry_system::release_geometry(const geometry::shared_ptr& geometry)
+	void geometry_system::release_geometry(const geometry::geometry::shared_ptr& geometry)
 	{
-		geometry_system_->renderer_context_->free_geometry(geometry.get());
+		geometry->free();
 	}
 
-	geometry::shared_ptr geometry_system::get_default()
+	geometry::geometry::shared_ptr geometry_system::get_default()
 	{
 		return geometry_system_->default_geometry_;
 	}
 
-	geometry_properties geometry_system::generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
+	geometry::properties geometry_system::generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
 	{
-		geometry_properties plane_properties{};
+		geometry::properties plane_properties{};
 		plane_properties.name = name;
 		plane_properties.material_name = material_name;
 
@@ -137,9 +137,9 @@ namespace egkr
 
 		return plane_properties;
 	}
-	geometry_properties geometry_system::generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
+	geometry::properties geometry_system::generate_cube(float width, float height, float depth, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name)
 	{
-		geometry_properties properties{};
+		geometry::properties properties{};
 		properties.name = name;
 		properties.material_name = material_name;
 

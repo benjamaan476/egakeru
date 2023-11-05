@@ -2,7 +2,7 @@
 #include "command_buffer.h"
 #include "vulkan_types.h"
 
-namespace egkr
+namespace egkr::renderpass
 {
 	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const renderer_backend* renderer, vulkan_context* context, const egkr::renderpass::configuration& configuration)
 	{

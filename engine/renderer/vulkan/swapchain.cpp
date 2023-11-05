@@ -35,7 +35,7 @@ namespace egkr
 		{
 			if (texture->data)
 			{
-				delete (image*)texture->data;
+				delete (image::image*)texture->data;
 			}
 		}
 		render_textures_.clear();
@@ -218,7 +218,7 @@ namespace egkr
 
 			for (auto i{ 0U }; i < image_count_; ++i)
 			{
-				void* internal_data = malloc(sizeof(image));
+				void* internal_data = malloc(sizeof(image::image));
 				std::string name{ "__internal_vulkan_swapchain_image_0__" };
 				name[34] = '0' + (char)i;
 
@@ -235,7 +235,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image*)render_textures_[i]->data;
+			auto img = (image::image*)render_textures_[i]->data;
 			img->set_image(swapchain_images[i]);
 			img->set_width(extent_.width);
 			img->set_height(extent_.height);
@@ -243,7 +243,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image*)render_textures_[i]->data;
+			auto img = (image::image*)render_textures_[i]->data;
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -268,14 +268,14 @@ namespace egkr
 			LOG_FATAL("No valid depth format found");
 		}
 
-		image_properties depth_image_properties{};
+		image::properties depth_image_properties{};
 		depth_image_properties.image_format = context_->device.depth_format;
 		depth_image_properties.tiling = vk::ImageTiling::eOptimal;
 		depth_image_properties.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
-		auto img = image::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
+		auto img = image::image::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
 
 		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, img);
 		return swapchain_images;

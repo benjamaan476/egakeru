@@ -52,12 +52,12 @@ namespace egkr
 		bool unload(const resource::shared_ptr& resource) override;
 
 	private:
-		egkr::vector<geometry_properties> import_obj(file_handle& file_handle, std::string_view esm_filename);
-		geometry_properties process_subobject(egkr::vector<float3>& positions, const egkr::vector<float3>& normals, const egkr::vector<float2>& tex, egkr::vector<mesh_face_data> faces);
+		egkr::vector<geometry::properties> import_obj(file_handle& file_handle, std::string_view esm_filename);
+		geometry::properties process_subobject(egkr::vector<float3>& positions, const egkr::vector<float3>& normals, const egkr::vector<float2>& tex, egkr::vector<mesh_face_data> faces);
 		bool import_obj_material_library(std::string_view filepath);
 
-		egkr::vector<geometry_properties> load_esm(file_handle& file_handle);
-		bool write_esm(std::string_view path, const egkr::vector<geometry_properties>& properties);
+		egkr::vector<geometry::properties> load_esm(file_handle& file_handle);
+		bool write_esm(std::string_view path, const egkr::vector<geometry::properties>& properties);
 		bool write_emt(std::string_view directory, const material_properties& properties);
 	};
 }

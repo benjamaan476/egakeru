@@ -1,9 +1,9 @@
 #include "image.h"
 #include "vulkan_types.h"
 
-namespace egkr
+namespace egkr::image
 {
-	image::shared_ptr image::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties, bool create_view)
+	shared_ptr image::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const properties& properties, bool create_view)
 	{
 		auto img =  std::make_shared<image>(context, width_, height_, properties);
 
@@ -14,7 +14,7 @@ namespace egkr
 		return img;
 	}
 
-	image* image::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const image_properties& properties, bool create_view)
+	image* image::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const properties& properties, bool create_view)
 	{
 		auto img = new image(context, width, height, properties);
 
@@ -26,7 +26,7 @@ namespace egkr
 		return img;
 	}
 
-	void image::create_view(const image_properties& properties)
+	void image::create_view(const properties& properties)
 	{
 		vk::ImageSubresourceRange subresource{};
 		subresource
@@ -48,7 +48,7 @@ namespace egkr
 
 	}
 
-	image::image(const vulkan_context* context, uint32_t width_, uint32_t height_, const image_properties& properties)
+	image::image(const vulkan_context* context, uint32_t width_, uint32_t height_, const properties& properties)
 		: context_{ context }, width_{width_}, height_{height_}
 	{
 		vk::ImageCreateInfo image_info{};

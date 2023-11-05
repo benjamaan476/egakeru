@@ -242,16 +242,6 @@ return backend_->texture_write_data(texture, offset, size, data);
 		backend_->free_texture(texture);
 	}
 
-	bool renderer_frontend::populate_geometry(geometry* geometry, const geometry_properties& properties) const
-	{
-		return backend_->populate_geometry(geometry, properties);
-	}
-
-	void renderer_frontend::free_geometry(geometry* geometry) const
-	{
-		backend_->free_geometry(geometry);
-	}
-
 	bool renderer_frontend::populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
 	{
 		return backend_->populate_shader(shader, renderpass, stage_filenames, shader_stages);
@@ -300,7 +290,6 @@ return backend_->texture_write_data(texture, offset, size, data);
 	{
 		return backend_->release_texture_map(map);
 	}
-
 
 	bool renderer_frontend::set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const
 	{
