@@ -90,7 +90,7 @@ namespace egkr
 		regenerate_render_targets();
 
 		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
-		auto shader = (shader_properties*)resource->data;
+		auto shader = (shader::properties*)resource->data;
 
 		shader_system::create_shader(*shader);
 
@@ -99,7 +99,7 @@ namespace egkr
 		material_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_MATERIAL);
 
 		auto ui_resource = resource_system::load(BUILTIN_SHADER_NAME_UI, resource_type::shader);
-		auto ui_shader = (shader_properties*)ui_resource->data;
+		auto ui_shader = (shader::properties*)ui_resource->data;
 
 		shader_system::create_shader(*ui_shader);
 
@@ -217,81 +217,81 @@ namespace egkr
 		return backend_->free_material(texture);
 	}
 
-	bool renderer_frontend::populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) const
+	bool renderer_frontend::populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data) const
 	{
 		return backend_->populate_texture(texture, properties, data);
 	}
 
-bool renderer_frontend::populate_writable_texture(texture* texture) const
+bool renderer_frontend::populate_writable_texture(texture::texture* texture) const
 {
 	return backend_->populate_writeable_texture(texture);
 }
 
-bool renderer_frontend::resize_texture(texture* texture, uint32_t width, uint32_t height) const
+bool renderer_frontend::resize_texture(texture::texture* texture, uint32_t width, uint32_t height) const
 {
 	return backend_->resize_texture(texture, width, height);
 }
 
-bool renderer_frontend::texture_write_data(texture * texture, uint64_t offset, uint32_t size, const uint8_t * data) const
+bool renderer_frontend::texture_write_data(texture::texture * texture, uint64_t offset, uint32_t size, const uint8_t * data) const
 {
 return backend_->texture_write_data(texture, offset, size, data);
 }
 
-	void renderer_frontend::free_texture(texture* texture) const
+	void renderer_frontend::free_texture(texture::texture* texture) const
 	{
 		backend_->free_texture(texture);
 	}
 
-	bool renderer_frontend::populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) const
+	bool renderer_frontend::populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) const
 	{
 		return backend_->populate_shader(shader, renderpass, stage_filenames, shader_stages);
 	}
-	void renderer_frontend::free_shader(shader* shader) const
+	void renderer_frontend::free_shader(shader::shader* shader) const
 	{
 		backend_->free_shader(shader);
 	}
 
-	bool renderer_frontend::use_shader(shader* shader) const
+	bool renderer_frontend::use_shader(shader::shader* shader) const
 	{
 		return backend_->use_shader(shader);
 	}
 
-	bool renderer_frontend::bind_shader_globals(shader* shader) const
+	bool renderer_frontend::bind_shader_globals(shader::shader* shader) const
 	{
 		return backend_->bind_shader_globals(shader);
 	}
 
-	bool renderer_frontend::bind_shader_instances(shader* shader, uint32_t instance_id) const
+	bool renderer_frontend::bind_shader_instances(shader::shader* shader, uint32_t instance_id) const
 	{
 		return backend_->bind_shader_instances(shader, instance_id);
 	}
 
-	bool renderer_frontend::apply_shader_globals(shader* shader) const
+	bool renderer_frontend::apply_shader_globals(shader::shader* shader) const
 	{
 		return backend_->apply_shader_globals(shader);
 	}
 
-	bool renderer_frontend::apply_shader_instances(shader* shader, bool needs_update) const
+	bool renderer_frontend::apply_shader_instances(shader::shader* shader, bool needs_update) const
 	{
 		return backend_->apply_shader_instances(shader, needs_update);
 	}
 
-	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) const
+	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) const
 	{
 		return backend_->acquire_shader_isntance_resources(shader, texture_maps);
 	}
 
-	void renderer_frontend::acquire_texture_map(texture_map* map) const
+	void renderer_frontend::acquire_texture_map(texture::texture_map* map) const
 	{
 		return backend_->acquire_texture_map(map);
 	}
 
-	void renderer_frontend::release_texture_map(texture_map* map) const
+	void renderer_frontend::release_texture_map(texture::texture_map* map) const
 	{
 		return backend_->release_texture_map(map);
 	}
 
-	bool renderer_frontend::set_uniform(shader* shader, const shader_uniform& uniform, const void* value) const
+	bool renderer_frontend::set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) const
 	{
 		return backend_->set_uniform(shader, uniform, value);
 	}
@@ -300,7 +300,7 @@ return backend_->texture_write_data(texture, offset, size, data);
 	{
 		return backend_->get_renderpass(renderpass_name);
 	}
-	void renderer_frontend::populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const
+	void renderer_frontend::populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const
 	{
 		backend_->populate_render_target(render_target, attachments, renderpass, width, height);
 	}

@@ -9,7 +9,7 @@ namespace egkr::render_target
 	{
 		using shared_ptr = std::shared_ptr<render_target>;
 		bool sync_to_window_size{};
-		egkr::vector<texture::shared_ptr> attachments{};
+		egkr::vector<texture::texture::shared_ptr> attachments{};
 
 		void* internal_framebuffer;
 };

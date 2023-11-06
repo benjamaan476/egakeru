@@ -50,8 +50,8 @@ namespace egkr
 		vk::Extent2D extent_{};
 		vk::SwapchainKHR swapchain_{};
 
-		egkr::vector<texture::shared_ptr> render_textures_{};
-		texture::shared_ptr depth_attachment_{};
+		egkr::vector<texture::texture::shared_ptr> render_textures_{};
+		texture::texture::shared_ptr depth_attachment_{};
 
 		uint32_t image_count_{};
 		uint8_t max_frames_in_flight_{3};

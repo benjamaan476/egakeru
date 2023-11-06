@@ -11,20 +11,20 @@ namespace egkr
 		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
 	}
 
-	texture::shared_ptr texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
+	texture::texture::shared_ptr texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
 	{
 		uint32_t id{ invalid_32_id };
-		texture_properties properties{};
+		texture::properties properties{};
 		properties.name = name;
 		properties.width = width;
 		properties.height = height;
 		properties.channel_count = channel_count;
-		properties.flags |= has_transparency ? texture_flags::has_transparency : (texture_flags)0;
-		properties.flags |= is_writeable ? texture_flags::is_writable : (texture_flags)0;
-		properties.flags |= texture_flags::is_wrapped;
+		properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
+		properties.flags |= is_writeable ? texture::flags::is_writable : (texture::flags)0;
+		properties.flags |= texture::flags::is_wrapped;
 		properties.data = internal_data;
 
-		auto t = std::shared_ptr<texture>(new texture(texture_system_->renderer_context_, properties));
+		auto t = std::shared_ptr<texture::texture>(new texture::texture(texture_system_->renderer_context_, properties));
 		if (register_texture)
 		{
 			id = texture_system_->registered_textures_.size();
@@ -51,7 +51,7 @@ namespace egkr
 
 	bool texture_system::init()
 	{
-		texture_properties default_texture_properties{};
+		texture::properties default_texture_properties{};
 		default_texture_properties.name = "default_texture";
 		default_texture_properties.width = 32;
 		default_texture_properties.height = 32;
@@ -82,9 +82,9 @@ namespace egkr
 			}
 		}
 
-		texture_system_->default_texture_ = texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
+		texture_system_->default_texture_ = texture::texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
 		{
-			texture_properties default__diffuse_properties{};
+			texture::properties default__diffuse_properties{};
 			default__diffuse_properties.name = default_diffuse_name;
 			default__diffuse_properties.width = 16;
 			default__diffuse_properties.height = 16;
@@ -92,10 +92,10 @@ namespace egkr
 			default__diffuse_properties.flags = {};
 
 			egkr::vector<uint32_t> diffuse_data(default__diffuse_properties.width * default__diffuse_properties.height, 0xFFFFFFFF);
-			texture_system_->default_diffuse_texture_ = texture::create(texture_system_->renderer_context_, default__diffuse_properties, (uint8_t*)diffuse_data.data());
+			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_, default__diffuse_properties, (uint8_t*)diffuse_data.data());
 		}
 
-		texture_properties default_specular_properties{};
+		texture::properties default_specular_properties{};
 		default_specular_properties.name = default_specular_name;
 		default_specular_properties.width = 16;
 		default_specular_properties.height = 16;
@@ -103,9 +103,9 @@ namespace egkr
 		default_specular_properties.flags = {};
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
-		texture_system_->default_specular_texture_ = texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
+		texture_system_->default_specular_texture_ = texture::texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
 		
-		texture_properties default_normal_properties{};
+		texture::properties default_normal_properties{};
 		default_normal_properties.name = default_normal_name;
 		default_normal_properties.width = 16;
 		default_normal_properties.height = 16;
@@ -127,7 +127,7 @@ namespace egkr
 				normal_data[index_bpp + 3] = 255;
 			}
 		}
-		texture_system_->default_normal_texture_ = texture::create(texture_system_->renderer_context_, default_normal_properties, (uint8_t*)normal_data.data());
+		texture_system_->default_normal_texture_ = texture::texture::create(texture_system_->renderer_context_, default_normal_properties, (uint8_t*)normal_data.data());
 		
 		return true;
 	}
@@ -166,11 +166,11 @@ namespace egkr
 		texture_system_->registered_textures_by_name_.clear();
 	}
 
-	void texture_system::resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
+	void texture_system::resize(texture::texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
 	{
 		if (texture)
 		{
-			if ((texture->get_flags() & texture_flags::is_writable) != texture_flags::is_writable)
+			if ((texture->get_flags() & texture::flags::is_writable) != texture::flags::is_writable)
 			{
 				LOG_WARN("Tried to resize a non-writeable texture");
 				return;
@@ -179,7 +179,7 @@ namespace egkr
 			texture->set_width(width);
 			texture->set_height(height);
 
-			if ((texture->get_flags() & texture_flags::is_wrapped) != texture_flags::is_writable && regenerate_internal_data)
+			if ((texture->get_flags() & texture::flags::is_wrapped) != texture::flags::is_wrapped && regenerate_internal_data)
 			{
 				texture_system_->renderer_context_->resize_texture(texture, width, height);
 				return;
@@ -190,7 +190,7 @@ namespace egkr
 	}
 
 
-	texture::shared_ptr texture_system::acquire(std::string_view texture_name)
+	texture::texture::shared_ptr texture_system::acquire(std::string_view texture_name)
 	{
 		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
 		{
@@ -240,7 +240,7 @@ namespace egkr
 		return new_texture;
 	}
 
-	texture::shared_ptr texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
+	texture::texture::shared_ptr texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
 	{
 		if (texture_system_->registered_textures_by_name_.contains(name.data()))
 		{
@@ -251,8 +251,8 @@ namespace egkr
 			texture->set_height(height);
 			texture->set_channel_count(channel_count);
 
-			auto flags = texture_flags::is_writable;
-			flags |= has_transparency ? texture_flags::has_transparency : (texture_flags)0;
+			auto flags = texture::flags::is_writable;
+			flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
 			texture->set_flags(flags);
 
 			texture_system_->renderer_context_->populate_writable_texture(texture.get());
@@ -271,28 +271,28 @@ namespace egkr
 		LOG_WARN("Tried to release and unregistered texture.");
 	}
 
-	texture::shared_ptr texture_system::get_default_texture()
+	texture::texture::shared_ptr texture_system::get_default_texture()
 	{
 		return texture_system_->default_texture_;
 	}
 
-	texture::shared_ptr texture_system::get_default_diffuse_texture()
+	texture::texture::shared_ptr texture_system::get_default_diffuse_texture()
 	{
 		return texture_system_->default_diffuse_texture_;
 	}
 
-	texture::shared_ptr texture_system::get_default_specular_texture()
+	texture::texture::shared_ptr texture_system::get_default_specular_texture()
 	{
 		return texture_system_->default_specular_texture_;
 	}
 
-	texture::shared_ptr texture_system::get_default_normal_texture()
+	texture::texture::shared_ptr texture_system::get_default_normal_texture()
 	{
 		return texture_system_->default_normal_texture_;
 	}
 
 
-	texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
+	texture::texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
 	{
 		auto image = resource_system::load(filename, resource_type::image);
 
@@ -300,10 +300,10 @@ namespace egkr
 		{
 			return nullptr;
 		}
-		auto properties = (texture_properties*)image->data;
+		auto properties = (texture::properties*)image->data;
 
 		properties->id = id;
-		auto temp_texture = texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);
+		auto temp_texture = texture::texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);
 
 		resource_system::unload(std::move(image));
 		return temp_texture;

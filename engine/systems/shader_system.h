@@ -26,10 +26,10 @@ namespace egkr
 
 		static bool init();
 		static bool shutdown();
-		static shader::shared_ptr create_shader(const shader_properties& properties);
+		static shader::shader::shared_ptr create_shader(const shader::properties& properties);
 		static uint32_t get_shader_id(const std::string& shader_name);
-		static shader::shared_ptr get_shader(const std::string&  shader_name);
-		static shader::shared_ptr get_shader(uint32_t shader_id);
+		static shader::shader::shared_ptr get_shader(const std::string&  shader_name);
+		static shader::shader::shared_ptr get_shader(uint32_t shader_id);
 
 
 		static bool use(const std::string& shader_name);
@@ -40,8 +40,8 @@ namespace egkr
 
 		static void set_uniform(std::string_view uniform_name, const void* data);
 		static void set_uniform(uint32_t instance_id, const void* data);
-		static void set_sampler(std::string_view sampler_name, const texture::shared_ptr& texture);
-		static void set_sampler(uint32_t sampler_id, const texture::shared_ptr& texture);
+		static void set_sampler(std::string_view sampler_name, const texture::texture::shared_ptr& texture);
+		static void set_sampler(uint32_t sampler_id, const texture::texture::shared_ptr& texture);
 
 		static void bind_instance(uint32_t isntance_id);
 
@@ -52,7 +52,7 @@ namespace egkr
 		shader_system_configuration configuration_{};
 
 		std::unordered_map<std::string, uint32_t> shader_id_by_name_{};
-		egkr::vector<shader::shared_ptr> shaders_{};
+		egkr::vector<shader::shader::shared_ptr> shaders_{};
 		uint32_t current_shader_id_{invalid_32_id};
 	};
 }

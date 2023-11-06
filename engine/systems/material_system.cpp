@@ -215,7 +215,7 @@ namespace egkr
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
 		material_system_->default_material_ = material::create(material_system_->renderer_, properties);
-		egkr::vector<texture_map*> texture_maps{&material_system_->default_material_->get_diffuse_map(), &material_system_->default_material_->get_specular_map(), &material_system_->default_material_->get_normal_map()};
+		egkr::vector<texture::texture_map*> texture_maps{&material_system_->default_material_->get_diffuse_map(), &material_system_->default_material_->get_specular_map(), &material_system_->default_material_->get_normal_map()};
 
 		for (auto map : texture_maps)
 		{
@@ -230,12 +230,12 @@ namespace egkr
 
 	bool material_system::load_material(const material_properties& properties, material::shared_ptr& material)
 	{
-		texture_map diffuse_map{};
-		diffuse_map.minify = texture_filter::linear;
-		diffuse_map.magnify = texture_filter::linear;
-		diffuse_map.repeat_u = texture_repeat::repeat;
-		diffuse_map.repeat_v = texture_repeat::repeat;
-		diffuse_map.repeat_w = texture_repeat::repeat;
+		texture::texture_map diffuse_map{};
+		diffuse_map.minify = texture::filter::linear;
+		diffuse_map.magnify = texture::filter::linear;
+		diffuse_map.repeat_u = texture::repeat::repeat;
+		diffuse_map.repeat_v = texture::repeat::repeat;
+		diffuse_map.repeat_w = texture::repeat::repeat;
 
 		//TODO return success
 		material_system_->renderer_->acquire_texture_map(&diffuse_map);
@@ -248,12 +248,12 @@ namespace egkr
 			diffuse_map.texture = texture_system::get_default_texture();
 		}
 
-		texture_map specular_map{};
-		specular_map.minify = texture_filter::linear;
-		specular_map.magnify = texture_filter::linear;
-		specular_map.repeat_u = texture_repeat::repeat;
-		specular_map.repeat_v = texture_repeat::repeat;
-		specular_map.repeat_w = texture_repeat::repeat;
+		texture::texture_map specular_map{};
+		specular_map.minify = texture::filter::linear;
+		specular_map.magnify = texture::filter::linear;
+		specular_map.repeat_u = texture::repeat::repeat;
+		specular_map.repeat_v = texture::repeat::repeat;
+		specular_map.repeat_w = texture::repeat::repeat;
 		material_system_->renderer_->acquire_texture_map(&specular_map);
 
 
@@ -264,12 +264,12 @@ namespace egkr
 			specular_map.texture = texture_system::get_default_specular_texture();
 		}
 
-		texture_map normal_map{};
-		normal_map.minify = texture_filter::linear;
-		normal_map.magnify = texture_filter::linear;
-		normal_map.repeat_u = texture_repeat::repeat;
-		normal_map.repeat_v = texture_repeat::repeat;
-		normal_map.repeat_w = texture_repeat::repeat;
+		texture::texture_map normal_map{};
+		normal_map.minify = texture::filter::linear;
+		normal_map.magnify = texture::filter::linear;
+		normal_map.repeat_u = texture::repeat::repeat;
+		normal_map.repeat_v = texture::repeat::repeat;
+		normal_map.repeat_w = texture::repeat::repeat;
 		material_system_->renderer_->acquire_texture_map(&normal_map);
 
 		normal_map.texture = texture_system::acquire(properties.normal_map_name);
@@ -279,7 +279,7 @@ namespace egkr
 			normal_map.texture = texture_system::get_default_normal_texture();
 		}
 
-		egkr::vector<texture_map*> maps{&diffuse_map, & specular_map, & normal_map};
+		egkr::vector<texture::texture_map*> maps{&diffuse_map, & specular_map, & normal_map};
 		auto shader = shader_system::get_shader(properties.shader_name);
 		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get(), maps);
 

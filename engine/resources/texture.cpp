@@ -2,9 +2,9 @@
 
 #include "renderer/renderer_frontend.h"
 
-namespace egkr
+namespace egkr::texture
 {
-	texture::shared_ptr texture::create(const renderer_frontend* context, const texture_properties& properties, const uint8_t* data)
+	texture::shared_ptr texture::create(const renderer_frontend* context, const properties& properties, const uint8_t* data)
 	{
 		auto tex = std::make_shared<texture>(context, properties);
 		context->populate_texture(tex.get(), properties, data);
@@ -12,7 +12,7 @@ namespace egkr
 		return tex;
 	}
 
-	texture::texture(const renderer_frontend* renderer, const texture_properties& properties)
+	texture::texture(const renderer_frontend* renderer, const properties& properties)
 		: resource(properties.id, properties.generation, properties.name), renderer_{ renderer }, properties_{ properties }
 	{
 		data = (void*)properties.data;

@@ -28,32 +28,32 @@ namespace egkr
 
 		void free_material(material* texture) const override;
 
-		bool populate_texture(texture* texture, const texture_properties& properties, const uint8_t* data) override;
-		bool populate_writeable_texture(texture* texture) override;
-		bool resize_texture(texture* texture, uint32_t width, uint32_t height) override;
-		bool texture_write_data(texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) override;
-		void free_texture(texture* texture) const override;
+		bool populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data) override;
+		bool populate_writeable_texture(texture::texture* texture) override;
+		bool resize_texture(texture::texture* texture, uint32_t width, uint32_t height) override;
+		bool texture_write_data(texture::texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) override;
+		void free_texture(texture::texture* texture) const override;
 
-		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
+		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
 		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) override;
 
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 
-		bool populate_shader(shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader_stages>& shader_stages) override;
-		void free_shader(shader* shader) override;
+		bool populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) override;
+		void free_shader(shader::shader* shader) override;
 
-		bool use_shader(shader* shader) override;
-		bool bind_shader_globals(shader* shader) override;
-		bool bind_shader_instances(shader* shader, uint32_t instance_id) override;
-		bool apply_shader_globals(shader* shader) override;
-		bool apply_shader_instances(shader* shader, bool needs_update) override;
-		uint32_t acquire_shader_isntance_resources(shader* shader, const egkr::vector<texture_map*>& texture_maps) override;
-		void acquire_texture_map(texture_map* map) override;
-		void release_texture_map(texture_map* map) const override;
+		bool use_shader(shader::shader* shader) override;
+		bool bind_shader_globals(shader::shader* shader) override;
+		bool bind_shader_instances(shader::shader* shader, uint32_t instance_id) override;
+		bool apply_shader_globals(shader::shader* shader) override;
+		bool apply_shader_instances(shader::shader* shader, bool needs_update) override;
+		uint32_t acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) override;
+		void acquire_texture_map(texture::texture_map* map) override;
+		void release_texture_map(texture::texture_map* map) const override;
 
-		bool set_uniform(shader* shader, const shader_uniform& uniform, const void* value) override;
-		texture::shared_ptr get_window_attachment(uint8_t index)override;
-		texture::shared_ptr get_depth_attachment()override;
+		bool set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) override;
+		texture::texture::shared_ptr get_window_attachment(uint8_t index)override;
+		texture::texture::shared_ptr get_depth_attachment()override;
 		uint8_t get_window_index()override;
 		renderpass::renderpass* get_renderpass(std::string_view name) override;
 	private:
@@ -71,7 +71,7 @@ namespace egkr
 
 		bool recreate_swapchain();
 
-		vulkan_shader_stage create_module(shader* shader, const vulkan_shader_stage_configuration& configuration);
+		shader::vulkan_stage create_module(shader::shader* shader, const shader::vulkan_stage_configuration& configuration);
 
 	private:
 		vulkan_context context_{};

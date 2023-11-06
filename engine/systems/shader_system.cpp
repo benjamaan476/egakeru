@@ -42,11 +42,11 @@ namespace egkr
 		return true;
 	}
 
-	shader::shared_ptr shader_system::create_shader(const shader_properties& properties)
+	shader::shader::shared_ptr shader_system::create_shader(const shader::properties& properties)
 	{
 		uint32_t id = new_shader_id();
 
-		auto shader = shader::create(shader_system_->renderer_context_, properties);
+		auto shader = shader::shader::create(shader_system_->renderer_context_, properties);
 		shader->set_id(id);
 
 		shader_system_->shaders_.push_back(shader);
@@ -66,7 +66,7 @@ namespace egkr
 		return invalid_32_id;
 	}
 
-	shader::shared_ptr shader_system::get_shader(const std::string& shader_name)
+	shader::shader::shared_ptr shader_system::get_shader(const std::string& shader_name)
 	{
 		if (auto id = get_shader_id(shader_name); id != invalid_32_id)
 		{
@@ -77,7 +77,7 @@ namespace egkr
 		return nullptr;
 	}
 
-	shader::shared_ptr shader_system::get_shader(uint32_t shader_id)
+	shader::shader::shared_ptr shader_system::get_shader(uint32_t shader_id)
 	{
 		if (shader_id > shader_system_->configuration_.max_shader_count)
 		{
@@ -138,11 +138,11 @@ namespace egkr
 
 		if (uniform.scope != shader->get_bound_scope())
 		{
-			if (uniform.scope == shader_scope::global)
+			if (uniform.scope == shader::scope::global)
 			{
 				shader_system_->renderer_context_->bind_shader_globals(shader.get());
 			}
-			else if (uniform.scope == shader_scope::instance)
+			else if (uniform.scope == shader::scope::instance)
 			{
 				shader_system_->renderer_context_->bind_shader_instances(shader.get(), shader->get_bound_instance_id());
 			}
@@ -152,12 +152,12 @@ namespace egkr
 		shader_system_->renderer_context_->set_uniform(shader.get(), uniform, data);
 	}
 
-	void shader_system::set_sampler(std::string_view sampler_name, const texture::shared_ptr& texture)
+	void shader_system::set_sampler(std::string_view sampler_name, const texture::texture::shared_ptr& texture)
 	{
 		set_uniform(sampler_name, texture.get());
 	}
 
-	void shader_system::set_sampler(uint32_t sampler_id, const texture::shared_ptr& texture)
+	void shader_system::set_sampler(uint32_t sampler_id, const texture::texture::shared_ptr& texture)
 	{
 		set_uniform(sampler_id, texture.get());
 	}

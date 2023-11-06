@@ -42,35 +42,17 @@ namespace egkr
 
 			void destroy();
 
-			const auto& get_view() const
-			{
-				return view_;
-			}
+			const auto& get_view() const { return view_; }
 
 			void transition_layout(command_buffer command_buffer, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
 			void copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer);
 
-			[[nodiscard]] const auto& get_image() const
-			{
-				return image_;
-			}
-			void set_image(vk::Image image)
-			{
-				image_ = image;
-			}
+			[[nodiscard]] const auto& get_image() const { return image_; }
+			void set_image(vk::Image image) { image_ = image; }
 
-			void set_view(vk::ImageView view)
-			{
-				view_ = view;
-			}
-			void set_width(uint32_t width)
-			{
-				width_ = width;
-			}
-			void set_height(uint32_t height)
-			{
-				height_ = height;
-			}
+			void set_view(vk::ImageView view) { view_ = view; }
+			void set_width(uint32_t width) { width_ = width; }
+			void set_height(uint32_t height) { height_ = height; }
 
 		private:
 			const vulkan_context* context_{};

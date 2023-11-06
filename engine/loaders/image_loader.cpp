@@ -57,7 +57,7 @@ namespace egkr
 
 		if (image_data)
 		{
-			texture_properties properties{};
+			texture::properties properties{};
 			properties.channel_count = required_channels;
 			properties.width = width;
 			properties.height = height;
@@ -73,7 +73,7 @@ namespace egkr
 
 					if (image_data[index + 3] < 255)
 					{
-						properties.flags |= texture_flags::has_transparency;
+						properties.flags |= texture::flags::has_transparency;
 						break;
 					}
 				}
@@ -85,8 +85,8 @@ namespace egkr
 			image_properties.full_path = buff;
 
 			// Deleted by unload
-			image_properties.data = new(texture_properties);
-			*(texture_properties*)(image_properties.data) = properties;
+			image_properties.data = new(texture::properties);
+			*(texture::properties*)(image_properties.data) = properties;
 
 			return std::make_shared<resource>(image_properties);
 			//return resource::create(image_properties);
@@ -104,7 +104,7 @@ namespace egkr
 
 	bool egkr::image_loader::unload(const resource::shared_ptr& resource)
 	{
-		auto* data = (texture_properties*)resource->data;
+		auto* data = (texture::properties*)resource->data;
 		delete data;
 
 		return true;

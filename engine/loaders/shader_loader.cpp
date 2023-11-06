@@ -30,21 +30,21 @@ namespace egkr
 		resource_properties.name = name;
 		resource_properties.full_path = filename;
 
-		resource_properties.data = new shader_properties();
-		*(shader_properties*)resource_properties.data = properties;
+		resource_properties.data = new shader::properties();
+		*(shader::properties*)resource_properties.data = properties;
 
 		return std::make_shared<resource>(resource_properties);
 	}
 
 	bool shader_loader::unload(const resource::shared_ptr& resource)
 	{
-		delete (shader_properties*)resource->data;
+		delete (shader::properties*)resource->data;
 		return true;
 	}
 
-	shader_properties shader_loader::load_configuration_file(std::string_view path)
+	shader::properties shader_loader::load_configuration_file(std::string_view path)
 	{
-		shader_properties properties{};
+		shader::properties properties{};
 
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
@@ -98,22 +98,22 @@ namespace egkr
 				while (offset != std::string::npos)
 				{
 					stage = value.substr(0, offset);
-					shader_stages shader_stage;
+					shader::stages shader_stage;
 					if (stage == "frag" || stage == "fragment")
 					{
-						shader_stage = shader_stages::fragment;
+						shader_stage = shader::stages::fragment;
 					}
 					else if (stage == "vert" || stage == "vertex")
 					{
-						shader_stage = shader_stages::vertex;
+						shader_stage = shader::stages::vertex;
 					}
 					else if (stage == "geom" || stage == "geometry")
 					{
-						shader_stage = shader_stages::geometry;
+						shader_stage = shader::stages::geometry;
 					}
 					else if (stage == "compute")
 					{
-						shader_stage = shader_stages::compute;
+						shader_stage = shader::stages::compute;
 					}
 					else
 					{
@@ -126,22 +126,22 @@ namespace egkr
 				}
 
 				stage = value.substr(0, offset);
-				shader_stages shader_stage;
+				shader::stages shader_stage;
 				if (stage == "frag" || strcmp(stage.data(),"fragment") == 0)
 				{
-					shader_stage = shader_stages::fragment;
+					shader_stage = shader::stages::fragment;
 				}
 				else if (stage == "vert" || stage == "vertex")
 				{
-					shader_stage = shader_stages::vertex;
+					shader_stage = shader::stages::vertex;
 				}
 				else if (stage == "geom" || stage == "geometry")
 				{
-					shader_stage = shader_stages::geometry;
+					shader_stage = shader::stages::geometry;
 				}
 				else if (stage == "compute")
 				{
-					shader_stage = shader_stages::compute;
+					shader_stage = shader::stages::compute;
 				}
 				else
 				{
@@ -194,56 +194,56 @@ namespace egkr
 					auto type = value.substr(0, offset);
 					auto name = value.substr(offset + 1);
 
-					attribute_configuration attribute{};
+					shader::attribute_configuration attribute{};
 
 					if (type == "f32")
 					{
-						attribute.type = shader_attribute_type::float32_1;
+						attribute.type = shader::attribute_type::float32_1;
 						attribute.size = 4;
 					}
 					else if (type == "vec2")
 					{
-						attribute.type = shader_attribute_type::float32_2;
+						attribute.type = shader::attribute_type::float32_2;
 						attribute.size = 8;
 					}
 					else if (type == "vec3")
 					{
-						attribute.type = shader_attribute_type::float32_3;
+						attribute.type = shader::attribute_type::float32_3;
 						attribute.size = 12;
 					}
 					else if (type == "vec4")
 					{
-						attribute.type = shader_attribute_type::float32_4;
+						attribute.type = shader::attribute_type::float32_4;
 						attribute.size = 16;
 					}
 					else if (type == "u8")
 					{
-						attribute.type = shader_attribute_type::uint8;
+						attribute.type = shader::attribute_type::uint8;
 						attribute.size = 1;
 					}
 					else if (type == "u16")
 					{
-						attribute.type = shader_attribute_type::uint16;
+						attribute.type = shader::attribute_type::uint16;
 						attribute.size = 2;
 					}
 					else if (type == "u32")
 					{
-						attribute.type = shader_attribute_type::uint32;
+						attribute.type = shader::attribute_type::uint32;
 						attribute.size = 4;
 					}
 					else if (type == "i8")
 					{
-						attribute.type = shader_attribute_type::int8;
+						attribute.type = shader::attribute_type::int8;
 						attribute.size = 1;
 					}
 					else if (type == "i16")
 					{
-						attribute.type = shader_attribute_type::int16;
+						attribute.type = shader::attribute_type::int16;
 						attribute.size = 2;
 					}
 					else if (type == "i32")
 					{
-						attribute.type = shader_attribute_type::uint32;
+						attribute.type = shader::attribute_type::uint32;
 						attribute.size = 4;
 					}
 					else
@@ -271,66 +271,66 @@ namespace egkr
 					auto scope = value.substr(0, offset2);
 					auto name = value.substr(offset2 + 1);
 
-					uniform_configuration uniform{};
+					shader::uniform_configuration uniform{};
 
 					if (type == "f32")
 					{
-						uniform.type = shader_uniform_type::float32_1;
+						uniform.type = shader::uniform_type::float32_1;
 						uniform.size = 4;
 					}
 					else if (type == "vec2")
 					{
-						uniform.type = shader_uniform_type::float32_2;
+						uniform.type = shader::uniform_type::float32_2;
 						uniform.size = 8;
 					}
 					else if (type == "vec3")
 					{
-						uniform.type = shader_uniform_type::float32_3;
+						uniform.type = shader::uniform_type::float32_3;
 						uniform.size = 12;
 					}
 					else if (type == "vec4")
 					{
-						uniform.type = shader_uniform_type::float32_4;
+						uniform.type = shader::uniform_type::float32_4;
 						uniform.size = 16;
 					}
 					else if (type == "u8")
 					{
-						uniform.type = shader_uniform_type::uint8;
+						uniform.type = shader::uniform_type::uint8;
 						uniform.size = 1;
 					}
 					else if (type == "u16")
 					{
-						uniform.type = shader_uniform_type::uint16;
+						uniform.type = shader::uniform_type::uint16;
 						uniform.size = 2;
 					}
 					else if (type == "u32")
 					{
-						uniform.type = shader_uniform_type::uint32;
+						uniform.type = shader::uniform_type::uint32;
 						uniform.size = 4;
 					}
 					else if (type == "i8")
 					{
-						uniform.type = shader_uniform_type::int8;
+						uniform.type = shader::uniform_type::int8;
 						uniform.size = 1;
 					}
 					else if (type == "i16")
 					{
-						uniform.type = shader_uniform_type::int16;
+						uniform.type = shader::uniform_type::int16;
 						uniform.size = 2;
 					}
 					else if (type == "i32")
 					{
-						uniform.type = shader_uniform_type::uint32;
+						uniform.type = shader::uniform_type::uint32;
 						uniform.size = 4;
 					}
 					else if (type == "mat4")
 					{
-						uniform.type = shader_uniform_type::mat4x4;
+						uniform.type = shader::uniform_type::mat4x4;
 						uniform.size = 64;
 					}
 					else if (type == "samp")
 					{
-						uniform.type = shader_uniform_type::sampler;
+						uniform.type = shader::uniform_type::sampler;
 						uniform.size = 0;
 					}
 					else
@@ -340,15 +340,15 @@ namespace egkr
 
 					if (scope == "0")
 					{
-						uniform.scope = shader_scope::global;
+						uniform.scope = shader::scope::global;
 					}
 					else if (scope == "1")
 					{
-						uniform.scope = shader_scope::instance;
+						uniform.scope = shader::scope::instance;
 					}
 					else if (scope == "2")
 					{
-						uniform.scope = shader_scope::local;
+						uniform.scope = shader::scope::local;
 					}
 					else
 					{

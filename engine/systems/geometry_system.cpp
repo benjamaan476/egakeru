@@ -30,7 +30,6 @@ namespace egkr
 
 		geometry_system_->registered_geometries_.reserve(geometry_system_->max_geometry_count_);
 		
-
 		auto properties = generate_cube(10, 10, 10, 1, 1, "default", "test_material");
 		generate_tangents(properties.vertices, properties.indices);
 		geometry_system_->default_geometry_ = geometry::geometry::create(geometry_system_->renderer_context_->get_backend().get(), properties);

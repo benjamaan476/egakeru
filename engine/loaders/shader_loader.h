@@ -18,6 +18,6 @@ namespace egkr
 		bool unload(const resource::shared_ptr& resource) override;
 
 	private:
-		shader_properties load_configuration_file(std::string_view path);
+		shader::properties load_configuration_file(std::string_view path);
 	};
 }

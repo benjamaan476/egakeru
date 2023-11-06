@@ -2,9 +2,9 @@
 
 #include "systems/texture_system.h"
 
-namespace egkr
+namespace egkr::shader
 {
-	shader::shared_ptr egkr::shader::create(const renderer_frontend* renderer_context, const shader_properties& properties)
+	shader::shared_ptr shader::create(const renderer_frontend* renderer_context, const properties& properties)
 	{
 		auto shade = std::make_shared<shader>(renderer_context, properties);
 
@@ -13,11 +13,11 @@ namespace egkr
 		return shade;
 	}
 
-	shader::shader(const renderer_frontend* renderer_context, const shader_properties& properties)
+	shader::shader(const renderer_frontend* renderer_context, const properties& properties)
 		: resource(0, 0, properties.name), use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
 	{
 		//TODO make backend renderer shader
-		state_ = shader_state::uninitialised;
+		state_ = state::uninitialised;
 		for (const auto& attribute : properties.attributes)
 		{
 			add_attribute(attribute);
@@ -25,7 +25,7 @@ namespace egkr
 
 		for (const auto& uniform : properties.uniforms)
 		{
-			if (uniform.type == shader_uniform_type::sampler)
+			if (uniform.type == uniform_type::sampler)
 			{
 				add_sampler(uniform);
 			}
@@ -34,7 +34,7 @@ namespace egkr
 				add_uniform(uniform);
 			}
 		}
-		state_ = shader_state::initialised;
+		state_ = state::initialised;
 	}
 
 	uint32_t shader::get_uniform_index(std::string_view uniform_name)
@@ -47,13 +47,13 @@ namespace egkr
 		return invalid_32_id;
 	}
 
-	const shader_uniform& shader::get_uniform(uint32_t index)
+	const uniform& shader::get_uniform(uint32_t index)
 	{
 		return uniforms_[index];
 	}
 
 
-	void shader::set_bound_scope(shader_scope scope)
+	void shader::set_bound_scope(scope scope)
 	{
 		bound_scope_ = scope;
 	}
@@ -68,7 +68,7 @@ namespace egkr
 		uint32_t size = 0;
 		switch (configuration.type)
 		{
-			using enum shader_attribute_type;
+			using enum attribute_type;
 		case int8:
 		case uint8:
 			size = 1;
@@ -106,13 +106,13 @@ namespace egkr
 
 	bool shader::add_sampler(const uniform_configuration& configuration)
 	{
-		if (configuration.scope == shader_scope::instance && !use_instances_)
+		if (configuration.scope == scope::instance && !use_instances_)
 		{
 			LOG_ERROR("Sampler scope set it isntance but shader does not support instances");
 			return false;
 		}
 
-		if (configuration.scope == shader_scope::local)
+		if (configuration.scope == scope::local)
 		{
 			LOG_ERROR("Shaders do not support samplers at local scope");
 			return false;
@@ -125,14 +125,14 @@ namespace egkr
 
 		uint32_t location = 0;
 
-		if (configuration.scope == shader_scope::global)
+		if (configuration.scope == scope::global)
 		{
-			auto default_map = std::make_shared<texture_map>();
-			default_map->minify = texture_filter::linear;
-			default_map->magnify = texture_filter::linear;
-			default_map->repeat_u = texture_repeat::repeat;
-			default_map->repeat_v = texture_repeat::repeat;
-			default_map->repeat_w = texture_repeat::repeat;
+			auto default_map = std::make_shared<texture::texture_map>();
+			default_map->minify = texture::filter::linear;
+			default_map->magnify = texture::filter::linear;
+			default_map->repeat_u = texture::repeat::repeat;
+			default_map->repeat_v = texture::repeat::repeat;
+			default_map->repeat_w = texture::repeat::repeat;
 
 
 			renderer_context_->acquire_texture_map(default_map.get());
@@ -162,17 +162,17 @@ namespace egkr
 		return true;
 	}
 
-	void shader::add_uniform(std::string_view uniform_name, uint32_t size, shader_uniform_type type, shader_scope scope, uint32_t set_location, bool is_sampler)
+	void shader::add_uniform(std::string_view uniform_name, uint32_t size, uniform_type type, scope scope, uint32_t set_location, bool is_sampler)
 	{
-		shader_uniform uniform{};
+		uniform uniform{};
 		uniform.index = uniforms_.size();
 		uniform.scope = scope;
 		uniform.type = type;
 		
-		bool is_global = scope == shader_scope::global;
+		bool is_global = scope == scope::global;
 		uniform.location = is_sampler ? set_location : uniform.index;
 
-		if (scope != shader_scope::local)
+		if (scope != scope::local)
 		{
 			uniform.set_index = (uint8_t)scope;
 			uniform.offset = is_sampler ? 0 : is_global ? global_ubo_size_ : ubo_size_;
@@ -180,7 +180,7 @@ namespace egkr
 		}
 		else
 		{
-			if (scope == shader_scope::local && !use_locals_)
+			if (scope == scope::local && !use_locals_)
 			{
 				LOG_ERROR("Local scope not supported by this shader");
 				return;
@@ -198,11 +198,11 @@ namespace egkr
 
 		if (!is_sampler)
 		{
-			if (scope == shader_scope::global)
+			if (scope == scope::global)
 			{
 				global_ubo_size_ += uniform.size;
 			}
-			else if (scope == shader_scope::instance)
+			else if (scope == scope::instance)
 			{
 				ubo_size_ += uniform.size;
 			}
@@ -221,15 +221,15 @@ namespace egkr
 
 	bool shader::is_uniform_add_state_valid()
 	{
-		if (state_ != shader_state::uninitialised)
+		if (state_ != state::uninitialised)
 		{
 			return false;
 		}
 		return true;
 	}
 
-	void shader::set_global_texture(uint32_t index, texture_map* map)
+	void shader::set_global_texture(uint32_t index, texture::texture_map* map)
 	{
-		global_textures_[index] = std::shared_ptr<texture_map>(map);
+		global_textures_[index] = std::shared_ptr<texture::texture_map>(map);
 	}
 }
