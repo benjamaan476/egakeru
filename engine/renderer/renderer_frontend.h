@@ -25,12 +25,6 @@ namespace egkr
 
 		void free_material(material* texture) const;
 
-		bool populate_writable_texture(texture::texture* texture) const;
-		bool populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data) const;
-		bool resize_texture(texture::texture* texture, uint32_t width, uint32_t height) const ;
-		bool texture_write_data(texture::texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) const;
-		void free_texture(texture::texture* texture) const;
-
 		bool populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) const;
 		void free_shader(shader::shader* shader) const;
 

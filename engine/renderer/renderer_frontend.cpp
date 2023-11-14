@@ -16,12 +16,13 @@ namespace egkr
 	{
 		for (auto i{ 0U }; i < window_attachment_count; ++i)
 		{
-			backend_->free_render_target(&world_render_targets_[i], false);
-			backend_->free_render_target(&ui_render_targets_[i], false);
+			auto& world = world_render_targets_[i];
+			backend_->free_render_target(&world, true);
+			backend_->free_render_target(&ui_render_targets_[i], true);
 			auto colour = backend_->get_window_attachment(i);
 			auto depth = backend_->get_depth_attachment();
 
-			backend_->populate_render_target(&world_render_targets_[i], { colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
+			backend_->populate_render_target(&world, { colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
 			backend_->populate_render_target(&ui_render_targets_[i], { colour }, ui_renderpass_, framebuffer_width_, framebuffer_height_);
 		}
 
@@ -116,6 +117,14 @@ namespace egkr
 		for (auto& target : world_renderpass_->get_render_targets())
 		{
 			backend_->free_render_target(target.get(), true);
+		}
+		for (auto& target : world_render_targets_)
+		{
+			backend_->free_render_target(&target, true);
+		}
+		for (auto& target : ui_render_targets_)
+		{
+			backend_->free_render_target(&target, true);
 		}
 		for (auto& target : ui_renderpass_->get_render_targets())
 		{
@@ -215,31 +224,6 @@ namespace egkr
 	void renderer_frontend::free_material(material* texture) const
 	{
 		return backend_->free_material(texture);
-	}
-
-	bool renderer_frontend::populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data) const
-	{
-		return backend_->populate_texture(texture, properties, data);
-	}
-
-bool renderer_frontend::populate_writable_texture(texture::texture* texture) const
-{
-	return backend_->populate_writeable_texture(texture);
-}
-
-bool renderer_frontend::resize_texture(texture::texture* texture, uint32_t width, uint32_t height) const
-{
-	return backend_->resize_texture(texture, width, height);
-}
-
-bool renderer_frontend::texture_write_data(texture::texture * texture, uint64_t offset, uint32_t size, const uint8_t * data) const
-{
-return backend_->texture_write_data(texture, offset, size, data);
-}
-
-	void renderer_frontend::free_texture(texture::texture* texture) const
-	{
-		backend_->free_texture(texture);
 	}
 
 	bool renderer_frontend::populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) const

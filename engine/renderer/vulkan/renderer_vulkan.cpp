@@ -45,22 +45,6 @@ namespace egkr
 			return vk::Filter::eNearest;
 		}
 	}
-	
-	vk::Format channel_count_to_format(uint8_t channel_count, vk::Format default_format) 
-	{
-    switch (channel_count) {
-        case 1:
-            return vk::Format::eR8Unorm;
-        case 2:
-            return vk::Format::eR8G8Unorm;
-        case 3:
-            return vk::Format::eR8G8B8Unorm;
-        case 4:
-            return vk::Format::eR8G8B8A8Unorm;
-        default:
-            return default_format;
-    }
-}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -875,7 +859,6 @@ namespace egkr
 			context_.on_render_target_refresh_required();
 		}
 
-
 		create_command_buffers();
 		context_.recreating_swapchain = false;
 		return true;
@@ -888,104 +871,11 @@ namespace egkr
 		release_texture_map(&material->get_normal_map());
 	}
 
-	bool renderer_vulkan::populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data)
+	texture::texture::shared_ptr renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
 	{
-		//if (data)
-		{
-			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
-
-			auto image_format = vk::Format::eR8G8B8A8Unorm;
-
-			image::properties image_properties{};
-			image_properties.tiling = vk::ImageTiling::eOptimal;
-			image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-			image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-			image_properties.image_format = image_format;
-			image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
-
-			auto state = image::image::create(&context_, properties.width, properties.height, image_properties, true);
-
-			texture->data = malloc(sizeof(image::image));
-			*(image::image*)texture->data = *state.get();
-			if (data)
-			{
-				texture_write_data(texture, 0, image_size, data);
-			}
-			texture->increment_generation();
-
-			return true;
-		}
-		return false;
-	}
-
-	bool renderer_vulkan::populate_writeable_texture(texture::texture* texture)
-	{
-		texture->data = malloc(sizeof(image::image));
-		auto img = (image::image*)texture->data;
-
-		image::properties properties{};
-		properties.tiling = vk::ImageTiling::eOptimal;
-		properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-		properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
-		properties.image_format = channel_count_to_format(texture->get_channel_count(), vk::Format::eR8G8B8A8Unorm);
-
-		*img = *image::image::create(&context_, texture->get_width(), texture->get_height(), properties, true).get();
-		texture->increment_generation();
-		return true;
-	}
-
-	bool renderer_vulkan::resize_texture(texture::texture* texture, uint32_t width, uint32_t height)
-	{
-		if (texture && texture->data)
-		{
-			auto img = (image::image*)texture->data;
-			img->destroy();
-
-			image::properties properties{};
-			properties.tiling = vk::ImageTiling::eOptimal;
-			properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-			properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-			properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
-			properties.image_format = channel_count_to_format(texture->get_channel_count(), vk::Format::eR8G8B8A8Unorm);
-			*img = *image::image::create(&context_, width, height, properties, true).get();
-
-			texture->increment_generation();
-		}
-		return true;
-	}
-
-	bool renderer_vulkan::texture_write_data(texture::texture* texture, uint64_t offset, uint32_t /*size*/, const uint8_t* data)
-	{
-		auto img = (image::image*)texture->data;
-		auto image_size = texture->get_width() * texture->get_height() * texture->get_channel_count();
-		auto image_format = channel_count_to_format(texture->get_channel_count(), vk::Format::eR8G8B8A8Unorm);
-
-			auto staging_buffer = buffer::create(&context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
-			staging_buffer->load_data(offset, image_size, 0, data);
-		command_buffer single_use{};
-		single_use.begin_single_use(&context_, context_.device.graphics_command_pool);
-
-		img->transition_layout(single_use, image_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		img->copy_from_buffer(single_use, staging_buffer);
-		img->transition_layout(single_use, image_format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
-
-		single_use.end_single_use(&context_, context_.device.graphics_command_pool, context_.device.graphics_queue);
-		return true;
-	}
-
-	void renderer_vulkan::free_texture(texture::texture* texture) const
-	{
-		context_.device.logical_device.waitIdle();
-		auto state = (image::image*)texture->data;
-
-		if (state)
-		{
-				state->destroy();
-
-			delete (image::image*)texture->data;
-			texture->data = nullptr;
-		}
+		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
+		tex->populate(properties, data);
+		return tex;
 	}
 
 	void renderer_vulkan::populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
@@ -993,7 +883,7 @@ namespace egkr
 		egkr::vector<vk::ImageView> image_views{};
 		for (const auto& attachment : attachments)
 		{
-			image_views.push_back(((image::image*)(attachment->data))->get_view());
+			image_views.push_back(((image::vulkan_texture*)(attachment.get()))->get_view());
 		}
 		vk::FramebufferCreateInfo create_info{};
 		create_info
@@ -1017,7 +907,6 @@ namespace egkr
 		if (render_target)
 		{
 			if (render_target->internal_framebuffer)
-
 			{
 				context_.device.logical_device.destroyFramebuffer(*(vk::Framebuffer*)render_target->internal_framebuffer);
 				free(render_target->internal_framebuffer);
@@ -1384,7 +1273,7 @@ namespace egkr
 					auto& texture_map = state->instance_states[shader->get_bound_instance_id()].instance_textures[i];
 					auto sampler = (vk::Sampler*)texture_map->internal_data;
 
-					auto texture_data = (image::image*)texture_map->texture->data;
+					auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
 
 					vk::DescriptorImageInfo image_info{};
 					image_info
@@ -1471,7 +1360,7 @@ namespace egkr
 			return;
 		}
 
-		free_texture(map->texture.get());
+		map->texture->free();
 
 		context_.device.logical_device.destroySampler(*(vk::Sampler*)map->internal_data, context_.allocator);
 		delete (vk::Sampler*)map->internal_data;

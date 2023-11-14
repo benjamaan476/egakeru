@@ -28,11 +28,7 @@ namespace egkr
 
 		void free_material(material* texture) const override;
 
-		bool populate_texture(texture::texture* texture, const texture::properties& properties, const uint8_t* data) override;
-		bool populate_writeable_texture(texture::texture* texture) override;
-		bool resize_texture(texture::texture* texture, uint32_t width, uint32_t height) override;
-		bool texture_write_data(texture::texture* texture, uint64_t offset, uint32_t size, const uint8_t* data) override;
-		void free_texture(texture::texture* texture) const override;
+		texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const override;
 
 		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
 		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) override;

@@ -24,7 +24,7 @@ namespace egkr
 		properties.flags |= texture::flags::is_wrapped;
 		properties.data = internal_data;
 
-		auto t = std::shared_ptr<texture::texture>(new texture::texture(texture_system_->renderer_context_, properties));
+		auto t = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, nullptr);
 		if (register_texture)
 		{
 			id = texture_system_->registered_textures_.size();
@@ -82,7 +82,7 @@ namespace egkr
 			}
 		}
 
-		texture_system_->default_texture_ = texture::texture::create(texture_system_->renderer_context_, default_texture_properties, (uint8_t*)data.data());
+		texture_system_->default_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_texture_properties, (uint8_t*)data.data());
 		{
 			texture::properties default__diffuse_properties{};
 			default__diffuse_properties.name = default_diffuse_name;
@@ -92,7 +92,7 @@ namespace egkr
 			default__diffuse_properties.flags = {};
 
 			egkr::vector<uint32_t> diffuse_data(default__diffuse_properties.width * default__diffuse_properties.height, 0xFFFFFFFF);
-			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_, default__diffuse_properties, (uint8_t*)diffuse_data.data());
+			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default__diffuse_properties, (uint8_t*)diffuse_data.data());
 		}
 
 		texture::properties default_specular_properties{};
@@ -103,7 +103,7 @@ namespace egkr
 		default_specular_properties.flags = {};
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
-		texture_system_->default_specular_texture_ = texture::texture::create(texture_system_->renderer_context_, default_specular_properties, (uint8_t*)spec_data.data());
+		texture_system_->default_specular_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_specular_properties, (uint8_t*)spec_data.data());
 		
 		texture::properties default_normal_properties{};
 		default_normal_properties.name = default_normal_name;
@@ -127,7 +127,7 @@ namespace egkr
 				normal_data[index_bpp + 3] = 255;
 			}
 		}
-		texture_system_->default_normal_texture_ = texture::texture::create(texture_system_->renderer_context_, default_normal_properties, (uint8_t*)normal_data.data());
+		texture_system_->default_normal_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_normal_properties, (uint8_t*)normal_data.data());
 		
 		return true;
 	}
@@ -136,31 +136,31 @@ namespace egkr
 	{
 		if (texture_system_->default_texture_)
 		{
-			texture_system_->renderer_context_->free_texture(texture_system_->default_texture_.get());
+			//texture_system_->default_texture_->free();
 			texture_system_->default_texture_.reset();
 		}
 
 		if (texture_system_->default_specular_texture_)
 		{
-			texture_system_->renderer_context_->free_texture(texture_system_->default_specular_texture_.get());
+			//texture_system_->default_specular_texture_->free();
 			texture_system_->default_specular_texture_.reset();
 		}
 
 		if (texture_system_->default_diffuse_texture_)
 		{
-			texture_system_->renderer_context_->free_texture(texture_system_->default_diffuse_texture_.get());
+			//texture_system_->default_diffuse_texture_->free();
 			texture_system_->default_diffuse_texture_.reset();
 		}
 
 		if (texture_system_->default_normal_texture_)
 		{
-			texture_system_->renderer_context_->free_texture(texture_system_->default_normal_texture_.get());
+			//texture_system_->default_normal_texture_->free();
 			texture_system_->default_normal_texture_.reset();
 		}
 
 		for (auto& texture : texture_system_->registered_textures_)
 		{
-			texture_system_->renderer_context_->free_texture(texture.get());
+			texture->free();
 		}
 		texture_system_->registered_textures_.clear();
 		texture_system_->registered_textures_by_name_.clear();
@@ -181,7 +181,7 @@ namespace egkr
 
 			if ((texture->get_flags() & texture::flags::is_wrapped) != texture::flags::is_wrapped && regenerate_internal_data)
 			{
-				texture_system_->renderer_context_->resize_texture(texture, width, height);
+				texture->resize(width, height);
 				return;
 			}
 
@@ -255,7 +255,7 @@ namespace egkr
 			flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
 			texture->set_flags(flags);
 
-			texture_system_->renderer_context_->populate_writable_texture(texture.get());
+			texture->populate_writeable();
 			return texture;
 		}
 		return nullptr;
@@ -303,7 +303,7 @@ namespace egkr
 		auto properties = (texture::properties*)image->data;
 
 		properties->id = id;
-		auto temp_texture = texture::texture::create(texture_system_->renderer_context_, *properties, (const uint8_t*)properties->data);
+		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data);
 
 		resource_system::unload(std::move(image));
 		return temp_texture;

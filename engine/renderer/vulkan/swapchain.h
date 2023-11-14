@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-#include "image.h"
+#include "vulkan_texture.h"
 #include "resources/texture.h"
 #include "renderer/renderer_types.h"
 

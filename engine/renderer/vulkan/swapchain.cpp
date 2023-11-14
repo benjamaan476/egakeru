@@ -1,7 +1,7 @@
 #include "swapchain.h"
 #include "vulkan_types.h"
 #include "systems/texture_system.h"
-#include "image.h"
+#include "vulkan_texture.h"
 
 namespace egkr
 {
@@ -33,10 +33,7 @@ namespace egkr
 
 		for (auto& texture : render_textures_)
 		{
-			if (texture->data)
-			{
-				delete (image::image*)texture->data;
-			}
+			texture->free();
 		}
 		render_textures_.clear();
 
@@ -218,11 +215,20 @@ namespace egkr
 
 			for (auto i{ 0U }; i < image_count_; ++i)
 			{
-				void* internal_data = malloc(sizeof(image::image));
+				void* internal_data = malloc(sizeof(image::vulkan_texture));
 				std::string name{ "__internal_vulkan_swapchain_image_0__" };
 				name[34] = '0' + (char)i;
 
 				render_textures_[i] = texture_system::wrap_internal(name, extent_.width, extent_.height, 4, false, true, false, internal_data);
+
+				image::properties depth_image_properties{};
+				depth_image_properties.image_format = format_.format;
+				depth_image_properties.tiling = vk::ImageTiling::eOptimal;
+				depth_image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+				depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
+				depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+				((image::vulkan_texture*)(render_textures_[i].get()))->create(depth_image_properties);
+
 			}
 		}
 		else
@@ -235,7 +241,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::image*)render_textures_[i]->data;
+			auto img = (image::vulkan_texture*)render_textures_[i].get();
 			img->set_image(swapchain_images[i]);
 			img->set_width(extent_.width);
 			img->set_height(extent_.height);
@@ -243,7 +249,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::image*)render_textures_[i]->data;
+			auto img = (image::vulkan_texture*)render_textures_[i].get();
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -275,9 +281,10 @@ namespace egkr
 		depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
-		auto img = image::image::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
+		//auto img = image::vulkan_texture::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
 
-		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, img);
+		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
+		((image::vulkan_texture*)(depth_attachment_.get()))->create(depth_image_properties);
 		return swapchain_images;
 	}
 

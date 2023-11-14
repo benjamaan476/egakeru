@@ -3,6 +3,7 @@
 #include "pch.h"
 #include <vulkan/vulkan.hpp>
 
+#include "resources/texture.h"
 #include "buffer.h"
 #include "command_buffer.h"
 
@@ -28,17 +29,22 @@ namespace egkr
 			const uint32_t array_layers{ 1 };
 		};
 
-		class image;
-		using shared_ptr = std::shared_ptr<image>;
-		class image
+		class vulkan_texture : public texture::texture
 		{
 		public:
-			API static shared_ptr create(const vulkan_context* context, uint32_t width_, uint32_t height_, const properties& properties, bool create_view);
-			static image* create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const properties& properties, bool create_view);
+			using shared_ptr = std::shared_ptr<vulkan_texture>;
+			static shared_ptr create(const renderer_backend* renderer, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view);
+			static vulkan_texture* create_raw(const renderer_backend* renderer, const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view);
 			void create_view(const properties& properties);
 
-			image(const vulkan_context* context, uint32_t width_, uint32_t height_, const properties& properties);
-			~image();
+			vulkan_texture(const renderer_backend* renderer, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties);
+			~vulkan_texture() override;
+
+			bool populate(const egkr::texture::properties& properties, const uint8_t* data) override;
+			bool populate_writeable() override;
+			bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) override;
+			bool resize(uint32_t width, uint32_t height) override;
+			void free() override;
 
 			void destroy();
 
@@ -50,9 +56,10 @@ namespace egkr
 			[[nodiscard]] const auto& get_image() const { return image_; }
 			void set_image(vk::Image image) { image_ = image; }
 
-			void set_view(vk::ImageView view) { view_ = view; }
+			void set_view(vk::ImageView view);
 			void set_width(uint32_t width) { width_ = width; }
 			void set_height(uint32_t height) { height_ = height; }
+			void create(const image::properties& properties);
 
 		private:
 			const vulkan_context* context_{};

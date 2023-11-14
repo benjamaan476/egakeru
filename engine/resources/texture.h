@@ -5,7 +5,7 @@
 
 namespace egkr
 {
-	class renderer_frontend;
+	class renderer_backend;
 
 	namespace texture
 	{
@@ -59,9 +59,15 @@ namespace egkr
 		public:
 			using shared_ptr = std::shared_ptr<texture>;
 
-			static shared_ptr create(const renderer_frontend* context, const properties& properties, const uint8_t* data);
-			texture(const renderer_frontend* renderer, const properties& properties);
-			~texture();
+			static shared_ptr create(const renderer_backend* context, const properties& properties, const uint8_t* data);
+			texture(const renderer_backend* renderer, const properties& properties);
+			virtual ~texture();
+
+			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
+			virtual bool populate_writeable() = 0;
+			virtual bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) = 0;
+			virtual bool resize(uint32_t width, uint32_t height) = 0;
+			virtual void free() = 0;
 
 			void destroy();
 
@@ -75,9 +81,11 @@ namespace egkr
 			[[nodiscard]] const auto& get_height() const { return properties_.height; }
 			[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
 
-		private:
-			const renderer_frontend* renderer_{};
+		protected:
 			properties properties_{};
+
+		private:
+			const renderer_backend* renderer_{};
 		};
 
 		struct texture_map
