@@ -20,7 +20,21 @@ set(HEADERS
     loaders/*.h
 )
 
-add_library(engine SHARED ${SOURCES})
+add_library(engine SHARED ${SOURCES} ${engine_SOURCE_DIR}/../tracy/public/TracyClient.cpp)
+
+if(DEFINED TRACY_ENABLE)
+    message("Enabling tracy profiling")
+    target_compile_definitions(engine PRIVATE TRACY_ENABLE)
+endif()
+
+if(DEFINED TRACY_ON_DEMAND)
+    message("Enabling tracy on demand profiling")
+    target_compile_definitions(engine PRIVATE TRACY_ON_DEMAND)
+endif()
+
+if(DEFINED TRACY_MEMORY)
+    target_compile_definitions(engine PRIVATE TRACY_MEMORY)
+endif()
 
 target_link_libraries(
   engine

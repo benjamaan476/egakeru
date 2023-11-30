@@ -75,6 +75,8 @@ namespace egkr::image
 
 	void vulkan_texture::create(const image::properties& properties)
 	{
+		ZoneScoped;
+
 		vk::ImageCreateInfo image_info{};
 
 		image_info
@@ -118,6 +120,8 @@ namespace egkr::image
 
 	bool vulkan_texture::populate(const egkr::texture::properties& properties, const uint8_t* data)
 	{
+		ZoneScoped;
+
 		//if (data)
 		{
 			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
@@ -148,6 +152,8 @@ namespace egkr::image
 
 	bool vulkan_texture::populate_writeable()
 	{
+		ZoneScoped;
+
 		{		
 		image::properties properties{};
 		properties.tiling = vk::ImageTiling::eOptimal;
@@ -167,11 +173,15 @@ namespace egkr::image
 
 	void vulkan_texture::free()
 	{
+		ZoneScoped;
+
 		destroy();
 	}
 
 	void vulkan_texture::set_view(vk::ImageView view)
 	{
+		ZoneScoped;
+
 		const auto& logical_device = context_->device.logical_device;
 		logical_device.waitIdle();
 		if (view_)
@@ -184,6 +194,8 @@ namespace egkr::image
 
 	bool vulkan_texture::write_data(uint64_t offset, uint32_t /*size*/, const uint8_t* data)
 	{
+		ZoneScoped;
+
 		auto image_size = properties_.width * properties_.height * properties_.channel_count;
 		auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
@@ -202,6 +214,8 @@ namespace egkr::image
 
 	bool vulkan_texture::resize(uint32_t width, uint32_t height)
 	{
+		ZoneScoped;
+
 			destroy();
 
 			image::properties properties{};
@@ -225,6 +239,8 @@ namespace egkr::image
 
 	void vulkan_texture::destroy()
 	{
+		ZoneScoped;
+
 		if (context_)
 		{
 			const auto& logical_device = context_->device.logical_device;
@@ -256,6 +272,8 @@ namespace egkr::image
 
 	void vulkan_texture::transition_layout(command_buffer command_buffer, vk::Format /*format*/, vk::ImageLayout old_layout, vk::ImageLayout new_layout)
 	{
+		ZoneScoped;
+
 		vk::ImageSubresourceRange subresource_range{};
 		subresource_range
 			.setBaseMipLevel(0)
@@ -302,6 +320,8 @@ namespace egkr::image
 
 	void vulkan_texture::copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer)
 	{
+		ZoneScoped;
+
 		vk::ImageSubresourceLayers subresource{};
 		subresource
 			.setAspectMask(vk::ImageAspectFlagBits::eColor)

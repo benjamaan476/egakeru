@@ -11,6 +11,8 @@ namespace egkr
 	pipeline::pipeline(const vulkan_context* context, const pipeline_properties& properties)
 		:context_{ context }
 	{
+		ZoneScoped;
+
 		vk::PipelineViewportStateCreateInfo viewport_create_info{};
 		viewport_create_info
 			.setViewports(properties.viewport)
@@ -129,6 +131,8 @@ namespace egkr
 
 	void pipeline::destroy()
 	{
+		ZoneScoped;
+
 		if (pipeline_)
 		{
 			context_->device.logical_device.destroyPipeline(pipeline_, context_->allocator);
@@ -144,6 +148,8 @@ namespace egkr
 
 	void pipeline::bind(const command_buffer& command_buffer, vk::PipelineBindPoint bind_point)
 	{
+		ZoneScoped;
+
 		command_buffer.get_handle().bindPipeline(bind_point, pipeline_);
 	}
 }

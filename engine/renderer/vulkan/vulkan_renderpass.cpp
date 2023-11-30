@@ -37,6 +37,8 @@ namespace egkr::renderpass
 
 	void vulkan_renderpass::begin(command_buffer& command_buffer, vk::Framebuffer framebuffer)
 	{
+		ZoneScoped;
+
 		vk::Rect2D render_area{};
 		render_area
 			.setOffset({ (int32_t)render_area_.x, (int32_t)render_area_.y })
@@ -73,6 +75,8 @@ namespace egkr::renderpass
 
 	void vulkan_renderpass::end(command_buffer& command_buffer)
 	{
+		ZoneScoped;
+
 		command_buffer.end_render_pass();
 	}
 	void vulkan_renderpass::set_extent(uint4 extent)
@@ -82,6 +86,8 @@ namespace egkr::renderpass
 
 	bool vulkan_renderpass::populate(float depth, float stencil, bool has_previous, bool has_next)
 	{
+		ZoneScoped;
+
 		depth_ = depth;
 		stencil_ = stencil;
 
@@ -157,6 +163,8 @@ namespace egkr::renderpass
 
 	bool vulkan_renderpass::begin(render_target::render_target* render_target) const
 	{
+		ZoneScoped;
+
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 
 		vk::Rect2D render_area{};
@@ -196,6 +204,8 @@ namespace egkr::renderpass
 
 	bool vulkan_renderpass::end()
 	{
+		ZoneScoped;
+
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 		command_buffer.end_render_pass();
 		return true;

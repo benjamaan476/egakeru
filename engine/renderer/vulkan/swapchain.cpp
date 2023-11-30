@@ -23,6 +23,8 @@ namespace egkr
 
 	void swapchain::destroy()
 	{
+		ZoneScoped;
+
 		render_targets_.clear();
 
 		if (depth_attachment_)
@@ -47,12 +49,16 @@ namespace egkr
 
 	void swapchain::recreate()
 	{
+		ZoneScoped;
+
 		destroy();
 		create();
 	}
 
 	uint32_t swapchain::acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence)
 	{
+		ZoneScoped;
+
 		uint32_t image_index = 0;
 		auto result = context_->device.logical_device.acquireNextImageKHR(swapchain_, UINT64_MAX, semaphore, fence, &image_index);
 
@@ -71,6 +77,8 @@ namespace egkr
 
 	void swapchain::present(vk::Queue /*graphics_queue*/, vk::Queue present_queue, vk::Semaphore render_complete, uint32_t image_index)
 	{
+		ZoneScoped;
+
 		vk::PresentInfoKHR present_info{};
 		present_info
 			.setWaitSemaphores(render_complete)
@@ -93,6 +101,8 @@ namespace egkr
 
 	void swapchain::create()
 	{
+		ZoneScoped;
+
 		auto swapchain_support = query_swapchain_support(context_->surface, context_->device.physical_device);
 
 		format_ = choose_swapchain_surface_format(swapchain_support.formats);

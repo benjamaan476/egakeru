@@ -51,15 +51,19 @@ target_compile_features(egakeru_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 add_library(egakeru::egakeru_options ALIAS egakeru_options)
 add_library(egakeru::egakeru_warnings ALIAS egakeru_warnings)
 
-#add_library(egakeru::egakeru_options INTERFACE IMPORTED)
-#add_library(egakeru::egakeru_warnings INTERFACE IMPORTED)
+option(TRACY_ENABLE ON)
+option(TRACY_ON_DEMAND "" ON)
+option(TRACY_MEMORY ON)
 
-# configure files based on CMake configuration options
-#add_subdirectory(configured_files)
+if(DEFINED TRACY_ENABLE)
+add_subdirectory (tracy)
+endif()
+
 
 # Adding the src:
 add_subdirectory(engine)
 add_subdirectory(sandbox)
+
 # Don't even look at tests if we're not top level
 if(NOT PROJECT_IS_TOP_LEVEL)
   return()

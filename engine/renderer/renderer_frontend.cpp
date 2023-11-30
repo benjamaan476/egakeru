@@ -10,6 +10,21 @@
 
 #include "vulkan/renderer_vulkan.h"
 
+
+#ifdef TRACY_MEMORY
+void* operator new(std::size_t count)
+{
+	auto ptr = malloc(count);
+	TracyAlloc(ptr, count);
+	return ptr;
+}
+void operator delete(void* ptr) noexcept
+{
+	TracyFree(ptr);
+	free(ptr);
+}
+#endif
+
 namespace egkr
 {
 	void renderer_frontend::regenerate_render_targets()

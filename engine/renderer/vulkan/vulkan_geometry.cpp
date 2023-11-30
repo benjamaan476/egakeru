@@ -30,6 +30,8 @@ namespace egkr::geometry
 
 	bool vulkan_geometry::populate(const properties & properties)
 	{
+		ZoneScoped;
+
 		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
 		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
 		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
@@ -50,6 +52,8 @@ namespace egkr::geometry
 
 	void vulkan_geometry::draw()
 	{
+		ZoneScoped;
+
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 		vk::DeviceSize offset{ 0 };
 		command_buffer.get_handle().bindVertexBuffers(0, vertex_buffer_->get_handle(), offset);
@@ -68,6 +72,8 @@ namespace egkr::geometry
 
 	void vulkan_geometry::free()
 	{
+		ZoneScoped;
+
 		if (context_)
 		{
 			context_->device.logical_device.waitIdle();
@@ -90,6 +96,8 @@ namespace egkr::geometry
 
 	void vulkan_geometry::upload_data_range(const vulkan_context* context, vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data)
 	{
+		ZoneScoped;
+
 		const vk::MemoryPropertyFlags memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
 		const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eTransferSrc;
 

@@ -86,3 +86,12 @@ static inline uint64_t get_aligned(uint64_t operand, uint64_t granularity)
 {
 	return ((operand + (granularity - 1)) & ~(granularity - 1));
 }
+
+#ifdef TRACY_ENABLE
+#include "../tracy/public/tracy/Tracy.hpp"
+#else
+#define ZoneScoped 
+#define FrameMark 
+#define FrameMarkNamed(name) 
+#endif
+

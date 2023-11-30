@@ -5,16 +5,22 @@ namespace egkr
 {
 	void command_buffer::begin_render_pass(const vk::RenderPassBeginInfo& renderpass_info)
 	{
+		ZoneScoped;
+
 		command_buffer_.beginRenderPass(renderpass_info, vk::SubpassContents::eInline);
 		state_ = command_buffer_state::in_render_pass;
 	}
 	void command_buffer::end_render_pass()
 	{
+		ZoneScoped;
+
 		command_buffer_.endRenderPass();
 		state_ = command_buffer_state::recording;
 	}
 	void command_buffer::allocate(const vulkan_context* context, vk::CommandPool pool, bool is_primary)
 	{
+		ZoneScoped;
+
 		vk::CommandBufferAllocateInfo allocate_info{};
 		allocate_info
 			.setCommandPool(pool)
@@ -31,6 +37,8 @@ namespace egkr
 
 	void command_buffer::free(const vulkan_context* context, vk::CommandPool pool)
 	{
+		ZoneScoped;
+
 		context->device.logical_device.freeCommandBuffers(pool, command_buffer_);
 		command_buffer_ = VK_NULL_HANDLE;
 		state_ = command_buffer_state::not_allocated;
@@ -38,6 +46,8 @@ namespace egkr
 
 	void command_buffer::begin(bool is_single_use, bool is_renderpass_continue, bool is_simultaneous_use)
 	{
+		ZoneScoped;
+
 		vk::CommandBufferUsageFlags usage{};
 
 		if (is_single_use)
@@ -65,6 +75,8 @@ namespace egkr
 
 	void command_buffer::end()
 	{
+		ZoneScoped;
+
 		command_buffer_.end();
 		state_ = command_buffer_state::recording_ended;
 	}
@@ -81,12 +93,16 @@ namespace egkr
 
 	void command_buffer::begin_single_use(const vulkan_context* context, vk::CommandPool pool)
 	{
+		ZoneScoped;
+
 		allocate(context, pool, true);
 		begin(true, false, false);
 	}
 
 	void command_buffer::end_single_use(const vulkan_context* context, vk::CommandPool pool, vk::Queue queue)
 	{
+		ZoneScoped;
+
 		end();
 
 		vk::SubmitInfo submit_info{};

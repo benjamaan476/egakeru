@@ -16,6 +16,7 @@ namespace egkr
 {
 	vk::SamplerAddressMode convert_repeat_type(std::string_view axis, texture::repeat repeat)
 	{
+		ZoneScoped;
 		switch (repeat)
 		{
 		case egkr::texture::repeat::repeat:
@@ -34,6 +35,8 @@ namespace egkr
 
 	vk::Filter convert_filter_type(std::string_view op, texture::filter filter)
 	{
+		ZoneScoped;
+
 		switch (filter)
 		{
 		case egkr::texture::filter::nearest:
@@ -52,6 +55,8 @@ namespace egkr
 		const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
 		void* /*userData*/)
 	{
+		ZoneScoped;
+
 		switch (messageSeverity)
 		{
 		case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
@@ -76,6 +81,8 @@ namespace egkr
 
 	int32_t vulkan_device::find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const
 	{
+		ZoneScoped;
+
 		const auto device_properties = physical_device.getMemoryProperties();
 
 		for (auto i{ 0U }; i < device_properties.memoryTypeCount; ++i)
@@ -93,12 +100,14 @@ namespace egkr
 	bool vulkan_device::physical_device_meets_requirements(
 		vk::PhysicalDevice device,
 		vk::SurfaceKHR surface,
-		const vk::PhysicalDeviceProperties& properties, 
-		const vk::PhysicalDeviceFeatures features, 
+		const vk::PhysicalDeviceProperties& properties,
+		const vk::PhysicalDeviceFeatures features,
 		const physical_device_requirements& requirements,
 		physical_device_queue_family_info& family_info,
 		swapchain_support_details& swapchain_support)
 	{
+		ZoneScoped;
+
 		if (requirements.discrete_gpu)
 		{
 			if (properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
@@ -106,7 +115,7 @@ namespace egkr
 				LOG_INFO("Device is not a discrete GPU when one is required, skipping");
 				return false;
 			}
-	}
+		}
 
 		auto queue_families = device.getQueueFamilyProperties();
 
@@ -147,16 +156,16 @@ namespace egkr
 			}
 		}
 
-		LOG_INFO("       {:d}|       {:d}|       {:d}|       {:d}| {}", 
+		LOG_INFO("       {:d}|       {:d}|       {:d}|       {:d}| {}",
 				 family_info.graphics_index != -1,
-				 family_info.present_index != -1, 
-				 family_info.compute_index != -1, 
-				 family_info.transfer_index != -1, 
+				 family_info.present_index != -1,
+				 family_info.compute_index != -1,
+				 family_info.transfer_index != -1,
 				 properties.deviceName.data());
 
 		if (
 			(!requirements.graphics || (requirements.graphics && family_info.graphics_index != -1)) &&
-		(!requirements.present || (requirements.present && family_info.present_index != -1)) &&
+			(!requirements.present || (requirements.present && family_info.present_index != -1)) &&
 			(!requirements.compute || (requirements.compute && family_info.compute_index != -1)) &&
 			(!requirements.transfer || (requirements.transfer && family_info.transfer_index != -1)))
 		{
@@ -206,6 +215,8 @@ namespace egkr
 
 	bool vulkan_device::select_physical_device(vulkan_context* context)
 	{
+		ZoneScoped;
+
 		auto physical_devices = context->instance.enumeratePhysicalDevices();
 
 		for (auto& physical_device : physical_devices)
@@ -269,6 +280,8 @@ namespace egkr
 
 	bool vulkan_device::create(vulkan_context* context)
 	{
+		ZoneScoped;
+
 		if (!select_physical_device(context))
 		{
 			return false;
@@ -344,7 +357,7 @@ namespace egkr
 			.setPEnabledExtensionNames(extension_names);
 
 		logical_device = physical_device.createDevice(device_create_info, context->allocator);
-		
+
 		graphics_queue = logical_device.getQueue(graphics_queue_index, 0);
 		present_queue = logical_device.getQueue(present_queue_index, 0);
 		transfer_queue = logical_device.getQueue(transfer_queue_index, 0);
@@ -360,6 +373,8 @@ namespace egkr
 
 	void renderer_vulkan::create_command_buffers()
 	{
+		ZoneScoped;
+
 		if (context_.graphics_command_buffers.empty())
 		{
 			context_.graphics_command_buffers.resize(context_.swapchain->get_image_count());
@@ -378,12 +393,16 @@ namespace egkr
 
 	renderer_backend::unique_ptr renderer_vulkan::create(const platform::shared_ptr& platform)
 	{
+		ZoneScoped;
+
 		return std::make_unique<renderer_vulkan>(platform);
 	}
 
 	renderer_vulkan::renderer_vulkan(platform::shared_ptr platform)
-		:platform_{std::move(platform)}
+		:platform_{ std::move(platform) }
 	{
+		ZoneScoped;
+
 		const auto size = platform_->get_framebuffer_size();
 		context_.framebuffer_width = size.x;
 		context_.framebuffer_height = size.y;
@@ -396,15 +415,17 @@ namespace egkr
 
 	bool renderer_vulkan::init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count)
 	{
+		ZoneScoped;
+
 		if (!init_instance())
 		{
-            LOG_FATAL("Failed to create vulkan instance");
+			LOG_FATAL("Failed to create vulkan instance");
 			return false;
 		}
 
 		if (enable_validation_layers_ && !create_debug_messenger())
 		{
-            LOG_FATAL("Failed to create debug messenger");
+			LOG_FATAL("Failed to create debug messenger");
 		}
 
 		context_.surface = create_surface();
@@ -448,6 +469,8 @@ namespace egkr
 
 	void renderer_vulkan::shutdown()
 	{
+		ZoneScoped;
+
 		if (context_.instance)
 		{
 			context_.device.logical_device.waitIdle();
@@ -509,6 +532,7 @@ namespace egkr
 	}
 	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
+		ZoneScoped;
 
 		context_.framebuffer_width = width;
 		context_.framebuffer_height = height;
@@ -518,6 +542,8 @@ namespace egkr
 
 	bool renderer_vulkan::begin_frame()
 	{
+		ZoneScoped;
+
 		new_frame();
 		if (context_.recreating_swapchain)
 		{
@@ -538,7 +564,6 @@ namespace egkr
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.reset();
 		command_buffer.begin(false, false, false);
-
 		vk::Viewport viewport{};
 		viewport
 			.setX(0)
@@ -561,11 +586,15 @@ namespace egkr
 
 	void renderer_vulkan::draw_geometry(const geometry::render_data& data)
 	{
+		ZoneScoped;
+
 		data.geometry->draw();
 	}
 
 	void renderer_vulkan::end_frame()
-	{ 
+	{
+		ZoneScoped;
+
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.end();
 
@@ -573,7 +602,7 @@ namespace egkr
 		{
 			context_.images_in_flight[context_.image_index]->wait(std::numeric_limits<uint64_t>::max());
 		}
-			context_.images_in_flight[context_.image_index] = context_.in_flight_fences[context_.current_frame];
+		context_.images_in_flight[context_.image_index] = context_.in_flight_fences[context_.current_frame];
 
 		context_.in_flight_fences[context_.current_frame]->reset();
 
@@ -589,10 +618,13 @@ namespace egkr
 		command_buffer.update_submitted();
 
 		context_.swapchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
+		FrameMark;
 	}
 
 	bool renderer_vulkan::init_instance()
 	{
+		ZoneScoped;
+
 		vk::ApplicationInfo application_info{};
 		application_info
 			.setPApplicationName("engine")
@@ -618,20 +650,20 @@ namespace egkr
 
 		const auto layers = vk::enumerateInstanceLayerProperties();
 		auto valid = std::ranges::all_of(validation_layers_,
-				[&layers](const char* layer)
-				{
-				 auto layerFound = false;
-				 for (const auto& layerProperty : layers)
-				 {
-					 if (strcmp(layer, layerProperty.layerName.data()) == 0)
-					 {
-						 layerFound = true;
-						 break;
-					 }
-				 }
+										 [&layers](const char* layer)
+										 {
+											 auto layerFound = false;
+											 for (const auto& layerProperty : layers)
+											 {
+												 if (strcmp(layer, layerProperty.layerName.data()) == 0)
+												 {
+													 layerFound = true;
+													 break;
+												 }
+											 }
 
-				 return layerFound;
-				});
+											 return layerFound;
+										 });
 
 		if (enable_validation_layers_ && !valid)
 		{
@@ -658,6 +690,8 @@ namespace egkr
 
 	bool renderer_vulkan::create_debug_messenger()
 	{
+		ZoneScoped;
+
 		if (!enable_validation_layers_)
 		{
 			return false;
@@ -690,11 +724,15 @@ namespace egkr
 
 	vk::SurfaceKHR renderer_vulkan::create_surface()
 	{
+		ZoneScoped;
+
 		return platform_->create_surface(context_.instance);
 	}
 
 	bool renderer_vulkan::pick_physical_device()
 	{
+		ZoneScoped;
+
 		const auto devices = context_.instance.enumeratePhysicalDevices();
 
 		if (devices.empty())
@@ -723,6 +761,8 @@ namespace egkr
 	}
 	bool renderer_vulkan::is_device_suitable(const vk::PhysicalDevice& device)
 	{
+		ZoneScoped;
+
 		auto queueIndices = find_queue_families(context_, device);
 
 		auto properties = device.getProperties();
@@ -736,6 +776,8 @@ namespace egkr
 
 	bool renderer_vulkan::check_device_extension_support(const vk::PhysicalDevice& physical_device)
 	{
+		ZoneScoped;
+
 		auto extension_properties = physical_device.enumerateDeviceExtensionProperties();
 
 		std::set<std::string> required_extensions(device_extensions_.begin(), device_extensions_.end());
@@ -750,6 +792,8 @@ namespace egkr
 
 	bool renderer_vulkan::create_logical_device()
 	{
+		ZoneScoped;
+
 		auto queue_indices = find_queue_families(context_, context_.device.physical_device);
 
 		egkr::vector<vk::DeviceQueueCreateInfo> device_queue_create_infos{};
@@ -757,7 +801,7 @@ namespace egkr
 		std::set<uint32_t> unique_queue_familes{};
 		if (queue_indices.graphics_family.has_value() && queue_indices.present_family.has_value())
 		{
-			 unique_queue_familes = { queue_indices.graphics_family.value(), queue_indices.present_family.value() };
+			unique_queue_familes = { queue_indices.graphics_family.value(), queue_indices.present_family.value() };
 		}
 		else
 		{
@@ -823,6 +867,8 @@ namespace egkr
 
 	bool renderer_vulkan::recreate_swapchain()
 	{
+		ZoneScoped;
+
 		if (context_.recreating_swapchain)
 		{
 			return false;
@@ -866,6 +912,8 @@ namespace egkr
 
 	void renderer_vulkan::free_material(material* material) const
 	{
+		ZoneScoped;
+
 		release_texture_map(&material->get_diffuse_map());
 		release_texture_map(&material->get_specular_map());
 		release_texture_map(&material->get_normal_map());
@@ -873,6 +921,8 @@ namespace egkr
 
 	texture::texture::shared_ptr renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
 	{
+		ZoneScoped;
+
 		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 		return tex;
@@ -880,6 +930,8 @@ namespace egkr
 
 	void renderer_vulkan::populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 	{
+		ZoneScoped;
+
 		egkr::vector<vk::ImageView> image_views{};
 		for (const auto& attachment : attachments)
 		{
@@ -899,11 +951,13 @@ namespace egkr
 		{
 			render_target->internal_framebuffer = malloc(sizeof(vk::Framebuffer));
 		}
-			*(vk::Framebuffer*)render_target->internal_framebuffer = context_.device.logical_device.createFramebuffer(create_info, context_.allocator);
+		*(vk::Framebuffer*)render_target->internal_framebuffer = context_.device.logical_device.createFramebuffer(create_info, context_.allocator);
 	}
 
 	void renderer_vulkan::free_render_target(render_target::render_target* render_target, bool free_internal_memory)
 	{
+		ZoneScoped;
+
 		if (render_target)
 		{
 			if (render_target->internal_framebuffer)
@@ -926,11 +980,15 @@ namespace egkr
 
 	geometry::geometry::shared_ptr renderer_vulkan::create_geometry(const geometry::properties& properties) const
 	{
+		ZoneScoped;
+
 		return geometry::vulkan_geometry::create(this, &context_, properties);
 	}
 
 	bool renderer_vulkan::populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages)
 	{
+		ZoneScoped;
+
 		egkr::vector<vk::ShaderStageFlagBits> stages{};
 		for (const auto stage : shader_stages)
 		{
@@ -991,7 +1049,7 @@ namespace egkr
 				.setDescriptorCount(1)
 				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 				.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
-		
+
 			instance_descriptor_set_configuration.bindings.push_back(instance_ubo);
 			state->configuration.descriptor_sets[shader::DESCRIPTOR_SET_INDEX_INSTANCE] = instance_descriptor_set_configuration;
 		}
@@ -1102,7 +1160,7 @@ namespace egkr
 		shader->set_ubo_stride(get_aligned(shader->get_ubo_size(), 256));
 
 		state->uniform_buffer = buffer::create(&context_, shader->get_global_ubo_stride() + (shader->get_ubo_stride() * shader::max_material_count), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
-		
+
 
 		state->mapped_uniform_buffer_memory = state->uniform_buffer->lock(0, VK_WHOLE_SIZE, 0);
 
@@ -1119,6 +1177,8 @@ namespace egkr
 
 	void renderer_vulkan::free_shader(shader::shader* shader)
 	{
+		ZoneScoped;
+
 		context_.device.logical_device.waitIdle();
 		auto state = (shader::vulkan_state*)shader->data;
 		state->uniform_buffer->unlock();
@@ -1163,6 +1223,8 @@ namespace egkr
 
 	bool renderer_vulkan::use_shader(shader::shader* shader)
 	{
+		ZoneScoped;
+
 		auto state = (shader::vulkan_state*)shader->data;
 
 		state->pipeline->bind(context_.graphics_command_buffers[context_.image_index], vk::PipelineBindPoint::eGraphics);
@@ -1171,12 +1233,16 @@ namespace egkr
 
 	bool renderer_vulkan::bind_shader_globals(shader::shader* shader)
 	{
+		ZoneScoped;
+
 		shader->set_bound_ubo_offset(shader->get_global_ubo_offset());
 		return false;
 	}
 
 	bool renderer_vulkan::bind_shader_instances(shader::shader* shader, uint32_t instance_id)
 	{
+		ZoneScoped;
+
 		auto state = (shader::vulkan_state*)shader->data;
 		shader->set_bound_instance_id(instance_id);
 
@@ -1186,6 +1252,8 @@ namespace egkr
 
 	bool renderer_vulkan::apply_shader_globals(shader::shader* shader)
 	{
+		ZoneScoped;
+
 		const auto image_index = context_.image_index;
 		auto state = (shader::vulkan_state*)shader->data;
 		auto& command_buffer = context_.graphics_command_buffers[image_index].get_handle();
@@ -1216,6 +1284,8 @@ namespace egkr
 
 	bool renderer_vulkan::apply_shader_instances(shader::shader* shader, bool needs_update)
 	{
+		ZoneScoped;
+
 		if (!shader->has_instances())
 		{
 			LOG_ERROR("This shader does not use instances");
@@ -1309,6 +1379,8 @@ namespace egkr
 
 	uint32_t renderer_vulkan::acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps)
 	{
+		ZoneScoped;
+
 		auto state = (shader::vulkan_state*)shader->data;
 
 		auto instance_id = state->instance_states.size();
@@ -1319,7 +1391,7 @@ namespace egkr
 
 		instance_state.offset = shader->get_global_ubo_stride();
 
-		egkr::vector<vk::DescriptorSetLayout> layouts{ state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE],state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE] };
+		egkr::vector<vk::DescriptorSetLayout> layouts{ state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE], state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE], state->descriptor_set_layout[shader::DESCRIPTOR_SET_INDEX_INSTANCE] };
 
 		vk::DescriptorSetAllocateInfo alloc_info{};
 		alloc_info
@@ -1334,6 +1406,8 @@ namespace egkr
 
 	void renderer_vulkan::acquire_texture_map(texture::texture_map* map)
 	{
+		ZoneScoped;
+
 		vk::SamplerCreateInfo create_info{};
 		create_info
 			.setMinFilter(convert_filter_type("min", map->minify))
@@ -1354,6 +1428,8 @@ namespace egkr
 
 	void renderer_vulkan::release_texture_map(texture::texture_map* map) const
 	{
+		ZoneScoped;
+
 		if (!map || !map->internal_data)
 		{
 			//LOG_WARN("Tried to release an invalid texture map");
@@ -1370,6 +1446,8 @@ namespace egkr
 
 	bool renderer_vulkan::set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value)
 	{
+		ZoneScoped;
+
 		auto internal = (shader::vulkan_state*)shader->data;
 		if (uniform.type == shader::uniform_type::sampler)
 		{
@@ -1388,7 +1466,7 @@ namespace egkr
 			{
 				// Is local, using push constants. Do this immediately.
 				auto& command_buffer = context_.graphics_command_buffers[context_.image_index].get_handle();
-				command_buffer.pushConstants(internal->pipeline->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset,  uniform.size, value);
+				command_buffer.pushConstants(internal->pipeline->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset, uniform.size, value);
 			}
 			else
 			{
@@ -1433,11 +1511,13 @@ namespace egkr
 		}
 
 		LOG_ERROR("Attaempted to get unknown renderpass");
-			return nullptr;
+		return nullptr;
 	}
 
 	shader::vulkan_stage renderer_vulkan::create_module(shader::shader* /*shader*/, const shader::vulkan_stage_configuration& configuration)
 	{
+		ZoneScoped;
+
 		auto resource = resource_system::load(configuration.filename, resource_type::binary);
 		auto* code = (binary_resource_properties*)resource->data;
 
