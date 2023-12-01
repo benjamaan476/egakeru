@@ -13,6 +13,7 @@ bool sandbox_game::init()
 	LOG_INFO("Sandbox game created");
 
 	camera_ = egkr::camera_system::get_default();
+	camera_->set_position({ 0, 0, 1.F });
 	return true;
 }
 
@@ -82,6 +83,10 @@ void sandbox_game::update(double delta_time)
 		const uint32_t array_size{ 4 };
 		egkr::event_context context = std::array<uint32_t, array_size>{ 2U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
+	}
+	if (egkr::input::is_key_down(egkr::key::l))
+	{
+		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
 	}
 }
 

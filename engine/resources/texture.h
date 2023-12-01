@@ -51,7 +51,7 @@ namespace egkr
 			uint32_t generation{ invalid_32_id };
 			flags flags{};
 
-			const void* data{};
+			void* data{};
 		};
 
 		class texture : public resource

@@ -31,6 +31,11 @@ namespace egkr::texture
 		{
 			renderer_ = nullptr;
 		}
+		if (properties_.data)
+		{
+			::free(properties_.data);
+			properties_.data = nullptr;
+		}
 	}
 
 }

@@ -126,6 +126,7 @@ namespace egkr
 		event::register_event(event_code::quit, nullptr, application::on_event);
 		event::register_event(event_code::resize, nullptr, application::on_resize);
 		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
+		event::register_event(event_code::debug02, nullptr, application::on_debug_event);
 
 		auto cube_1 = geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
 		generate_tangents(cube_1.vertices, cube_1.indices);
@@ -141,6 +142,7 @@ namespace egkr
 		model_2.set_parent(&mesh_1->model());
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
+
 
 		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
 
@@ -274,6 +276,8 @@ namespace egkr
 			}
 		}
 
+
+
 		return false;
 	}
 
@@ -322,6 +326,29 @@ namespace egkr
 
 			auto material = material_system::acquire(materials[choice]);
 			application_->meshes_[0]->get_geometries()[0]->set_material(material);
+		}
+
+		if (code == event_code::debug02)
+		{
+			static bool once = true;
+			if (once)
+			{
+				auto& parent = application_->meshes_[1];
+				once = false;
+				auto kittyCAD = resource_system::load("output", resource_type::mesh);
+				auto kittCAD_config = (egkr::vector<geometry::properties>*)kittyCAD->data;
+				transform kittyCAD_transform = transform::create({ 15.F, 0.F, 0.F });
+				kittyCAD_transform.set_parent(&parent->model());
+				auto kittyCAD_mesh = mesh::create();
+				kittyCAD_mesh->set_model(kittyCAD_transform);
+				for (const auto& geom : *kittCAD_config)
+				{
+					generate_tangents(geom.vertices, geom.indices);
+					kittyCAD_mesh->add_geometry(geometry_system::acquire(geom));
+				}
+				application_->meshes_.push_back(kittyCAD_mesh);
+			}
+
 		}
 		return false;
 	}

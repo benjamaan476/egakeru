@@ -1299,6 +1299,9 @@ namespace egkr
 		auto& object_state = state->instance_states[shader->get_bound_instance_id()];
 		auto& object_descriptor_set = object_state.descriptor_set_state.descriptor_sets[image_index];
 
+		auto offset = object_state.offset;
+		auto range = shader->get_ubo_stride();
+		vk::DescriptorBufferInfo buffer_info{};
 		if (needs_update)
 		{
 			egkr::vector<vk::WriteDescriptorSet> writes{};
@@ -1310,11 +1313,10 @@ namespace egkr
 
 			if (instance_ubo_generation == invalid_8_id)
 			{
-				vk::DescriptorBufferInfo buffer_info{};
 				buffer_info
 					.setBuffer(state->uniform_buffer->get_handle())
-					.setOffset(object_state.offset)
-					.setRange(shader->get_ubo_stride());
+					.setOffset(offset)
+					.setRange(range);
 
 				vk::WriteDescriptorSet ubo{};
 				ubo
