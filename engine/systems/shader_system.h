@@ -7,6 +7,7 @@
 
 namespace egkr
 {
+	class renderer_frontend;
 	struct shader_system_configuration
 	{
 		uint16_t max_shader_count{};

@@ -223,7 +223,7 @@ namespace egkr
 		}
 
 		auto mat_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_MATERIAL);
-		material_system_->default_material_->set_internal_id(material_system_->renderer_->acquire_shader_isntance_resources(mat_shader.get(), texture_maps));
+		mat_shader->acquire_instance_resources(texture_maps);
 
 		return true;
 	}
@@ -281,7 +281,7 @@ namespace egkr
 
 		egkr::vector<texture::texture_map*> maps{&diffuse_map, & specular_map, & normal_map};
 		auto shader = shader_system::get_shader(properties.shader_name);
-		auto id = material_system_->renderer_->acquire_shader_isntance_resources(shader.get(), maps);
+		auto id = shader->acquire_instance_resources(maps);
 
 
 		auto temp_material = material::create(material_system_->renderer_, properties);

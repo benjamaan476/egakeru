@@ -1,13 +1,14 @@
 #pragma once
 #include "pch.h"
 
+#include "renderer/renderpass.h"
 #include "texture.h"
 
 #include <unordered_map>
 
 namespace egkr
 {
-	class renderer_frontend;
+	class renderer_backend;
 	namespace shader
 	{
 		enum class stages
@@ -103,9 +104,10 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<shader>;
-			static shared_ptr create(const renderer_frontend* renderer_context, const properties& properties);
+			static shared_ptr create(const renderer_backend* renderer_context, const properties& properties);
 
-			shader(const renderer_frontend* renderer_context, const properties& properties);
+			shader(const renderer_backend* renderer_context, const properties& properties);
+			virtual ~shader();
 
 			uint32_t get_uniform_index(std::string_view uniform_name);
 			const uniform& get_uniform(uint32_t index);
@@ -137,6 +139,16 @@ namespace egkr
 			void set_global_texture(uint32_t index, texture::texture_map* map);
 
 			const auto& get_attribute_stride() const { return attribute_stride_; }
+
+			virtual bool use() = 0;
+			virtual bool populate(renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages) = 0;
+			virtual void free() = 0;
+			virtual bool bind_instances(uint32_t instance_id) = 0;
+			virtual bool apply_instances(bool needs_update) = 0;
+			virtual bool bind_globals() = 0;
+			virtual bool apply_globals() = 0;
+			virtual uint32_t acquire_instance_resources(const egkr::vector<texture::texture_map*>& texture_maps) = 0;
+			virtual bool set_uniform(const uniform& uniform, const void* value) = 0;
 		private:
 			bool add_attribute(const attribute_configuration& configuration);
 			bool add_sampler(const uniform_configuration& configuration);
@@ -147,6 +159,7 @@ namespace egkr
 			bool is_uniform_add_state_valid();
 
 		private:
+			properties properties_{};
 			bool use_instances_{};
 			bool use_locals_{};
 			uint64_t requried_ubo_alignment_{};
@@ -176,7 +189,7 @@ namespace egkr
 			egkr::vector<range> push_const_ranges_;
 			uint16_t attribute_stride_{};
 
-			const renderer_frontend* renderer_context_{};
+			const renderer_backend* renderer_context_{};
 		};
 	}
 }

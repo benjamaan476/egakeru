@@ -35,7 +35,7 @@ namespace egkr
 	{
 		for (const auto& shader : shader_system_->shaders_)
 		{
-			shader_system_->renderer_context_->free_shader(shader.get());
+			shader->free();
 		}
 		shader_system_->shaders_.clear();
 		shader_system_->shader_id_by_name_.clear();
@@ -46,7 +46,7 @@ namespace egkr
 	{
 		uint32_t id = new_shader_id();
 
-		auto shader = shader::shader::create(shader_system_->renderer_context_, properties);
+		auto shader = shader::shader::create(shader_system_->renderer_context_->get_backend().get(), properties);
 		shader->set_id(id);
 
 		shader_system_->shaders_.push_back(shader);
@@ -106,8 +106,8 @@ namespace egkr
 			auto shader = get_shader(shader_id);
 			shader_system_->current_shader_id_ = shader_id;
 
-			shader_system_->renderer_context_->use_shader(shader.get());
-			shader_system_->renderer_context_->bind_shader_globals(shader.get());
+			shader->use();
+			shader->bind_globals();
 		}
 		return true;
 	}
@@ -115,13 +115,13 @@ namespace egkr
 	void shader_system::apply_global()
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader_system_->renderer_context_->apply_shader_globals(shader.get());
+		shader->apply_globals();
 	}
 
 	void shader_system::apply_instance(bool needs_update)
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader_system_->renderer_context_->apply_shader_instances(shader.get(), needs_update);
+		shader->apply_instances(needs_update);
 	}
 
 	void shader_system::set_uniform(std::string_view uniform_name, const void* data)
@@ -140,16 +140,16 @@ namespace egkr
 		{
 			if (uniform.scope == shader::scope::global)
 			{
-				shader_system_->renderer_context_->bind_shader_globals(shader.get());
+				shader->bind_globals();
 			}
 			else if (uniform.scope == shader::scope::instance)
 			{
-				shader_system_->renderer_context_->bind_shader_instances(shader.get(), shader->get_bound_instance_id());
+				shader->bind_instances(shader->get_bound_instance_id());
 			}
 		}
 
 		shader->set_bound_scope(uniform.scope);
-		shader_system_->renderer_context_->set_uniform(shader.get(), uniform, data);
+		shader->set_uniform(uniform, data);
 	}
 
 	void shader_system::set_sampler(std::string_view sampler_name, const texture::texture::shared_ptr& texture)

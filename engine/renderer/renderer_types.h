@@ -71,30 +71,20 @@ namespace egkr
 		virtual void free_material(material* texture) const = 0;
 
 		virtual texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
+		virtual shader::shader::shared_ptr create_shader(const shader::properties& properties) const = 0;
+		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
+
 		virtual void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
 		virtual void free_render_target(render_target::render_target* render_target, bool free_internal_memory) = 0;
 
-		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
-
-		virtual bool populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) = 0;
-		virtual void free_shader(shader::shader* shader) = 0;
-
-
-		virtual bool use_shader(shader::shader* shader) = 0;
-		virtual bool bind_shader_globals(shader::shader* shader) = 0;
-		virtual bool bind_shader_instances(shader::shader* shader, uint32_t instance_id) = 0;
-		virtual bool apply_shader_globals(shader::shader* shader) = 0;
-		virtual bool apply_shader_instances(shader::shader* shader, bool needs_update) = 0;
-		virtual uint32_t acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) = 0;
-		virtual void acquire_texture_map(texture::texture_map* map) = 0;
+		virtual void acquire_texture_map(texture::texture_map* map) const = 0;
 		virtual void release_texture_map(texture::texture_map* map) const = 0;
 
-		virtual bool set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) = 0;
 		virtual texture::texture::shared_ptr get_window_attachment(uint8_t index) = 0;
 		virtual texture::texture::shared_ptr get_depth_attachment() = 0;
 		virtual uint8_t get_window_index() = 0;
 
-		virtual renderpass::renderpass* get_renderpass(std::string_view name) = 0;
+		virtual renderpass::renderpass* get_renderpass(std::string_view name) const = 0;
 
 		uint32_t get_frame_number() const { return frame_number_; }
 	protected:

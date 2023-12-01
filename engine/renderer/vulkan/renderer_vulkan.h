@@ -29,29 +29,20 @@ namespace egkr
 		void free_material(material* texture) const override;
 
 		texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const override;
+		shader::shader::shared_ptr create_shader(const shader::properties& properties) const override;
 
 		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
 		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) override;
 
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 
-		bool populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) override;
-		void free_shader(shader::shader* shader) override;
-
-		bool use_shader(shader::shader* shader) override;
-		bool bind_shader_globals(shader::shader* shader) override;
-		bool bind_shader_instances(shader::shader* shader, uint32_t instance_id) override;
-		bool apply_shader_globals(shader::shader* shader) override;
-		bool apply_shader_instances(shader::shader* shader, bool needs_update) override;
-		uint32_t acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) override;
-		void acquire_texture_map(texture::texture_map* map) override;
+		void acquire_texture_map(texture::texture_map* map) const override;
 		void release_texture_map(texture::texture_map* map) const override;
 
-		bool set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) override;
 		texture::texture::shared_ptr get_window_attachment(uint8_t index)override;
 		texture::texture::shared_ptr get_depth_attachment()override;
 		uint8_t get_window_index()override;
-		renderpass::renderpass* get_renderpass(std::string_view name) override;
+		renderpass::renderpass* get_renderpass(std::string_view name) const override;
 	private:
 		bool init_instance();
 		bool create_debug_messenger();
@@ -66,8 +57,6 @@ namespace egkr
 		void create_command_buffers();
 
 		bool recreate_swapchain();
-
-		shader::vulkan_stage create_module(shader::shader* shader, const shader::vulkan_stage_configuration& configuration);
 
 	private:
 		vulkan_context context_{};

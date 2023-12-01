@@ -241,45 +241,6 @@ namespace egkr
 		return backend_->free_material(texture);
 	}
 
-	bool renderer_frontend::populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) const
-	{
-		return backend_->populate_shader(shader, renderpass, stage_filenames, shader_stages);
-	}
-	void renderer_frontend::free_shader(shader::shader* shader) const
-	{
-		backend_->free_shader(shader);
-	}
-
-	bool renderer_frontend::use_shader(shader::shader* shader) const
-	{
-		return backend_->use_shader(shader);
-	}
-
-	bool renderer_frontend::bind_shader_globals(shader::shader* shader) const
-	{
-		return backend_->bind_shader_globals(shader);
-	}
-
-	bool renderer_frontend::bind_shader_instances(shader::shader* shader, uint32_t instance_id) const
-	{
-		return backend_->bind_shader_instances(shader, instance_id);
-	}
-
-	bool renderer_frontend::apply_shader_globals(shader::shader* shader) const
-	{
-		return backend_->apply_shader_globals(shader);
-	}
-
-	bool renderer_frontend::apply_shader_instances(shader::shader* shader, bool needs_update) const
-	{
-		return backend_->apply_shader_instances(shader, needs_update);
-	}
-
-	uint32_t renderer_frontend::acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) const
-	{
-		return backend_->acquire_shader_isntance_resources(shader, texture_maps);
-	}
-
 	void renderer_frontend::acquire_texture_map(texture::texture_map* map) const
 	{
 		return backend_->acquire_texture_map(map);
@@ -288,11 +249,6 @@ namespace egkr
 	void renderer_frontend::release_texture_map(texture::texture_map* map) const
 	{
 		return backend_->release_texture_map(map);
-	}
-
-	bool renderer_frontend::set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) const
-	{
-		return backend_->set_uniform(shader, uniform, value);
 	}
 
 	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const

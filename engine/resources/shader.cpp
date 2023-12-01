@@ -4,17 +4,17 @@
 
 namespace egkr::shader
 {
-	shader::shared_ptr shader::create(const renderer_frontend* renderer_context, const properties& properties)
+	shader::shared_ptr shader::create(const renderer_backend* renderer_context, const properties& properties)
 	{
-		auto shade = std::make_shared<shader>(renderer_context, properties);
+		auto shade = renderer_context->create_shader(properties);
 
 		auto renderpass = renderer_context->get_renderpass(properties.renderpass_name);
-		renderer_context->populate_shader(shade.get(), renderpass, properties.stage_filenames, properties.stages);
+		shade->populate(renderpass, properties.stage_filenames, properties.stages);
 		return shade;
 	}
 
-	shader::shader(const renderer_frontend* renderer_context, const properties& properties)
-		: resource(0, 0, properties.name), use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
+	shader::shader(const renderer_backend* renderer_context, const properties& properties)
+		: resource(0, 0, properties.name), properties_{ properties }, use_instances_{ properties.use_instance }, use_locals_{ properties.use_local }, renderer_context_{ renderer_context }
 	{
 		//TODO make backend renderer shader
 		state_ = state::uninitialised;
@@ -35,6 +35,11 @@ namespace egkr::shader
 			}
 		}
 		state_ = state::initialised;
+	}
+
+	shader::~shader()
+	{
+		
 	}
 
 	uint32_t shader::get_uniform_index(std::string_view uniform_name)

@@ -73,14 +73,48 @@ namespace egkr::shader
 		egkr::vector<texture::texture_map*> instance_textures{};
 	};
 
-	struct vulkan_state
+	static std::unordered_map<attribute_type, vk::Format> vulkan_attribute_types
 	{
-		const vulkan_context* context_{};
+		{attribute_type::float32_1, vk::Format::eR32Sfloat},
+		{attribute_type::float32_2, vk::Format::eR32G32Sfloat},
+		{attribute_type::float32_3, vk::Format::eR32G32B32Sfloat},
+		{attribute_type::float32_4, vk::Format::eR32G32B32A32Sfloat},
+		{attribute_type::int8, vk::Format::eR8Sint},
+		{attribute_type::uint8, vk::Format::eR8Uint},
+		{attribute_type::int16, vk::Format::eR16Sint},
+		{attribute_type::uint16, vk::Format::eR16Uint},
+		{attribute_type::int32, vk::Format::eR32Sint},
+		{attribute_type::uint32, vk::Format::eR32Uint},
+	};
 
-		uint32_t id{invalid_32_id};
+	class vulkan_shader : public shader::shader
+	{
+	public:
+		using shared_ptr = std::shared_ptr<shader>;
+		static shared_ptr create(const renderer_backend* renderer, const vulkan_context* context, const properties& properties);
+
+		vulkan_shader(const renderer_backend* renderer, const vulkan_context* context, const properties& properties);
+		~vulkan_shader() override;
+
+		void free() override;
+		bool use() override;
+		bool populate(renderpass::renderpass* pass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages) override;
+		bool bind_instances(uint32_t instance_id) override;
+		bool apply_instances(bool needs_update) override;
+		bool bind_globals() override;
+
+		bool apply_globals() override;
+		uint32_t acquire_instance_resources(const egkr::vector<texture::texture_map*>& texture_maps) override;
+		bool set_uniform(const uniform& uniform, const void* value) override;
+
+	private:
+		vulkan_stage create_module(const vulkan_stage_configuration& configuration);
+	private:
+		const vulkan_context* context_{};
+		uint32_t id{ invalid_32_id };
 		vulkan_configuration configuration{};
 		renderpass::vulkan_renderpass* renderpass{};
-		egkr::vector<vulkan_stage> stages;
+		egkr::vector<vulkan_stage> vulkan_stages;
 
 		vk::DescriptorPool descriptor_pool{};
 
@@ -97,20 +131,6 @@ namespace egkr::shader
 		egkr::vector<vulkan_instance_state> instance_states{};
 
 		void* mapped_uniform_buffer_memory{};
-	};
-
-	static std::unordered_map<attribute_type, vk::Format> vulkan_attribute_types
-	{
-		{attribute_type::float32_1, vk::Format::eR32Sfloat},
-		{attribute_type::float32_2, vk::Format::eR32G32Sfloat},
-		{attribute_type::float32_3, vk::Format::eR32G32B32Sfloat},
-		{attribute_type::float32_4, vk::Format::eR32G32B32A32Sfloat},
-		{attribute_type::int8, vk::Format::eR8Sint},
-		{attribute_type::uint8, vk::Format::eR8Uint},
-		{attribute_type::int16, vk::Format::eR16Sint},
-		{attribute_type::uint16, vk::Format::eR16Uint},
-		{attribute_type::int32, vk::Format::eR32Sint},
-		{attribute_type::uint32, vk::Format::eR32Uint},
 	};
 
 }

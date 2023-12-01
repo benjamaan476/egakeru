@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "renderer_types.h"
+#include "renderpass.h"
 #include "event.h"
 #include "renderer/camera.h"
 
@@ -10,6 +11,7 @@
 
 namespace egkr
 {
+
 	class renderer_frontend
 	{
 	public:
@@ -25,20 +27,8 @@ namespace egkr
 
 		void free_material(material* texture) const;
 
-		bool populate_shader(shader::shader* shader, renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<shader::stages>& shader_stages) const;
-		void free_shader(shader::shader* shader) const;
-
-		bool use_shader(shader::shader* shader) const;
-		bool bind_shader_globals(shader::shader* shader) const;
-		bool bind_shader_instances(shader::shader* shader, uint32_t instance_id) const;
-		bool apply_shader_globals(shader::shader* shader) const;
-		bool apply_shader_instances(shader::shader* shader, bool needs_update) const;
-		uint32_t acquire_shader_isntance_resources(shader::shader* shader, const egkr::vector<texture::texture_map*>& texture_maps) const;
-
 		void acquire_texture_map(texture::texture_map* map) const;
 		void release_texture_map(texture::texture_map* map) const;
-
-		bool set_uniform(shader::shader* shader, const shader::uniform& uniform, const void* value) const;
 
 		renderpass::renderpass* get_renderpass(std::string_view renderpass_name) const;
 		void populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const;
