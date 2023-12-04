@@ -31,14 +31,14 @@ namespace egkr
 	{
 		for (auto i{ 0U }; i < window_attachment_count; ++i)
 		{
-			auto& world = world_render_targets_[i];
-			backend_->free_render_target(&world, true);
-			backend_->free_render_target(&ui_render_targets_[i], true);
+			auto world = world_render_targets_[i].get();
+			world->free(true);
+			ui_render_targets_[i]->free(true);
 			auto colour = backend_->get_window_attachment(i);
 			auto depth = backend_->get_depth_attachment();
 
-			backend_->populate_render_target(&world, { colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
-			backend_->populate_render_target(&ui_render_targets_[i], { colour }, ui_renderpass_, framebuffer_width_, framebuffer_height_);
+			world->populate({ colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
+			backend_->populate_render_target(ui_render_targets_[i].get(), {colour}, ui_renderpass_, framebuffer_width_, framebuffer_height_);
 		}
 
 	}
@@ -103,6 +103,17 @@ namespace egkr
 		world_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.World");
 		ui_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.UI");
 
+		for (auto& render_target : world_render_targets_)
+		{
+			render_target = backend_->create_render_target();
+		}
+
+		for (auto& render_target : ui_render_targets_)
+		{
+			render_target = backend_->create_render_target();
+		}
+
+
 		regenerate_render_targets();
 
 		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
@@ -129,22 +140,18 @@ namespace egkr
 
 	void renderer_frontend::shutdown()
 	{
-		for (auto& target : world_renderpass_->get_render_targets())
-		{
-			backend_->free_render_target(target.get(), true);
-		}
 		for (auto& target : world_render_targets_)
 		{
-			backend_->free_render_target(&target, true);
+			target->free(true);
 		}
+		world_render_targets_.clear();
+
 		for (auto& target : ui_render_targets_)
 		{
-			backend_->free_render_target(&target, true);
+			target->free(true);
 		}
-		for (auto& target : ui_renderpass_->get_render_targets())
-		{
-			backend_->free_render_target(target.get(), true);
-		}
+		ui_render_targets_.clear();
+
 		backend_->shutdown();
 	}
 
@@ -169,7 +176,7 @@ namespace egkr
 		{
 			auto attachment_index = backend_->get_window_index();
 
-			if(world_renderpass_->begin(&world_render_targets_[attachment_index]))
+			if(world_renderpass_->begin(world_render_targets_[attachment_index].get()))
 			{
 				if (!shader_system::use(material_shader_id))
 				{
@@ -203,7 +210,7 @@ namespace egkr
 					return;
 				}
 
-				if(ui_renderpass_->begin(&ui_render_targets_[attachment_index]))
+				if(ui_renderpass_->begin(ui_render_targets_[attachment_index].get()))
 				{
 					if (!shader_system::use(ui_shader_id))
 					{
@@ -262,7 +269,7 @@ namespace egkr
 	
 	void renderer_frontend::free_render_target(render_target::render_target* render_target, bool free_internal_memory) const
 	{
-		backend_->free_render_target(render_target, free_internal_memory);
+		render_target->free(free_internal_memory);
 	}
 
 	bool renderer_frontend::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)

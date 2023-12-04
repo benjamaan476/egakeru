@@ -1,4 +1,5 @@
 #include "vulkan_renderpass.h"
+#include "vulkan_render_target.h"
 #include "command_buffer.h"
 #include "vulkan_types.h"
 
@@ -164,7 +165,7 @@ namespace egkr::renderpass
 	bool vulkan_renderpass::begin(render_target::render_target* render_target) const
 	{
 		ZoneScoped;
-
+		auto vulkan_render_target = (render_target::vulkan_render_target*)render_target;
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 
 		vk::Rect2D render_area{};
@@ -174,7 +175,7 @@ namespace egkr::renderpass
 		vk::RenderPassBeginInfo begin_info{};
 		begin_info
 			.setRenderPass(renderpass_)
-			.setFramebuffer(*(vk::Framebuffer*)(render_target->internal_framebuffer))
+			.setFramebuffer(vulkan_render_target->framebuffer_)
 			.setRenderArea(render_area);
 			
 		egkr::vector<vk::ClearValue> clear_colours{};

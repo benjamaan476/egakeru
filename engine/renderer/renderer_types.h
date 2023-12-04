@@ -73,9 +73,9 @@ namespace egkr
 		virtual texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
 		virtual shader::shader::shared_ptr create_shader(const shader::properties& properties) const = 0;
 		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
+		virtual render_target::render_target::shared_ptr create_render_target() const = 0;
 
 		virtual void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
-		virtual void free_render_target(render_target::render_target* render_target, bool free_internal_memory) = 0;
 
 		virtual void acquire_texture_map(texture::texture_map* map) const = 0;
 		virtual void release_texture_map(texture::texture_map* map) const = 0;

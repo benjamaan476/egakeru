@@ -10,5 +10,8 @@ namespace egkr::renderpass
 		clear_flags_ = configuration.clear_flags;
 	}
 	
-	renderpass::~renderpass() = default;
+	renderpass::~renderpass()
+	{
+		render_targets.clear();
+	}
 }

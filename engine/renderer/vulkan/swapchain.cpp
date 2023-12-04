@@ -45,6 +45,13 @@ namespace egkr
 		{
 			context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
 		}
+
+		for (auto& render_target : render_targets_)
+		{
+			render_target->free(true);
+		}
+		render_targets_.clear();
+
 	}
 
 	void swapchain::recreate()

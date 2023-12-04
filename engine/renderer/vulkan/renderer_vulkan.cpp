@@ -7,6 +7,7 @@
 
 #include "vulkan_geometry.h"
 #include "vulkan_shader.h"
+#include "vulkan_render_target.h"
 #include "resources/shader.h"
 
 #include "systems/texture_system.h"
@@ -479,11 +480,7 @@ namespace egkr
 			{
 				pass->free();
 			}
-			for (auto& target : context_.world_render_targets)
-			{
-				free_render_target(target.get(), true);
-			}
-			context_.world_render_targets.clear();
+			context_.renderpass_by_name.clear();
 
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
@@ -502,10 +499,6 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
-			for (auto& target : context_.swapchain->get_render_targets())
-			{
-				free_render_target(target.get(), true);
-			}
 			context_.swapchain->destroy();
 			context_.swapchain.reset();
 
@@ -895,7 +888,6 @@ namespace egkr
 		for (auto i{ 0U }; i < context_.swapchain->get_image_count(); ++i)
 		{
 			context_.graphics_command_buffers[i].free(&context_, context_.device.graphics_command_pool);
-			free_render_target(context_.swapchain->get_framebuffer(i).get(), true);
 		}
 
 		context_.swapchain->recreate();
@@ -940,51 +932,7 @@ namespace egkr
 	void renderer_vulkan::populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 	{
 		ZoneScoped;
-
-		egkr::vector<vk::ImageView> image_views{};
-		for (const auto& attachment : attachments)
-		{
-			image_views.push_back(((image::vulkan_texture*)(attachment.get()))->get_view());
-		}
-		vk::FramebufferCreateInfo create_info{};
-		create_info
-			.setRenderPass(((renderpass::vulkan_renderpass*)renderpass)->get_handle())
-			.setAttachments(image_views)
-			.setWidth(width)
-			.setHeight(height)
-			.setLayers(1);
-
-		render_target->attachments = attachments;
-
-		if (!render_target->internal_framebuffer)
-		{
-			render_target->internal_framebuffer = malloc(sizeof(vk::Framebuffer));
-		}
-		*(vk::Framebuffer*)render_target->internal_framebuffer = context_.device.logical_device.createFramebuffer(create_info, context_.allocator);
-	}
-
-	void renderer_vulkan::free_render_target(render_target::render_target* render_target, bool free_internal_memory)
-	{
-		ZoneScoped;
-
-		if (render_target)
-		{
-			if (render_target->internal_framebuffer)
-			{
-				context_.device.logical_device.destroyFramebuffer(*(vk::Framebuffer*)render_target->internal_framebuffer);
-				free(render_target->internal_framebuffer);
-				render_target->internal_framebuffer = nullptr;
-			}
-
-			if (free_internal_memory)
-			{
-				for (auto& attachment : render_target->attachments)
-				{
-					attachment->destroy();
-				}
-				render_target->attachments.clear();
-			}
-		}
+		render_target->populate(attachments, renderpass, width, height);
 	}
 
 	geometry::geometry::shared_ptr renderer_vulkan::create_geometry(const geometry::properties& properties) const
@@ -992,6 +940,11 @@ namespace egkr
 		ZoneScoped;
 
 		return geometry::vulkan_geometry::create(this, &context_, properties);
+	}
+
+	render_target::render_target::shared_ptr renderer_vulkan::create_render_target() const
+	{
+		return render_target::vulkan_render_target::create(this, &context_);
 	}
 
 	void renderer_vulkan::acquire_texture_map(texture::texture_map* map) const
