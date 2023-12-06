@@ -60,7 +60,7 @@ namespace egkr
 			using shared_ptr = std::shared_ptr<texture>;
 
 			static shared_ptr create(const renderer_backend* context, const properties& properties, const uint8_t* data);
-			texture(const renderer_backend* renderer, const properties& properties);
+			texture(const properties& properties);
 			virtual ~texture();
 
 			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
@@ -83,9 +83,6 @@ namespace egkr
 
 		protected:
 			properties properties_{};
-
-		private:
-			const renderer_backend* renderer_{};
 		};
 
 		struct texture_map

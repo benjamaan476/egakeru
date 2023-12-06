@@ -4,9 +4,9 @@
 
 namespace egkr::render_target
 {
-	render_target::shared_ptr vulkan_render_target::create(const renderer_backend* backend, const vulkan_context* context)
+	render_target::shared_ptr vulkan_render_target::create(const vulkan_context* context)
 	{
-		return std::make_shared<vulkan_render_target>(backend, context);
+		return std::make_shared<vulkan_render_target>(context);
 	}
 
 	vulkan_render_target::~vulkan_render_target()
@@ -17,8 +17,8 @@ namespace egkr::render_target
 	bool vulkan_render_target::populate(egkr::vector<texture::texture::shared_ptr> attachment, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 	{
 		egkr::vector<vk::ImageView> image_views{};
-		attachments = attachment;
-		for (const auto& attachment : attachments)
+		attachments_ = attachment;
+		for (const auto& attachment : attachments_)
 		{
 			image_views.push_back(((image::vulkan_texture*)(attachment.get()))->get_view());
 		}
@@ -45,11 +45,11 @@ namespace egkr::render_target
 
 		if (free_internal_memory)
 		{
-			for (auto& attachment : attachments)
+			for (auto& attachment : attachments_)
 			{
 				attachment->destroy();
 			}
-			attachments.clear();
+			attachments_.clear();
 		}
 		return true;
 	}

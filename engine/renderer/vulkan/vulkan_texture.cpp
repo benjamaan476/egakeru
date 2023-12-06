@@ -20,9 +20,9 @@ namespace egkr::image
 		}
 	}
 
-	vulkan_texture::shared_ptr vulkan_texture::create(const renderer_backend* renderer, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
+	vulkan_texture::shared_ptr vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
 	{
-		auto img =  std::make_shared<vulkan_texture>(renderer, context, width_, height_, properties);
+		auto img =  std::make_shared<vulkan_texture>(context, width_, height_, properties);
 
 		if (create_view)
 		{
@@ -31,9 +31,9 @@ namespace egkr::image
 		return img;
 	}
 
-	vulkan_texture* vulkan_texture::create_raw(const renderer_backend* renderer, const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
+	vulkan_texture* vulkan_texture::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
 	{
-		auto img = new vulkan_texture(renderer, context, width, height, properties);
+		auto img = new vulkan_texture(context, width, height, properties);
 
 		if (create_view)
 		{
@@ -62,8 +62,8 @@ namespace egkr::image
 		view_ = context_->device.logical_device.createImageView(image_view_info, context_->allocator);
 	}
 
-	vulkan_texture::vulkan_texture(const renderer_backend* renderer, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
-		: texture(renderer, properties), context_{ context }, width_{width_}, height_{height_}
+	vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
+		: texture(properties), context_{ context }, width_{width_}, height_{height_}
 	{
 	
 	}

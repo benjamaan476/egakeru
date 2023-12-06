@@ -175,7 +175,7 @@ namespace egkr::renderpass
 		vk::RenderPassBeginInfo begin_info{};
 		begin_info
 			.setRenderPass(renderpass_)
-			.setFramebuffer(vulkan_render_target->framebuffer_)
+			.setFramebuffer(vulkan_render_target->get_framebuffer())
 			.setRenderArea(render_area);
 			
 		egkr::vector<vk::ClearValue> clear_colours{};

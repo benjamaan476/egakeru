@@ -915,7 +915,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 		return tex;
 	}
@@ -929,12 +929,6 @@ namespace egkr
 		return shade;
 	}
 
-	void renderer_vulkan::populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
-	{
-		ZoneScoped;
-		render_target->populate(attachments, renderpass, width, height);
-	}
-
 	geometry::geometry::shared_ptr renderer_vulkan::create_geometry(const geometry::properties& properties) const
 	{
 		ZoneScoped;
@@ -944,7 +938,7 @@ namespace egkr
 
 	render_target::render_target::shared_ptr renderer_vulkan::create_render_target() const
 	{
-		return render_target::vulkan_render_target::create(this, &context_);
+		return render_target::vulkan_render_target::create(&context_);
 	}
 
 	void renderer_vulkan::acquire_texture_map(texture::texture_map* map) const

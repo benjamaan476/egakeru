@@ -31,8 +31,6 @@ namespace egkr
 		void release_texture_map(texture::texture_map* map) const;
 
 		renderpass::renderpass* get_renderpass(std::string_view renderpass_name) const;
-		void populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const;
-		void free_render_target(render_target::render_target* render_target, bool free_internal_memory) const;
 
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 

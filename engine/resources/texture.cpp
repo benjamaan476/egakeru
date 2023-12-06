@@ -11,8 +11,8 @@ namespace egkr::texture
 		return tex;
 	}
 
-	texture::texture(const renderer_backend* renderer, const properties& properties)
-		: resource(properties.id, properties.generation, properties.name), properties_{ properties }, renderer_{ renderer }
+	texture::texture(const properties& properties)
+		: resource(properties.id, properties.generation, properties.name), properties_{ properties }
 	{
 		data = (void*)properties.data;
 	}
@@ -27,10 +27,6 @@ namespace egkr::texture
 
 	void texture::destroy()
 	{
-		if (renderer_)
-		{
-			renderer_ = nullptr;
-		}
 		if (properties_.data)
 		{
 			::free(properties_.data);

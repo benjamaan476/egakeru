@@ -38,9 +38,8 @@ namespace egkr
 			auto depth = backend_->get_depth_attachment();
 
 			world->populate({ colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
-			backend_->populate_render_target(ui_render_targets_[i].get(), {colour}, ui_renderpass_, framebuffer_width_, framebuffer_height_);
+			ui_render_targets_[i]->populate({ colour }, ui_renderpass_, framebuffer_width_, framebuffer_height_);
 		}
-
 	}
 
 	renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
@@ -261,15 +260,6 @@ namespace egkr
 	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const
 	{
 		return backend_->get_renderpass(renderpass_name);
-	}
-	void renderer_frontend::populate_render_target(render_target::render_target* render_target, const egkr::vector<texture::texture::shared_ptr>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) const
-	{
-		backend_->populate_render_target(render_target, attachments, renderpass, width, height);
-	}
-	
-	void renderer_frontend::free_render_target(render_target::render_target* render_target, bool free_internal_memory) const
-	{
-		render_target->free(free_internal_memory);
 	}
 
 	bool renderer_frontend::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)

@@ -24,16 +24,12 @@ namespace egkr
 		void draw_geometry(const geometry::render_data& model) final;
 		void end_frame() final;
 
-		const void* get_context() const final { return &context_; }
-
 		void free_material(material* texture) const override;
 
 		texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const override;
 		shader::shader::shared_ptr create_shader(const shader::properties& properties) const override;
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 		render_target::render_target::shared_ptr create_render_target() const override;
-
-		void populate_render_target(render_target::render_target* render_target, egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
 
 		void acquire_texture_map(texture::texture_map* map) const override;
 		void release_texture_map(texture::texture_map* map) const override;
