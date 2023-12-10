@@ -63,7 +63,6 @@ namespace egkr
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame() = 0;
-		virtual void draw_geometry(const geometry::render_data& model) = 0;
 		virtual void end_frame() = 0;
 
 		virtual void free_material(material* texture) const = 0;
@@ -72,9 +71,7 @@ namespace egkr
 		virtual shader::shader::shared_ptr create_shader(const shader::properties& properties) const = 0;
 		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
 		virtual render_target::render_target::shared_ptr create_render_target() const = 0;
-
-		virtual void acquire_texture_map(texture::texture_map* map) const = 0;
-		virtual void release_texture_map(texture::texture_map* map) const = 0;
+		virtual texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const = 0;
 
 		virtual texture::texture::shared_ptr get_window_attachment(uint8_t index) = 0;
 		virtual texture::texture::shared_ptr get_depth_attachment() = 0;

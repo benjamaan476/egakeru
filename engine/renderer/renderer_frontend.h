@@ -27,9 +27,6 @@ namespace egkr
 
 		void free_material(material* texture) const;
 
-		void acquire_texture_map(texture::texture_map* map) const;
-		void release_texture_map(texture::texture_map* map) const;
-
 		renderpass::renderpass* get_renderpass(std::string_view renderpass_name) const;
 
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);

@@ -136,7 +136,7 @@ namespace egkr
 			void set_bound_ubo_offset(uint64_t offset) { bound_ubo_offset_ = offset; }
 			const auto& get_bound_ubo_offset() const  {	return bound_ubo_offset_; }
 
-			void set_global_texture(uint32_t index, texture::texture_map* map);
+			void set_global_texture(uint32_t index, texture_map::texture_map* map);
 
 			const auto& get_attribute_stride() const { return attribute_stride_; }
 
@@ -147,7 +147,7 @@ namespace egkr
 			virtual bool apply_instances(bool needs_update) = 0;
 			virtual bool bind_globals() = 0;
 			virtual bool apply_globals() = 0;
-			virtual uint32_t acquire_instance_resources(const egkr::vector<texture::texture_map*>& texture_maps) = 0;
+			virtual uint32_t acquire_instance_resources(const egkr::vector<texture_map::texture_map::shared_ptr>& texture_maps) = 0;
 			virtual bool set_uniform(const uniform& uniform, const void* value) = 0;
 		private:
 			bool add_attribute(const attribute_configuration& configuration);
@@ -173,7 +173,7 @@ namespace egkr
 
 			uint64_t push_constant_size_{};
 			uint64_t push_constan_stride_{};
-			egkr::vector<std::shared_ptr<texture::texture_map>> global_textures_{};
+			egkr::vector<std::shared_ptr<texture_map::texture_map>> global_textures_{};
 
 			uint8_t instance_texture_count_{};
 			scope bound_scope_{};

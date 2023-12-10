@@ -70,4 +70,26 @@ namespace egkr
 			uint32_t height_{};
 		};
 	}
+
+	namespace texture::vulkan::texture_map
+	{
+		class texture_map : public egkr::texture_map::texture_map
+		{
+		public:
+			using shared_ptr = std::shared_ptr<texture_map>;
+			static shared_ptr create(const vulkan_context* context, const egkr::texture_map::properties& properties)
+			{
+				return std::make_shared<texture_map>(context, properties);
+			}
+
+			texture_map(const vulkan_context* context, const egkr::texture_map::properties& properties);
+			~texture_map() override;
+			void acquire() override;
+			void release() override;
+
+			vk::Sampler sampler{};
+		private:
+			const vulkan_context* context_{};
+		};
+	}
 }

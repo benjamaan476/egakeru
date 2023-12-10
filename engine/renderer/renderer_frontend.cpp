@@ -199,8 +199,7 @@ namespace egkr
 						material->set_render_frame(backend_->get_frame_number());
 					}
 						material_system::apply_local(material, render_data.model);
-
-					backend_->draw_geometry(render_data);
+						render_data.geometry->draw();
 				}
 
 				if (!world_renderpass_->end())
@@ -227,7 +226,7 @@ namespace egkr
 						material_system::apply_instance(material, needs_update);
 
 						material_system::apply_local(material, render_data.model);
-						backend_->draw_geometry(render_data);
+						render_data.geometry->draw();
 					}
 
 					if (!ui_renderpass_->end())
@@ -245,16 +244,6 @@ namespace egkr
 	void renderer_frontend::free_material(material* texture) const
 	{
 		return backend_->free_material(texture);
-	}
-
-	void renderer_frontend::acquire_texture_map(texture::texture_map* map) const
-	{
-		return backend_->acquire_texture_map(map);
-	}
-
-	void renderer_frontend::release_texture_map(texture::texture_map* map) const
-	{
-		return backend_->release_texture_map(map);
 	}
 
 	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const

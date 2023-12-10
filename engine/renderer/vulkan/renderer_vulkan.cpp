@@ -15,40 +15,7 @@
 
 namespace egkr
 {
-	vk::SamplerAddressMode convert_repeat_type(std::string_view axis, texture::repeat repeat)
-	{
-		ZoneScoped;
-		switch (repeat)
-		{
-		case egkr::texture::repeat::repeat:
-			return vk::SamplerAddressMode::eRepeat;
-		case egkr::texture::repeat::mirrored_repeat:
-			return vk::SamplerAddressMode::eMirroredRepeat;
-		case egkr::texture::repeat::clamp_to_edge:
-			return vk::SamplerAddressMode::eClampToEdge;
-		case egkr::texture::repeat::clamp_to_border:
-			return vk::SamplerAddressMode::eClampToBorder;
-		default:
-			LOG_WARN("Unknown address mode specified for {}. Defaulting to repeat.", axis.data());
-			return vk::SamplerAddressMode::eRepeat;
-		}
-	}
 
-	vk::Filter convert_filter_type(std::string_view op, texture::filter filter)
-	{
-		ZoneScoped;
-
-		switch (filter)
-		{
-		case egkr::texture::filter::nearest:
-			return vk::Filter::eNearest;
-		case egkr::texture::filter::linear:
-			return vk::Filter::eLinear;
-		default:
-			LOG_WARN("Unknown filter tyoe for {}. Defaulting to nearest", op.data());
-			return vk::Filter::eNearest;
-		}
-	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -577,13 +544,6 @@ namespace egkr
 		return true;
 	}
 
-	void renderer_vulkan::draw_geometry(const geometry::render_data& data)
-	{
-		ZoneScoped;
-
-		data.geometry->draw();
-	}
-
 	void renderer_vulkan::end_frame()
 	{
 		ZoneScoped;
@@ -906,9 +866,9 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		release_texture_map(&material->get_diffuse_map());
-		release_texture_map(&material->get_specular_map());
-		release_texture_map(&material->get_normal_map());
+		material->get_diffuse_map()->release();
+		material->get_specular_map()->release();
+		material->get_normal_map()->release();
 	}
 
 	texture::texture::shared_ptr renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
@@ -941,44 +901,9 @@ namespace egkr
 		return render_target::vulkan_render_target::create(&context_);
 	}
 
-	void renderer_vulkan::acquire_texture_map(texture::texture_map* map) const
+	texture_map::texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
 	{
-		ZoneScoped;
-
-		vk::SamplerCreateInfo create_info{};
-		create_info
-			.setMinFilter(convert_filter_type("min", map->minify))
-			.setMagFilter(convert_filter_type("mag", map->magnify))
-			.setAddressModeU(convert_repeat_type("u", map->repeat_u))
-			.setAddressModeV(convert_repeat_type("v", map->repeat_u))
-			.setAddressModeW(convert_repeat_type("w", map->repeat_u))
-			.setAnisotropyEnable(true)
-			.setMaxAnisotropy(16)
-			.setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
-			.setUnnormalizedCoordinates(false)
-			.setCompareEnable(false)
-			.setMipmapMode(vk::SamplerMipmapMode::eLinear);
-
-		map->internal_data = new vk::Sampler();
-		*(vk::Sampler*)map->internal_data = context_.device.logical_device.createSampler(create_info, context_.allocator);
-	}
-
-	void renderer_vulkan::release_texture_map(texture::texture_map* map) const
-	{
-		ZoneScoped;
-
-		if (!map || !map->internal_data)
-		{
-			//LOG_WARN("Tried to release an invalid texture map");
-			return;
-		}
-
-		map->texture->free();
-
-		context_.device.logical_device.destroySampler(*(vk::Sampler*)map->internal_data, context_.allocator);
-		delete (vk::Sampler*)map->internal_data;
-		map->internal_data = nullptr;
-
+		return texture::vulkan::texture_map::texture_map::create(&context_, properties);
 	}
 
 	texture::texture::shared_ptr renderer_vulkan::get_window_attachment(uint8_t index)
