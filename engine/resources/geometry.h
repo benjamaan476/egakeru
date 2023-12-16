@@ -23,7 +23,7 @@ namespace egkr
 			egkr::vector<uint32_t> indices{};
 
 			std::string name{};
-			std::string material_name{ "default" };
+			std::string material_name{ default_material_name_ };
 
 			float3 center{};
 			float3 min_extent{};

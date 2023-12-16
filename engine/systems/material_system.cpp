@@ -223,8 +223,8 @@ namespace egkr
 		}
 
 		auto mat_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_MATERIAL);
-		mat_shader->acquire_instance_resources(texture_maps);
-
+		auto id = mat_shader->acquire_instance_resources(texture_maps);
+		material_system_->default_material_->set_internal_id(id);
 		return true;
 	}
 

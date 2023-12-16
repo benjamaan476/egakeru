@@ -16,7 +16,6 @@ using namespace std::chrono_literals;
 
 namespace egkr
 {
-
 	static application::unique_ptr application_;
 	bool application::create(game::unique_ptr game)
 	{
@@ -39,7 +38,6 @@ namespace egkr
 		state_.game = std::move(game);
 
 		//Init subsystems
-
 		egkr::log::init();
 		egkr::input::init();
 		//
@@ -47,8 +45,6 @@ namespace egkr
 		const uint32_t start_y = 100;
 
 		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = state_.width_, .height_ = state_.height_, .name = state_.name };
-
-
 
 		state_.platform = egkr::platform::create(egkr::platform_type::windows);
 		if (state_.platform == nullptr)
@@ -67,7 +63,7 @@ namespace egkr
 		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
 
 		resource_system_configuration resource_system_configuration{};
-		resource_system_configuration.max_loader_count = 6;
+		resource_system_configuration.max_loader_count = 10;
 		resource_system_configuration.base_path = "../../../../assets/";
 
 		if (!resource_system::create(resource_system_configuration))
@@ -86,8 +82,6 @@ namespace egkr
 		{
 			LOG_FATAL("Failed to create geometry system");
 		}
-
-
 
 		shader_system_configuration shader_system_configuration{};
 		shader_system_configuration.max_global_textures = 31;
@@ -116,7 +110,6 @@ namespace egkr
 		geometry_system::init();
 		camera_system::init();
 
-
 		if (!state_.game->init())
 		{
 			LOG_ERROR("FAiled to create game");
@@ -142,7 +135,6 @@ namespace egkr
 		model_2.set_parent(&mesh_1->model());
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
-
 
 		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
 

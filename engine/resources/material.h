@@ -23,7 +23,7 @@ namespace egkr
 		std::string normal_map_name{"default_normal_texture"};
 		std::string shader_name{"Shader.Builtin.Material"};
 		float shininess{};
-		float4 diffuse_colour{};
+		float4 diffuse_colour{ 0.588F, 0.588F, 0.588F, 1.F };
 	};
 
 	class renderer_frontend;

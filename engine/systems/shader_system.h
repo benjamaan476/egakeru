@@ -32,7 +32,6 @@ namespace egkr
 		static shader::shader::shared_ptr get_shader(const std::string&  shader_name);
 		static shader::shader::shared_ptr get_shader(uint32_t shader_id);
 
-
 		static bool use(const std::string& shader_name);
 		static bool use(uint32_t shader_id);
 
