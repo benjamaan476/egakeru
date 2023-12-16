@@ -324,7 +324,8 @@ namespace egkr::shader
 				for (auto i{ 0U }; i < total_sampler_count; ++i)
 				{
 					auto& texture_map = instance_states[get_bound_instance_id()].instance_textures[i];
-					auto sampler = (vk::Sampler*)texture_map->internal_data;
+
+					auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
 
 					auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
 
@@ -332,7 +333,7 @@ namespace egkr::shader
 					image_info
 						.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
 						.setImageView(texture_data->get_view())
-						.setSampler(*sampler);
+						.setSampler(vulkan_map->sampler);
 
 					image_infos[i] = image_info;
 
@@ -395,7 +396,7 @@ namespace egkr::shader
 		return true;
 	}
 
-	uint32_t vulkan_shader::acquire_instance_resources(const egkr::vector<texture::texture_map*>& texture_maps)
+	uint32_t vulkan_shader::acquire_instance_resources(const egkr::vector<texture_map::texture_map::shared_ptr>& texture_maps)
 	{
 		auto instance_id = instance_states.size();
 
@@ -424,11 +425,11 @@ namespace egkr::shader
 		{
 			if (uniform.scope == scope::global)
 			{
-				set_global_texture(uniform.location, (texture::texture_map*)value);
+				set_global_texture(uniform.location, ((texture_map::texture_map::shared_ptr*)(value))->get());
 			}
 			else
 			{
-				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = (texture::texture_map*)value;
+				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(texture_map::texture_map::shared_ptr*)value;
 			}
 		}
 		else

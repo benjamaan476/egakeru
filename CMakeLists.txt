@@ -51,9 +51,9 @@ target_compile_features(egakeru_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 add_library(egakeru::egakeru_options ALIAS egakeru_options)
 add_library(egakeru::egakeru_warnings ALIAS egakeru_warnings)
 
-option(TRACY_ENABLE ON)
-option(TRACY_ON_DEMAND "" ON)
-option(TRACY_MEMORY ON)
+#option(TRACY_ENABLE ON)
+#option(TRACY_ON_DEMAND "" ON)
+#option(TRACY_MEMORY ON)
 
 if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)

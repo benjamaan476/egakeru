@@ -70,7 +70,7 @@ namespace egkr::shader
 		uint64_t offset{};
 		vulkan_descriptor_set_state descriptor_set_state{};
 
-		egkr::vector<texture::texture_map*> instance_textures{};
+		egkr::vector<texture_map::texture_map::shared_ptr> instance_textures{};
 	};
 
 	static std::unordered_map<attribute_type, vk::Format> vulkan_attribute_types
@@ -104,7 +104,7 @@ namespace egkr::shader
 		bool bind_globals() override;
 
 		bool apply_globals() override;
-		uint32_t acquire_instance_resources(const egkr::vector<texture::texture_map*>& texture_maps) override;
+		uint32_t acquire_instance_resources(const egkr::vector<texture_map::texture_map::shared_ptr>& texture_maps) override;
 		bool set_uniform(const uniform& uniform, const void* value) override;
 
 	private:

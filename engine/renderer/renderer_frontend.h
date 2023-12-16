@@ -27,12 +27,7 @@ namespace egkr
 
 		void free_material(material* texture) const;
 
-		void acquire_texture_map(texture::texture_map* map) const;
-		void release_texture_map(texture::texture_map* map) const;
-
 		renderpass::renderpass* get_renderpass(std::string_view renderpass_name) const;
-
-		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 
 		void regenerate_render_targets();
 		const auto& get_backend() const { return backend_; }
@@ -46,16 +41,8 @@ namespace egkr
 
 		uint32_t framebuffer_width_{};
 		uint32_t framebuffer_height_{};
-		camera::shared_ptr world_camera_{};
-		float near_clip_{0.1F};
-		float far_clip_{ 1000.F };
-		float4x4 world_projection_{1.F};
-		float4x4 ui_projection_{1.F};
-		float4x4 ui_view_{1.F};
 		uint32_t material_shader_id{};
 		uint32_t ui_shader_id{};
-		float4 ambient_colour_{ 0.25F, 0.25F, 0.25F, 1.F };
-		uint32_t mode_{};
 		//TODO temp
 	};
 }

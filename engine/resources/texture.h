@@ -9,14 +9,6 @@ namespace egkr
 
 	namespace texture
 	{
-		enum class use
-		{
-			unknown = 0,
-			map_diffuse,
-			map_specular,
-			map_normal
-		};
-
 		enum class flags : uint8_t
 		{
 			has_transparency = 0x01,
@@ -25,20 +17,6 @@ namespace egkr
 		};
 
 		ENUM_CLASS_OPERATORS(flags)
-
-		enum class filter
-		{
-			nearest,
-			linear
-		};
-
-		enum class repeat
-		{
-			repeat,
-			mirrored_repeat,
-			clamp_to_edge,
-			clamp_to_border
-		};
 
 		struct properties
 		{
@@ -60,7 +38,7 @@ namespace egkr
 			using shared_ptr = std::shared_ptr<texture>;
 
 			static shared_ptr create(const renderer_backend* context, const properties& properties, const uint8_t* data);
-			texture(const properties& properties);
+			explicit texture(const properties& properties);
 			virtual ~texture();
 
 			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
@@ -76,17 +54,65 @@ namespace egkr
 			void set_height(uint32_t height) { properties_.height = height; }
 			void set_channel_count(uint32_t channel_count) { properties_.channel_count = channel_count; }
 
-			[[nodiscard]] const auto& get_flags() const { return properties_.flags; }
-			[[nodiscard]] const auto& get_width() const { return properties_.width; }
+			[[nodiscard]] const auto& get_flags() const	{ return properties_.flags; }
+			[[nodiscard]] const auto& get_width() const	{ return properties_.width; }
 			[[nodiscard]] const auto& get_height() const { return properties_.height; }
 			[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
 
 		protected:
 			properties properties_{};
 		};
+	}
 
-		struct texture_map
+	namespace texture_map
+	{
+		enum class filter
 		{
+			nearest,
+			linear
+		};
+
+		enum class repeat
+		{
+			repeat,
+			mirrored_repeat,
+			clamp_to_edge,
+			clamp_to_border
+		};
+
+		enum class use
+		{
+			unknown = 0,
+			map_diffuse,
+			map_specular,
+			map_normal
+		};
+
+		struct properties
+		{
+			filter minify{filter::linear};
+			filter magnify{filter::linear};
+			repeat repeat_u{repeat::repeat};
+			repeat repeat_v{repeat::repeat};
+			repeat repeat_w{repeat::repeat};
+
+			use use{};
+		};
+
+		class texture_map
+		{
+		public:
+			using shared_ptr = std::shared_ptr<texture_map>;
+			static shared_ptr create(const renderer_backend* context, const properties& properties);
+
+			explicit texture_map(const properties& properties);
+			virtual ~texture_map();
+
+			void free();
+
+			virtual void acquire() = 0;
+			virtual void release() = 0;
+
 			filter minify{};
 			filter magnify{};
 
@@ -95,10 +121,7 @@ namespace egkr
 			repeat repeat_w;
 
 			use use{};
-			texture::shared_ptr texture{};
-
-			//Renderer specific data (Sampler)
-			void* internal_data;
+			texture::texture::shared_ptr texture{};
 		};
 	}
 }

@@ -36,55 +36,6 @@ namespace egkr::renderpass
 		context_ = nullptr;
 	}
 
-	void vulkan_renderpass::begin(command_buffer& command_buffer, vk::Framebuffer framebuffer)
-	{
-		ZoneScoped;
-
-		vk::Rect2D render_area{};
-		render_area
-			.setOffset({ (int32_t)render_area_.x, (int32_t)render_area_.y })
-			.setExtent({ (uint32_t)render_area_.z, (uint32_t)render_area_.w });
-	
-
-		egkr::vector<vk::ClearValue> clear_values{};
-
-		if (clear_flags_ & egkr::renderpass::clear_flags::colour)
-		{
-			vk::ClearValue colour_clear_value{};
-			colour_clear_value
-				.setColor({ std::array<float, 4>{ clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a } });
-			clear_values.push_back(colour_clear_value);
-		}
-
-		if (clear_flags_ & egkr::renderpass::clear_flags::depth)
-		{
-			vk::ClearValue depth_clear_value{};
-			depth_clear_value
-				.setDepthStencil({ depth_, stencil_ });
-			clear_values.push_back(depth_clear_value);
-		}
-
-		vk::RenderPassBeginInfo begin_info{};
-		begin_info
-			.setRenderPass(renderpass_)
-			.setFramebuffer(framebuffer)
-			.setClearValues(clear_values)
-			.setRenderArea(render_area);
-
-		command_buffer.begin_render_pass(begin_info);
-	}
-
-	void vulkan_renderpass::end(command_buffer& command_buffer)
-	{
-		ZoneScoped;
-
-		command_buffer.end_render_pass();
-	}
-	void vulkan_renderpass::set_extent(uint4 extent)
-	{
-		render_area_ = extent;
-	}
-
 	bool vulkan_renderpass::populate(float depth, float stencil, bool has_previous, bool has_next)
 	{
 		ZoneScoped;

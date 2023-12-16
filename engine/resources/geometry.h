@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "material.h"
+#include "transform.h"
 
 #include "renderer/vertex_types.h"
 
@@ -23,7 +24,7 @@ namespace egkr
 			egkr::vector<uint32_t> indices{};
 
 			std::string name{};
-			std::string material_name{ "default" };
+			std::string material_name{ default_material_name_ };
 
 			float3 center{};
 			float3 min_extent{};
@@ -66,7 +67,7 @@ namespace egkr
 		struct render_data
 		{
 			geometry::shared_ptr geometry{};
-			float4x4 model{};
+			transform model{};
 		};
 	}
 }
