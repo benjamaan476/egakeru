@@ -51,7 +51,12 @@ namespace egkr
 			virtual void free() = 0;
 
 			[[nodiscard]] auto& get_render_targets() const {return render_targets;}
+			void set_render_targets(const egkr::vector<render_target::render_target::shared_ptr>& targets)
+			{
+				render_targets = targets;
+			}
 			auto& get_render_area() { return render_area_; }
+			void set_render_area(uint32_t width, uint32_t height);
 
 		protected:
 			float4 render_area_{};

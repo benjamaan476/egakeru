@@ -7,6 +7,7 @@
 #include "platform/platform.h"
 
 #include "vertex_types.h"
+#include "render_view.h"
 #include "renderpass.h"
 #include "render_target.h"
 
@@ -41,8 +42,7 @@ namespace egkr
 
 	struct render_packet
 	{
-		egkr::vector<geometry::render_data> world_geometry_data{};
-		egkr::vector<geometry::render_data> ui_geometry_data{};
+		egkr::vector<render_view::render_view_packet> render_views{};
 	};
 
 	struct renderer_backend_configuration

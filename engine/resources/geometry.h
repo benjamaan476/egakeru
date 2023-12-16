@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "material.h"
+#include "transform.h"
 
 #include "renderer/vertex_types.h"
 
@@ -66,7 +67,7 @@ namespace egkr
 		struct render_data
 		{
 			geometry::shared_ptr geometry{};
-			float4x4 model{};
+			transform model{};
 		};
 	}
 }

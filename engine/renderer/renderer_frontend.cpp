@@ -7,6 +7,7 @@
 #include "systems/material_system.h"
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
+#include "systems/view_system.h"
 
 #include "vulkan/renderer_vulkan.h"
 
@@ -52,8 +53,6 @@ namespace egkr
 		const auto& size = platform->get_framebuffer_size();
 		framebuffer_width_ = size.x;
 		framebuffer_height_ = size.y;
-		world_projection_ = glm::perspective(glm::radians(45.0F), size.x / (float)size.y, 0.1F, 1000.F);
-		ui_projection_ = glm::ortho(0.F, (float)size.x, (float)size.y, 0.F, -100.F, 100.F);
 
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });
@@ -107,12 +106,14 @@ namespace egkr
 			render_target = backend_->create_render_target();
 		}
 
+		world_renderpass_->set_render_targets(world_render_targets_);
+
 		for (auto& render_target : ui_render_targets_)
 		{
 			render_target = backend_->create_render_target();
 		}
 
-
+		ui_renderpass_->set_render_targets(ui_render_targets_);
 		regenerate_render_targets();
 
 		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
@@ -133,7 +134,6 @@ namespace egkr
 
 		ui_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_UI);
 
-		event::register_event(event_code::render_mode, this, on_event);
 		return backen_init;
 	}
 
@@ -158,14 +158,14 @@ namespace egkr
 	{
 		framebuffer_width_ = width;
 		framebuffer_height_ = height;
+
+		view_system::on_window_resize(width, height);
+
 		world_renderpass_->get_render_area().z = width;
 		world_renderpass_->get_render_area().w = height;
 		ui_renderpass_->get_render_area().z = width;
 		ui_renderpass_->get_render_area().w = height;
 
-
-		world_projection_ = glm::perspective(glm::radians(45.0F), width / (float)height, near_clip_, far_clip_);
-		ui_projection_ = glm::ortho(0.f, (float)width, (float)height, 0.F, -100.F, 100.F);
 		backend_->resize(width, height);
 	}
 
@@ -174,66 +174,11 @@ namespace egkr
 		if (backend_->begin_frame())
 		{
 			auto attachment_index = backend_->get_window_index();
-
-			if(world_renderpass_->begin(world_render_targets_[attachment_index].get()))
+			for (auto& view : packet.render_views)
 			{
-				if (!shader_system::use(material_shader_id))
+				if (!view_system::on_render(view.render_view, &view, backend_->get_frame_number(), attachment_index))
 				{
-					LOG_ERROR("Failed to use material shader");
-					return;
-				}
-
-				if (!world_camera_)
-				{
-					world_camera_ = camera_system::get_default();
-				}
-
-				material_system::apply_global(material_shader_id, world_projection_, world_camera_->get_view(), ambient_colour_, world_camera_->get_position(), mode_);
-
-				for (const auto& render_data : packet.world_geometry_data)
-				{
-					auto& material = render_data.geometry->get_material();
-					bool needs_update = material->get_render_frame() != backend_->get_frame_number();
-					{
-						material_system::apply_instance(material, needs_update);
-						material->set_render_frame(backend_->get_frame_number());
-					}
-						material_system::apply_local(material, render_data.model);
-						render_data.geometry->draw();
-				}
-
-				if (!world_renderpass_->end())
-				{
-					LOG_ERROR("Failed to end world renderpass");
-					return;
-				}
-
-				if(ui_renderpass_->begin(ui_render_targets_[attachment_index].get()))
-				{
-					if (!shader_system::use(ui_shader_id))
-					{
-						LOG_ERROR("Failed to use material shader");
-						return;
-					}
-
-					material_system::apply_global(ui_shader_id, ui_projection_, ui_view_, {}, {}, 0);
-
-					for (const auto& render_data : packet.ui_geometry_data)
-					{
-						auto material = render_data.geometry->get_material();
-						bool needs_update = material->get_render_frame() != backend_->get_frame_number();
-
-						material_system::apply_instance(material, needs_update);
-
-						material_system::apply_local(material, render_data.model);
-						render_data.geometry->draw();
-					}
-
-					if (!ui_renderpass_->end())
-					{
-						LOG_ERROR("Failed to end ui renderpass");
-						return;
-					}
+					LOG_ERROR("Failed to render view");
 				}
 			}
 
@@ -251,15 +196,4 @@ namespace egkr
 		return backend_->get_renderpass(renderpass_name);
 	}
 
-	bool renderer_frontend::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)
-	{
-		if (code == event_code::render_mode)
-		{
-			const auto& context_array = std::get<std::array<uint32_t, 4>>(context);
-			const auto& mode = context_array[0];
-
-			((renderer_frontend*)listener)->mode_ = mode;
-		}
-		return false;
-	}
 }

@@ -8,6 +8,7 @@
 #include "systems/geometry_utils.h"
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
+#include "systems/view_system.h"
 
 #include "resources/transform.h"
 #include "resources/geometry.h"
@@ -99,6 +100,12 @@ namespace egkr
 			LOG_FATAL("Failed to create camera system");
 		}
 
+		if (!view_system::create(state_.renderer.get()))
+		{
+			LOG_FATAL("Failed to create view system");
+			return;
+		}
+
 		if (!state_.renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
@@ -109,6 +116,28 @@ namespace egkr
 		material_system::init();
 		geometry_system::init();
 		camera_system::init();
+		view_system::init();
+
+		{
+			render_view::configuration opaque_world{};
+			opaque_world.type = render_view::type::world;
+			opaque_world.width = state_.width_;
+			opaque_world.height = state_.height_;
+			opaque_world.name = "world-opaque";
+			opaque_world.passes.push_back({ "Renderpass.Builtin.World" });
+			opaque_world.view_source = render_view::view_matrix_source::scene_camera;
+			view_system::create_view(opaque_world);
+		}
+		{
+			render_view::configuration ui{};
+			ui.type = render_view::type::ui;
+			ui.width = state_.width_;
+			ui.height = state_.height_;
+			ui.name = "ui";
+			ui.passes.push_back({ "Renderpass.Builtin.UI" });
+			ui.view_source = render_view::view_matrix_source::ui_camera;
+			view_system::create_view(ui);
+		}
 
 		if (!state_.game->init())
 		{
@@ -173,7 +202,8 @@ namespace egkr
 		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 		ui_properties.indices = indices;
 
-		test_ui_geometry_ = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
+		auto ui_geo = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
+		ui_meshes_.push_back(mesh::create(ui_geo, {}));
 
 		state_.is_running = true;
 		is_initialised_ = true;
@@ -197,8 +227,6 @@ namespace egkr
 
 				state.game->render(delta_time);
 
-				render_packet render_data{};
-
 				auto& model = application_->meshes_[0]->model();
 				glm::quat q({ 0, 0, 0.5F * delta_time });
 				model.rotate(q);
@@ -206,16 +234,17 @@ namespace egkr
 				auto& model_2 = application_->meshes_[1]->model();
 				model_2.rotate(q);
 
-				for (auto& mesh : application_->meshes_)
-				{
-					for (auto& geom : mesh->get_geometries())
-					{
-						render_data.world_geometry_data.emplace_back(geom, mesh->model().get_world());
-					}
-				}
-				render_data.ui_geometry_data = { { application_->test_ui_geometry_ , float4x4{1.F}} };
+				render_packet packet{};
 
-				state.renderer->draw_frame(render_data);
+				render_view::mesh_packet_data world{.meshes = application_->meshes_};
+				auto world_view = view_system::get("world-opaque");
+				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
+
+				render_view::mesh_packet_data ui{ .meshes = application_->ui_meshes_ };
+				auto ui_view = view_system::get("ui");
+				packet.render_views.push_back(view_system::build_packet(ui_view.get(), &ui));
+
+				state.renderer->draw_frame(packet);
 			}
 			auto frame_duration = state.platform->get_time() - frame_time;
 			if (application_->limit_framerate_ && frame_duration < application_->frame_time_)
@@ -232,12 +261,13 @@ namespace egkr
 	{
 		application_->meshes_.clear();
 
-		application_->test_ui_geometry_.reset();
+		application_->ui_meshes_.clear();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
+		view_system::shutdown();
 		shader_system::shutdown();
 		texture_system::shutdown();
 		material_system::shutdown();
