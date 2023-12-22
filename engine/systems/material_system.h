@@ -20,6 +20,7 @@ namespace egkr
 		uint16_t shininess{};
 		uint16_t model{};
 		uint16_t mode{};
+		uint16_t directional_light{};
 	};
 
 	struct ui_shader_uniform_location

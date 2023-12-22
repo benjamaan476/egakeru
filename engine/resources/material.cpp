@@ -46,6 +46,11 @@ namespace egkr
 			normal_map_->texture = texture_system::acquire(properties.normal_map_name);
 		}
 		shader_id_ = shader_system::get_shader_id(shader_name_);
+
+		dir_light_ = {
+			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
+			float4(0.6F, 0.6F, 0.6F, 1.0F)
+		};
 	}
 
 	material::~material()

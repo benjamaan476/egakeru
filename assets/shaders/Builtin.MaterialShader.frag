@@ -2,15 +2,16 @@
 
 layout(location = 0) out vec4 out_colour;
 
-layout(set = 1, binding = 0) uniform local_uniform_object {
-    vec4 diffuse_colour;
-    float shininess;
-} object_ubo;
-
 struct directional_light {
-    vec3 direction;
+    vec4 direction;
     vec4 colour;
 };
+
+layout(set = 1, binding = 0) uniform local_uniform_object {
+    vec4 diffuse_colour;
+    directional_light dir_light;
+    float shininess;
+} object_ubo;
 
 struct point_light {
     vec3 position;
@@ -23,11 +24,7 @@ struct point_light {
     float quadratic;
 };
 
-// TODO: feed in from cpu
-directional_light dir_light = {
-    vec3(-0.57735, -0.57735, -0.57735),
-    vec4(0.6, 0.6, 0.6, 1.0)
-};
+
 
 // TODO: feed in from cpu
 point_light p_light_0 = {
@@ -84,7 +81,7 @@ void main() {
     if(in_mode == 0 || in_mode == 1) {
         vec3 view_direction = normalize(in_dto.view_position - in_dto.frag_position);
 
-        out_colour = calculate_directional_light(dir_light, normal, view_direction);
+        out_colour = calculate_directional_light(object_ubo.dir_light, normal, view_direction);
 
         out_colour += calculate_point_light(p_light_0, normal, in_dto.frag_position, view_direction);
         out_colour += calculate_point_light(p_light_1, normal, in_dto.frag_position, view_direction);
@@ -94,9 +91,9 @@ void main() {
 }
 
 vec4 calculate_directional_light(directional_light light, vec3 normal, vec3 view_direction) {
-    float diffuse_factor = max(dot(normal, -light.direction), 0.0);
+    float diffuse_factor = max(dot(normal, -light.direction.xyz), 0.0);
 
-    vec3 half_direction = normalize(view_direction - light.direction);
+    vec3 half_direction = normalize(view_direction - light.direction.xyz);
     float specular_factor = pow(max(dot(half_direction, normal), 0.0), object_ubo.shininess);
 
     vec4 diff_samp = texture(samplers[SAMP_DIFFUSE], in_dto.tex_coord);

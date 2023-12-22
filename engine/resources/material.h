@@ -9,6 +9,13 @@ namespace egkr
 {
 	constexpr static std::string_view default_material_name_{ "default" };
 
+	struct directional_light
+	{
+		float4 direction{};
+		float4 colour{ 1.F };
+	};
+
+
 	enum class material_type
 	{
 		world,
@@ -51,6 +58,8 @@ namespace egkr
 		[[nodiscard]] const auto& get_normal_map() const { return normal_map_; }
 		[[nodiscard]] auto& get_normal_map() { return normal_map_; }
 
+		[[nodiscard]] const auto& get_directional_light() const { return dir_light_; }
+
 		void set_shininess(float shininess) { shininess_ = shininess; }
 		const auto& get_shininess() const { return shininess_; }
 
@@ -74,5 +83,7 @@ namespace egkr
 		uint32_t shader_id_{invalid_32_id};
 		uint32_t internal_id_{ invalid_32_id };
 		uint32_t render_frame_number_{ invalid_32_id };
+
+		directional_light dir_light_{};
 	};
 }

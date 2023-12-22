@@ -132,6 +132,7 @@ namespace egkr
 			locations.view_position = shader->get_uniform_index("view_position");
 			locations.model = shader->get_uniform_index("model");
 			locations.mode = shader->get_uniform_index("mode");
+			locations.directional_light = shader->get_uniform_index("dir_light");
 			material_system_->material_locations_ = locations;
 		}
 		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_UI)
@@ -182,6 +183,7 @@ namespace egkr
 				shader_system::set_uniform(material_system_->material_locations_.specular_texture, &material->get_specular_map());
 				shader_system::set_uniform(material_system_->material_locations_.normal_texture, &material->get_normal_map());
 				shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
+				shader_system::set_uniform(material_system_->material_locations_.directional_light, &material->get_directional_light());
 			}
 			else if (material->get_shader_id() == material_system_->ui_shader_id_)
 			{
