@@ -4,6 +4,7 @@
 #include "platform/filesystem.h"
 #include "systems/resource_system.h"
 #include "systems/shader_system.h"
+#include "systems/light_system.h"
 
 namespace egkr
 {
@@ -185,9 +186,9 @@ namespace egkr
 				shader_system::set_uniform(material_system_->material_locations_.specular_texture, &material->get_specular_map());
 				shader_system::set_uniform(material_system_->material_locations_.normal_texture, &material->get_normal_map());
 				shader_system::set_uniform(material_system_->material_locations_.shininess, &material->get_shininess());
-				shader_system::set_uniform(material_system_->material_locations_.directional_light, &material->get_directional_light());
-				shader_system::set_uniform(material_system_->material_locations_.point_light, material->get_point_lights().data());
-				auto num_point_lights = material->get_point_lights_count();
+				shader_system::set_uniform(material_system_->material_locations_.directional_light, light_system::get_directional_light());
+				shader_system::set_uniform(material_system_->material_locations_.point_light, light_system::get_point_lights().data());
+				auto num_point_lights = light_system::point_light_count();
 				shader_system::set_uniform(material_system_->material_locations_.num_point_lights, &num_point_lights);
 			}
 			else if (material->get_shader_id() == material_system_->ui_shader_id_)

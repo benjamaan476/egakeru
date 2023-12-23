@@ -9,6 +9,7 @@
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
 #include "systems/view_system.h"
+#include "systems/light_system.h"
 
 #include "resources/transform.h"
 #include "resources/geometry.h"
@@ -72,7 +73,7 @@ namespace egkr
 			LOG_FATAL("Failed to create resource system");
 		}
 		resource_system::init();
-		
+
 		texture_system::create(state_.renderer.get(), { 1024 });
 		if (!material_system::create(state_.renderer.get()))
 		{
@@ -106,6 +107,12 @@ namespace egkr
 			return;
 		}
 
+		if (!light_system::create())
+		{
+			LOG_FATAL("Failed to create light system");
+			return;
+		}
+
 		if (!state_.renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
@@ -117,6 +124,36 @@ namespace egkr
 		geometry_system::init();
 		camera_system::init();
 		view_system::init();
+		light_system::init();
+
+		state_.dir_light_ = std::make_shared<light::directional_light>(
+			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
+			float4(0.6F, 0.6F, 0.6F, 1.0F)
+		);
+
+		light_system::add_directional_light(state_.dir_light_);
+		light_system::add_point_light({ float4(-5.5, -5.5, 0.0, 0.F),
+			float4(0.0, 1.0, 0.0, 1.0),
+			1.0, // Constant
+			0.35, // Linear
+			0.44,  // Quadratic
+			0.F });
+
+		light_system::add_point_light({
+			float4(5.5, -5.5, 0.0, 0.0),
+				float4(1.0, 0.0, 0.0, 1.0),
+				1.0, // Constant
+				0.35, // Linear
+				0.44,  // Quadratic
+				0.0 });
+
+		light_system::add_point_light({
+			float4(5.5, 5.5, 0.0, 0.0),
+			float4(0.0, 0.0, 1.0, 1.0),
+			1.0, // Constant
+			0.35, // Linear
+			0.44,  // Quadratic
+			0.0 });
 
 		{
 			render_view::configuration opaque_world{};
@@ -129,13 +166,14 @@ namespace egkr
 			view_system::create_view(opaque_world);
 		}
 		{
-			render_view::configuration ui{};
-			ui.type = render_view::type::ui;
-			ui.width = state_.width_;
-			ui.height = state_.height_;
-			ui.name = "ui";
+			render_view::configuration ui{
+			.name = "ui",
+			.width = state_.width_,
+			.height = state_.height_,
+			.type = render_view::type::ui,
+			.view_source = render_view::view_matrix_source::ui_camera,
+			};
 			ui.passes.push_back({ "Renderpass.Builtin.UI" });
-			ui.view_source = render_view::view_matrix_source::ui_camera;
 			view_system::create_view(ui);
 		}
 
@@ -267,6 +305,7 @@ namespace egkr
 		event::unregister_event(event_code::quit, nullptr, on_event);
 		event::unregister_event(event_code::resize, nullptr, application::on_resize);
 
+		light_system::shutdown();
 		view_system::shutdown();
 		shader_system::shutdown();
 		texture_system::shutdown();
@@ -298,8 +337,6 @@ namespace egkr
 			}
 		}
 
-
-
 		return false;
 	}
 
@@ -327,10 +364,8 @@ namespace egkr
 					application_->state_.is_suspended = false;
 				}
 
-
 				application_->state_.game->resize(width, height);
 				application_->state_.renderer->on_resize(width, height);
-
 			}
 		}
 		return false;
@@ -370,7 +405,6 @@ namespace egkr
 				}
 				application_->meshes_.push_back(kittyCAD_mesh);
 			}
-
 		}
 		return false;
 	}

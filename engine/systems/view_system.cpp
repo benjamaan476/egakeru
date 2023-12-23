@@ -23,7 +23,7 @@ namespace egkr
 
 	bool view_system::init()
 	{
-		return false;
+		return true;
 	}
 	bool view_system::shutdown()
 	{
