@@ -46,6 +46,7 @@ namespace egkr
 			normal_map_->texture = texture_system::acquire(properties.normal_map_name);
 		}
 		shader_id_ = shader_system::get_shader_id(shader_name_);
+
 	}
 
 	material::~material()

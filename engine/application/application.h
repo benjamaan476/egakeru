@@ -7,6 +7,7 @@
 
 #include "resources/geometry.h"
 #include "resources/mesh.h"
+#include "resources/light.h"
 
 #include "renderer/renderer_frontend.h"
 
@@ -22,6 +23,7 @@ namespace egkr
 		std::string name{};
 		game::unique_ptr game{};
 		renderer_frontend::unique_ptr renderer{};
+		std::shared_ptr<light::directional_light> dir_light_{};
 	};
 
 	class application
@@ -48,8 +50,8 @@ namespace egkr
 	    bool limit_framerate_{false};
 		std::chrono::milliseconds frame_time_{16ms};
 
-		egkr::vector<mesh::shared_ptr> meshes_;
-		egkr::vector<mesh::shared_ptr> ui_meshes_;
+		egkr::vector<mesh::shared_ptr> meshes_{};
+		egkr::vector<mesh::shared_ptr> ui_meshes_{};
 	};
 
 }

@@ -49,14 +49,14 @@ namespace egkr
 		struct attribute_configuration
 		{
 			std::string name{};
-			uint8_t size{};
+			uint16_t size{};
 			attribute_type type{};
 		};
 
 		struct uniform_configuration
 		{
 			std::string name{};
-			uint8_t size{};
+			uint16_t size{};
 			uint32_t location{};
 			uniform_type type{};
 			scope scope{};

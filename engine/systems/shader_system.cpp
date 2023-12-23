@@ -133,23 +133,26 @@ namespace egkr
 
 	void shader_system::set_uniform(uint32_t instance_id, const void* data)
 	{
-		auto shader = get_shader(shader_system_->current_shader_id_);
-		auto uniform = shader->get_uniform(instance_id);
-
-		if (uniform.scope != shader->get_bound_scope())
+		if (data)
 		{
-			if (uniform.scope == shader::scope::global)
-			{
-				shader->bind_globals();
-			}
-			else if (uniform.scope == shader::scope::instance)
-			{
-				shader->bind_instances(shader->get_bound_instance_id());
-			}
-		}
+			auto shader = get_shader(shader_system_->current_shader_id_);
+			auto uniform = shader->get_uniform(instance_id);
 
-		shader->set_bound_scope(uniform.scope);
-		shader->set_uniform(uniform, data);
+			if (uniform.scope != shader->get_bound_scope())
+			{
+				if (uniform.scope == shader::scope::global)
+				{
+					shader->bind_globals();
+				}
+				else if (uniform.scope == shader::scope::instance)
+				{
+					shader->bind_instances(shader->get_bound_instance_id());
+				}
+			}
+
+			shader->set_bound_scope(uniform.scope);
+			shader->set_uniform(uniform, data);
+		}
 	}
 
 	void shader_system::set_sampler(std::string_view sampler_name, const texture::texture::shared_ptr& texture)

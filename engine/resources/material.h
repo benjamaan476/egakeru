@@ -9,6 +9,8 @@ namespace egkr
 {
 	constexpr static std::string_view default_material_name_{ "default" };
 
+
+
 	enum class material_type
 	{
 		world,
@@ -74,5 +76,6 @@ namespace egkr
 		uint32_t shader_id_{invalid_32_id};
 		uint32_t internal_id_{ invalid_32_id };
 		uint32_t render_frame_number_{ invalid_32_id };
+
 	};
 }
