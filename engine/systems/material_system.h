@@ -21,6 +21,8 @@ namespace egkr
 		uint16_t model{};
 		uint16_t mode{};
 		uint16_t directional_light{};
+		uint16_t point_light{};
+		uint16_t num_point_lights{};
 	};
 
 	struct ui_shader_uniform_location

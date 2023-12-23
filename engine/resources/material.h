@@ -15,6 +15,18 @@ namespace egkr
 		float4 colour{ 1.F };
 	};
 
+	struct point_light {
+		float4 position{};
+		float4 colour{ 1.F };
+		// Usually 1, make sure denominator never gets smaller than 1
+		float constant{};
+		// Reduces light intensity linearly
+		float linear{};
+		// Makes the light fall off slower at longer distances.
+		float quadratic{};
+
+		float pad{};
+	};
 
 	enum class material_type
 	{
@@ -59,6 +71,8 @@ namespace egkr
 		[[nodiscard]] auto& get_normal_map() { return normal_map_; }
 
 		[[nodiscard]] const auto& get_directional_light() const { return dir_light_; }
+		[[nodiscard]] const auto& get_point_lights() const { return point_lights_; }
+		[[nodiscard]] auto get_point_lights_count() const { return point_lights_.size(); }
 
 		void set_shininess(float shininess) { shininess_ = shininess; }
 		const auto& get_shininess() const { return shininess_; }
@@ -85,5 +99,6 @@ namespace egkr
 		uint32_t render_frame_number_{ invalid_32_id };
 
 		directional_light dir_light_{};
+		std::vector<point_light> point_lights_{};
 	};
 }

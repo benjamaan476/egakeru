@@ -7,14 +7,10 @@ struct directional_light {
     vec4 colour;
 };
 
-layout(set = 1, binding = 0) uniform local_uniform_object {
-    vec4 diffuse_colour;
-    directional_light dir_light;
-    float shininess;
-} object_ubo;
+const int MAX_POINT_LIGHTS = 10;
 
 struct point_light {
-    vec3 position;
+    vec4 position;
     vec4 colour;
     // Usually 1, make sure denominator never gets smaller than 1
     float constant;
@@ -22,27 +18,17 @@ struct point_light {
     float linear;
     // Makes the light fall off slower at longer distances.
     float quadratic;
+
+    float pad;
 };
 
-
-
-// TODO: feed in from cpu
-point_light p_light_0 = {
-    vec3(-5.5, -5.5, 0.0),
-    vec4(0.0, 1.0, 0.0, 1.0),
-    1.0, // Constant
-    0.35, // Linear
-    0.44  // Quadratic
-};
-
-// TODO: feed in from cpu
-point_light p_light_1 = {
-    vec3(5.5, -5.5, 0.0),
-    vec4(1.0, 0.0, 0.0, 1.0),
-    1.0, // Constant
-    0.35, // Linear
-    0.44  // Quadratic
-};
+layout(set = 1, binding = 0) uniform local_uniform_object {
+    vec4 diffuse_colour;
+    directional_light dir_light;
+    point_light point_lights[MAX_POINT_LIGHTS];
+    int num_point_lights;
+    float shininess;
+} object_ubo;
 
 // Samplers, diffuse, spec
 const int SAMP_DIFFUSE = 0;
@@ -83,8 +69,10 @@ void main() {
 
         out_colour = calculate_directional_light(object_ubo.dir_light, normal, view_direction);
 
-        out_colour += calculate_point_light(p_light_0, normal, in_dto.frag_position, view_direction);
-        out_colour += calculate_point_light(p_light_1, normal, in_dto.frag_position, view_direction);
+        for(int i = 0; i < object_ubo.num_point_lights; i++)
+        {
+        out_colour += calculate_point_light(object_ubo.point_lights[i], normal, in_dto.frag_position, view_direction);
+        }
     } else if(in_mode == 2) {
         out_colour = vec4(abs(normal), 1.0);
     }
@@ -111,14 +99,14 @@ vec4 calculate_directional_light(directional_light light, vec3 normal, vec3 view
 }
 
 vec4 calculate_point_light(point_light light, vec3 normal, vec3 frag_position, vec3 view_direction) {
-    vec3 light_direction =  normalize(light.position - frag_position);
+    vec3 light_direction =  normalize(light.position.xyz - frag_position);
     float diff = max(dot(normal, light_direction), 0.0);
 
     vec3 reflect_direction = reflect(-light_direction, normal);
     float spec = pow(max(dot(view_direction, reflect_direction), 0.0), object_ubo.shininess);
 
     // Calculate attenuation, or light falloff over distance.
-    float distance = length(light.position - frag_position);
+    float distance = length(light.position.xyz - frag_position);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 
     vec4 ambient = in_dto.ambient;

@@ -51,6 +51,33 @@ namespace egkr
 			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
 			float4(0.6F, 0.6F, 0.6F, 1.0F)
 		};
+
+		point_lights_.emplace_back(
+			float4(-5.5, -5.5, 0.0, 0.F),
+			float4(0.0, 1.0, 0.0, 1.0),
+			1.0, // Constant
+			0.35, // Linear
+			0.44,  // Quadratic
+			0.F
+		);
+
+		point_lights_.emplace_back(
+			float4(5.5, -5.5, 0.0, 0.0),
+			float4(1.0, 0.0, 0.0, 1.0),
+			1.0, // Constant
+			0.35, // Linear
+			0.44,  // Quadratic
+			0.0
+		);
+
+		point_lights_.emplace_back(
+			float4(5.5, 5.5, 0.0, 0.0),
+			float4(0.0, 0.0, 1.0, 1.0),
+			1.0, // Constant
+			0.35, // Linear
+			0.44,  // Quadratic
+			0.0
+		);
 	}
 
 	material::~material()
