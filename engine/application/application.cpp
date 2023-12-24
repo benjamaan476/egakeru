@@ -243,6 +243,10 @@ namespace egkr
 		auto ui_geo = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
 		ui_meshes_.push_back(mesh::create(ui_geo, {}));
 
+		box = debug::debug_box3d::create(state_.renderer->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
+		box->get_transform().set_position(light_system::get_point_lights()[0].position);
+		box->load();
+		box->set_colour((light_system::get_point_lights()[0].colour));
 		state_.is_running = true;
 		is_initialised_ = true;
 	}
@@ -274,7 +278,9 @@ namespace egkr
 
 				render_packet packet{};
 
-				render_view::mesh_packet_data world{.meshes = application_->meshes_};
+				geometry::render_data debug{ .geometry = application_->box->get_geometry(), .model = application_->box->get_transform() };
+				render_view::mesh_packet_data world{ .meshes = application_->meshes_, .debug_meshes = { debug } };
+			
 				auto world_view = view_system::get("world-opaque");
 				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
 
@@ -297,6 +303,7 @@ namespace egkr
 
 	void application::shutdown()
 	{
+		application_->box->destroy();
 		application_->meshes_.clear();
 
 		application_->ui_meshes_.clear();

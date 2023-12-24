@@ -1,4 +1,5 @@
 #include "render_view_world.h"
+#include <systems/resource_system.h>
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
 #include <systems/camera_system.h>
@@ -6,6 +7,8 @@
 
 namespace egkr::render_view
 {
+
+
 	render_view_world::render_view_world(const renderer_frontend* renderer, const configuration& configuration)
 		: render_view(renderer, configuration)
 	{}
@@ -22,6 +25,16 @@ namespace egkr::render_view
 
 		event::register_event(event_code::render_mode, this, on_event);
 
+		std::string colour_3d_shader_name = "Shader.Builtin.Colour3DShader";
+		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource_type::shader);
+		auto properties = (shader::properties*)colour_shader->data;
+		shader_system::create_shader(*properties);
+		resource_system::unload(colour_shader);
+
+		auto col_shader = shader_system::get_shader(colour_3d_shader_name);
+		locations_.projection = col_shader->get_uniform_index("projection");
+		locations_.view = col_shader->get_uniform_index("view");
+		locations_.model = col_shader->get_uniform_index("model");
 		return true;
 	}
 	bool render_view_world::on_destroy()
@@ -65,6 +78,14 @@ namespace egkr::render_view
 			}
 		}
 
+		for (auto& [geo, model] : mesh_data->debug_meshes)
+		{
+			//for (auto& geo : mesh->get_geometries())
+			{
+				packet.debug_render_data.emplace_back(geo, model);
+			}
+		}
+
 		return packet;
 	}
 	bool render_view_world::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const
@@ -90,9 +111,27 @@ namespace egkr::render_view
 
 			}
 
+			if (!render_view_packet->debug_render_data.empty())
+			{
+				auto colour_shader = shader_system::get_shader("Shader.Builtin.Colour3DShader");
+				shader_system::use(colour_shader->get_id());
+				shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
+				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
+				shader_system::apply_global();
+				for (egkr::geometry::render_data data : render_view_packet->debug_render_data)
+				{
+					const auto& model = data.model.get_world();
+					shader_system::set_uniform(locations_.model, &model);
+					data.geometry->draw();
+				}
+
+			}
+
 			pass->end();
 
 		}
+
+
 		return true;
 	}
 }

@@ -581,9 +581,9 @@ namespace egkr
 		vk::ApplicationInfo application_info{};
 		application_info
 			.setPApplicationName("engine")
-			.setApplicationVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
+			.setApplicationVersion(VK_MAKE_API_VERSION(0, 1, 3, 0))
 			.setPEngineName("egakeru")
-			.setEngineVersion(VK_MAKE_API_VERSION(0, 1, 0, 0))
+			.setEngineVersion(VK_MAKE_API_VERSION(0, 1, 3, 0))
 			.setApiVersion(VK_API_VERSION_1_3);
 
 		vk::InstanceCreateInfo instance_info{};

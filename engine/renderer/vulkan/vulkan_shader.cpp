@@ -57,7 +57,15 @@ namespace egkr::shader
 			descriptor_pool = VK_NULL_HANDLE;
 		}
 
-		pipeline->destroy();
+		for (auto& pipeline : pipelines_)
+		{
+			if (pipeline)
+			{
+				pipeline->destroy();
+			}
+		}
+
+		pipelines_.clear();
 
 		for (const auto& stage : vulkan_stages)
 		{
@@ -69,7 +77,9 @@ namespace egkr::shader
 
     bool vulkan_shader::use()
     {
-        pipeline->bind(context_->graphics_command_buffers[context_->image_index], vk::PipelineBindPoint::eGraphics);
+		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
+        pipelines_[bound_pipeline_index_]->bind(command_buffer, vk::PipelineBindPoint::eGraphics);
+		command_buffer.get_handle().setPrimitiveTopology(current_topology_);
         return true;
     }
 
@@ -238,7 +248,39 @@ namespace egkr::shader
 		pipeline_properties.input_binding_description = binding_desc;
 		pipeline_properties.input_attribute_description = configuration.attributes;
 
-		pipeline = pipeline::create(context_, pipeline_properties);
+		bool pipeline_bound{};
+
+		if (topology_types_ & primitive_topology_type::point_list)
+		{
+			pipeline_properties.topology_types = primitive_topology_type::point_list;
+			pipelines_[(int)topology_class::point] = pipeline::create(context_, pipeline_properties);
+			bound_pipeline_index_ = (int)topology_class::point;
+			current_topology_ = vk::PrimitiveTopology::ePointList;
+			pipeline_bound = true;
+		}
+		if (topology_types_ & primitive_topology_type::line_list || topology_types_ & primitive_topology_type::line_strip)
+		{
+			pipeline_properties.topology_types = primitive_topology_type::line_list | primitive_topology_type::line_strip;
+			pipelines_[(int)topology_class::line] = pipeline::create(context_, pipeline_properties);
+			bound_pipeline_index_ = (int)topology_class::line;
+			current_topology_ = vk::PrimitiveTopology::eLineList;
+			pipeline_bound = true;
+		}
+		if (topology_types_ & primitive_topology_type::triangle_list || topology_types_ & primitive_topology_type::triangle_strip || topology_types_ & primitive_topology_type::triangle_fan)
+		{
+			pipeline_properties.topology_types = primitive_topology_type::triangle_fan | primitive_topology_type::triangle_strip | primitive_topology_type::triangle_list;
+			pipelines_[(int)topology_class::triangle] = pipeline::create(context_, pipeline_properties);
+			bound_pipeline_index_ = (int)topology_class::triangle;
+			current_topology_ = vk::PrimitiveTopology::eTriangleList;
+			pipeline_bound = true;
+		}
+
+
+		if (!pipeline_bound)
+		{
+			LOG_ERROR("No supported pipeline found");
+			return false;
+		}
 
 		set_global_ubo_stride(get_aligned(get_global_ubo_size(), 256));
 		set_ubo_stride(get_aligned(get_ubo_size(), 256));
@@ -357,7 +399,7 @@ namespace egkr::shader
 				context_->device.logical_device.updateDescriptorSets(writes, nullptr);
 			}
 		}
-		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), 1, object_descriptor_set, nullptr);
+		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelines_[bound_pipeline_index_]->get_layout(), 1, object_descriptor_set, nullptr);
 		return true;
 	}
 
@@ -391,7 +433,7 @@ namespace egkr::shader
 		egkr::vector<vk::WriteDescriptorSet> writes{ ubo_write };
 
 		context_->device.logical_device.updateDescriptorSets(writes, nullptr);
-		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), 0, 1, &global_descriptor, 0, nullptr);
+		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelines_[bound_pipeline_index_]->get_layout(), 0, 1, &global_descriptor, 0, nullptr);
 
 		return true;
 	}
@@ -438,7 +480,7 @@ namespace egkr::shader
 			{
 				// Is local, using push constants. Do this immediately.
 				auto& command_buffer = context_->graphics_command_buffers[context_->image_index].get_handle();
-				command_buffer.pushConstants(pipeline->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset, uniform.size, value);
+				command_buffer.pushConstants(pipelines_[bound_pipeline_index_]->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset, uniform.size, value);
 			}
 			else
 			{

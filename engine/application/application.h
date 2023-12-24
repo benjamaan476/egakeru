@@ -8,6 +8,7 @@
 #include "resources/geometry.h"
 #include "resources/mesh.h"
 #include "resources/light.h"
+#include <debug/debug_box3d.h>
 
 #include "renderer/renderer_frontend.h"
 
@@ -52,6 +53,7 @@ namespace egkr
 
 		egkr::vector<mesh::shared_ptr> meshes_{};
 		egkr::vector<mesh::shared_ptr> ui_meshes_{};
+		debug::debug_box3d::shared_ptr box{};
 	};
 
 }

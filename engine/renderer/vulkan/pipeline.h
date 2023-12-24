@@ -1,8 +1,6 @@
 #pragma once
 #include "pch.h"
-
 #include "vulkan_renderpass.h"
-
 
 namespace egkr
 {
@@ -19,6 +17,7 @@ namespace egkr
 		egkr::vector<range> push_constant_ranges{};
 		bool is_wireframe{};
 		bool depth_test_enabled{};
+		shader::primitive_topology_type topology_types{};
 	};
 
 	class pipeline
@@ -38,6 +37,7 @@ namespace egkr
 	private:
 		const vulkan_context* context_{};
 		vk::Pipeline pipeline_{};
-		vk::PipelineLayout pipeline_layout_{};
+		vk::PipelineLayout pipeline_layout_{};	
+		shader::primitive_topology_type supported_topology_types_{};
 	};
 }

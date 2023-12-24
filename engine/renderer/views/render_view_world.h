@@ -4,6 +4,12 @@
 
 namespace egkr::render_view
 {
+	struct debug_solour_shader_locations
+	{
+		uint16_t projection{};
+		uint16_t view{};
+		uint16_t model{};
+	};
 	class render_view_world : public render_view
 	{
 	public:
@@ -25,5 +31,6 @@ namespace egkr::render_view
 		camera::shared_ptr camera_{};
 		float4 ambient_colour_{};
 		int render_mode{};
+		debug_solour_shader_locations locations_{};
 	};
 }

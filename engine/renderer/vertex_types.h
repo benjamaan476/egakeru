@@ -20,3 +20,9 @@ struct vertex_3d
 		return position == rhs.position && normal == rhs.normal && tex == rhs.tex && colour == rhs.colour && tangent == rhs.tangent;
 	}
 };
+
+struct colour_vertex_3d
+{
+	egkr::float4 position{};
+	egkr::float4 colour{};
+};

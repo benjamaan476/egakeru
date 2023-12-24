@@ -9,7 +9,7 @@ namespace egkr
 	}
 
 	pipeline::pipeline(const vulkan_context* context, const pipeline_properties& properties)
-		:context_{ context }
+		:context_{ context }, supported_topology_types_{ properties.topology_types }
 	{
 		ZoneScoped;
 
@@ -65,7 +65,7 @@ namespace egkr
 			.setLogicOp(vk::LogicOp::eCopy)
 			.setAttachments(colour_blend_attachment);
 
-		auto dynamic_states = { vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::eLineWidth };
+		auto dynamic_states = { vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::ePrimitiveTopology };
 
 		vk::PipelineDynamicStateCreateInfo dynamic_state_create_info{};
 		dynamic_state_create_info
@@ -80,6 +80,42 @@ namespace egkr
 		input_assembly_create_info
 			.setTopology(vk::PrimitiveTopology::eTriangleList)
 			.setPrimitiveRestartEnable(false);
+
+		for (int i{ 1 }; i < shader::primitive_topology_type::max; i <<= 1)
+		{
+			if (supported_topology_types_ & i)
+			{
+				shader::primitive_topology_type ptt = (shader::primitive_topology_type)i;
+				switch (ptt)
+				{
+				case egkr::shader::triangle_list:
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::eTriangleList);
+					break;
+				case egkr::shader::triangle_strip:		
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::eTriangleStrip);
+					break;
+				case egkr::shader::triangle_fan:
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::eTriangleFan);
+					break;
+				case egkr::shader::line_list:
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::eLineList);
+					break;
+				case egkr::shader::line_strip:
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::eLineStrip);
+					break;
+				case egkr::shader::point_list:
+					input_assembly_create_info.setTopology(vk::PrimitiveTopology::ePointList);
+					break;
+				case egkr::shader::none:
+				case egkr::shader::max:
+				default:  
+					LOG_ERROR("Invalid primitive topology specified. Ignoring");
+					break;
+				}
+
+				break;
+			}
+		}
 
 		egkr::vector<vk::PushConstantRange> push_constant_range{};
 

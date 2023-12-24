@@ -87,6 +87,7 @@ namespace egkr
 			float4 ambient_colour{ 1.F };
 
 			egkr::vector<geometry::render_data> render_data{};
+			egkr::vector<geometry::render_data> debug_render_data{};
 
 			std::optional<std::string> custom_shader_name{};
 
@@ -96,6 +97,7 @@ namespace egkr
 		struct mesh_packet_data
 		{
 			egkr::vector<mesh::shared_ptr> meshes{};
+			egkr::vector<geometry::render_data> debug_meshes{};
 		};
 
 	}

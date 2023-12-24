@@ -62,6 +62,52 @@ namespace egkr
 			scope scope{};
 		};
 
+		enum primitive_topology_type
+		{
+			none = 0,
+			triangle_list = 0x01,
+			triangle_strip = 0x02,
+			triangle_fan = 0x04,
+			line_list = 0x08,
+			line_strip = 0x10,
+			point_list = 0x20,
+			max = point_list << 1
+		};
+		ENUM_CLASS_OPERATORS(primitive_topology_type)
+
+		static inline primitive_topology_type to_primitive_topology(std::string_view topology)
+		{
+			if (topology.compare("triangle_list") == 0)
+			{
+				return triangle_list;
+			}
+			else if (topology.compare("triangle_strip") == 0)
+			{
+				return triangle_strip;
+			}
+			else if (topology.compare("triangle_fan") == 0)
+			{
+				return triangle_fan;
+			}
+			else if (topology.compare("line_list") == 0)
+			{
+				return line_list;
+			}
+			else if (topology.compare("line_strip") == 0)
+			{
+				return line_strip;
+			}
+			else if (topology.compare("point_list") == 0)
+			{
+				return point_list;
+			}
+			else
+			{
+				LOG_ERROR("Unrecognized primitive topology type, {}", topology.data());
+				return none;
+			}
+		}
+
 		struct properties
 		{
 			std::string name{};
@@ -73,6 +119,7 @@ namespace egkr
 			egkr::vector<stages> stages{};
 			egkr::vector<std::string> stage_names{};
 			egkr::vector<std::string> stage_filenames{};
+			primitive_topology_type topology_types{ primitive_topology_type::triangle_list };
 		};
 
 		enum state
@@ -158,7 +205,7 @@ namespace egkr
 			bool is_uniform_name_valid(std::string_view uniform_name);
 			bool is_uniform_add_state_valid();
 
-		private:
+		protected:
 			properties properties_{};
 			bool use_instances_{};
 			bool use_locals_{};
@@ -190,6 +237,8 @@ namespace egkr
 			uint16_t attribute_stride_{};
 
 			const renderer_backend* renderer_context_{};
+			primitive_topology_type topology_types_{};
+			int16_t bound_pipeline_index_{};
 		};
 	}
 }

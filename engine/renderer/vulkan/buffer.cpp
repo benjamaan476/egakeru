@@ -69,11 +69,13 @@ namespace egkr
 		context_->device.logical_device.unmapMemory(memory_);
 	}
 
-	void buffer::load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data)
+	bool buffer::load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data)
 	{
 		auto* dest_data = lock(offset, size, flags);
 		std::memcpy(dest_data, data, size);
 		unlock();
+
+		return true;
 	}
 
 	void buffer::copy_to(vk::CommandPool pool, vk::Fence /*fence*/, vk::Queue queue, vk::Buffer source, uint64_t source_offset, vk::Buffer dest, uint64_t dest_offset, uint64_t size)

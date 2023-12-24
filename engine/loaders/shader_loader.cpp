@@ -1,6 +1,7 @@
 #include "shader_loader.h"
 
 #include "platform/filesystem.h"
+#include <resources/shader.h>
 
 namespace egkr
 {
@@ -181,6 +182,24 @@ namespace egkr
 				{
 					properties.use_local = true;
 				}
+			}
+			else if (variable_name == "topology")
+			{
+				shader::primitive_topology_type types{};
+				auto offset = value.find_first_of(',');
+				while (offset != std::string::npos)
+				{
+					std::string filename = value.substr(0, offset);
+					types |= shader::to_primitive_topology(filename);
+					value = value.substr(offset + 1);
+					offset = value.find_first_of(',');
+				}
+
+				std::string filename = value.substr(0, offset);
+				types |= shader::to_primitive_topology(filename);
+				value = value.substr(offset + 1);
+
+				properties.topology_types = types;
 			}
 			else if (variable_name == "attribute")
 			{
