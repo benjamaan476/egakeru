@@ -23,6 +23,6 @@ struct vertex_3d
 
 struct colour_vertex_3d
 {
-	egkr::float4 position{};
-	egkr::float4 colour{};
+	egkr::float4 position{0.F, 0.F, 0.F, 1.F};
+	egkr::float4 colour{0.F, 0.F, 0.F, 1.F};
 };
