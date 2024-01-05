@@ -20,7 +20,7 @@ namespace egkr
 		void* lock(uint64_t offset, uint64_t size, uint32_t flags);
 		void unlock();
 
-		void load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data);
+		bool load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data);
 
 		void copy_to(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, vk::Buffer source, uint64_t source_offset, vk::Buffer dest, uint64_t dest_offset, uint64_t size);
 		void resize(uint64_t new_size, vk::Queue queue, vk::CommandPool pool);

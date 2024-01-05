@@ -32,21 +32,24 @@ namespace egkr::geometry
 	{
 		ZoneScoped;
 
-		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal};
+		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible};
 		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
 		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
 
 		vertex_count_ = properties.vertex_count;
+		vertex_size_ = properties.vertex_size;
 		vertex_buffer_ = buffer::create(context_, vertex_buffer_size, usage, flags, true);
+		upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
 
-		const vk::BufferUsageFlags index_usage{vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
-		const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
 
 		index_count_ = properties.indices.size();
-		index_buffer_ = buffer::create(context_, index_buffer_size, index_usage, flags, true);
-		upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
-		upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, index_buffer_, 0, index_buffer_size, properties.indices.data());
-
+		if (index_count_)
+		{
+			const vk::BufferUsageFlags index_usage{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc };
+			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
+			index_buffer_ = buffer::create(context_, index_buffer_size, index_usage, flags, true);
+			upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, index_buffer_, 0, index_buffer_size, properties.indices.data());
+		}
 		return true;
 	}
 
@@ -58,15 +61,31 @@ namespace egkr::geometry
 		vk::DeviceSize offset{ 0 };
 		command_buffer.get_handle().bindVertexBuffers(0, vertex_buffer_->get_handle(), offset);
 
-		command_buffer.get_handle().bindIndexBuffer(index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
 
 		if (index_count_)
 		{
+			command_buffer.get_handle().bindIndexBuffer(index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
+
 			command_buffer.get_handle().drawIndexed(index_count_, 1, 0, 0, 0);
 		}
 		else
 		{
-			command_buffer.get_handle().draw(vertex_count_, 0, 0, 0);
+			command_buffer.get_handle().draw(vertex_count_, 1, 0, 0);
+		}
+	}
+
+	void vulkan_geometry::update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices)
+	{
+		if (vertex_count > vertex_count_)
+		{
+			LOG_ERROR("Cannot currently add vertices to a geometry. Can only edit existing vertices.");
+			return;
+		}
+
+		uint32_t total_size = vertex_count * vertex_size_;
+		if (!vertex_buffer_->load_data(offset, total_size, 0, vertices))
+		{
+			LOG_ERROR("Failed to update vertices");
 		}
 	}
 

@@ -53,6 +53,7 @@ namespace egkr
 
 			virtual bool populate(const properties& properties) = 0;
 			virtual void draw() = 0;
+			virtual void update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices) = 0;
 			virtual void free() = 0;
 			void destroy();
 

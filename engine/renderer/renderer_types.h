@@ -53,6 +53,7 @@ namespace egkr
 		std::function<void(void)> on_render_target_refresh_required{};
 	};
 
+
 	class renderer_backend
 	{
 	public:

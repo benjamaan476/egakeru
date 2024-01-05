@@ -39,6 +39,18 @@ namespace egkr
 	using int4 = glm::ivec4;
 
 	using float4x4 = glm::mat4x4;
+
+	struct extent2d
+	{
+		float2 min{};
+		float2 max{};
+	};
+
+	struct extent3d
+	{
+		float3 min{};
+		float3 max{};
+	};
 }
 
 constexpr static const uint32_t invalid_32_id = std::numeric_limits<uint32_t>::max();

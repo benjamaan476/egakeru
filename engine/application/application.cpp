@@ -206,7 +206,7 @@ namespace egkr
 		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
 
 		auto geometry_config = (egkr::vector<geometry::properties>*)mesh_resource->data;
-		transform obj = transform::create({ 0, 0, 0 });
+		transform obj = transform::create({ 0, 0, -5 });
 		obj.set_scale({ 0.1F, 0.1F, 0.1F });
 		obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
 		auto mesh = mesh::create();
@@ -243,6 +243,20 @@ namespace egkr
 		auto ui_geo = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
 		ui_meshes_.push_back(mesh::create(ui_geo, {}));
 
+		box = debug::debug_box3d::create(state_.renderer->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
+		box->get_transform().set_position(light_system::get_point_lights()[0].position);
+		box->load();
+		box->set_colour((light_system::get_point_lights()[0].colour));
+
+		debug::configuration grid_configuration{};
+		grid_configuration.name = "debug_grid";
+		grid_configuration.orientation = debug::orientation::yz;
+		grid_configuration.tile_count_dim0 = 100;
+		grid_configuration.tile_count_dim1 = 100;
+		grid_configuration.tile_scale = 1;
+
+		grid = debug::debug_grid::create(state_.renderer->get_backend().get(), grid_configuration);
+		grid->load();
 		state_.is_running = true;
 		is_initialised_ = true;
 	}
@@ -274,7 +288,10 @@ namespace egkr
 
 				render_packet packet{};
 
-				render_view::mesh_packet_data world{.meshes = application_->meshes_};
+				geometry::render_data debug_box{ .geometry = application_->box->get_geometry(), .model = application_->box->get_transform() };
+				geometry::render_data debug_grid{ .geometry = application_->grid->get_geometry(), .model = application_->grid->get_transform() };
+				render_view::mesh_packet_data world{ .meshes = application_->meshes_, .debug_meshes = { debug_box, debug_grid} };
+			
 				auto world_view = view_system::get("world-opaque");
 				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
 
@@ -297,6 +314,8 @@ namespace egkr
 
 	void application::shutdown()
 	{
+		application_->box->destroy();
+		application_->grid->unload();
 		application_->meshes_.clear();
 
 		application_->ui_meshes_.clear();

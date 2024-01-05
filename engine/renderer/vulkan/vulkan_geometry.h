@@ -15,6 +15,7 @@ namespace egkr::geometry
 
 		bool populate(const properties& properties) override;
 		void draw() override;
+		void update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices) override;
 		void free() override;
 	private:
 		static void upload_data_range(const vulkan_context* context, vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data);

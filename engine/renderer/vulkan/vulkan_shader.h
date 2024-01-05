@@ -87,6 +87,14 @@ namespace egkr::shader
 		{attribute_type::uint32, vk::Format::eR32Uint},
 	};
 
+	enum class topology_class
+	{
+		point = 0,
+		line = 1,
+		triangle = 2,
+		max = triangle + 1
+	};
+
 	class vulkan_shader : public shader::shader
 	{
 	public:
@@ -126,7 +134,9 @@ namespace egkr::shader
 
 		buffer::shared_ptr uniform_buffer{};
 
-		pipeline::shared_ptr pipeline{};
+		// One for each class; point, line, tri
+		egkr::vector<pipeline::shared_ptr> pipelines_{3};
+		vk::PrimitiveTopology current_topology_{};
 
 		egkr::vector<vulkan_instance_state> instance_states{};
 
