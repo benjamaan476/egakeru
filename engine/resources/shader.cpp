@@ -16,8 +16,6 @@ namespace egkr::shader
 	shader::shader(const renderer_backend* renderer_context, const properties& properties)
 		: resource(0, 0, properties.name),
 		properties_{ properties }, 
-		use_instances_{ properties.use_instance },
-		use_locals_{ properties.use_local }, 
 		renderer_context_{ renderer_context },
 		topology_types_{ properties.topology_types }
 	{
@@ -116,12 +114,6 @@ namespace egkr::shader
 
 	bool shader::add_sampler(const uniform_configuration& configuration)
 	{
-		if (configuration.scope == scope::instance && !use_instances_)
-		{
-			LOG_ERROR("Sampler scope set it isntance but shader does not support instances");
-			return false;
-		}
-
 		if (configuration.scope == scope::local)
 		{
 			LOG_ERROR("Shaders do not support samplers at local scope");
@@ -192,11 +184,6 @@ namespace egkr::shader
 		}
 		else
 		{
-			if (scope == scope::local && !use_locals_)
-			{
-				LOG_ERROR("Local scope not supported by this shader");
-				return;
-			}
 			uniform.set_index = invalid_8_id;
 			range r{ get_aligned(push_constant_size_, 4), get_aligned(size, 4) };
 			uniform.offset = r.offset;

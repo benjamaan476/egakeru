@@ -14,7 +14,7 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr material_loader::load(std::string_view name, void* params)
+	resource::shared_ptr material_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
 		constexpr std::string_view format_string{ "%s/%s%s" };

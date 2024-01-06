@@ -23,6 +23,7 @@ namespace egkr
 		properties.flags |= is_writeable ? texture::flags::is_writable : (texture::flags)0;
 		properties.flags |= texture::flags::is_wrapped;
 		properties.data = internal_data;
+		properties.texture_type = texture::type::texture_2d;
 
 		auto t = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, nullptr);
 		if (register_texture)
@@ -57,6 +58,7 @@ namespace egkr
 		default_texture_properties.height = 32;
 		default_texture_properties.channel_count = 4;
 		default_texture_properties.flags = {};
+		default_texture_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
 
@@ -84,15 +86,16 @@ namespace egkr
 
 		texture_system_->default_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_texture_properties, (uint8_t*)data.data());
 		{
-			texture::properties default__diffuse_properties{};
-			default__diffuse_properties.name = default_diffuse_name;
-			default__diffuse_properties.width = 16;
-			default__diffuse_properties.height = 16;
-			default__diffuse_properties.channel_count = 4;
-			default__diffuse_properties.flags = {};
+			texture::properties default_diffuse_properties{};
+			default_diffuse_properties.name = default_diffuse_name;
+			default_diffuse_properties.width = 16;
+			default_diffuse_properties.height = 16;
+			default_diffuse_properties.channel_count = 4;
+			default_diffuse_properties.flags = {};
+			default_diffuse_properties.texture_type = texture::type::texture_2d;
 
-			egkr::vector<uint32_t> diffuse_data(default__diffuse_properties.width * default__diffuse_properties.height, 0xFFFFFFFF);
-			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default__diffuse_properties, (uint8_t*)diffuse_data.data());
+			egkr::vector<uint32_t> diffuse_data(default_diffuse_properties.width * default_diffuse_properties.height, 0xFFFFFFFF);
+			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_diffuse_properties, (uint8_t*)diffuse_data.data());
 		}
 
 		texture::properties default_specular_properties{};
@@ -101,6 +104,7 @@ namespace egkr
 		default_specular_properties.height = 16;
 		default_specular_properties.channel_count = 4;
 		default_specular_properties.flags = {};
+		default_specular_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
 		texture_system_->default_specular_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_specular_properties, (uint8_t*)spec_data.data());
@@ -111,6 +115,7 @@ namespace egkr
 		default_normal_properties.height = 16;
 		default_normal_properties.channel_count = 4;
 		default_normal_properties.flags = {};
+		default_normal_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint8_t> normal_data(default_normal_properties.width * default_normal_properties.height * default_normal_properties.channel_count);
 
@@ -240,6 +245,67 @@ namespace egkr
 		return new_texture;
 	}
 
+	texture::texture::shared_ptr texture_system::acquire_cube(std::string_view texture_name)
+	{
+		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
+		{
+			LOG_WARN("Tried to acquire a default texture. Use get_default_texture() for this.");
+			return nullptr;
+		}
+
+		if (strcmp(texture_name.data(), default_diffuse_name.data()) == 0)
+		{
+			return get_default_diffuse_texture();
+		}
+
+		if (strcmp(texture_name.data(), default_specular_name.data()) == 0)
+		{
+			return get_default_specular_texture();
+		}
+
+		if (strcmp(texture_name.data(), default_normal_name.data()) == 0)
+		{
+			return get_default_normal_texture();
+		}
+
+		if (texture_system_->registered_textures_by_name_.contains(texture_name.data()))
+		{
+			auto texture_handle = texture_system_->registered_textures_by_name_[texture_name.data()];
+			return texture_system_->registered_textures_[texture_handle];
+		}
+
+		uint32_t texture_id = texture_system_->registered_textures_.size();
+
+		if (texture_id >= texture_system_->max_texture_count_)
+		{
+			LOG_FATAL("Exceeded max texture count");
+			return nullptr;
+		}
+
+		std::string name = texture_name.data();
+		egkr::vector<std::string> texture_names{};
+		
+			texture_names.push_back(name + "_r");
+			texture_names.push_back(name + "_l");
+			texture_names.push_back(name + "_u");
+			texture_names.push_back(name + "_d");
+			texture_names.push_back(name + "_f");
+			texture_names.push_back(name + "_b");
+		
+
+		auto new_texture = load_cube_texture(texture_name, texture_names, texture_id);
+
+		if (new_texture->get_generation() == invalid_32_id)
+		{
+			LOG_ERROR("Texture not found in texture system.");
+			return nullptr;
+		}
+
+		texture_system_->registered_textures_.push_back(new_texture);
+		texture_system_->registered_textures_by_name_[texture_name.data()] = texture_id;
+		return new_texture;
+	}
+
 	texture::texture::shared_ptr texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
 	{
 		if (texture_system_->registered_textures_by_name_.contains(name.data()))
@@ -250,7 +316,7 @@ namespace egkr
 			texture->set_width(width);
 			texture->set_height(height);
 			texture->set_channel_count(channel_count);
-
+			texture->set_type(texture::type::texture_2d);
 			auto flags = texture::flags::is_writable;
 			flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
 			texture->set_flags(flags);
@@ -302,11 +368,57 @@ namespace egkr
 			return nullptr;
 		}
 		auto properties = (texture::properties*)image->data;
-
+		properties->texture_type = texture::type::texture_2d;
 		properties->id = id;
 		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data);
 
 		resource_system::unload(std::move(image));
+		return temp_texture;
+	}
+
+	texture::texture::shared_ptr texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
+	{
+		image_resource_parameters params{ .flip_y = false };
+
+		uint8_t* pixels{};
+		uint32_t width{};
+		uint32_t height{};
+		uint32_t channel_count{};
+		for (auto i{ 0 }; i < 6; ++i)
+		{
+			auto image = resource_system::load(texture_names[i], resource_type::image, &params);
+
+			if (!image)
+			{
+				return nullptr;
+			}
+			auto properties = (texture::properties*)image->data;
+			if (!pixels)
+			{
+
+				width = properties->width;
+				height = properties->height;
+				channel_count = properties->channel_count;
+
+				pixels = (uint8_t*)malloc(sizeof(uint8_t) * width * height * channel_count * 6);
+			}
+			else
+			{
+				if (width != properties->width || height != properties->height || channel_count != properties->channel_count)
+				{
+					LOG_ERROR("Cube map faces must all have the same image properties");
+					return nullptr;
+				}
+			}
+
+			std::memcpy(pixels + width * height * channel_count * i, properties->data, width * height * channel_count);
+			resource_system::unload(image);
+
+		}
+
+		texture::properties properties{ .name = name.data(), .width = width, .height = height, .channel_count = channel_count, .texture_type = texture::type::cube, .id = id};
+		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, pixels);
+		free(pixels);
 		return temp_texture;
 	}
 }

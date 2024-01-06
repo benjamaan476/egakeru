@@ -121,30 +121,103 @@ namespace egkr::shader
 		configuration.pool_sizes.push_back(vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1024));
 		configuration.pool_sizes.push_back(vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 4096));
 
-		vulkan_descriptor_set_configuration global_descriptor_set_configuration{};
 
-		vk::DescriptorSetLayoutBinding ubo{};
-		ubo
-			.setBinding(BINDING_INDEX_UBO)
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+		for (const auto& uniform : uniforms_)
+		{
+			switch (uniform.scope)
+			{
+			case scope::global:
+			{
+				if (uniform.type == uniform_type::sampler)
+				{
+					properties_.global_uniform_sampler_count++;
+				}
+				else
+				{
+					properties_.global_uniform_count++;
+				}
+			} break;
+			case scope::instance:
+			{
+				if (uniform.type == uniform_type::sampler)
+				{
+					properties_.instance_uniform_sampler_count++;
+				}
+				else
+				{
+					properties_.instance_uniform_count++;
+				}
+			} break;
+			case scope::local:
+				properties_.local_uniform_count++;
+				break;
+			default:
+				break;
+			}
+		}
 
-		global_descriptor_set_configuration.bindings.push_back(ubo);
+		if (properties_.global_uniform_count || properties_.global_uniform_sampler_count)
+		{
+			vulkan_descriptor_set_configuration global_descriptor_set_configuration{};
 
-		configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL] = global_descriptor_set_configuration;
+			if (properties_.global_uniform_count)
+			{
+				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
+				vk::DescriptorSetLayoutBinding ubo{};
+				ubo
+					.setBinding(binding_index)
+					.setDescriptorCount(1)
+					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+
+				global_descriptor_set_configuration.bindings.push_back(ubo);
+			}
+
+			if (properties_.global_uniform_sampler_count)
+			{
+				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
+				vk::DescriptorSetLayoutBinding ubo{};
+				ubo
+					.setBinding(binding_index)
+					.setDescriptorCount(properties_.global_uniform_sampler_count)
+					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+
+				global_descriptor_set_configuration.bindings.push_back(ubo);
+			}
+			configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL] = global_descriptor_set_configuration;
+		}
 
 		if (has_instances())
 		{
 			vulkan_descriptor_set_configuration instance_descriptor_set_configuration{};
-			vk::DescriptorSetLayoutBinding instance_ubo{};
-			instance_ubo
-				.setBinding(BINDING_INDEX_UBO)
-				.setDescriptorCount(1)
-				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-				.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+			if (properties_.instance_uniform_count)
+			{
+				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count;
+				vk::DescriptorSetLayoutBinding ubo{};
+				ubo
+					.setBinding(binding_index)
+					.setDescriptorCount(1)
+					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
-			instance_descriptor_set_configuration.bindings.push_back(instance_ubo);
+				instance_descriptor_set_configuration.bindings.push_back(ubo);
+				configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count++;
+			}
+
+			if (properties_.instance_uniform_sampler_count)
+			{
+				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count;
+				vk::DescriptorSetLayoutBinding ubo{};
+				ubo
+					.setBinding(binding_index)
+					.setDescriptorCount(properties_.instance_uniform_sampler_count)
+					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+
+				instance_descriptor_set_configuration.bindings.push_back(ubo);
+				configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count++;
+			}			
 			configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE] = instance_descriptor_set_configuration;
 		}
 
@@ -167,30 +240,6 @@ namespace egkr::shader
 			configuration.attributes.push_back(attribute);
 
 			offset += attributes[i].size;
-		}
-
-		for (const auto& uniform : get_uniforms())
-		{
-			if (uniform.type == uniform_type::sampler)
-			{
-				const uint32_t set_index = uniform.scope == scope::global ? DESCRIPTOR_SET_INDEX_GLOBAL : DESCRIPTOR_SET_INDEX_INSTANCE;
-				auto& set_configuration = configuration.descriptor_sets[set_index];
-
-				if (set_configuration.bindings.size() < 2)
-				{
-					vk::DescriptorSetLayoutBinding sampler{};
-					sampler
-						.setBinding(BINDING_INDEX_SAMPLER)
-						.setDescriptorCount(1)
-						.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-						.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
-					set_configuration.bindings.push_back(sampler);
-				}
-				else
-				{
-					set_configuration.bindings[BINDING_INDEX_SAMPLER].descriptorCount++;
-				}
-			}
 		}
 
 		vk::DescriptorPoolCreateInfo pool_info{};
@@ -247,7 +296,7 @@ namespace egkr::shader
 		pipeline_properties.push_constant_ranges = get_push_constant_ranges();
 		pipeline_properties.input_binding_description = binding_desc;
 		pipeline_properties.input_attribute_description = configuration.attributes;
-
+		pipeline_properties.cull_mode = properties_.cull_mode;
 		bool pipeline_bound{};
 
 		if (topology_types_ & primitive_topology_type::point_list)
@@ -327,76 +376,79 @@ namespace egkr::shader
 		vk::DescriptorBufferInfo buffer_info{};
 		if (needs_update)
 		{
-			egkr::vector<vk::WriteDescriptorSet> writes{};
-
-			uint32_t descriptor_count{};
-			uint32_t descriptor_index{};
-
-			auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
-
-			if (instance_ubo_generation == invalid_8_id)
+			if (properties_.instance_uniform_count)
 			{
-				buffer_info
-					.setBuffer(uniform_buffer->get_handle())
-					.setOffset(offset)
-					.setRange(range);
+				egkr::vector<vk::WriteDescriptorSet> writes{};
 
-				vk::WriteDescriptorSet ubo{};
-				ubo
-					.setDstSet(object_descriptor_set)
-					.setDstBinding(descriptor_index)
-					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-					.setDescriptorCount(1)
-					.setBufferInfo(buffer_info);
+				uint32_t descriptor_count{};
+				uint32_t descriptor_index{};
 
-				writes.push_back(ubo);
-				descriptor_count++;
+				auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
 
-				instance_ubo_generation = 1;
-			}
-			++descriptor_index;
-
-			vk::WriteDescriptorSet sampler{};
-			auto total_sampler_count = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[BINDING_INDEX_SAMPLER].descriptorCount;
-			egkr::vector<vk::DescriptorImageInfo> image_infos{total_sampler_count};
-			if (configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
-			{
-				uint32_t update_sampler_count{};
-
-				for (auto i{ 0U }; i < total_sampler_count; ++i)
+				if (instance_ubo_generation == invalid_8_id)
 				{
-					auto& texture_map = instance_states[get_bound_instance_id()].instance_textures[i];
+					buffer_info
+						.setBuffer(uniform_buffer->get_handle())
+						.setOffset(offset)
+						.setRange(range);
 
-					auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
+					vk::WriteDescriptorSet ubo{};
+					ubo
+						.setDstSet(object_descriptor_set)
+						.setDstBinding(descriptor_index)
+						.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+						.setDescriptorCount(1)
+						.setBufferInfo(buffer_info);
 
-					auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
+					writes.push_back(ubo);
+					descriptor_count++;
 
-					vk::DescriptorImageInfo image_info{};
-					image_info
-						.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-						.setImageView(texture_data->get_view())
-						.setSampler(vulkan_map->sampler);
+					instance_ubo_generation = 1;
+				}
+				++descriptor_index;
 
-					image_infos[i] = image_info;
+				vk::WriteDescriptorSet sampler{};
+				auto total_sampler_count = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].sampler_binding_index].descriptorCount;
+				egkr::vector<vk::DescriptorImageInfo> image_infos{ total_sampler_count };
+				if (configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
+				{
+					uint32_t update_sampler_count{};
 
-					++update_sampler_count;
+					for (auto i{ 0U }; i < total_sampler_count; ++i)
+					{
+						auto& texture_map = instance_states[get_bound_instance_id()].instance_textures[i];
+
+						auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
+
+						auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
+
+						vk::DescriptorImageInfo image_info{};
+						image_info
+							.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+							.setImageView(texture_data->get_view())
+							.setSampler(vulkan_map->sampler);
+
+						image_infos[i] = image_info;
+
+						++update_sampler_count;
+					}
+
+					sampler
+						.setDstSet(object_descriptor_set)
+						.setDstBinding(descriptor_index)
+						.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+						.setDescriptorCount(update_sampler_count)
+						.setImageInfo(image_infos);
+
+					writes.push_back(sampler);
+					++descriptor_count;
+
 				}
 
-				sampler
-					.setDstSet(object_descriptor_set)
-					.setDstBinding(descriptor_index)
-					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-					.setDescriptorCount(update_sampler_count)
-					.setImageInfo(image_infos);
-
-				writes.push_back(sampler);
-				++descriptor_count;
-
-			}
-
-			if (descriptor_count > 0)
-			{
-				context_->device.logical_device.updateDescriptorSets(writes, nullptr);
+				if (descriptor_count > 0)
+				{
+					context_->device.logical_device.updateDescriptorSets(writes, nullptr);
+				}
 			}
 		}
 		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelines_[bound_pipeline_index_]->get_layout(), 1, object_descriptor_set, nullptr);

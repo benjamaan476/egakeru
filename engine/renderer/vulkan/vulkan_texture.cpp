@@ -161,6 +161,7 @@ namespace egkr
 				image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 				image_properties.image_format = image_format;
 				image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+				image_properties.texture_type = properties.texture_type;
 
 				create(image_properties);
 
@@ -223,7 +224,7 @@ namespace egkr
 		{
 			ZoneScoped;
 
-			auto image_size = properties_.width * properties_.height * properties_.channel_count;
+			auto image_size = properties_.width * properties_.height * properties_.channel_count * (properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 			auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
 			auto staging_buffer = buffer::create(context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);

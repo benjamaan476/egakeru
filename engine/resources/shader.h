@@ -119,8 +119,6 @@ namespace egkr
 		struct properties
 		{
 			std::string name{};
-			bool use_instance{};
-			bool use_local{};
 			egkr::vector<attribute_configuration> attributes{};
 			egkr::vector<uniform_configuration> uniforms{};
 			std::string renderpass_name{};
@@ -181,7 +179,7 @@ namespace egkr
 			const auto& get_bound_instance_id() const { return bound_instance_id_; }
 			void set_bound_instance_id(uint32_t instance_id);
 
-			auto has_instances() const { return use_instances_; }
+			auto has_instances() const { return properties_.instance_uniform_count > 0 || properties_.instance_uniform_sampler_count > 0; }
 
 			const auto& get_attributes() const { return attributes_; }
 			const auto& get_uniforms() const { return uniforms_; }
@@ -223,8 +221,6 @@ namespace egkr
 
 		protected:
 			properties properties_{};
-			bool use_instances_{};
-			bool use_locals_{};
 			uint64_t requried_ubo_alignment_{};
 
 			uint64_t global_ubo_size_{};

@@ -61,6 +61,7 @@ namespace egkr
 			void set_width(uint32_t width) { properties_.width = width; }
 			void set_height(uint32_t height) { properties_.height = height; }
 			void set_channel_count(uint32_t channel_count) { properties_.channel_count = channel_count; }
+			void set_type(type type) { properties_.texture_type = type; }
 
 			[[nodiscard]] const auto& get_flags() const	{ return properties_.flags; }
 			[[nodiscard]] const auto& get_width() const	{ return properties_.width; }

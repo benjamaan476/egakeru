@@ -76,8 +76,8 @@ bool render_view_skybox::on_render(const render_view_packet* render_view_packet,
 		shader_system::set_uniform(view_location_, &view);
 		shader_system::apply_global();
 
-		shader->bind_instances(0);
 		skybox_packet_data* skybox_data = (skybox_packet_data*)render_view_packet->extended_data;
+		shader->bind_instances(skybox_data->skybox->get_instance_id());
 		shader_system::set_uniform(cube_map_location_, skybox_data->skybox->get_texture_map().get());
 		
 		bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;

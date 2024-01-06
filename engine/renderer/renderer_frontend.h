@@ -34,13 +34,16 @@ namespace egkr
 	private:
 		renderer_backend::unique_ptr backend_{};
 		uint8_t window_attachment_count{};
+		renderpass::renderpass* skybox_renderpass_{};
 		renderpass::renderpass* world_renderpass_{};
+		egkr::vector<render_target::render_target::shared_ptr> skybox_render_targets_{3};
 		egkr::vector<render_target::render_target::shared_ptr> world_render_targets_{3};
 		egkr::vector<render_target::render_target::shared_ptr> ui_render_targets_{3};
 		renderpass::renderpass* ui_renderpass_{};
 
 		uint32_t framebuffer_width_{};
 		uint32_t framebuffer_height_{};
+		uint32_t skybox_shader_id{};
 		uint32_t material_shader_id{};
 		uint32_t ui_shader_id{};
 		//TODO temp
