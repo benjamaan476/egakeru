@@ -1,6 +1,7 @@
 #include "render_view.h"
 #include "renderer/views/render_view_ui.h"
 #include "renderer/views/render_view_world.h"
+#include "renderer/views/render_view_skybox.h"
 
 #include <renderer/renderer_frontend.h>
 #include <systems/camera_system.h>
@@ -16,6 +17,10 @@ namespace egkr::render_view
 		else if (configuration.type == type::ui)
 		{
 			return std::make_shared<render_view_ui>(renderer, configuration);
+		}
+		else if (configuration.type == type::skybox)
+		{
+			return std::make_shared<render_view_skybox>(renderer, configuration);
 		}
 		else
 		{

@@ -20,12 +20,12 @@ bool render_view_skybox::on_create()
 	view_location_ = shader->get_uniform_index("view");
 	cube_map_location_ = shader->get_uniform_index("cube_texture");
 
-	return false;
+	return true;
 }
 
 bool render_view_skybox::on_destroy()
 {
-	return false;
+	return true;
 }
 
 void render_view_skybox::on_resize(uint32_t width, uint32_t height)
@@ -78,7 +78,7 @@ bool render_view_skybox::on_render(const render_view_packet* render_view_packet,
 
 		skybox_packet_data* skybox_data = (skybox_packet_data*)render_view_packet->extended_data;
 		shader->bind_instances(skybox_data->skybox->get_instance_id());
-		shader_system::set_uniform(cube_map_location_, skybox_data->skybox->get_texture_map().get());
+		shader_system::set_uniform(cube_map_location_, &skybox_data->skybox->get_texture_map());
 		
 		bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;
 		shader_system::apply_instance(needs_update);

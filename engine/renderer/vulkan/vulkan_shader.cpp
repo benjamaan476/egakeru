@@ -182,7 +182,7 @@ namespace egkr::shader
 					.setDescriptorCount(properties_.global_uniform_sampler_count)
 					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
 					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
-
+				configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].sampler_binding_index = binding_index;
 				global_descriptor_set_configuration.bindings.push_back(ubo);
 			}
 			configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL] = global_descriptor_set_configuration;
@@ -216,7 +216,8 @@ namespace egkr::shader
 					.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
 				instance_descriptor_set_configuration.bindings.push_back(ubo);
-				configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count++;
+				instance_descriptor_set_configuration.sampler_binding_index = binding_index;
+				instance_descriptor_set_configuration.binding_count++;
 			}			
 			configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE] = instance_descriptor_set_configuration;
 		}
@@ -297,6 +298,7 @@ namespace egkr::shader
 		pipeline_properties.input_binding_description = binding_desc;
 		pipeline_properties.input_attribute_description = configuration.attributes;
 		pipeline_properties.cull_mode = properties_.cull_mode;
+		pipeline_properties.shader_name = properties_.name;
 		bool pipeline_bound{};
 
 		if (topology_types_ & primitive_topology_type::point_list)
@@ -376,12 +378,12 @@ namespace egkr::shader
 		vk::DescriptorBufferInfo buffer_info{};
 		if (needs_update)
 		{
-			if (properties_.instance_uniform_count)
-			{
 				egkr::vector<vk::WriteDescriptorSet> writes{};
-
 				uint32_t descriptor_count{};
 				uint32_t descriptor_index{};
+			if (properties_.instance_uniform_count)
+			{
+
 
 				auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
 
@@ -406,11 +408,14 @@ namespace egkr::shader
 					instance_ubo_generation = 1;
 				}
 				++descriptor_index;
+			}
 
+				egkr::vector<vk::DescriptorImageInfo> image_infos{ };
 				vk::WriteDescriptorSet sampler{};
-				auto total_sampler_count = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].sampler_binding_index].descriptorCount;
-				egkr::vector<vk::DescriptorImageInfo> image_infos{ total_sampler_count };
-				if (configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings.size() > 1)
+			if (properties_.instance_uniform_sampler_count)
+			{
+				auto sampler_binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].sampler_binding_index;
+				auto total_sampler_count = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].bindings[sampler_binding_index].descriptorCount;
 				{
 					uint32_t update_sampler_count{};
 
@@ -428,7 +433,7 @@ namespace egkr::shader
 							.setImageView(texture_data->get_view())
 							.setSampler(vulkan_map->sampler);
 
-						image_infos[i] = image_info;
+						image_infos.push_back(image_info);
 
 						++update_sampler_count;
 					}
@@ -444,12 +449,11 @@ namespace egkr::shader
 					++descriptor_count;
 
 				}
-
+			}
 				if (descriptor_count > 0)
 				{
 					context_->device.logical_device.updateDescriptorSets(writes, nullptr);
 				}
-			}
 		}
 		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelines_[bound_pipeline_index_]->get_layout(), 1, object_descriptor_set, nullptr);
 		return true;

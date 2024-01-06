@@ -72,11 +72,11 @@ namespace egkr::renderpass
 			depth_attachment
 				.setFormat(context_->device.depth_format) // TODO configure
 				.setSamples(vk::SampleCountFlagBits::e1)
-				.setLoadOp(has_previous_ ? do_clear ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare : vk::AttachmentLoadOp::eDontCare)
+				.setLoadOp(has_previous_ ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare)
 				.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-				.setInitialLayout(has_previous_ ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined)
+				.setInitialLayout(vk::ImageLayout::eUndefined)
 				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 

@@ -13,11 +13,13 @@ namespace egkr::skybox
 		using shared_ptr = std::shared_ptr<skybox>;
 		static shared_ptr create(const renderer_backend* backend);
 
-		skybox(const renderer_backend* backend);
+		explicit skybox(const renderer_backend* backend);
 		~skybox() = default;
 
+		void destroy();
+
 		auto get_geometry() const { return geometry_;}
-		auto get_texture_map() const { return cubemap_;}
+		auto& get_texture_map() const { return cubemap_;}
 		auto get_frame_number() const { return render_frame_number_;}
 		auto get_instance_id() const { return instance_id_;}
 
@@ -25,7 +27,7 @@ namespace egkr::skybox
 		void set_geometry(geometry::geometry::shared_ptr geo);
 
 	private:
-		uint32_t instance_id_{invalid_32_id};
+		uint32_t instance_id_{0};
 		texture_map::texture_map::shared_ptr cubemap_{};
 		geometry::geometry::shared_ptr geometry_{};
 		uint64_t render_frame_number_{invalid_64_id};

@@ -9,6 +9,14 @@ namespace egkr::skybox
 		return std::make_shared<skybox>(backend);
 	}
 
+	void skybox::destroy()
+	{
+		geometry_->destroy();
+		geometry_.reset();
+		cubemap_->free();
+		cubemap_.reset();
+	}
+
 	skybox::skybox(const renderer_backend* backend)
 		: resource(0, invalid_32_id, "skybox")
 	{

@@ -157,7 +157,7 @@ namespace egkr
 
 		{
 			render_view::configuration skybox_world{};
-			skybox_world.type = render_view::type::world;
+			skybox_world.type = render_view::type::skybox;
 			skybox_world.width = state_.width_;
 			skybox_world.height = state_.height_;
 			skybox_world.name = "skybox";
@@ -203,7 +203,7 @@ namespace egkr
 		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
 		skybox_->set_geometry(geometry_system::acquire(skybox_geo));
 
-		auto skybox_shader = shader_system::get_shader("Builtin.Shader.Skybox");
+		auto skybox_shader = shader_system::get_shader("Shader.Builtin.Skybox");
 		egkr::vector<texture_map::texture_map::shared_ptr> maps = { skybox_->get_texture_map() };
 		skybox_shader->acquire_instance_resources(maps);
 
@@ -337,6 +337,7 @@ namespace egkr
 
 	void application::shutdown()
 	{
+		application_->skybox_->destroy();
 		application_->box->destroy();
 		application_->grid->unload();
 		application_->meshes_.clear();

@@ -82,7 +82,7 @@ namespace egkr
 		renderpass::configuration skybox{};
 		skybox.name = "Renderpass.Builtin.Skybox";
 		skybox.previous_name = "";
-		skybox.next_name = "world";
+		skybox.next_name = "world-opaque";
 		skybox.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
 		skybox.clear_flags = renderpass::clear_flags::colour;
 		renderpasses.push_back(skybox);
@@ -99,7 +99,7 @@ namespace egkr
 
 		renderpass::configuration ui{};
 		ui.name = "Renderpass.Builtin.UI";
-		ui.previous_name = "world";
+		ui.previous_name = "world-opaque";
 		ui.next_name = "";
 		ui.clear_flags = renderpass::clear_flags::none;
 		ui.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
