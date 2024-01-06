@@ -19,13 +19,15 @@ namespace egkr
 
 	}
 
-	resource::shared_ptr image_loader::load(std::string_view name)
+	resource::shared_ptr image_loader::load(std::string_view name, void* params)
 	{
+		auto* parameters = std::bit_cast<image_resource_parameters*>(params);
+
 		auto base_path = get_base_path();
 
 		// Base path/{name}{extension}
 		constexpr std::string_view format_string{ "%s/%s%s" };
-		stbi_set_flip_vertically_on_load(true);
+		stbi_set_flip_vertically_on_load(parameters->flip_y);
 
 		char buff[128];
 		egkr::vector<std::string_view> extensions{".tga", ".png", ".jpg", ".bmp"};

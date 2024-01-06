@@ -116,7 +116,7 @@ namespace egkr
 		ui_renderpass_->set_render_targets(ui_render_targets_);
 		regenerate_render_targets();
 
-		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader);
+		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader, nullptr);
 		auto shader = (shader::properties*)resource->data;
 
 		shader_system::create_shader(*shader);
@@ -125,7 +125,7 @@ namespace egkr
 
 		material_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_MATERIAL);
 
-		auto ui_resource = resource_system::load(BUILTIN_SHADER_NAME_UI, resource_type::shader);
+		auto ui_resource = resource_system::load(BUILTIN_SHADER_NAME_UI, resource_type::shader, nullptr);
 		auto ui_shader = (shader::properties*)ui_resource->data;
 
 		shader_system::create_shader(*ui_shader);

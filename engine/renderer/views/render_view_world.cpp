@@ -2,7 +2,6 @@
 #include <systems/resource_system.h>
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
-#include <systems/camera_system.h>
 #include <renderer/renderer_types.h>
 
 namespace egkr::render_view
@@ -20,13 +19,12 @@ namespace egkr::render_view
 		far_clip_ = 1000.F;
 		fov_ = 45.F;
 		projection_ = glm::perspective(fov_, (float)width_ / height_, near_clip_, far_clip_);
-		camera_ = camera_system::get_default();
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
 		event::register_event(event_code::render_mode, this, on_event);
 
 		std::string colour_3d_shader_name = "Shader.Builtin.Colour3DShader";
-		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource_type::shader);
+		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource_type::shader, nullptr);
 		auto properties = (shader::properties*)colour_shader->data;
 		shader_system::create_shader(*properties);
 		resource_system::unload(colour_shader);
@@ -126,12 +124,8 @@ namespace egkr::render_view
 				}
 
 			}
-
 			pass->end();
-
 		}
-
-
 		return true;
 	}
 }

@@ -14,7 +14,7 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr binary_loader::load(std::string_view name)
+	resource::shared_ptr binary_loader::load(std::string_view name, void* params)
 	{
 		//bianry file needs full filename
 		const auto base_path = get_base_path();

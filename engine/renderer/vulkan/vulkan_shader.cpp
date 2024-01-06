@@ -499,7 +499,7 @@ namespace egkr::shader
 
 	vulkan_stage vulkan_shader::create_module(const vulkan_stage_configuration& configuration)
 	{
-		auto resource = resource_system::load(configuration.filename, resource_type::binary);
+		auto resource = resource_system::load(configuration.filename, resource_type::binary, nullptr);
 		auto* code = (binary_resource_properties*)resource->data;
 
 		vulkan_stage shader_stage{};

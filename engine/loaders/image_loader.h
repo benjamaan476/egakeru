@@ -5,6 +5,7 @@
 
 namespace egkr
 {
+
 	class image_loader : public resource_loader
 	{
 	public:
@@ -14,7 +15,8 @@ namespace egkr
 		image_loader(const loader_properties& properties);
 		~image_loader() override = default;
 
-		resource::shared_ptr load(std::string_view name) override;
+		//Params is a image_resource_parameters
+		resource::shared_ptr load(std::string_view name, void* params) override;
 		bool unload(const resource::shared_ptr& resource) override;
 	};
 }

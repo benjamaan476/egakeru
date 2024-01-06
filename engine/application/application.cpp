@@ -203,7 +203,7 @@ namespace egkr
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
 
-		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
+		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh, nullptr);
 
 		auto geometry_config = (egkr::vector<geometry::properties>*)mesh_resource->data;
 		transform obj = transform::create({ 0, 0, -5 });
@@ -411,7 +411,7 @@ namespace egkr
 			{
 				auto& parent = application_->meshes_[1];
 				once = false;
-				auto kittyCAD = resource_system::load("output", resource_type::mesh);
+				auto kittyCAD = resource_system::load("output", resource_type::mesh, nullptr);
 				auto kittCAD_config = (egkr::vector<geometry::properties>*)kittyCAD->data;
 				transform kittyCAD_transform = transform::create({ 15.F, 0.F, 0.F });
 				kittyCAD_transform.set_parent(&parent->model());

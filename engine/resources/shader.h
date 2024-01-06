@@ -11,6 +11,14 @@ namespace egkr
 	class renderer_backend;
 	namespace shader
 	{
+		enum class cull_mode
+		{
+			none,
+			front,
+			back,
+			both
+		};
+
 		enum class stages
 		{
 			vertex = 1,
@@ -120,6 +128,14 @@ namespace egkr
 			egkr::vector<std::string> stage_names{};
 			egkr::vector<std::string> stage_filenames{};
 			primitive_topology_type topology_types{ primitive_topology_type::triangle_list };
+			cull_mode cull_mode{ cull_mode::back };
+
+			uint8_t global_uniform_count{};
+			uint8_t global_uniform_sampler_count{};
+			uint8_t instance_uniform_count{};
+			uint8_t instance_uniform_sampler_count{};
+			uint8_t local_uniform_count{};
+			
 		};
 
 		enum state

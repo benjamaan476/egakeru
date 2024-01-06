@@ -29,6 +29,23 @@ namespace egkr
 			.setDepthBiasEnable(false)
 			.setDepthBiasClamp(0.F);
 
+		switch (properties.cull_mode)
+		{
+		case shader::cull_mode::front:
+			raster_create_info.setCullMode(vk::CullModeFlagBits::eFront);
+			break;
+		case shader::cull_mode::back:
+			raster_create_info.setCullMode(vk::CullModeFlagBits::eBack);
+			break;
+		case shader::cull_mode::both:
+			raster_create_info.setCullMode(vk::CullModeFlagBits::eFrontAndBack);
+			break;
+		case shader::cull_mode::none:
+		default:
+			raster_create_info.setCullMode(vk::CullModeFlagBits::eNone);
+			break;
+		}
+
 		vk::PipelineMultisampleStateCreateInfo multisample_create_info{};
 		multisample_create_info
 			.setSampleShadingEnable(false)

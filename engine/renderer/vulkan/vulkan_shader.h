@@ -24,6 +24,7 @@ namespace egkr::shader
 	struct vulkan_descriptor_set_configuration
 	{
 		egkr::vector<vk::DescriptorSetLayoutBinding> bindings{};
+		uint8_t sampler_binding_index{};
 	};
 
 	struct vulkan_stage_configuration

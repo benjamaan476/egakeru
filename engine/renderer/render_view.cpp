@@ -3,6 +3,7 @@
 #include "renderer/views/render_view_world.h"
 
 #include <renderer/renderer_frontend.h>
+#include <systems/camera_system.h>
 
 namespace egkr::render_view
 {
@@ -31,6 +32,7 @@ namespace egkr::render_view
 		type_{ configuration.type },
 		custom_shader_name_{ configuration.custom_shader_name }
 	{
+		camera_ = camera_system::get_default();
 		for (const auto& pass : configuration.passes)
 		{
 			renderpasses_.push_back(renderer->get_backend()->get_renderpass(pass.name));

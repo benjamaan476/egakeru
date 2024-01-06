@@ -18,6 +18,12 @@ namespace egkr
 
 		ENUM_CLASS_OPERATORS(flags)
 
+		enum class type
+		{
+			texture_2d,
+			cube
+		};
+		
 		struct properties
 		{
 			std::string name{};
@@ -28,6 +34,8 @@ namespace egkr
 
 			uint32_t generation{ invalid_32_id };
 			flags flags{};
+
+			type texture_type{};
 
 			void* data{};
 		};
@@ -85,7 +93,8 @@ namespace egkr
 			unknown = 0,
 			map_diffuse,
 			map_specular,
-			map_normal
+			map_normal,
+			map_cube
 		};
 
 		struct properties

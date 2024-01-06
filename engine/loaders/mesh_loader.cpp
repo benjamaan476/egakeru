@@ -12,7 +12,7 @@ namespace egkr
 	mesh_loader::mesh_loader(const loader_properties& properties)
 		:resource_loader{ resource_type::mesh, properties } {}
 
-	resource::shared_ptr mesh_loader::load(std::string_view name)
+	resource::shared_ptr mesh_loader::load(std::string_view name, void* params)
 	{
 		egkr::vector<supported_file_type> file_types{{".esm", mesh_file_type::esm, true}, { ".obj", mesh_file_type::obj, false }};
 

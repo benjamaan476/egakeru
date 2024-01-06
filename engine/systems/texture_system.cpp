@@ -294,7 +294,8 @@ namespace egkr
 
 	texture::texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
 	{
-		auto image = resource_system::load(filename, resource_type::image);
+		image_resource_parameters params{ .flip_y = true };
+		auto image = resource_system::load(filename, resource_type::image, &params);
 
 		if (!image)
 		{

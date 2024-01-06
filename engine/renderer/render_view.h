@@ -2,7 +2,9 @@
 #include "pch.h"
 
 #include <renderer/renderpass.h>
+#include <renderer/camera.h>
 #include <resources/mesh.h>
+#include <resources/skybox.h>
 #include <event.h>
 
 namespace egkr
@@ -11,6 +13,7 @@ namespace egkr
 	{
 		enum class type
 		{
+			skybox,
 			world,
 			ui
 		};
@@ -73,8 +76,7 @@ namespace egkr
 			uint32_t mode_{};
 			std::vector<renderpass::renderpass*> renderpasses_{};
 			std::string custom_shader_name_{};
-
-			void* internal_data{};
+			camera::shared_ptr camera_{};
 		};
 
 		struct render_view_packet
@@ -92,6 +94,11 @@ namespace egkr
 			std::optional<std::string> custom_shader_name{};
 
 			void* extended_data{};
+		};
+
+		struct skybox_packet_data
+		{
+			skybox::skybox::shared_ptr skybox{};
 		};
 
 		struct mesh_packet_data

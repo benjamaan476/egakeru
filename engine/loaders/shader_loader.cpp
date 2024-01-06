@@ -16,7 +16,7 @@ namespace egkr
 
 	}
 
-	resource::shared_ptr shader_loader::load(std::string_view name)
+	resource::shared_ptr shader_loader::load(std::string_view name, void* params)
 	{
 		const auto base_path = get_base_path();
 		constexpr std::string_view format_string{ "%s/%s%s" };
@@ -169,19 +169,9 @@ namespace egkr
 				value = value.substr(offset + 1);
 
 			}
-			else if (variable_name == "use_instance")
+			else if (variable_name == "cull_mode")
 			{
-				if (value == "true" || strcmp(value.data(), "1") == 0)
-				{
-					properties.use_instance = true;
-				}
-			}
-			else if (variable_name == "use_local")
-			{
-				if (value == "true" || strcmp(value.data(), "1") == 0)
-				{
-					properties.use_local = true;
-				}
+				properties.cull_mode = (shader::cull_mode)std::stoi(value);
 			}
 			else if (variable_name == "topology")
 			{
