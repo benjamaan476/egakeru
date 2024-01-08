@@ -156,6 +156,16 @@ namespace egkr
 			0.0 });
 
 		{
+			render_view::configuration skybox_world{};
+			skybox_world.type = render_view::type::skybox;
+			skybox_world.width = state_.width_;
+			skybox_world.height = state_.height_;
+			skybox_world.name = "skybox";
+			skybox_world.passes.push_back({ "Renderpass.Builtin.Skybox" });
+			skybox_world.view_source = render_view::view_matrix_source::scene_camera;
+			view_system::create_view(skybox_world);
+		}
+		{
 			render_view::configuration opaque_world{};
 			opaque_world.type = render_view::type::world;
 			opaque_world.width = state_.width_;
@@ -188,6 +198,15 @@ namespace egkr
 		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
 		event::register_event(event_code::debug02, nullptr, application::on_debug_event);
 
+		skybox_ = skybox::skybox::create(state_.renderer->get_backend().get());
+
+		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
+		skybox_->set_geometry(geometry_system::acquire(skybox_geo));
+
+		auto skybox_shader = shader_system::get_shader("Shader.Builtin.Skybox");
+		egkr::vector<texture_map::texture_map::shared_ptr> maps = { skybox_->get_texture_map() };
+		skybox_shader->acquire_instance_resources(maps);
+
 		auto cube_1 = geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
 		generate_tangents(cube_1.vertices, cube_1.indices);
 
@@ -203,7 +222,7 @@ namespace egkr
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
 
-		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh);
+		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh, nullptr);
 
 		auto geometry_config = (egkr::vector<geometry::properties>*)mesh_resource->data;
 		transform obj = transform::create({ 0, 0, -5 });
@@ -279,12 +298,12 @@ namespace egkr
 
 				state.game->render(delta_time);
 
-				auto& model = application_->meshes_[0]->model();
-				glm::quat q({ 0, 0, 0.5F * delta_time });
-				model.rotate(q);
+				//auto& model = application_->meshes_[0]->model();
+				//glm::quat q({ 0, 0, 0.5F * delta_time });
+				//model.rotate(q);
 
-				auto& model_2 = application_->meshes_[1]->model();
-				model_2.rotate(q);
+				//auto& model_2 = application_->meshes_[1]->model();
+				//model_2.rotate(q);
 
 				render_packet packet{};
 
@@ -292,6 +311,10 @@ namespace egkr
 				geometry::render_data debug_grid{ .geometry = application_->grid->get_geometry(), .model = application_->grid->get_transform() };
 				render_view::mesh_packet_data world{ .meshes = application_->meshes_, .debug_meshes = { debug_box, debug_grid} };
 			
+				render_view::skybox_packet_data skybox{ .skybox = application_->skybox_ };
+				auto skybox_view = view_system::get("skybox");
+				packet.render_views.push_back(view_system::build_packet(skybox_view.get(), &skybox));
+
 				auto world_view = view_system::get("world-opaque");
 				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
 
@@ -314,6 +337,7 @@ namespace egkr
 
 	void application::shutdown()
 	{
+		application_->skybox_->destroy();
 		application_->box->destroy();
 		application_->grid->unload();
 		application_->meshes_.clear();
@@ -411,7 +435,7 @@ namespace egkr
 			{
 				auto& parent = application_->meshes_[1];
 				once = false;
-				auto kittyCAD = resource_system::load("output", resource_type::mesh);
+				auto kittyCAD = resource_system::load("output", resource_type::mesh, nullptr);
 				auto kittCAD_config = (egkr::vector<geometry::properties>*)kittyCAD->data;
 				transform kittyCAD_transform = transform::create({ 15.F, 0.F, 0.F });
 				kittyCAD_transform.set_parent(&parent->model());

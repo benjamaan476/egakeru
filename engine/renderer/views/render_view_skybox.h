@@ -1,19 +1,19 @@
 #pragma once
+#include <pch.h>
+
+#include <resources/skybox.h>
 #include <renderer/render_view.h>
+#include <renderer/camera.h>
 
 namespace egkr::render_view
 {
-	struct debug_colour_shader_locations
-	{
-		uint16_t projection{};
-		uint16_t view{};
-		uint16_t model{};
-	};
-	class render_view_world : public render_view
+
+	class render_view_skybox : public render_view
 	{
 	public:
-		render_view_world(const renderer_frontend* renderer, const configuration& configuration);
-		~render_view_world() override = default;
+		render_view_skybox(const renderer_frontend* renderer, const configuration& configuration);
+		~render_view_skybox() override = default;
+
 		bool on_create() override;
 		bool on_destroy() override;
 		void on_resize(uint32_t width, uint32_t height) override;
@@ -22,13 +22,14 @@ namespace egkr::render_view
 
 	private:
 		uint32_t shader_id_{invalid_32_id};
-		float fov_{90.F};
-		float near_clip_{0.01F};
-		float far_clip_{1000.F};
-		
+		float fov_{ 45.F };
+		float near_clip_{ 0.01F };
+		float far_clip_{ 1000.F };
+
 		float4x4 projection_{};
-		float4 ambient_colour_{};
-		int render_mode{};
-		debug_colour_shader_locations locations_{};
+
+		uint16_t projection_location_{};
+		uint16_t view_location_{};
+		uint16_t cube_map_location_{};
 	};
 }

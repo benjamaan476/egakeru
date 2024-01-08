@@ -6,6 +6,7 @@
 
 namespace egkr
 {
+
 	struct resource_system_configuration
 	{
 		uint32_t max_loader_count{};
@@ -26,7 +27,7 @@ namespace egkr
 
 		static void register_loader(resource_loader::unique_ptr loader);
 
-		static resource::shared_ptr load(std::string_view name, resource_type type);
+		static resource::shared_ptr load(std::string_view name, resource_type type, void* params);
 		static bool unload(const resource::shared_ptr& resource);
 	private:
 		uint32_t max_loader_count_{};

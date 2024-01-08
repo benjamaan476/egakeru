@@ -100,11 +100,11 @@ namespace egkr
 		resource_system_->registered_loaders_[loader->get_loader_type()] = std::move(loader);
 	}
 
-	resource::shared_ptr resource_system::load(std::string_view name, resource_type type)
+	resource::shared_ptr resource_system::load(std::string_view name, resource_type type, void* params)
 	{
 		if (resource_system_->registered_loaders_.contains(type))
 		{
-			return resource_system_->registered_loaders_[type]->load(name);
+			return resource_system_->registered_loaders_[type]->load(name, params);
 		}
 
 		LOG_ERROR("Attempted to load resource without corresponding loader registered");

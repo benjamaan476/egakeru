@@ -11,6 +11,14 @@ namespace egkr
 	class renderer_backend;
 	namespace shader
 	{
+		enum class cull_mode
+		{
+			none,
+			front,
+			back,
+			both
+		};
+
 		enum class stages
 		{
 			vertex = 1,
@@ -111,8 +119,6 @@ namespace egkr
 		struct properties
 		{
 			std::string name{};
-			bool use_instance{};
-			bool use_local{};
 			egkr::vector<attribute_configuration> attributes{};
 			egkr::vector<uniform_configuration> uniforms{};
 			std::string renderpass_name{};
@@ -120,6 +126,14 @@ namespace egkr
 			egkr::vector<std::string> stage_names{};
 			egkr::vector<std::string> stage_filenames{};
 			primitive_topology_type topology_types{ primitive_topology_type::triangle_list };
+			cull_mode cull_mode{ cull_mode::back };
+
+			uint8_t global_uniform_count{};
+			uint8_t global_uniform_sampler_count{};
+			uint8_t instance_uniform_count{};
+			uint8_t instance_uniform_sampler_count{};
+			uint8_t local_uniform_count{};
+			
 		};
 
 		enum state
@@ -165,7 +179,7 @@ namespace egkr
 			const auto& get_bound_instance_id() const { return bound_instance_id_; }
 			void set_bound_instance_id(uint32_t instance_id);
 
-			auto has_instances() const { return use_instances_; }
+			auto has_instances() const { return properties_.instance_uniform_count > 0 || properties_.instance_uniform_sampler_count > 0; }
 
 			const auto& get_attributes() const { return attributes_; }
 			const auto& get_uniforms() const { return uniforms_; }
@@ -207,8 +221,6 @@ namespace egkr
 
 		protected:
 			properties properties_{};
-			bool use_instances_{};
-			bool use_locals_{};
 			uint64_t requried_ubo_alignment_{};
 
 			uint64_t global_ubo_size_{};

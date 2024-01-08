@@ -72,11 +72,11 @@ namespace egkr::renderpass
 			depth_attachment
 				.setFormat(context_->device.depth_format) // TODO configure
 				.setSamples(vk::SampleCountFlagBits::e1)
-				.setLoadOp(vk::AttachmentLoadOp::eClear)
+				.setLoadOp(has_previous_ ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare)
 				.setStoreOp(vk::AttachmentStoreOp::eDontCare)
 				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-				.setInitialLayout(has_previous_ ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined)
+				.setInitialLayout(vk::ImageLayout::eUndefined)
 				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 
@@ -132,12 +132,12 @@ namespace egkr::renderpass
 		egkr::vector<vk::ClearValue> clear_colours{};
 		const bool do_clear_colour = clear_flags_ & egkr::renderpass::clear_flags::colour;
 
+		vk::ClearValue clear_colour{};
 		if (do_clear_colour)
 		{
-			vk::ClearValue clear_colour{};
 			clear_colour.setColor(std::array<float, 4>{clear_colour_.r, clear_colour_.g, clear_colour_.b, clear_colour_.a, });
-			clear_colours.push_back(clear_colour);
 		}
+		clear_colours.push_back(clear_colour);
 
 		const bool do_clear_depth = clear_flags_ & egkr::renderpass::clear_flags::depth;
 		const bool do_clear_stencil = clear_flags_ & egkr::renderpass::clear_flags::stencil;

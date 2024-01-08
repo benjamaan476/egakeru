@@ -49,17 +49,28 @@ namespace egkr
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setBaseMipLevel(0)
-				.setLevelCount(1)
 				.setBaseArrayLayer(0)
-				.setLayerCount(1)
+				.setLevelCount(1)
 				.setAspectMask(properties.aspect_flags);
 
+			subresource.setLayerCount(properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 			vk::ImageViewCreateInfo image_view_info{};
 			image_view_info
 				.setImage(image_)
-				.setViewType(vk::ImageViewType::e2D) // TODO configurable
 				.setFormat(properties.image_format)
 				.setSubresourceRange(subresource);
+
+			switch (properties.texture_type)
+			{
+			case egkr::texture::type::texture_2d:
+				image_view_info.setViewType(vk::ImageViewType::e2D);
+				break;
+			case egkr::texture::type::cube:
+				image_view_info.setViewType(vk::ImageViewType::eCube);
+				break;
+			default:
+				break;
+			}
 
 			view_ = context_->device.logical_device.createImageView(image_view_info, context_->allocator);
 		}
@@ -82,16 +93,30 @@ namespace egkr
 			vk::ImageCreateInfo image_info{};
 
 			image_info
-				.setImageType(vk::ImageType::e2D)
 				.setExtent({ width_, height_, properties.depth })
 				.setFormat(properties.image_format)
 				.setMipLevels(properties.mip_levels)
 				.setTiling(properties.tiling)
-				.setArrayLayers(properties.array_layers)
 				.setInitialLayout(vk::ImageLayout::eUndefined)
 				.setUsage(properties.usage)
 				.setSamples(properties.samples)
 				.setSharingMode(properties.sharing_mode);
+
+			switch (properties.texture_type)
+			{
+			case egkr::texture::type::texture_2d:
+			case egkr::texture::type::cube:
+				image_info.setImageType(vk::ImageType::e2D);
+			default:
+				break;
+			}
+
+			if (properties.texture_type == egkr::texture::type::cube)
+			{
+				image_info.setFlags(vk::ImageCreateFlagBits::eCubeCompatible);
+			}
+
+			image_info.setArrayLayers(properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 			image_ = context_->device.logical_device.createImage(image_info, context_->allocator);
 			if (image_ == vk::Image{})
@@ -136,6 +161,7 @@ namespace egkr
 				image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 				image_properties.image_format = image_format;
 				image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+				image_properties.texture_type = properties.texture_type;
 
 				create(image_properties);
 
@@ -198,7 +224,7 @@ namespace egkr
 		{
 			ZoneScoped;
 
-			auto image_size = properties_.width * properties_.height * properties_.channel_count;
+			auto image_size = properties_.width * properties_.height * properties_.channel_count * (properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 			auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
 			auto staging_buffer = buffer::create(context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
@@ -281,8 +307,9 @@ namespace egkr
 				.setBaseMipLevel(0)
 				.setLevelCount(1)
 				.setBaseArrayLayer(0)
-				.setLayerCount(1)
 				.setAspectMask(vk::ImageAspectFlagBits::eColor);
+
+			subresource_range.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 			vk::ImageMemoryBarrier barrier{};
 			barrier
@@ -328,8 +355,9 @@ namespace egkr
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setMipLevel(0)
-				.setBaseArrayLayer(0)
-				.setLayerCount(1);
+				.setBaseArrayLayer(0);
+
+			subresource.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 			vk::BufferImageCopy image_copy{};
 			image_copy

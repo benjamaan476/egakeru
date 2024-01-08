@@ -16,7 +16,7 @@ namespace egkr
 
 	}
 
-	resource::shared_ptr shader_loader::load(std::string_view name)
+	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
 		constexpr std::string_view format_string{ "%s/%s%s" };
@@ -46,7 +46,7 @@ namespace egkr
 	shader::properties shader_loader::load_configuration_file(std::string_view path)
 	{
 		shader::properties properties{};
-
+		properties.cull_mode = shader::cull_mode::back;
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
 		{
@@ -169,18 +169,19 @@ namespace egkr
 				value = value.substr(offset + 1);
 
 			}
-			else if (variable_name == "use_instance")
+			else if (variable_name == "cull_mode")
 			{
-				if (value == "true" || strcmp(value.data(), "1") == 0)
+				if (value == "front")
 				{
-					properties.use_instance = true;
+					properties.cull_mode = shader::cull_mode::front;
 				}
-			}
-			else if (variable_name == "use_local")
-			{
-				if (value == "true" || strcmp(value.data(), "1") == 0)
+				else if (value == "back")
 				{
-					properties.use_local = true;
+					properties.cull_mode = shader::cull_mode::back;
+				}
+				else if (value == "both")
+				{
+					properties.cull_mode = shader::cull_mode::both;
 				}
 			}
 			else if (variable_name == "topology")

@@ -8,6 +8,7 @@
 #include "resources/geometry.h"
 #include "resources/mesh.h"
 #include "resources/light.h"
+#include "resources/skybox.h"
 #include <debug/debug_box3d.h>
 #include <debug/debug_grid.h>
 
@@ -52,6 +53,7 @@ namespace egkr
 	    bool limit_framerate_{false};
 		std::chrono::milliseconds frame_time_{16ms};
 
+		egkr::skybox::skybox::shared_ptr skybox_{};
 		egkr::vector<mesh::shared_ptr> meshes_{};
 		egkr::vector<mesh::shared_ptr> ui_meshes_{};
 		debug::debug_box3d::shared_ptr box{};

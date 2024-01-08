@@ -33,6 +33,7 @@ namespace egkr
 		static void resize(texture::texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);
 
 		static texture::texture::shared_ptr acquire(std::string_view texture_name);
+		static texture::texture::shared_ptr acquire_cube(std::string_view texture_name);
 		static texture::texture::shared_ptr acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency);
 		void release(std::string_view texture_name);
 
@@ -42,6 +43,7 @@ namespace egkr
 		static texture::texture::shared_ptr get_default_normal_texture();
 	private:
 		static texture::texture::shared_ptr load_texture(std::string_view filepath, uint32_t id);
+		static texture::texture::shared_ptr load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id);
 
 
 	private:

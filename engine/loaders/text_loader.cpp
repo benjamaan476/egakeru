@@ -11,7 +11,7 @@ namespace egkr
 	text_loader::text_loader(const loader_properties& properties)
 		: resource_loader{ resource_type::text, properties }
 	{}
-	resource::shared_ptr text_loader::load(std::string_view name)
+	resource::shared_ptr text_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
 		constexpr std::string_view format_string{ "%s/%s" };

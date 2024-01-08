@@ -15,15 +15,14 @@ namespace egkr::shader
 	constexpr static uint32_t material_shader_descriptor_count{ 2 };
 	constexpr static uint32_t material_shader_sampler_count{ 1 };
 
-	constexpr static uint8_t BINDING_INDEX_UBO{ 0 };
-	constexpr static uint8_t BINDING_INDEX_SAMPLER{ 1 };
-
 	constexpr static uint8_t DESCRIPTOR_SET_INDEX_GLOBAL{ 0 };
 	constexpr static uint8_t DESCRIPTOR_SET_INDEX_INSTANCE{ 1 };
 
 	struct vulkan_descriptor_set_configuration
 	{
 		egkr::vector<vk::DescriptorSetLayoutBinding> bindings{};
+		uint32_t binding_count{};
+		uint8_t sampler_binding_index{};
 	};
 
 	struct vulkan_stage_configuration

@@ -27,6 +27,11 @@ namespace egkr
 		egkr::vector<uint8_t> data;
 	};
 
+	struct image_resource_parameters
+	{
+		bool flip_y{};
+	};
+
 	class resource
 	{
 	public:

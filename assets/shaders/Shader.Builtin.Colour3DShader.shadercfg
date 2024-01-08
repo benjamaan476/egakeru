@@ -3,8 +3,6 @@ name=Shader.Builtin.Colour3DShader
 renderpass=Renderpass.Builtin.World
 stages=vertex,fragment
 stagefiles=shaders/Builtin.Colour3DShader.vert.spv,shaders/Builtin.Colour3DShader.frag.spv
-use_instance=1
-use_local=1
 topology=line_list
 # Attributes: type,name
 attribute=vec4,in_position

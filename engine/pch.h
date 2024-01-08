@@ -53,6 +53,7 @@ namespace egkr
 	};
 }
 
+constexpr static const uint64_t invalid_64_id = std::numeric_limits<uint64_t>::max();
 constexpr static const uint32_t invalid_32_id = std::numeric_limits<uint32_t>::max();
 constexpr static const uint16_t invalid_16_id = std::numeric_limits<uint16_t>::max();
 constexpr static const uint8_t invalid_8_id = std::numeric_limits<uint8_t>::max();

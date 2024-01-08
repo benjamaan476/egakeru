@@ -244,6 +244,7 @@ namespace egkr
 				depth_image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
 				depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 				depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
+				depth_image_properties.texture_type = egkr::texture::type::texture_2d;
 				((image::vulkan_texture*)(render_textures_[i].get()))->create(depth_image_properties);
 
 			}

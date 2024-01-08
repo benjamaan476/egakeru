@@ -51,6 +51,7 @@ namespace egkr
 			virtual void free() = 0;
 
 			[[nodiscard]] auto& get_render_targets() const {return render_targets;}
+			[[nodiscard]] auto& get_render_target(uint32_t index) const {return render_targets[index];}
 			void set_render_targets(const egkr::vector<render_target::render_target::shared_ptr>& targets)
 			{
 				render_targets = targets;

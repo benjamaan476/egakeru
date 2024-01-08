@@ -20,13 +20,14 @@ namespace egkr
 			vk::MemoryPropertyFlags memory_properties{};
 			vk::ImageAspectFlags aspect_flags{};
 
+			texture::type texture_type{};
+
 			//TODO: support configurable depth, mip levels, layers, sample count, sharing mode
 			const vk::SampleCountFlagBits samples{ vk::SampleCountFlagBits::e1 };
 			const vk::SharingMode sharing_mode{ vk::SharingMode::eExclusive };
 
 			const uint32_t depth{ 1 };
 			const uint32_t mip_levels{ 4 };
-			const uint32_t array_layers{ 1 };
 		};
 
 		class vulkan_texture : public texture::texture
