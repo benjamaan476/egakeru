@@ -298,12 +298,12 @@ namespace egkr
 
 				state.game->render(delta_time);
 
-				auto& model = application_->meshes_[0]->model();
-				glm::quat q({ 0, 0, 0.5F * delta_time });
-				model.rotate(q);
+				//auto& model = application_->meshes_[0]->model();
+				//glm::quat q({ 0, 0, 0.5F * delta_time });
+				//model.rotate(q);
 
-				auto& model_2 = application_->meshes_[1]->model();
-				model_2.rotate(q);
+				//auto& model_2 = application_->meshes_[1]->model();
+				//model_2.rotate(q);
 
 				render_packet packet{};
 
