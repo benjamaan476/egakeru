@@ -637,6 +637,11 @@ namespace egkr
 			return false;
 		}
 
+#ifdef ENABLE_DEBUG_MACRO
+		context_.pfn_set_debug_name = (PFN_vkSetDebugUtilsObjectNameEXT)context_.instance.getProcAddr("vkSetDebugUtilsObjectNameEXT");
+#endif // ENABLE_DEBUG_MACRO
+
+
 		LOG_INFO("Vulkan instance initialised");
 		return true;
 	}
@@ -882,6 +887,12 @@ namespace egkr
 
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
+
+		if (data)
+		{
+			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		}
 		return tex;
 	}
 
@@ -940,5 +951,12 @@ namespace egkr
 
 		LOG_ERROR("Attaempted to get unknown renderpass");
 		return nullptr;
+	}
+
+	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const
+	{
+		VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
+		context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
+		return true;
 	}
 }

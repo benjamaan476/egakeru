@@ -35,6 +35,14 @@ namespace egkr
 		texture::texture::shared_ptr get_depth_attachment()override;
 		uint8_t get_window_index()override;
 		renderpass::renderpass* get_renderpass(std::string_view name) const override;
+
+#ifdef ENABLE_DEBUG_MACRO
+		bool set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const;
+#define SET_DEBUG_NAME(type, handle, name) set_debug_obj_name(type, handle, name);
+#else
+#define SET_DEBUG_NAME(type, handle, name)
+#endif // ENABLE_DEBUG_MACRO
+
 	private:
 		bool init_instance();
 		bool create_debug_messenger();

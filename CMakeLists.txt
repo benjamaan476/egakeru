@@ -59,6 +59,7 @@ if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)
 endif()
 
+add_definitions(-DENABLE_DEBUG_MACRO)
 
 # Adding the src:
 add_subdirectory(engine)
