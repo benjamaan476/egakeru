@@ -46,7 +46,17 @@ namespace egkr
 
 
 		const auto& get_generation() const { return generation_; }
-		void increment_generation() { ++generation_; }
+		void increment_generation()
+		{
+			if (generation_ == invalid_32_id)
+			{
+				generation_ = 0;
+			}
+			else
+			{
+				++generation_;
+			}
+		}
 		void set_generation(uint32_t generation) { generation_ = generation; }
 
 		const auto& get_type() const { return resource_type_; }

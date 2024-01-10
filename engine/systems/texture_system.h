@@ -17,6 +17,16 @@ namespace egkr
 		uint32_t max_texture_count{};
 	};
 
+	struct load_parameters
+	{
+		std::string name{};
+		texture::texture::shared_ptr out_texture{};
+		texture::texture::shared_ptr temp;
+		uint32_t current_generation{invalid_32_id};
+
+		resource_properties resource;
+	};
+
 	class texture_system
 	{
 	public:
@@ -45,6 +55,10 @@ namespace egkr
 		static texture::texture::shared_ptr load_texture(std::string_view filepath, uint32_t id);
 		static texture::texture::shared_ptr load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id);
 
+		static void load_job_success(void* params);
+		static void load_job_fail(void* params);
+
+		static bool job_start(void* params, void* result_data);
 
 	private:
 		const renderer_frontend* renderer_context_{};

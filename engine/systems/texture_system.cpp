@@ -1,6 +1,7 @@
 #include "texture_system.h"
 
 #include "systems/resource_system.h"
+#include "systems/job_system.h"
 
 namespace egkr
 {
@@ -234,7 +235,7 @@ namespace egkr
 
 	auto new_texture =load_texture(texture_name, texture_id);
 
-		if (new_texture->get_generation() == invalid_32_id)
+		if (new_texture)
 		{
 			LOG_ERROR("Texture not found in texture system.");
 			return nullptr;
@@ -360,20 +361,12 @@ namespace egkr
 
 	texture::texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
 	{
-		image_resource_parameters params{ .flip_y = true };
-		auto image = resource_system::load(filename, resource_type::image, &params);
+		texture::texture::shared_ptr tex = get_default_texture();
+		load_parameters params{ .name = filename.data(), .out_texture = tex };
+		job::information info = job_system::job_system::create_job(job_start, load_job_success, load_job_fail, &params, sizeof(load_parameters), sizeof(load_parameters));
 
-		if (!image)
-		{
-			return nullptr;
-		}
-		auto properties = (texture::properties*)image->data;
-		properties->texture_type = texture::type::texture_2d;
-		properties->id = id;
-		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data);
-
-		resource_system::unload(std::move(image));
-		return temp_texture;
+		job_system::job_system::submit(info);
+		return tex;
 	}
 
 	texture::texture::shared_ptr texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
@@ -420,5 +413,42 @@ namespace egkr
 		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, pixels);
 		free(pixels);
 		return temp_texture;
+	}
+
+	void texture_system::load_job_success(void* params)
+	{
+		load_parameters* load_params = (load_parameters*)params;
+		auto* resource = (texture::properties*)load_params->resource.data;
+
+		load_params->temp = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *resource, (const uint8_t*)resource->data);
+		auto old = load_params->out_texture;
+		*load_params->out_texture = *load_params->temp.get();
+		old->destroy();
+
+		load_params->out_texture->increment_generation();
+	}
+
+	bool texture_system::job_start(void* params, void* result_data)
+	{
+		load_parameters* load_params = (load_parameters*)params;
+		image_resource_parameters image_params{ .flip_y = true };
+		auto image = resource_system::load(load_params->name, resource_type::image, &image_params);
+
+		if (!image)
+		{
+			return false;
+		}
+		auto properties = (texture::properties*)image->data;
+		properties->texture_type = texture::type::texture_2d;
+		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data);
+
+		resource_system::unload(std::move(image));
+
+		return true;
+	}
+
+	void texture_system::load_job_fail(void* params)
+	{
+		LOG_ERROR("Failed to load texture");
 	}
 }

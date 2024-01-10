@@ -18,6 +18,9 @@ namespace egkr::container
 		bool enqueue(T* value);
 		bool dequeue(T& value);
 		bool peek(T& value);
+
+		[[nodiscard]] const auto& get_length() const { return length_;}
+
 	private:
 		const uint32_t stride_{ sizeof(T) };
 		uint32_t length_{};
@@ -72,7 +75,7 @@ namespace egkr::container
 		tail_ += 1;
 		tail_ %= capacity_;
 		
-		memcopy(block_ + tail_ * stride_, value, stride_);
+		memcpy(block_ + tail_ * stride_, value, stride_);
 		++length_;
 		return true;
 	}
@@ -86,7 +89,7 @@ namespace egkr::container
 			return false;
 		}
 
-		memcopy(&value, block_ + head_ * stride_, stride_);
+		memcpy(&value, block_ + head_ * stride_, stride_);
 		head_ += 1;
 		head_ %= capacity_;
 
@@ -103,7 +106,7 @@ namespace egkr::container
 			return false;
 		}
 
-		std::copy(&value, block_ + head_ * stride_, stride_);
+		memcpy(&value, block_ + head_ * stride_, stride_);
 		return true;
 	}
 }

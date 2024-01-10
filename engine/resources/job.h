@@ -16,6 +16,7 @@ namespace egkr
 			resource_load = 0x04,
 			gpu_resource = 0x08
 		};
+		ENUM_CLASS_OPERATORS(type)
 
 		enum class priority
 		{
@@ -26,12 +27,12 @@ namespace egkr
 
 		struct information
 		{
-			type type;
-			priority priority{ priority::medium };
 			start_job entry_point{};
 			complete_job on_success{};
 			complete_job on_fail{};
 
+			type type;
+			priority priority{ priority::medium };
 			void* param_data{};
 			uint32_t param_data_size{};
 
@@ -45,8 +46,7 @@ namespace egkr
 			std::jthread thread{};
 			information info{};
 			std::mutex mutex{};
-			uint32_t mask{};
-
+			type mask{};
 		};
 
 		struct result
@@ -62,7 +62,6 @@ namespace egkr
 		class job
 		{
 		public:
-			static uint32_t run(void* params);
 		private:
 
 		};

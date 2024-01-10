@@ -10,6 +10,7 @@
 #include "systems/camera_system.h"
 #include "systems/view_system.h"
 #include "systems/light_system.h"
+#include "systems/job_system.h"
 
 #include "resources/transform.h"
 #include "resources/geometry.h"
@@ -96,6 +97,7 @@ namespace egkr
 			LOG_FATAL("Failed to create shader system");
 		}
 
+
 		if (!camera_system::create(state_.renderer.get(), { 31 }))
 		{
 			LOG_FATAL("Failed to create camera system");
@@ -116,6 +118,32 @@ namespace egkr
 		if (!state_.renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
+		}
+
+		uint8_t thread_count = 5;
+		auto is_multi = state_.renderer->get_backend()->is_multithreaded();
+
+		std::vector<job::type> types{thread_count};
+
+		std::fill(types.begin(), types.end(), job::type::general);
+		if (thread_count == 1 || !is_multi)
+		{
+			types[0] |= job::type::gpu_resource | job::type::resource_load;
+		}
+		else if(thread_count == 2)
+		{
+			types[0] |= job::type::gpu_resource;
+			types[1] |= job::type::resource_load;
+		}
+		else
+		{
+			types[0] = job::type::gpu_resource;
+			types[1] = job::type::resource_load;
+		}
+
+		if (!job_system::job_system::create({ .thread_count = thread_count, .type_masks = types }))
+		{
+			LOG_FATAL("Failed to create job system");
 		}
 
 		shader_system::init();
@@ -294,6 +322,7 @@ namespace egkr
 
 			if (!state.is_suspended)
 			{
+				job_system::job_system::update();
 				state.game->update(delta_time);
 
 				state.game->render(delta_time);
@@ -355,6 +384,7 @@ namespace egkr
 		material_system::shutdown();
 		geometry_system::shutdown();
 		application_->state_.renderer->shutdown();
+		job_system::job_system::shutdown();
 		application_->state_.platform->shutdown();
 	}
 

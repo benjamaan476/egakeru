@@ -2,6 +2,7 @@
 #include "vulkan_types.h"
 
 #include "systems/resource_system.h"
+#include "systems/texture_system.h"
 
 namespace egkr::shader
 {
@@ -427,6 +428,24 @@ namespace egkr::shader
 
 						auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
 
+						if (texture_data->get_generation() == invalid_32_id)
+						{
+							switch (vulkan_map->use)
+							{
+							case texture_map::use::map_diffuse:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_diffuse_texture().get();
+								break;
+							case texture_map::use::map_specular:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_specular_texture().get();
+								break;
+							case texture_map::use::map_normal:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_normal_texture().get();
+								break;
+							default:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_texture().get();
+								break;
+							}
+						}
 						vk::DescriptorImageInfo image_info{};
 						image_info
 							.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
