@@ -82,6 +82,8 @@ namespace egkr
 		virtual renderpass::renderpass* get_renderpass(std::string_view name) const = 0;
 
 		uint32_t get_frame_number() const { return frame_number_; }
+
+		virtual bool is_multithreaded() const = 0;
 	protected:
 		void new_frame() { ++frame_number_; }
 	private:

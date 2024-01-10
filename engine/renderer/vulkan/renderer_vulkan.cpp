@@ -862,6 +862,11 @@ namespace egkr
 		return true;
 	}
 
+	bool renderer_vulkan::is_multithreaded() const
+	{
+		return context_.multithreading_enabled;
+	}
+
 	void renderer_vulkan::free_material(material* material) const
 	{
 		ZoneScoped;

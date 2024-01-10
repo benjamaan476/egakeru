@@ -50,6 +50,8 @@ namespace egkr
 
 		bool recreate_swapchain();
 
+		bool is_multithreaded() const override;
+
 	private:
 		vulkan_context context_{};
 

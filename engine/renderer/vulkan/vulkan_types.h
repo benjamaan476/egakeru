@@ -104,6 +104,8 @@ namespace egkr
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
 		std::function<void(void)> on_render_target_refresh_required{};
+
+		bool multithreading_enabled{};
 	};
 
 	struct queue_family_indices

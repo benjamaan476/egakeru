@@ -18,6 +18,7 @@ set(HEADERS
     resources/*.h
     systems/*.h
     loaders/*.h
+    contianers/*.h
 )
 
 add_library(engine SHARED ${SOURCES})
