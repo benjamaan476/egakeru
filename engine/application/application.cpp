@@ -352,6 +352,7 @@ namespace egkr
 		application_->box->destroy();
 		application_->grid->unload();
 		application_->meshes_.clear();
+		application_->sponza_->unload();
 
 		application_->ui_meshes_.clear();
 

@@ -14,13 +14,13 @@ namespace egkr::render_target
 		free(true);
 	}
 
-	bool vulkan_render_target::populate(egkr::vector<texture::texture::shared_ptr> attachment, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
+	bool vulkan_render_target::populate(egkr::vector<texture::texture*> attachment, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 	{
 		egkr::vector<vk::ImageView> image_views{};
 		attachments_ = attachment;
 		for (const auto& attachment : attachments_)
 		{
-			image_views.push_back(((image::vulkan_texture*)(attachment.get()))->get_view());
+			image_views.push_back(((image::vulkan_texture*)(attachment))->get_view());
 		}
 		vk::FramebufferCreateInfo create_info{};
 		create_info

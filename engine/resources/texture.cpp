@@ -6,9 +6,18 @@ namespace egkr
 {
 	namespace texture
 	{
-		texture::shared_ptr texture::create(const renderer_backend* context, const properties& properties, const uint8_t* data)
+		texture* texture::create(const renderer_backend* context)
+		{
+			return context->create_texture();
+		}
+
+		texture* texture::create(const renderer_backend* context, const properties& properties, const uint8_t* data)
 		{
 			return context->create_texture(properties, data);
+		}
+		void texture::create(const renderer_backend* context, const properties& properties, const uint8_t* data, texture* out_texture)
+		{
+			return context->create_texture(properties, data, out_texture);
 		}
 
 		texture::texture(const properties& properties)

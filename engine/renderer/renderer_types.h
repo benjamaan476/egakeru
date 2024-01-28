@@ -69,14 +69,16 @@ namespace egkr
 
 		virtual void free_material(material* texture) const = 0;
 
-		virtual texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
+		virtual texture::texture* create_texture() const = 0;
+		virtual texture::texture* create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
+		virtual void create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const = 0;
 		virtual shader::shader::shared_ptr create_shader(const shader::properties& properties) const = 0;
 		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
 		virtual render_target::render_target::shared_ptr create_render_target() const = 0;
 		virtual texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const = 0;
 
-		virtual texture::texture::shared_ptr get_window_attachment(uint8_t index) = 0;
-		virtual texture::texture::shared_ptr get_depth_attachment() = 0;
+		virtual texture::texture* get_window_attachment(uint8_t index) = 0;
+		virtual texture::texture* get_depth_attachment() = 0;
 		virtual uint8_t get_window_index() = 0;
 
 		virtual renderpass::renderpass* get_renderpass(std::string_view name) const = 0;

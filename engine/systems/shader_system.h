@@ -40,8 +40,8 @@ namespace egkr
 
 		static void set_uniform(std::string_view uniform_name, const void* data);
 		static void set_uniform(uint32_t instance_id, const void* data);
-		static void set_sampler(std::string_view sampler_name, const texture::texture::shared_ptr& texture);
-		static void set_sampler(uint32_t sampler_id, const texture::texture::shared_ptr& texture);
+		static void set_sampler(std::string_view sampler_name, const texture::texture*& texture);
+		static void set_sampler(uint32_t sampler_id, const texture::texture*& texture);
 
 		static void bind_instance(uint32_t isntance_id);
 

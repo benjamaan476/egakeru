@@ -426,23 +426,23 @@ namespace egkr::shader
 
 						auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
 
-						auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
+						auto texture_data = (image::vulkan_texture*)texture_map->texture;
 
 						if (texture_data->get_generation() == invalid_32_id)
 						{
 							switch (vulkan_map->use)
 							{
 							case texture_map::use::map_diffuse:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_diffuse_texture().get();
+								texture_data = (image::vulkan_texture*)texture_system::get_default_diffuse_texture();
 								break;
 							case texture_map::use::map_specular:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_specular_texture().get();
+								texture_data = (image::vulkan_texture*)texture_system::get_default_specular_texture();
 								break;
 							case texture_map::use::map_normal:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_normal_texture().get();
+								texture_data = (image::vulkan_texture*)texture_system::get_default_normal_texture();
 								break;
 							default:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_texture().get();
+								texture_data = (image::vulkan_texture*)texture_system::get_default_texture();
 								break;
 							}
 						}

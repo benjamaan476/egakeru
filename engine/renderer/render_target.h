@@ -19,7 +19,7 @@ namespace egkr
 			render_target() {}
 
 			virtual ~render_target();
-			virtual bool populate(egkr::vector<texture::texture::shared_ptr> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
+			virtual bool populate(egkr::vector<texture::texture*> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
 			virtual bool free(bool free_internal_memory) = 0;
 
 			void destroy()
@@ -29,7 +29,7 @@ namespace egkr
 
 		protected:
 			bool sync_to_window_size_{};
-			egkr::vector<texture::texture::shared_ptr> attachments_{};
+			egkr::vector<texture::texture*> attachments_{};
 		};
 	}
 }

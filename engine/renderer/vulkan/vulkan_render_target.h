@@ -19,7 +19,7 @@ namespace egkr
 
 			~vulkan_render_target() override;
 
-			bool populate(egkr::vector<texture::texture::shared_ptr> attachment, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
+			bool populate(egkr::vector<texture::texture*> attachment, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) override;
 			bool free(bool free_internal_memory) override;
 
 			const auto& get_framebuffer() const { return framebuffer_; }

@@ -71,10 +71,7 @@ namespace egkr
 
 	mesh::~mesh()
 	{
-		for (const auto& geom : geometries_)
-		{
-			geom->free();
-		}
+		unload();
 	}
 
 	void mesh::add_geometry(const geometry::geometry::shared_ptr& geometry)
@@ -94,6 +91,7 @@ namespace egkr
 			geometry_system::release_geometry(geo);
 		}
 
+		geometries_.clear();
 		set_generation(invalid_32_id);
 	}
 

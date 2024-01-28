@@ -43,9 +43,10 @@ namespace egkr
 		class texture : public resource
 		{
 		public:
-			using shared_ptr = std::shared_ptr<texture>;
 
-			static shared_ptr create(const renderer_backend* context, const properties& properties, const uint8_t* data);
+			static texture* create(const renderer_backend* context);
+			static texture* create(const renderer_backend* context, const properties& properties, const uint8_t* data);
+			static void create(const renderer_backend* context, const properties& properties, const uint8_t* data, texture* out_texture);
 			explicit texture(const properties& properties);
 			virtual ~texture();
 
@@ -131,7 +132,7 @@ namespace egkr
 			repeat repeat_w;
 
 			use use{};
-			texture::texture::shared_ptr texture{};
+			texture::texture* texture{};
 		};
 	}
 }
