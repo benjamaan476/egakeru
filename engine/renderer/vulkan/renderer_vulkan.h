@@ -25,14 +25,16 @@ namespace egkr
 
 		void free_material(material* texture) const override;
 
-		texture::texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const override;
+		texture::texture* create_texture() const override;
+		texture::texture* create_texture(const texture::properties& properties, const uint8_t* data) const override;
+		void create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const override;
 		shader::shader::shared_ptr create_shader(const shader::properties& properties) const override;
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 		render_target::render_target::shared_ptr create_render_target() const override;
 		texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const override;
 
-		texture::texture::shared_ptr get_window_attachment(uint8_t index)override;
-		texture::texture::shared_ptr get_depth_attachment()override;
+		texture::texture* get_window_attachment(uint8_t index)override;
+		texture::texture* get_depth_attachment()override;
 		uint8_t get_window_index()override;
 		renderpass::renderpass* get_renderpass(std::string_view name) const override;
 

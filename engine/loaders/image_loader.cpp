@@ -4,6 +4,7 @@
 #include "platform/filesystem.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_STDIO
 #include <stb_image.h>
 
 namespace egkr
@@ -50,12 +51,15 @@ namespace egkr
 			return {};
 		}
 
+		auto file = filesystem::open(buff, file_mode::read, true);
+		auto raw = filesystem::read_all(file);
+
 		int32_t width{};
 		int32_t height{};
 		int32_t channels{};
 		int32_t required_channels{ 4 };
 
-		auto image_data = (uint8_t*)stbi_load(buff, &width, &height, &channels, required_channels);
+		auto image_data = (uint8_t*)stbi_load_from_memory(raw.data(), raw.size(), &width, &height, &channels, required_channels);
 
 		if (image_data)
 		{
@@ -66,6 +70,7 @@ namespace egkr
 			properties.generation = 0;
 			properties.id = 0;
 			properties.data = image_data;
+			properties.name = name.data();
 
 			for (auto y{ 0 }; y < height; ++y)
 			{

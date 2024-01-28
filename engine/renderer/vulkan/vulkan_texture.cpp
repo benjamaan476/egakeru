@@ -22,9 +22,9 @@ namespace egkr
 			}
 		}
 
-		vulkan_texture::shared_ptr vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
+		vulkan_texture* vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
 		{
-			auto img = std::make_shared<vulkan_texture>(context, width_, height_, properties);
+			auto img = new vulkan_texture(context, width_, height_, properties);
 
 			if (create_view)
 			{
@@ -74,6 +74,10 @@ namespace egkr
 
 			view_ = context_->device.logical_device.createImageView(image_view_info, context_->allocator);
 		}
+
+		vulkan_texture::vulkan_texture()
+			: texture({})
+		{}
 
 		vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
 			: texture(properties), context_{ context }, width_{ width_ }, height_{ height_ }
@@ -437,7 +441,7 @@ namespace egkr
 		{
 			if (context_)
 			{
-				texture.reset();
+				texture->destroy();
 
 				if (sampler)
 				{

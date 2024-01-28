@@ -16,12 +16,16 @@ namespace egkr
 		mesh();
 		~mesh();
 
+		void unload();
+
 		void add_geometry(const geometry::geometry::shared_ptr& geometry);
 		[[nodiscard]] const auto& get_geometries() const { return geometries_; }
 
 		void set_model(const transform& model);
 		[[nodiscard]] const auto& get_model() const { return model_; }
 		auto& model() { return model_; }
+
+		static shared_ptr load(std::string_view name);
 	private:
 		egkr::vector<geometry::geometry::shared_ptr> geometries_{};
 		transform model_;

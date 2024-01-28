@@ -1,6 +1,7 @@
 #include "texture_system.h"
 
 #include "systems/resource_system.h"
+#include "systems/job_system.h"
 
 namespace egkr
 {
@@ -11,7 +12,7 @@ namespace egkr
 		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
 	}
 
-	texture::texture::shared_ptr texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
+	texture::texture* texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
 	{
 		uint32_t id{ invalid_32_id };
 		texture::properties properties{};
@@ -142,25 +143,22 @@ namespace egkr
 		if (texture_system_->default_texture_)
 		{
 			//texture_system_->default_texture_->free();
-			texture_system_->default_texture_.reset();
+			texture_system_->default_texture_->free();
 		}
 
 		if (texture_system_->default_specular_texture_)
 		{
-			//texture_system_->default_specular_texture_->free();
-			texture_system_->default_specular_texture_.reset();
+			texture_system_->default_specular_texture_->free();
 		}
 
 		if (texture_system_->default_diffuse_texture_)
 		{
-			//texture_system_->default_diffuse_texture_->free();
-			texture_system_->default_diffuse_texture_.reset();
+			texture_system_->default_diffuse_texture_->free();
 		}
 
 		if (texture_system_->default_normal_texture_)
 		{
-			//texture_system_->default_normal_texture_->free();
-			texture_system_->default_normal_texture_.reset();
+			texture_system_->default_normal_texture_->free();
 		}
 
 		for (auto& texture : texture_system_->registered_textures_)
@@ -195,7 +193,7 @@ namespace egkr
 	}
 
 
-	texture::texture::shared_ptr texture_system::acquire(std::string_view texture_name)
+	texture::texture* texture_system::acquire(std::string_view texture_name)
 	{
 		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
 		{
@@ -232,9 +230,9 @@ namespace egkr
 			return nullptr;
 		}
 
-	auto new_texture =load_texture(texture_name, texture_id);
+	auto new_texture = load_texture(texture_name.data(), texture_id);
 
-		if (new_texture->get_generation() == invalid_32_id)
+		if (!new_texture)
 		{
 			LOG_ERROR("Texture not found in texture system.");
 			return nullptr;
@@ -245,7 +243,7 @@ namespace egkr
 		return new_texture;
 	}
 
-	texture::texture::shared_ptr texture_system::acquire_cube(std::string_view texture_name)
+	texture::texture* texture_system::acquire_cube(std::string_view texture_name)
 	{
 		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
 		{
@@ -306,7 +304,7 @@ namespace egkr
 		return new_texture;
 	}
 
-	texture::texture::shared_ptr texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
+	texture::texture* texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
 	{
 		if (texture_system_->registered_textures_by_name_.contains(name.data()))
 		{
@@ -337,46 +335,41 @@ namespace egkr
 		LOG_WARN("Tried to release and unregistered texture.");
 	}
 
-	texture::texture::shared_ptr texture_system::get_default_texture()
+	texture::texture* texture_system::get_default_texture()
 	{
 		return texture_system_->default_texture_;
 	}
 
-	texture::texture::shared_ptr texture_system::get_default_diffuse_texture()
+	texture::texture* texture_system::get_default_diffuse_texture()
 	{
 		return texture_system_->default_diffuse_texture_;
 	}
 
-	texture::texture::shared_ptr texture_system::get_default_specular_texture()
+	texture::texture* texture_system::get_default_specular_texture()
 	{
 		return texture_system_->default_specular_texture_;
 	}
 
-	texture::texture::shared_ptr texture_system::get_default_normal_texture()
+	texture::texture* texture_system::get_default_normal_texture()
 	{
 		return texture_system_->default_normal_texture_;
 	}
 
 
-	texture::texture::shared_ptr texture_system::load_texture(std::string_view filename, uint32_t id)
+	texture::texture* texture_system::load_texture(const std::string& filename, uint32_t id)
 	{
-		image_resource_parameters params{ .flip_y = true };
-		auto image = resource_system::load(filename, resource_type::image, &params);
+		texture::texture* tex = texture::texture::create(texture_system_->renderer_context_->get_backend().get());
+		load_parameters params{ .out_texture = tex };
+		params.name = (char*)malloc(filename.size());
+		memcpy(params.name, filename.data(), filename.size());
+		params.name[filename.size()] = '\0';
+		job::information info = job_system::job_system::create_job(job_start, load_job_success, load_job_fail, &params, sizeof(load_parameters), sizeof(load_parameters));
 
-		if (!image)
-		{
-			return nullptr;
-		}
-		auto properties = (texture::properties*)image->data;
-		properties->texture_type = texture::type::texture_2d;
-		properties->id = id;
-		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data);
-
-		resource_system::unload(std::move(image));
-		return temp_texture;
+		job_system::job_system::submit(info);
+		return tex;
 	}
 
-	texture::texture::shared_ptr texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
+	texture::texture* texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
 	{
 		image_resource_parameters params{ .flip_y = false };
 
@@ -420,5 +413,43 @@ namespace egkr
 		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, pixels);
 		free(pixels);
 		return temp_texture;
+	}
+
+	void texture_system::load_job_success(void* params)
+	{
+		load_parameters* load_params = (load_parameters*)params;
+		auto& resource = load_params->resource;
+
+		auto properties = (texture::properties*)resource->data;
+
+		load_params->out_texture->free();
+		texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data, load_params->out_texture);
+
+		load_params->out_texture->increment_generation();
+		resource_system::unload(load_params->resource);
+	}
+
+	bool texture_system::job_start(void* params, void* result_data)
+	{
+		load_parameters* load_params = (load_parameters*)params;
+		image_resource_parameters image_params{ .flip_y = true };
+		auto image = resource_system::load(load_params->name, resource_type::image, &image_params);
+
+		if (!image)
+		{
+			return false;
+		}
+
+		load_params->resource = image;
+
+		memcpy(result_data, load_params, sizeof(load_parameters));
+
+
+		return true;
+	}
+
+	void texture_system::load_job_fail(void* params)
+	{
+		LOG_ERROR("Failed to load texture");
 	}
 }

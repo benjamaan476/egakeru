@@ -35,7 +35,6 @@ namespace egkr
 		if (depth_attachment_)
 		{
 			depth_attachment_->destroy();
-			depth_attachment_.reset();
 		}
 
 
@@ -247,7 +246,7 @@ namespace egkr
 				depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 				depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
 				depth_image_properties.texture_type = egkr::texture::type::texture_2d;
-				((image::vulkan_texture*)(render_textures_[i].get()))->create(depth_image_properties);
+				((image::vulkan_texture*)(render_textures_[i]))->create(depth_image_properties);
 
 			}
 		}
@@ -255,13 +254,13 @@ namespace egkr
 		{
 			for (auto i{ 0U }; i < image_count_; ++i)
 			{
-				texture_system::resize(render_textures_[i].get(), extent_.width, extent_.height, false);
+				texture_system::resize(render_textures_[i], extent_.width, extent_.height, false);
 			}
 		}
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::vulkan_texture*)render_textures_[i].get();
+			auto img = (image::vulkan_texture*)render_textures_[i];
 			img->set_image(swapchain_images[i]);
 			img->set_width(extent_.width);
 			img->set_height(extent_.height);
@@ -269,7 +268,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::vulkan_texture*)render_textures_[i].get();
+			auto img = (image::vulkan_texture*)render_textures_[i];
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -304,7 +303,7 @@ namespace egkr
 		//auto img = image::vulkan_texture::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
 
 		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
-		((image::vulkan_texture*)(depth_attachment_.get()))->create(depth_image_properties);
+		((image::vulkan_texture*)(depth_attachment_))->create(depth_image_properties);
 		return swapchain_images;
 	}
 

@@ -2,6 +2,7 @@
 #include "vulkan_types.h"
 
 #include "systems/resource_system.h"
+#include "systems/texture_system.h"
 
 namespace egkr::shader
 {
@@ -385,7 +386,7 @@ namespace egkr::shader
 			{
 
 
-				auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
+				auto& instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
 
 				if (instance_ubo_generation == invalid_8_id)
 				{
@@ -425,8 +426,26 @@ namespace egkr::shader
 
 						auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
 
-						auto texture_data = (image::vulkan_texture*)texture_map->texture.get();
+						auto texture_data = (image::vulkan_texture*)texture_map->texture;
 
+						if (texture_data->get_generation() == invalid_32_id)
+						{
+							switch (vulkan_map->use)
+							{
+							case texture_map::use::map_diffuse:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_diffuse_texture();
+								break;
+							case texture_map::use::map_specular:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_specular_texture();
+								break;
+							case texture_map::use::map_normal:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_normal_texture();
+								break;
+							default:
+								texture_data = (image::vulkan_texture*)texture_system::get_default_texture();
+								break;
+							}
+						}
 						vk::DescriptorImageInfo image_info{};
 						image_info
 							.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)

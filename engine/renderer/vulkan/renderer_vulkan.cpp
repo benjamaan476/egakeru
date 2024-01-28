@@ -881,19 +881,31 @@ namespace egkr
 		material->get_normal_map()->release();
 	}
 
-	texture::texture::shared_ptr renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
+	texture::texture* renderer_vulkan::create_texture() const
+	{
+		return new image::vulkan_texture();
+	}
+
+	texture::texture* renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
 	{
 		ZoneScoped;
 
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		if (data)
-		{
-			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
-		}
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
 		return tex;
+	}
+
+	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
+	{
+		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		tex->populate(properties, data);
+
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		*(image::vulkan_texture*)out_texture = *tex;
 	}
 
 	shader::shader::shared_ptr renderer_vulkan::create_shader(const shader::properties& properties) const
@@ -922,7 +934,7 @@ namespace egkr
 		return texture::vulkan::texture_map::texture_map::create(&context_, properties);
 	}
 
-	texture::texture::shared_ptr renderer_vulkan::get_window_attachment(uint8_t index)
+	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)
 	{
 		if (index >= context_.swapchain->get_image_count())
 		{
@@ -932,7 +944,7 @@ namespace egkr
 		return context_.swapchain->get_render_texture(index);
 	}
 
-	texture::texture::shared_ptr renderer_vulkan::get_depth_attachment()
+	texture::texture* renderer_vulkan::get_depth_attachment()
 	{
 		return context_.swapchain->get_depth_attachment();
 	}
