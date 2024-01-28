@@ -106,6 +106,13 @@ namespace egkr
 		std::function<void(void)> on_render_target_refresh_required{};
 
 		bool multithreading_enabled{};
+
+#ifdef ENABLE_DEBUG_MACRO
+		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
+#elif
+
+#endif
+
 	};
 
 	struct queue_family_indices

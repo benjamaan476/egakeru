@@ -27,10 +27,16 @@ namespace egkr
 
 		render_targets_.clear();
 
+		if (swapchain_)
+		{
+			context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
+		}
+
 		if (depth_attachment_)
 		{
 			depth_attachment_->destroy();
 		}
+
 
 		for (auto& texture : render_textures_)
 		{
@@ -40,10 +46,6 @@ namespace egkr
 
 		image_count_ = 0;
 
-		if (swapchain_)
-		{
-			context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
-		}
 
 		for (auto& render_target : render_targets_)
 		{

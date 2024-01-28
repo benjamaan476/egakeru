@@ -153,7 +153,7 @@ namespace egkr
 		{
 			ZoneScoped;
 
-			//if (data)
+			if (data)
 			{
 				vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
 
