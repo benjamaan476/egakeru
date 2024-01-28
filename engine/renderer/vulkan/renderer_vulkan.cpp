@@ -893,11 +893,8 @@ namespace egkr
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		if (data)
-		{
-			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-			SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
-		}
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
 		return tex;
 	}
 
@@ -905,6 +902,9 @@ namespace egkr
 	{
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
+
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
 		*(image::vulkan_texture*)out_texture = *tex;
 	}
 
