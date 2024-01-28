@@ -19,12 +19,12 @@ namespace egkr
 
 	struct load_parameters
 	{
-		std::string name{};
+		char* name{};
 		texture::texture::shared_ptr out_texture{};
 		texture::texture::shared_ptr temp;
 		uint32_t current_generation{invalid_32_id};
 
-		resource_properties resource;
+		resource::shared_ptr resource;
 	};
 
 	class texture_system
@@ -52,7 +52,7 @@ namespace egkr
 		static texture::texture::shared_ptr get_default_specular_texture();
 		static texture::texture::shared_ptr get_default_normal_texture();
 	private:
-		static texture::texture::shared_ptr load_texture(std::string_view filepath, uint32_t id);
+		static texture::texture::shared_ptr load_texture(const std::string& filepath, uint32_t id);
 		static texture::texture::shared_ptr load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id);
 
 		static void load_job_success(void* params);

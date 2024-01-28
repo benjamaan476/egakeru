@@ -56,6 +56,9 @@ namespace egkr
 		egkr::skybox::skybox::shared_ptr skybox_{};
 		egkr::vector<mesh::shared_ptr> meshes_{};
 		egkr::vector<mesh::shared_ptr> ui_meshes_{};
+
+		mesh::shared_ptr sponza_{};
+		bool models_loaded_{};
 		debug::debug_box3d::shared_ptr box{};
 		debug::debug_grid::shared_ptr grid{};
 	};

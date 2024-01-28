@@ -26,7 +26,7 @@ namespace egkr::container
 		uint32_t length_{};
 		uint32_t capacity_{};
 
-		T* block_{};
+		std::vector<T> block_{};
 		bool owns_memory_{};
 
 		int32_t head_{};
@@ -41,7 +41,7 @@ namespace egkr::container
 
 	template<class T>
 	inline ring_queue<T>::ring_queue(uint32_t capacity, T* memory)
-		: capacity_{ capacity }, block_{ memory }
+		: capacity_{ capacity }
 	{
 		if (memory)
 		{
@@ -50,7 +50,7 @@ namespace egkr::container
 		else
 		{
 			owns_memory_ = true;
-			block_ = (T*)std::malloc(capacity * stride_);
+			block_.resize(capacity);
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace egkr::container
 	{
 		if (owns_memory_)
 		{
-			free(block_);
+			block_.clear();
 		}
 	}
 
@@ -75,7 +75,7 @@ namespace egkr::container
 		tail_ += 1;
 		tail_ %= capacity_;
 		
-		memcpy(block_ + tail_ * stride_, value, stride_);
+		block_[tail_] = *value;
 		++length_;
 		return true;
 	}
@@ -89,7 +89,7 @@ namespace egkr::container
 			return false;
 		}
 
-		memcpy(&value, block_ + head_ * stride_, stride_);
+		value = block_[head_];
 		head_ += 1;
 		head_ %= capacity_;
 
@@ -106,7 +106,7 @@ namespace egkr::container
 			return false;
 		}
 
-		memcpy(&value, block_ + head_ * stride_, stride_);
+		value = block_[head_];
 		return true;
 	}
 }

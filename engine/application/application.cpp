@@ -153,6 +153,7 @@ namespace egkr
 		camera_system::init();
 		view_system::init();
 		light_system::init();
+		job_system::job_system::init();
 
 		state_.dir_light_ = std::make_shared<light::directional_light>(
 			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
@@ -249,25 +250,6 @@ namespace egkr
 		model_2.set_parent(&mesh_1->model());
 		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
 		meshes_.push_back(mesh_2);
-
-		auto mesh_resource = resource_system::load("sponza2", resource_type::mesh, nullptr);
-
-		auto geometry_config = (egkr::vector<geometry::properties>*)mesh_resource->data;
-		transform obj = transform::create({ 0, 0, -5 });
-		obj.set_scale({ 0.1F, 0.1F, 0.1F });
-		obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
-		auto mesh = mesh::create();
-		mesh->set_model(obj);
-
-		for (const auto& geom : *geometry_config)
-		{
-			generate_tangents(geom.vertices, geom.indices);
-			mesh->add_geometry(geometry_system::acquire(geom));
-		}
-
-		meshes_.push_back(mesh);
-
-		resource_system::unload(mesh_resource);
 
 		std::vector<vertex_2d> vertices{4};
 
@@ -460,23 +442,21 @@ namespace egkr
 
 		if (code == event_code::debug02)
 		{
-			static bool once = true;
-			if (once)
+			if (!application_->models_loaded_)
 			{
-				auto& parent = application_->meshes_[1];
-				once = false;
-				auto kittyCAD = resource_system::load("output", resource_type::mesh, nullptr);
-				auto kittCAD_config = (egkr::vector<geometry::properties>*)kittyCAD->data;
-				transform kittyCAD_transform = transform::create({ 15.F, 0.F, 0.F });
-				kittyCAD_transform.set_parent(&parent->model());
-				auto kittyCAD_mesh = mesh::create();
-				kittyCAD_mesh->set_model(kittyCAD_transform);
-				for (const auto& geom : *kittCAD_config)
-				{
-					generate_tangents(geom.vertices, geom.indices);
-					kittyCAD_mesh->add_geometry(geometry_system::acquire(geom));
-				}
-				application_->meshes_.push_back(kittyCAD_mesh);
+				LOG_INFO("Loading models");
+				application_->models_loaded_ = true;
+
+				application_->sponza_ = mesh::load("sponza2");
+
+				transform obj = transform::create({ 0, 0, -5 });
+				obj.set_scale({ 0.1F, 0.1F, 0.1F });
+				obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
+
+				application_->sponza_->set_model(obj);
+				application_->meshes_.push_back(application_->sponza_);
+
+				return true;
 			}
 		}
 		return false;

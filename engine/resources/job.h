@@ -38,6 +38,12 @@ namespace egkr
 
 			void* result_data{};
 			uint32_t result_data_size{};
+
+			//information() = default;
+			//information(const information& info) = default;
+
+			~information()
+			{}
 		};
 
 		struct thread
@@ -51,7 +57,7 @@ namespace egkr
 
 		struct result
 		{
-			uint16_t index{};
+			uint16_t index{invalid_16_id};
 			complete_job callback{};
 			uint32_t param_size{};
 			void* params{};

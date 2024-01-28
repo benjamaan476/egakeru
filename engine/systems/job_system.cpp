@@ -22,6 +22,11 @@ namespace egkr::job_system
 
 	bool job_system::init()
 	{
+		if (state_->thread_count_ > state_->max_thread_count_)
+		{
+			LOG_ERROR("Exceeded the max thread count");
+			return false;
+		}
 		state_->running_ = true;
 
 		for (auto i{ 0 }; i < state_->thread_count_; ++i)
@@ -59,10 +64,13 @@ namespace egkr::job_system
 
 		for (int i{}; i < job::MAX_JOB_RESULTS; ++i)
 		{
-			std::lock_guard lock{ state_->results_mutex_ };
-			auto& entry = state_->results_[i];
+			job::result entry;
+			{
+				std::lock_guard lock{ state_->results_mutex_ };
+				entry = state_->results_[i];
+			}
 
-			if (entry.index == invalid_16_id)
+			if (entry.index != invalid_16_id)
 			{
 				entry.callback(entry.params);
 
@@ -72,7 +80,10 @@ namespace egkr::job_system
 				}
 			}
 
-			entry = job::result{.index = invalid_16_id};
+			{
+				std::lock_guard lock{ state_->results_mutex_ };
+				state_->results_[i] = {};
+			}
 		}
 	}
 
@@ -86,19 +97,26 @@ namespace egkr::job_system
 		{
 			queue = state_->high_priority_queue_.get();
 			mutex = &state_->high_priority_queue_mutex_;
-		}
 
-		for (auto i{ 0U}; i < thread_count; ++i)
-		{
-			auto& thread = state_->threads_[i];
-			if ((uint32_t)(thread.mask & info.type) != 0)
+
+			for (auto i{ 0U }; i < thread_count; ++i)
 			{
-				std::lock_guard lock{ thread.mutex };
-				if (thread.info.entry_point)
+				auto& thread = state_->threads_[i];
+				if ((uint32_t)(thread.mask & info.type) != 0)
 				{
-
+					bool found{};
+					std::lock_guard lock{ thread.mutex };
+					if (!thread.info.entry_point)
+					{
+						LOG_TRACE("Job immediately started");
+						state_->threads_[i].info = info;
+						found = true;
+					}
+					if (found)
+					{
+						return;
+					}
 				}
-				thread.info = info;
 			}
 		}
 
@@ -110,26 +128,26 @@ namespace egkr::job_system
 
 		std::lock_guard enqueue_lock{ *mutex };
 		queue->enqueue(&info);
-
+		LOG_TRACE("Job queued");
 
 	}
 
 	uint32_t job_system::run(void* params)
 	{	
 		uint32_t index = *(uint32_t*)params;
-		auto& job = state_->threads_[index];
+		auto& thread = state_->threads_[index];
 
 		for (;;)
 		{
-			if (!state_->running_)
+			if (!state_ || !state_->running_)
 			{
 				break;
 			}
 
 			job::information info{};
 			{
-				std::lock_guard lock{ job.mutex };
-				info = job.info;
+				std::lock_guard lock{ thread.mutex };
+				info = thread.info;
 			}
 
 			if (info.entry_point)
@@ -140,7 +158,7 @@ namespace egkr::job_system
 				{
 					store_result(info.on_success, info.result_data_size, info.result_data);
 				}
-				else
+				else if(!result && info.on_fail)
 				{
 					store_result(info.on_fail, info.result_data_size, info.result_data);
 				}
@@ -149,17 +167,20 @@ namespace egkr::job_system
 				{
 					free(info.param_data);
 				}
-
+				if (info.result_data)
 				{
-					std::lock_guard lock{ job.mutex };
-					info.result_data = {};
-					job.info = {};
+					free(info.result_data);
 				}
 
-				if (state_->running_)
 				{
-					std::this_thread::sleep_for(10ms);
+					std::lock_guard lock{ thread.mutex };
+					thread.info = {};
 				}
+
+			}
+			if (state_->running_)
+			{
+				std::this_thread::sleep_for(10ms);
 			}
 			else
 			{
@@ -167,7 +188,7 @@ namespace egkr::job_system
 			}
 		}
 
-		return 0;
+		return 1;
 	}
 
 	void job_system::process_queue(container::ring_queue<job::information>* queue, std::mutex* mutex)
@@ -192,18 +213,26 @@ namespace egkr::job_system
 					continue;
 				}
 
-				std::lock_guard lock{ thread.mutex };
-
-				if (!info.entry_point)
 				{
-					std::lock_guard queue_lock{ *mutex };
-					queue->dequeue(info);
-				}
-				thread.info = info;
-				thread_found = true;
-			}
+					std::lock_guard lock{ thread.mutex };
 
-			if (thread_found)
+					if (!thread.info.entry_point)
+					{
+						{
+							std::lock_guard queue_lock{ *mutex };
+							queue->dequeue(info);
+						}
+						thread.info = info;
+						LOG_TRACE("Assigning job to thread");
+						thread_found = true;
+					}
+				}
+				if (thread_found)
+				{
+					break;
+				}
+			}
+			if (!thread_found)
 			{
 				break;
 			}
@@ -227,6 +256,7 @@ namespace egkr::job_system
 		if (param_size)
 		{
 			info.param_data = malloc(param_size);
+			memcpy(info.param_data, params, info.param_data_size);
 		}
 
 		if (result_size)

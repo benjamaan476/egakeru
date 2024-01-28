@@ -70,6 +70,7 @@ namespace egkr
 			properties.generation = 0;
 			properties.id = 0;
 			properties.data = image_data;
+			properties.name = name.data();
 
 			for (auto y{ 0 }; y < height; ++y)
 			{

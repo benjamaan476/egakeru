@@ -386,7 +386,7 @@ namespace egkr::shader
 			{
 
 
-				auto instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
+				auto& instance_ubo_generation = object_state.descriptor_set_state.descriptor_states[descriptor_index].generations[image_index];
 
 				if (instance_ubo_generation == invalid_8_id)
 				{
