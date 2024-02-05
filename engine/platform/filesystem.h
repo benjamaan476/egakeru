@@ -41,6 +41,9 @@ namespace egkr
 		template<class T>
 		static void read(file_handle& handle, T* data, uint32_t size, uint32_t count);
 
+		template<class T>
+		static void read(file_handle& handle, T& data);
+
 		template<class type>
 		static uint64_t write(file_handle& handle, const egkr::vector<type>& data);
 
@@ -48,6 +51,8 @@ namespace egkr
 		static uint64_t write(file_handle& handle, const type& data, uint32_t count);
 		template<class type>
 		static uint64_t write(file_handle& handle, type* data, uint32_t size, uint32_t count);
+		template<class type>
+		static uint64_t write(file_handle& handle, const type& data);
 
 		static egkr::vector<uint8_t> read_all(file_handle& handle);
 	};
@@ -83,6 +88,13 @@ namespace egkr
 			LOG_WARN("Read bytes does not match specified size: {}, {}", read_bytes, size * count);
 		}
 
+	}
+
+	template<class T>
+	inline void filesystem::read(file_handle& handle, T& data)
+	{
+		const auto size = sizeof(data);
+		return read(handle, &data, size, 1);
 	}
 
 	template<class type>
@@ -140,5 +152,10 @@ namespace egkr
 		}
 
 		return wrote_bytes;
+	}
+	template<class type>
+	inline uint64_t filesystem::write(file_handle& handle, const type& data)
+	{
+		return write(handle, data, 1);
 	}
 }

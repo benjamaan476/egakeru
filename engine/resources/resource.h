@@ -3,7 +3,7 @@
 
 namespace egkr
 {
-	enum class resource_type
+	enum class resource_type : uint8_t
 	{
 		text,
 		binary,
@@ -11,7 +11,19 @@ namespace egkr
 		material,
 		shader,
 		mesh,
+		bitmap_font,
+		system_font,
 		custom
+	};
+
+constexpr auto RESOURCE_MAGIC = 0xdeadbeef;
+
+	struct resource_header
+	{
+		uint32_t magic_number{ RESOURCE_MAGIC };
+		resource_type type;
+		uint8_t version{ 1 };
+		uint16_t reserved{};
 	};
 
 	struct resource_properties
