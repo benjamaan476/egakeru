@@ -6,14 +6,14 @@
 namespace egkr
 {
 	struct vulkan_context;
-	class buffer
+	class vulkan_buffer
 	{
 	public:
-		using shared_ptr = std::shared_ptr<buffer>;
+		using shared_ptr = std::shared_ptr<vulkan_buffer>;
 		static shared_ptr create(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create);
 
-		buffer(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create);
-		~buffer();
+		vulkan_buffer(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create);
+		~vulkan_buffer();
 
 		void destroy();
 
@@ -36,7 +36,6 @@ namespace egkr
 		vk::BufferUsageFlags usage_{};
 		vk::DeviceMemory memory_{};
 
-		uint64_t size_{};
 		uint32_t memory_index_{};
 		vk::MemoryPropertyFlags memory_property_flags_{};
 

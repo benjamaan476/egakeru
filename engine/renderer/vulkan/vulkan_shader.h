@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "pipeline.h"
 #include "renderer/renderer_types.h"
+#include "renderer/renderbuffer.h"
 #include "buffer.h"
 
 #include "resources/shader.h"
@@ -131,7 +132,7 @@ namespace egkr::shader
 		// one poer frame
 		egkr::vector<vk::DescriptorSet> global_descriptor_sets{ 3 };
 
-		buffer::shared_ptr uniform_buffer{};
+		renderbuffer::renderbuffer::shared_ptr uniform_buffer{};
 
 		// One for each class; point, line, tri
 		egkr::vector<pipeline::shared_ptr> pipelines_{3};

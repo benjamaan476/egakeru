@@ -10,6 +10,7 @@
 #include "render_view.h"
 #include "renderpass.h"
 #include "render_target.h"
+#include "renderbuffer.h"
 
 namespace egkr
 {
@@ -76,6 +77,7 @@ namespace egkr
 		virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
 		virtual render_target::render_target::shared_ptr create_render_target() const = 0;
 		virtual texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const = 0;
+		virtual renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const = 0;
 
 		virtual texture::texture* get_window_attachment(uint8_t index) = 0;
 		virtual texture::texture* get_depth_attachment() = 0;

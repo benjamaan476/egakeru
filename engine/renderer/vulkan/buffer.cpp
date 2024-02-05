@@ -4,12 +4,12 @@
 
 namespace egkr
 {
-	buffer::shared_ptr buffer::create(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create)
+	vulkan_buffer::shared_ptr vulkan_buffer::create(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create)
 	{
-		return std::make_shared<buffer>(context, size, usage, memory_flags, bind_on_create);
+		return std::make_shared<vulkan_buffer>(context, size, usage, memory_flags, bind_on_create);
 	}
 
-	buffer::buffer(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create)
+	vulkan_buffer::vulkan_buffer(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create)
 		:context_{ context }, usage_{ usage }, size_{ size }, memory_property_flags_{ memory_flags }
 	{
 		const auto& device = context_->device.logical_device;
@@ -38,12 +38,12 @@ namespace egkr
 		}
 	}
 
-	buffer::~buffer()
+	vulkan_buffer::~vulkan_buffer()
 	{
 		destroy();
 	}
 
-	void buffer::destroy()
+	void vulkan_buffer::destroy()
 	{
 		if (memory_)
 		{
@@ -58,18 +58,18 @@ namespace egkr
 		}
 	}
 
-	void* egkr::buffer::lock(uint64_t offset, uint64_t size, uint32_t flags)
+	void* egkr::vulkan_buffer::lock(uint64_t offset, uint64_t size, uint32_t flags)
 	{
 		auto* data = context_->device.logical_device.mapMemory(memory_, offset, size,(vk::MemoryMapFlags)flags);
 		return data;
 	}
 
-	void buffer::unlock()
+	void vulkan_buffer::unlock()
 	{
 		context_->device.logical_device.unmapMemory(memory_);
 	}
 
-	bool buffer::load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data)
+	bool vulkan_buffer::load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data)
 	{
 		auto* dest_data = lock(offset, size, flags);
 		std::memcpy(dest_data, data, size);
@@ -78,7 +78,7 @@ namespace egkr
 		return true;
 	}
 
-	void buffer::copy_to(vk::CommandPool pool, vk::Fence /*fence*/, vk::Queue queue, vk::Buffer source, uint64_t source_offset, vk::Buffer dest, uint64_t dest_offset, uint64_t size)
+	void vulkan_buffer::copy_to(vk::CommandPool pool, vk::Fence /*fence*/, vk::Queue queue, vk::Buffer source, uint64_t source_offset, vk::Buffer dest, uint64_t dest_offset, uint64_t size)
 	{
 		context_->device.logical_device.waitIdle();
 		command_buffer command_buffer{};
@@ -91,7 +91,7 @@ namespace egkr
 		command_buffer.end_single_use(context_, pool, queue);
 	}
 
-	void buffer::resize(uint64_t new_size, vk::Queue queue, vk::CommandPool pool)
+	void vulkan_buffer::resize(uint64_t new_size, vk::Queue queue, vk::CommandPool pool)
 	{
 		const auto& device = context_->device.logical_device;
 
@@ -131,7 +131,7 @@ namespace egkr
 		memory_ = new_memory;
 	}
 
-	void buffer::bind(uint64_t offset)
+	void vulkan_buffer::bind(uint64_t offset)
 	{
 		context_->device.logical_device.bindBufferMemory(handle_, memory_, offset);
 	}

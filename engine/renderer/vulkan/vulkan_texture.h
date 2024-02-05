@@ -52,7 +52,7 @@ namespace egkr
 			const auto& get_view() const { return view_; }
 
 			void transition_layout(command_buffer command_buffer, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
-			void copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer);
+			void copy_from_buffer(command_buffer command_buffer, vulkan_buffer::shared_ptr buffer);
 
 			[[nodiscard]] const auto& get_image() const { return image_; }
 			void set_image(vk::Image image) { image_ = image; }

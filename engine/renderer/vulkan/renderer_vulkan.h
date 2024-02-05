@@ -32,6 +32,7 @@ namespace egkr
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 		render_target::render_target::shared_ptr create_render_target() const override;
 		texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const override;
+		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const override;
 
 		texture::texture* get_window_attachment(uint8_t index)override;
 		texture::texture* get_depth_attachment()override;

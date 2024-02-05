@@ -38,39 +38,33 @@ namespace egkr::geometry
 
 		vertex_count_ = properties.vertex_count;
 		vertex_size_ = properties.vertex_size;
-		vertex_buffer_ = buffer::create(context_, vertex_buffer_size, usage, flags, true);
-		upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, vertex_buffer_, 0, vertex_buffer_size, properties.vertices);
 
+		vertex_buffer_ = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::vertex, vertex_buffer_size);
+		vertex_buffer_->bind(0);
+
+		vertex_buffer_->load_range(0, vertex_buffer_size, properties.vertices);
 
 		index_count_ = properties.indices.size();
 		if (index_count_)
 		{
 			const vk::BufferUsageFlags index_usage{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc };
 			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
-			index_buffer_ = buffer::create(context_, index_buffer_size, index_usage, flags, true);
-			upload_data_range(context_, context_->device.graphics_command_pool, VK_NULL_HANDLE, context_->device.graphics_queue, index_buffer_, 0, index_buffer_size, properties.indices.data());
+			index_buffer_ = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::index, index_buffer_size);
+			index_buffer_->bind(0);
+			index_buffer_->load_range(0, index_buffer_size, properties.indices.data());
 		}
 		return true;
 	}
 
 	void vulkan_geometry::draw()
 	{
-		ZoneScoped;
+		bool includes_index_data = index_count_ > 0;
 
-		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
-		vk::DeviceSize offset{ 0 };
-		command_buffer.get_handle().bindVertexBuffers(0, vertex_buffer_->get_handle(), offset);
+		vertex_buffer_->draw(0, vertex_count_, includes_index_data);
 
-
-		if (index_count_)
+		if (includes_index_data)
 		{
-			command_buffer.get_handle().bindIndexBuffer(index_buffer_->get_handle(), offset, vk::IndexType::eUint32);
-
-			command_buffer.get_handle().drawIndexed(index_count_, 1, 0, 0, 0);
-		}
-		else
-		{
-			command_buffer.get_handle().draw(vertex_count_, 1, 0, 0);
+			index_buffer_->draw(0, index_count_, !includes_index_data);
 		}
 	}
 
@@ -101,28 +95,13 @@ namespace egkr::geometry
 
 			if (vertex_buffer_)
 			{
-				vertex_buffer_->destroy();
 				vertex_buffer_.reset();
 			}
 
 			if (index_buffer_)
 			{
-				index_buffer_->destroy();
 				index_buffer_.reset();
 			}
 		}
-	}
-
-	void vulkan_geometry::upload_data_range(const vulkan_context* context, vk::CommandPool pool, vk::Fence fence, vk::Queue queue, buffer::shared_ptr buffer, uint64_t offset, uint64_t size, const void* data)
-	{
-		ZoneScoped;
-
-		const vk::MemoryPropertyFlags memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		const vk::BufferUsageFlags usage = vk::BufferUsageFlagBits::eTransferSrc;
-
-		auto staging_buffer = buffer::create(context, size, usage, memory_flags, true);
-
-		staging_buffer->load_data(offset, size, 0, data);
-		staging_buffer->copy_to(pool, fence, queue, staging_buffer->get_handle(), 0, buffer->get_handle(), 0, size);
 	}
 }

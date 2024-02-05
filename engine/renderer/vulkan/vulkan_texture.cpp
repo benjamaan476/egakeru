@@ -155,7 +155,7 @@ namespace egkr
 
 			if (data)
 			{
-				vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count;
+				vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count * (properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 				auto image_format = vk::Format::eR8G8B8A8Unorm;
 
@@ -224,20 +224,22 @@ namespace egkr
 			view_ = view;
 		}
 
-		bool vulkan_texture::write_data(uint64_t offset, uint32_t /*size*/, const uint8_t* data)
+		bool vulkan_texture::write_data(uint64_t offset, uint32_t size, const uint8_t* data)
 		{
 			ZoneScoped;
 
-			auto image_size = properties_.width * properties_.height * properties_.channel_count * (properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 			auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
-			auto staging_buffer = buffer::create(context_, image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
-			staging_buffer->load_data(offset, image_size, 0, data);
+			auto staging_buffer = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::staging, size);
+			staging_buffer->bind(0);
+
+			staging_buffer->load_range(0, size, data);
+
 			command_buffer single_use{};
 			single_use.begin_single_use(context_, context_->device.graphics_command_pool);
 
 			transition_layout(single_use, image_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-			copy_from_buffer(single_use, staging_buffer);
+			copy_from_buffer(single_use, *(vulkan_buffer::shared_ptr*)staging_buffer->get_buffer());
 			transition_layout(single_use, image_format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
@@ -351,7 +353,7 @@ namespace egkr
 			command_buffer.get_handle().pipelineBarrier(source_stage, destination_stage, vk::DependencyFlags{}, nullptr, nullptr, barrier);
 		}
 
-		void vulkan_texture::copy_from_buffer(command_buffer command_buffer, buffer::shared_ptr buffer)
+		void vulkan_texture::copy_from_buffer(command_buffer command_buffer, vulkan_buffer::shared_ptr buffer)
 		{
 			ZoneScoped;
 
