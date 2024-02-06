@@ -250,6 +250,8 @@ namespace egkr
 
 		std::copy(vertices.data(), vertices.data() + properties.vertex_count, new_verts);
 
+		generate_tangents(properties.vertices, properties.indices);
+
 		return properties;
 	}
 }
