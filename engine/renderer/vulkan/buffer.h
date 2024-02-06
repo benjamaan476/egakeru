@@ -1,34 +1,49 @@
 #pragma once
 #include "pch.h"
 
+#include <renderer/renderbuffer.h>
 #include <vulkan/vulkan.hpp>
 
 namespace egkr
 {
 	struct vulkan_context;
-	class vulkan_buffer
+	class vulkan_buffer : public renderbuffer::renderbuffer
 	{
 	public:
 		using shared_ptr = std::shared_ptr<vulkan_buffer>;
-		static shared_ptr create(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create);
+		static shared_ptr create(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
 
-		vulkan_buffer(const vulkan_context* context, uint64_t size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memory_flags, bool bind_on_create);
-		~vulkan_buffer();
+		vulkan_buffer(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
+		~vulkan_buffer() override;
 
 		void destroy();
 
-		void* lock(uint64_t offset, uint64_t size, uint32_t flags);
-		void unlock();
+		void bind(uint64_t offset) override;
+		void unbind() override;
 
-		bool load_data(uint64_t offset, uint64_t size, uint32_t flags, const void* data);
+		void* map_memory(uint64_t offset, uint64_t size) override;
+		void unmap() override;
 
-		void copy_to(vk::CommandPool pool, vk::Fence fence, vk::Queue queue, vk::Buffer source, uint64_t source_offset, vk::Buffer dest, uint64_t dest_offset, uint64_t size);
-		void resize(uint64_t new_size, vk::Queue queue, vk::CommandPool pool);
+		void flush(uint64_t offset, uint64_t size) override;
 
-		void bind(uint64_t offset);
+		void read(uint64_t offset, uint64_t size, void* out) override;
+		void resize(uint64_t new_size) override;
+
+		void load_range(uint64_t offset, uint64_t size, const void* data) override;
+		void copy_range(uint64_t source_offset, egkr::renderbuffer::renderbuffer* destination, uint64_t dest_offset, uint64_t size) override;
+
+		void draw(uint64_t offset, uint32_t element_count, bool bind_only) override;
+
+		void* get_buffer() override;
 
 		const auto& get_handle() const { return handle_; }
 
+		bool is_device_local() const;
+		bool is_host_visible() const;
+		bool is_host_coherent() const;
+
+	protected:
+		void copy_range(uint64_t source_offset, vk::Buffer destination, uint64_t dest_offset, uint64_t size);
 	private:
 		const vulkan_context* context_{};
 
@@ -37,6 +52,7 @@ namespace egkr
 		vk::DeviceMemory memory_{};
 
 		uint32_t memory_index_{};
+		vk::MemoryRequirements memory_requirements_{};
 		vk::MemoryPropertyFlags memory_property_flags_{};
 
 		bool is_locked_{};

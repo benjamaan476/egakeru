@@ -22,9 +22,9 @@ namespace egkr
 			}
 		}
 
-		vulkan_texture* vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
+		vulkan_texture* vulkan_texture::create(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
 		{
-			auto img = new vulkan_texture(context, width_, height_, properties);
+			auto img = new vulkan_texture(backend, context, width_, height_, properties);
 
 			if (create_view)
 			{
@@ -33,9 +33,9 @@ namespace egkr
 			return img;
 		}
 
-		vulkan_texture* vulkan_texture::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
+		vulkan_texture* vulkan_texture::create_raw(const renderer_backend* backend, const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
 		{
-			auto img = new vulkan_texture(context, width, height, properties);
+			auto img = new vulkan_texture(backend, context, width, height, properties);
 
 			if (create_view)
 			{
@@ -76,11 +76,11 @@ namespace egkr
 		}
 
 		vulkan_texture::vulkan_texture()
-			: texture({})
+			: texture(nullptr, {})
 		{}
 
-		vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
-			: texture(properties), context_{ context }, width_{ width_ }, height_{ height_ }
+		vulkan_texture::vulkan_texture(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
+			: texture(backend, properties), context_{ context }, width_{ width_ }, height_{ height_ }
 		{
 
 		}
@@ -239,7 +239,7 @@ namespace egkr
 			single_use.begin_single_use(context_, context_->device.graphics_command_pool);
 
 			transition_layout(single_use, image_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-			copy_from_buffer(single_use, *(vulkan_buffer::shared_ptr*)staging_buffer->get_buffer());
+			copy_from_buffer(single_use, *(vk::Buffer*)staging_buffer->get_buffer());
 			transition_layout(single_use, image_format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
@@ -353,7 +353,7 @@ namespace egkr
 			command_buffer.get_handle().pipelineBarrier(source_stage, destination_stage, vk::DependencyFlags{}, nullptr, nullptr, barrier);
 		}
 
-		void vulkan_texture::copy_from_buffer(command_buffer command_buffer, vulkan_buffer::shared_ptr buffer)
+		void vulkan_texture::copy_from_buffer(command_buffer command_buffer, vk::Buffer buffer)
 		{
 			ZoneScoped;
 
@@ -373,7 +373,7 @@ namespace egkr
 				.setImageSubresource(subresource)
 				.setImageExtent({ width_, height_, 1 });
 
-			command_buffer.get_handle().copyBufferToImage(buffer->get_handle(), image_, vk::ImageLayout::eTransferDstOptimal, image_copy);
+			command_buffer.get_handle().copyBufferToImage(buffer, image_, vk::ImageLayout::eTransferDstOptimal, image_copy);
 		}
 	}
 

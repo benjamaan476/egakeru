@@ -890,7 +890,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -900,7 +900,7 @@ namespace egkr
 
 	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
 	{
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -936,7 +936,7 @@ namespace egkr
 
 	renderbuffer::renderbuffer::shared_ptr renderer_vulkan::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
 	{
-		return renderbuffer::renderbuffer::shared_ptr();
+		return vulkan_buffer::create(this, &context_, buffer_type, size);
 	}
 
 	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)

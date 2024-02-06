@@ -20,8 +20,8 @@ namespace egkr
 			return context->create_texture(properties, data, out_texture);
 		}
 
-		texture::texture(const properties& properties)
-			: resource(properties.id, properties.generation, properties.name), properties_{ properties }
+		texture::texture(const renderer_backend* backend, const properties& properties)
+			: resource(properties.id, properties.generation, properties.name), backend_{backend}, properties_{ properties }
 		{
 			data = (void*)properties.data;
 		}

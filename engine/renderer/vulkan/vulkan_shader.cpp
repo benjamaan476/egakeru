@@ -389,7 +389,7 @@ namespace egkr::shader
 				if (instance_ubo_generation == invalid_8_id)
 				{
 					buffer_info
-						.setBuffer((*(vulkan_buffer::shared_ptr*)(uniform_buffer->get_buffer()))->get_handle())
+						.setBuffer((*(vk::Buffer*)(uniform_buffer->get_buffer())))
 						.setOffset(offset)
 						.setRange(range);
 
@@ -490,7 +490,7 @@ namespace egkr::shader
 
 		vk::DescriptorBufferInfo buffer_info{};
 		buffer_info
-			.setBuffer((*(vulkan_buffer::shared_ptr*)(uniform_buffer->get_buffer()))->get_handle())
+			.setBuffer(*(vk::Buffer*)(uniform_buffer->get_buffer()))
 			.setOffset(get_global_ubo_offset())
 			.setRange(get_global_ubo_stride());
 

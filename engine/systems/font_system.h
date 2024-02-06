@@ -44,5 +44,5 @@ namespace egkr
 	private:
 		const renderer_frontend* renderer_context_{};
 		font_system_configuration configuration_{};
-	}
+	};
 }

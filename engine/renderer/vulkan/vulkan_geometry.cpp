@@ -32,8 +32,6 @@ namespace egkr::geometry
 	{
 		ZoneScoped;
 
-		const vk::MemoryPropertyFlags flags{vk::MemoryPropertyFlagBits::eDeviceLocal | vk::MemoryPropertyFlagBits::eHostVisible};
-		const vk::BufferUsageFlags usage{vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc};
 		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
 
 		vertex_count_ = properties.vertex_count;
@@ -47,7 +45,6 @@ namespace egkr::geometry
 		index_count_ = properties.indices.size();
 		if (index_count_)
 		{
-			const vk::BufferUsageFlags index_usage{ vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc };
 			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
 			index_buffer_ = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::index, index_buffer_size);
 			index_buffer_->bind(0);
@@ -77,10 +74,7 @@ namespace egkr::geometry
 		}
 
 		uint32_t total_size = vertex_count * vertex_size_;
-		if (!vertex_buffer_->load_data(offset, total_size, 0, vertices))
-		{
-			LOG_ERROR("Failed to update vertices");
-		}
+		vertex_buffer_->load_range(offset, total_size, vertices);
 	}
 
 	void vulkan_geometry::free()
