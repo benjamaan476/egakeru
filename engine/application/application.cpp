@@ -239,6 +239,9 @@ namespace egkr
 		test_text_ = text::ui_text::create(state_.renderer->get_backend().get(), text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 		test_text_->set_position({ 50, 250, 0 });
 
+		more_test_text_ = text::ui_text::create(state_.renderer->get_backend().get(), text::type::bitmap, "Arial 32", 32, "a");
+		more_test_text_->set_position({ 50, 400, 0 });
+
 		skybox_ = skybox::skybox::create(state_.renderer->get_backend().get());
 
 		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
@@ -341,7 +344,12 @@ namespace egkr
 				auto world_view = view_system::get("world-opaque");
 				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
 
-				render_view::ui_packet_data ui{ .mesh_data = application_->ui_meshes_, .texts = {application_->test_text_} };
+				auto cam = camera_system::get_default();
+				const auto& pos = cam->get_position();
+				std::string text = std::format("Camera pos: {} {} {}", pos.x, pos.y, pos.z);
+
+				application_->more_test_text_->set_text(text);
+				render_view::ui_packet_data ui{ .mesh_data = application_->ui_meshes_, .texts = {application_->test_text_, application_->more_test_text_} };
 				auto ui_view = view_system::get("ui");
 				packet.render_views.push_back(view_system::build_packet(ui_view.get(), &ui));
 
@@ -368,6 +376,7 @@ namespace egkr
 
 		application_->ui_meshes_.clear();
 		application_->test_text_.reset();
+		application_->more_test_text_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);

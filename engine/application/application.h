@@ -59,6 +59,7 @@ namespace egkr
 		egkr::vector<mesh::shared_ptr> meshes_{};
 		egkr::vector<mesh::shared_ptr> ui_meshes_{};
 		text::ui_text::shared_ptr test_text_{};
+		text::ui_text::shared_ptr more_test_text_{};
 
 		mesh::shared_ptr sponza_{};
 		bool models_loaded_{};
