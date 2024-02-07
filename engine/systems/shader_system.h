@@ -16,6 +16,9 @@ namespace egkr
 		uint8_t max_instance_textures{};
 	};
 
+	static std::string BUILTIN_SHADER_NAME_SKYBOX{ "Shader.Builtin.Skybox" };
+	static std::string BUILTIN_SHADER_NAME_MATERIAL{ "Shader.Builtin.Material" };
+	static std::string BUILTIN_SHADER_NAME_UI{ "Shader.Builtin.UI" };
 
 	class shader_system
 	{
