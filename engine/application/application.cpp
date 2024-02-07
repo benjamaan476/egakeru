@@ -5,7 +5,6 @@
 #include "systems/texture_system.h"
 #include "systems/material_system.h"
 #include "systems/geometry_system.h"
-#include "systems/geometry_utils.h"
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
 #include "systems/view_system.h"
@@ -26,7 +25,7 @@ namespace egkr
 		if (!application_)
 		{
 			application_ = std::make_unique<application>(std::move(game));
-			application_->state_.game->set_application(application_.get());
+			application_->game_->set_application(application_.get());
 			return true;
 		}
 
@@ -36,10 +35,10 @@ namespace egkr
 
 	application::application(game::unique_ptr game)
 	{
-		state_.width_ = game->get_application_configuration().width;
-		state_.height_ = game->get_application_configuration().height;
-		state_.name = game->get_application_configuration().name;
-		state_.game = std::move(game);
+		width_ = game->get_application_configuration().width;
+		height_ = game->get_application_configuration().height;
+		name_ = game->get_application_configuration().name;
+		game_ = std::move(game);
 
 		//Init subsystems
 		egkr::log::init();
@@ -48,23 +47,23 @@ namespace egkr
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = state_.width_, .height_ = state_.height_, .name = state_.name };
+		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = width_, .height_ = height_, .name = name_ };
 
-		state_.platform = egkr::platform::create(egkr::platform_type::windows);
-		if (state_.platform == nullptr)
+		platform_ = egkr::platform::create(egkr::platform_type::windows);
+		if (platform_ == nullptr)
 		{
 			LOG_FATAL("Failed to create platform");
 			return;
 		}
 
-		auto success = state_.platform->startup(platform_config);
+		auto success = platform_->startup(platform_config);
 		if (!success)
 		{
 			LOG_FATAL("Failed to start platform");
 			return;
 		}
 
-		state_.renderer = renderer_frontend::create(backend_type::vulkan, state_.platform);
+		renderer_ = renderer_frontend::create(backend_type::vulkan, platform_);
 
 		resource_system_configuration resource_system_configuration{};
 		resource_system_configuration.max_loader_count = 10;
@@ -76,20 +75,20 @@ namespace egkr
 		}
 		resource_system::init();
 
-		texture_system::create(state_.renderer.get(), { 1024 });
-		if (!material_system::create(state_.renderer.get()))
+		texture_system::create(renderer_.get(), { 1024 });
+		if (!material_system::create(renderer_.get()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
 
-		if (!geometry_system::create(state_.renderer.get()))
+		if (!geometry_system::create(renderer_.get()))
 		{
 			LOG_FATAL("Failed to create geometry system");
 		}
 
 		bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .resource_name = "Arial32", .size = 32 };
 		font_system_configuration font_system_configuration{ .max_bitmap_font_count = 1, .max_system_font_count = 1, .bitmap_font_configurations = { bitmap_font_configuration } };
-		if (!font_system::create(state_.renderer.get(), font_system_configuration))
+		if (!font_system::create(renderer_.get(), font_system_configuration))
 		{
 			LOG_FATAL("Failed to create font system");
 		}
@@ -100,18 +99,18 @@ namespace egkr
 		shader_system_configuration.max_shader_count = 1024;
 		shader_system_configuration.max_uniform_count = 128;
 
-		if (!shader_system::create(state_.renderer.get(), shader_system_configuration))
+		if (!shader_system::create(renderer_.get(), shader_system_configuration))
 		{
 			LOG_FATAL("Failed to create shader system");
 		}
 
 
-		if (!camera_system::create(state_.renderer.get(), { 31 }))
+		if (!camera_system::create(renderer_.get(), { 31 }))
 		{
 			LOG_FATAL("Failed to create camera system");
 		}
 
-		if (!view_system::create(state_.renderer.get()))
+		if (!view_system::create(renderer_.get()))
 		{
 			LOG_FATAL("Failed to create view system");
 			return;
@@ -123,13 +122,13 @@ namespace egkr
 			return;
 		}
 
-		if (!state_.renderer->init())
+		if (!renderer_->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
 		uint8_t thread_count = 5;
-		auto is_multi = state_.renderer->get_backend()->is_multithreaded();
+		auto is_multi = renderer_->get_backend()->is_multithreaded();
 
 		std::vector<job::type> types{thread_count};
 
@@ -164,12 +163,12 @@ namespace egkr
 		light_system::init();
 		job_system::job_system::init();
 
-		state_.dir_light_ = std::make_shared<light::directional_light>(
+		dir_light_ = std::make_shared<light::directional_light>(
 			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
 			float4(0.6F, 0.6F, 0.6F, 1.0F)
 		);
 
-		light_system::add_directional_light(state_.dir_light_);
+		light_system::add_directional_light(dir_light_);
 		light_system::add_point_light({ float4(-5.5, -5.5, 0.0, 0.F),
 			float4(0.0, 1.0, 0.0, 1.0),
 			1.0, // Constant
@@ -196,8 +195,8 @@ namespace egkr
 		{
 			render_view::configuration skybox_world{};
 			skybox_world.type = render_view::type::skybox;
-			skybox_world.width = state_.width_;
-			skybox_world.height = state_.height_;
+			skybox_world.width = width_;
+			skybox_world.height = height_;
 			skybox_world.name = "skybox";
 			skybox_world.passes.push_back({ "Renderpass.Builtin.Skybox" });
 			skybox_world.view_source = render_view::view_matrix_source::scene_camera;
@@ -206,8 +205,8 @@ namespace egkr
 		{
 			render_view::configuration opaque_world{};
 			opaque_world.type = render_view::type::world;
-			opaque_world.width = state_.width_;
-			opaque_world.height = state_.height_;
+			opaque_world.width = width_;
+			opaque_world.height = height_;
 			opaque_world.name = "world-opaque";
 			opaque_world.passes.push_back({ "Renderpass.Builtin.World" });
 			opaque_world.view_source = render_view::view_matrix_source::scene_camera;
@@ -216,8 +215,8 @@ namespace egkr
 		{
 			render_view::configuration ui{
 			.name = "ui",
-			.width = state_.width_,
-			.height = state_.height_,
+			.width = width_,
+			.height = height_,
 			.type = render_view::type::ui,
 			.view_source = render_view::view_matrix_source::ui_camera,
 			};
@@ -225,7 +224,7 @@ namespace egkr
 			view_system::create_view(ui);
 		}
 
-		if (!state_.game->init())
+		if (!game_->init())
 		{
 			LOG_ERROR("FAiled to create game");
 		}
@@ -236,13 +235,13 @@ namespace egkr
 		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
 		event::register_event(event_code::debug02, nullptr, application::on_debug_event);
 
-		test_text_ = text::ui_text::create(state_.renderer->get_backend().get(), text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
+		test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 		test_text_->set_position({ 50, 250, 0 });
 
-		more_test_text_ = text::ui_text::create(state_.renderer->get_backend().get(), text::type::bitmap, "Arial 32", 32, "a");
+		more_test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "a");
 		more_test_text_->set_position({ 50, 400, 0 });
 
-		skybox_ = skybox::skybox::create(state_.renderer->get_backend().get());
+		skybox_ = skybox::skybox::create(renderer_->get_backend().get());
 
 		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
 		skybox_->set_geometry(geometry_system::acquire(skybox_geo));
@@ -252,14 +251,12 @@ namespace egkr
 		skybox_shader->acquire_instance_resources(maps);
 
 		auto cube_1 = geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
-		generate_tangents(cube_1.vertices, cube_1.indices);
 
 		transform transform_1 = transform::create();
 		auto mesh_1 = mesh::create(geometry_system::acquire(cube_1), transform_1);
 		meshes_.push_back(mesh_1);
 
 		auto cube_2 = geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material");
-		generate_tangents(cube_2.vertices, cube_2.indices);
 
 		transform model_2 = transform::create({ 10.F, 0.F, 0.F });
 		model_2.set_parent(&mesh_1->model());
@@ -284,13 +281,13 @@ namespace egkr
 		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 		ui_properties.indices = indices;
 
-		auto ui_geo = geometry::geometry::create(state_.renderer->get_backend().get(), ui_properties);
+		auto ui_geo = geometry::geometry::create(renderer_->get_backend().get(), ui_properties);
 		ui_meshes_.push_back(mesh::create(ui_geo, {}));
 
-		box = debug::debug_box3d::create(state_.renderer->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
-		box->get_transform().set_position(light_system::get_point_lights()[0].position);
-		box->load();
-		box->set_colour((light_system::get_point_lights()[0].colour));
+		box_ = debug::debug_box3d::create(renderer_->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
+		box_->get_transform().set_position(light_system::get_point_lights()[0].position);
+		box_->load();
+		box_->set_colour((light_system::get_point_lights()[0].colour));
 
 		debug::configuration grid_configuration{};
 		grid_configuration.name = "debug_grid";
@@ -299,30 +296,29 @@ namespace egkr
 		grid_configuration.tile_count_dim1 = 100;
 		grid_configuration.tile_scale = 1;
 
-		grid = debug::debug_grid::create(state_.renderer->get_backend().get(), grid_configuration);
-		grid->load();
-		state_.is_running = true;
+		grid_ = debug::debug_grid::create(renderer_->get_backend().get(), grid_configuration);
+		grid_->load();
+		is_running_ = true;
 		is_initialised_ = true;
 	}
 
 	void application::run()
 	{
-		auto& state = application_->state_;
-		while (state.is_running)
+		while (application_->is_running_)
 		{
-			auto time = state.platform->get_time();
+			auto time = application_->platform_->get_time();
 			std::chrono::duration<double, std::ratio<1, 1>> delta = time - application_->last_time_;
 			auto delta_time = delta.count();
 
 			auto frame_time = time;
-			state.platform->pump();
+			application_->platform_->pump();
 
-			if (!state.is_suspended)
+			if (!application_->is_suspended_)
 			{
 				job_system::job_system::update();
-				state.game->update(delta_time);
+				application_->game_->update(delta_time);
 
-				state.game->render(delta_time);
+				application_->game_->render(delta_time);
 
 				//auto& model = application_->meshes_[0]->model();
 				//glm::quat q({ 0, 0, 0.5F * delta_time });
@@ -333,8 +329,8 @@ namespace egkr
 
 				render_packet packet{};
 
-				geometry::render_data debug_box{ .geometry = application_->box->get_geometry(), .model = application_->box->get_transform() };
-				geometry::render_data debug_grid{ .geometry = application_->grid->get_geometry(), .model = application_->grid->get_transform() };
+				geometry::render_data debug_box{ .geometry = application_->box_->get_geometry(), .model = application_->box_->get_transform() };
+				geometry::render_data debug_grid{ .geometry = application_->grid_->get_geometry(), .model = application_->grid_->get_transform() };
 				render_view::mesh_packet_data world{ .meshes = application_->meshes_, .debug_meshes = { debug_box, debug_grid} };
 			
 				render_view::skybox_packet_data skybox{ .skybox = application_->skybox_ };
@@ -353,13 +349,13 @@ namespace egkr
 				auto ui_view = view_system::get("ui");
 				packet.render_views.push_back(view_system::build_packet(ui_view.get(), &ui));
 
-				state.renderer->draw_frame(packet);
+				application_->renderer_->draw_frame(packet);
 			}
-			auto frame_duration = state.platform->get_time() - frame_time;
+			auto frame_duration = application_->platform_->get_time() - frame_time;
 			if (application_->limit_framerate_ && frame_duration < application_->frame_time_)
 			{
 				auto time_remaining = application_->frame_time_ - frame_duration;
-				state.platform->sleep(time_remaining);
+				application_->platform_->sleep(time_remaining);
 			}
 
 			application_->last_time_ = time;
@@ -369,8 +365,8 @@ namespace egkr
 	void application::shutdown()
 	{
 		application_->skybox_->destroy();
-		application_->box->destroy();
-		application_->grid->unload();
+		application_->box_->destroy();
+		application_->grid_->unload();
 		application_->meshes_.clear();
 		application_->sponza_->unload();
 
@@ -388,16 +384,16 @@ namespace egkr
 		texture_system::shutdown();
 		material_system::shutdown();
 		geometry_system::shutdown();
-		application_->state_.renderer->shutdown();
+		application_->renderer_->shutdown();
 		job_system::job_system::shutdown();
-		application_->state_.platform->shutdown();
+		application_->platform_->shutdown();
 	}
 
 	bool application::on_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
 	{
 		if (code == event_code::quit)
 		{
-			application_->state_.is_running = false;
+			application_->is_running_ = false;
 		}
 
 		if (code == event_code::key_down)
@@ -408,7 +404,7 @@ namespace egkr
 			switch (key)
 			{
 			case egkr::key::esc:
-				application_->state_.is_running = false;
+				application_->is_running_ = false;
 				break;
 			default:
 				break;
@@ -426,24 +422,24 @@ namespace egkr
 			const auto& width = context_array[0];
 			const auto& height = context_array[1];
 
-			if (application_->state_.width_ != (uint32_t)width || application_->state_.height_ != (uint32_t)height)
+			if (application_->width_ != (uint32_t)width || application_->height_ != (uint32_t)height)
 			{
-				application_->state_.width_ = (uint32_t)width;
-				application_->state_.height_ = (uint32_t)height;
+				application_->width_ = (uint32_t)width;
+				application_->height_ = (uint32_t)height;
 
 				if (width == 0 && height == 0)
 				{
-					application_->state_.is_suspended = true;
+					application_->is_suspended_ = true;
 					return false;
 				}
 
-				if (application_->state_.is_suspended)
+				if (application_->is_suspended_)
 				{
-					application_->state_.is_suspended = false;
+					application_->is_suspended_ = false;
 				}
 
-				application_->state_.game->resize(width, height);
-				application_->state_.renderer->on_resize(width, height);
+				application_->game_->resize(width, height);
+				application_->renderer_->on_resize(width, height);
 			}
 		}
 		return false;
