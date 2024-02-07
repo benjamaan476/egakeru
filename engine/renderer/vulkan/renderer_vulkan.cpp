@@ -348,14 +348,14 @@ namespace egkr
 			context_.graphics_command_buffers.resize(context_.swapchain->get_image_count());
 		}
 
-		for (auto& buffer : context_.graphics_command_buffers)
+		for (auto& command_buffer : context_.graphics_command_buffers)
 		{
-			if (buffer.get_handle())
+			if (command_buffer.get_handle())
 			{
-				buffer.free(&context_, context_.device.graphics_command_pool);
+				command_buffer.free(&context_, context_.device.graphics_command_pool);
 			}
 
-			buffer.allocate(&context_, context_.device.graphics_command_pool, true);
+			command_buffer.allocate(&context_, context_.device.graphics_command_pool, true);
 		}
 	}
 
@@ -890,7 +890,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -900,7 +900,7 @@ namespace egkr
 
 	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
 	{
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -932,6 +932,11 @@ namespace egkr
 	texture_map::texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
 	{
 		return texture::vulkan::texture_map::texture_map::create(&context_, properties);
+	}
+
+	renderbuffer::renderbuffer::shared_ptr renderer_vulkan::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
+	{
+		return vulkan_buffer::create(this, &context_, buffer_type, size);
 	}
 
 	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)

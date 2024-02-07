@@ -25,8 +25,6 @@ namespace egkr::shader
 		context_->device.logical_device.waitIdle();
 		if (uniform_buffer)
 		{
-			uniform_buffer->unlock();
-			uniform_buffer->destroy();
 			uniform_buffer.reset();
 		}
 
@@ -337,10 +335,10 @@ namespace egkr::shader
 		set_global_ubo_stride(get_aligned(get_global_ubo_size(), 256));
 		set_ubo_stride(get_aligned(get_ubo_size(), 256));
 
-		uniform_buffer = buffer::create(context_, get_global_ubo_stride() + (get_ubo_stride() * max_material_count), vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, true);
+		uniform_buffer = renderbuffer::renderbuffer::create(renderer_context_, renderbuffer::type::uniform, get_global_ubo_stride() + (get_ubo_stride() * max_material_count));
+		uniform_buffer->bind(0);
 
-
-		mapped_uniform_buffer_memory = uniform_buffer->lock(0, VK_WHOLE_SIZE, 0);
+		mapped_uniform_buffer_memory = uniform_buffer->map_memory(0, VK_WHOLE_SIZE);
 
 		egkr::vector<vk::DescriptorSetLayout> global_layouts = { descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL],descriptor_set_layout[DESCRIPTOR_SET_INDEX_GLOBAL] };
 
@@ -391,7 +389,7 @@ namespace egkr::shader
 				if (instance_ubo_generation == invalid_8_id)
 				{
 					buffer_info
-						.setBuffer(uniform_buffer->get_handle())
+						.setBuffer((*(vk::Buffer*)(uniform_buffer->get_buffer())))
 						.setOffset(offset)
 						.setRange(range);
 
@@ -492,7 +490,7 @@ namespace egkr::shader
 
 		vk::DescriptorBufferInfo buffer_info{};
 		buffer_info
-			.setBuffer(uniform_buffer->get_handle())
+			.setBuffer(*(vk::Buffer*)(uniform_buffer->get_buffer()))
 			.setOffset(get_global_ubo_offset())
 			.setRange(get_global_ubo_stride());
 

@@ -47,7 +47,7 @@ namespace egkr
 			static texture* create(const renderer_backend* context);
 			static texture* create(const renderer_backend* context, const properties& properties, const uint8_t* data);
 			static void create(const renderer_backend* context, const properties& properties, const uint8_t* data, texture* out_texture);
-			explicit texture(const properties& properties);
+			texture(const renderer_backend* backend, const properties& properties);
 			virtual ~texture();
 
 			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
@@ -70,6 +70,7 @@ namespace egkr
 			[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
 
 		protected:
+			const renderer_backend* backend_{};
 			properties properties_{};
 		};
 	}

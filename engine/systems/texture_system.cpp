@@ -409,7 +409,7 @@ namespace egkr
 
 		}
 
-		texture::properties properties{ .name = name.data(), .width = width, .height = height, .channel_count = channel_count, .texture_type = texture::type::cube, .id = id};
+		texture::properties properties{ .name = name.data(), .id = id, .width = width, .height = height, .channel_count = channel_count, .texture_type = texture::type::cube};
 		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, pixels);
 		free(pixels);
 		return temp_texture;
@@ -431,7 +431,7 @@ namespace egkr
 
 	bool texture_system::job_start(void* params, void* result_data)
 	{
-		load_parameters* load_params = (load_parameters*)params;
+		auto* load_params = (load_parameters*)params;
 		image_resource_parameters image_params{ .flip_y = true };
 		auto image = resource_system::load(load_params->name, resource_type::image, &image_params);
 
@@ -450,6 +450,9 @@ namespace egkr
 
 	void texture_system::load_job_fail(void* params)
 	{
+		auto* load_params = (load_parameters*)params;
 		LOG_ERROR("Failed to load texture");
+
+		resource_system::unload(load_params->resource);
 	}
 }

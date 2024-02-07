@@ -3,6 +3,9 @@
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
 
+#include <resources/ui_text.h>
+#include <resources/font.h>
+
 namespace egkr::render_view
 {
 	render_view_ui::render_view_ui(const renderer_frontend* renderer, const configuration& configuration)
@@ -10,8 +13,13 @@ namespace egkr::render_view
 	{}
 	bool render_view_ui::on_create()
 	{
-		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_UI);
-		shader_id_ = shader->get_id();
+		shader_ = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_UI);
+		shader_id_ = shader_->get_id();
+
+		diffuse_map_location_ = shader_->get_uniform_index("diffuse_texture");
+		diffuse_colour_location_ = shader_->get_uniform_index("diffuse_colour");
+		model_location_ = shader_->get_uniform_index("model");
+
 		near_clip_ = -100.F;
 		far_clip_ = 100.F;
 		projection_ = glm::ortho(0.F, (float)width_, (float)height_, 0.F, near_clip_, far_clip_);
@@ -41,20 +49,22 @@ namespace egkr::render_view
 
 	render_view_packet render_view_ui::on_build_packet(void* data)
 	{
-		mesh_packet_data* mesh_data = (mesh_packet_data*)data;
+		ui_packet_data* ui_data = (ui_packet_data*)data;
 
 		render_view_packet packet{};
 		packet.render_view = this;
 		packet.projection_matrix = projection_;
 		packet.view_matrix = view_;
+		packet.extended_data = data;
 
-		for (const auto& mesh : mesh_data->meshes)
+		for (const auto& mesh : ui_data->mesh_data.meshes)
 		{
 			for (const auto& geo : mesh->get_geometries())
 			{
 				packet.render_data.emplace_back(geo, mesh->get_model());
 			}
 		}
+
 		return packet;
 	}
 
@@ -80,6 +90,25 @@ namespace egkr::render_view
 				material_system::apply_local(m, render_data.model.get_world());
 				render_data.geometry->draw();
 
+				auto* texts = (ui_packet_data*)render_view_packet->extended_data;
+				for (const auto& text : texts->texts)
+				{
+					shader_system::bind_instance(text->get_id());
+
+					shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
+					constexpr static const float4 white_colour{ 1, 1, 1, 1 };
+					shader_system::set_uniform(diffuse_colour_location_, &white_colour);
+
+					bool needs_update = text->get_render_frame() != frame_number;
+					shader_system::apply_instance(needs_update);
+					text->set_render_frame(frame_number);
+
+					float4x4 model = text->get_transform().get_world();
+
+					shader_system::set_uniform(model_location_, &model);
+
+					text->draw();
+				}
 			}
 
 			pass->end();

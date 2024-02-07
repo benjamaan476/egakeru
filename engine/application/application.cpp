@@ -10,6 +10,7 @@
 #include "systems/view_system.h"
 #include "systems/light_system.h"
 #include "systems/job_system.h"
+#include "systems/font_system.h"
 
 #include "resources/transform.h"
 #include "resources/geometry.h"
@@ -85,6 +86,13 @@ namespace egkr
 			LOG_FATAL("Failed to create geometry system");
 		}
 
+		bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .resource_name = "Arial32", .size = 32 };
+		font_system_configuration font_system_configuration{ .max_bitmap_font_count = 1, .max_system_font_count = 1, .bitmap_font_configurations = { bitmap_font_configuration } };
+		if (!font_system::create(renderer_.get(), font_system_configuration))
+		{
+			LOG_FATAL("Failed to create font system");
+		}
+
 		shader_system_configuration shader_system_configuration{};
 		shader_system_configuration.max_global_textures = 31;
 		shader_system_configuration.max_instance_textures = 31;
@@ -149,6 +157,7 @@ namespace egkr
 		texture_system::init();
 		material_system::init();
 		geometry_system::init();
+		font_system::init();
 		camera_system::init();
 		view_system::init();
 		light_system::init();
@@ -226,6 +235,12 @@ namespace egkr
 		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
 		event::register_event(event_code::debug02, nullptr, application::on_debug_event);
 
+		test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
+		test_text_->set_position({ 50, 250, 0 });
+
+		more_test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "a");
+		more_test_text_->set_position({ 50, 400, 0 });
+
 		skybox_ = skybox::skybox::create(renderer_->get_backend().get());
 
 		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
@@ -250,8 +265,8 @@ namespace egkr
 
 		std::vector<vertex_2d> vertices{4};
 
-		vertices[0] = { {0.F, 512.F}, {0.F, 1.F} };
-		vertices[1] = { {512.F, 512.F}, {1.F, 1.F} };
+		vertices[0] = { {0.F, 136.F}, {0.F, 1.F} };
+		vertices[1] = { {512.F, 136.F}, {1.F, 1.F} };
 		vertices[2] = { {512.F, 0.F}, {1.F, 0.F} };
 		vertices[3] = { {0.F, 0.F}, {0.F, 0.F} };
 
@@ -325,7 +340,12 @@ namespace egkr
 				auto world_view = view_system::get("world-opaque");
 				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
 
-				render_view::mesh_packet_data ui{ .meshes = application_->ui_meshes_ };
+				auto cam = camera_system::get_default();
+				const auto& pos = cam->get_position();
+				std::string text = std::format("Camera pos: {} {} {}", pos.x, pos.y, pos.z);
+
+				application_->more_test_text_->set_text(text);
+				render_view::ui_packet_data ui{ .mesh_data = application_->ui_meshes_, .texts = {application_->test_text_, application_->more_test_text_} };
 				auto ui_view = view_system::get("ui");
 				packet.render_views.push_back(view_system::build_packet(ui_view.get(), &ui));
 
@@ -351,6 +371,8 @@ namespace egkr
 		application_->sponza_->unload();
 
 		application_->ui_meshes_.clear();
+		application_->test_text_.reset();
+		application_->more_test_text_.reset();
 
 		event::unregister_event(event_code::key_down, nullptr, on_event);
 		event::unregister_event(event_code::quit, nullptr, on_event);
