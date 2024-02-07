@@ -2,7 +2,7 @@
 
 namespace egkr
 {
-	bitmap_font_loader::unique_ptr create(const loader_properties& properties)
+	bitmap_font_loader::unique_ptr bitmap_font_loader::create(const loader_properties& properties)
 	{
 		return std::make_unique<bitmap_font_loader>(properties);
 	}
@@ -14,9 +14,9 @@ namespace egkr
 	resource::shared_ptr bitmap_font_loader::load(std::string_view name, void* /*params*/)
 	{
 		auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s/%s%s" };
+		constexpr std::string_view format_string{ "%s/%s%s" };
 
-		char buff[128];
+		char buff[128]{};
 
 		std::array<supported_bitmap_font_file_type, 2> filetypes{ supported_bitmap_font_file_type{".ebf", bitmap_font_file_type::ebf, true},  supported_bitmap_font_file_type{".fnt", bitmap_font_file_type::fnt, false} };
 
@@ -67,8 +67,8 @@ namespace egkr
 		}
 
 		resource_properties properties{ .type = resource_type::bitmap_font, .name = name.data(), .full_path = buff,};
-		properties.data = malloc(sizeof(font::bitmap_font_resource_data));
-		memcpy(properties.data, &resource_data, sizeof(font::bitmap_font_resource_data));
+		properties.data = new font::bitmap_font_resource_data();
+		*((font::bitmap_font_resource_data*)(properties.data)) = resource_data;
 		return std::make_shared<resource>(properties);
 	}
 
@@ -87,7 +87,7 @@ namespace egkr
 		font::bitmap_font_resource_data data{};
 
 			uint32_t line_number{};
-			egkr::vector<uint8_t> line{};
+			egkr::vector<uint8_t> line{1};
 		for (; !line.empty(); line = filesystem::read_line(handle, 511), ++line_number)
 		{
 			std::string line_string{ line.begin(), line.end() };
@@ -103,8 +103,9 @@ namespace egkr
 			{
 			case 'i' :
 			{
-				char buff[128];
-				sscanf_s(line_string.data(), "info face=\"%[^\"]\" size=%u", buff, &data.data.size);
+				char buff[128]{};
+				sscanf_s(line_string.data(), "info face=\"%[^\"]\" size=%u", buff, sizeof(buff), &data.data.size);
+				data.data.face = buff;
 			} break;
 			case 'c':
 			{
@@ -113,7 +114,6 @@ namespace egkr
 					uint32_t num_pages{};
 					sscanf_s(line_string.data(), "common lineHeight=%d base=%*d scaleW=%d scaleH=%d pages=%u", &data.data.line_height, &data.data.atlas_size_x, &data.data.atlas_size_y, &num_pages);
 
-					data.pages.resize(num_pages);
 				}
 				else if (line[4] == 's')
 				{
@@ -130,9 +130,8 @@ namespace egkr
 			case 'p':
 			{
 				font::bitmap_font_page page{};
-				char buff[128];
-				sscanf_s(line_string.data(), "page id=%d file=\"%[^\"]\"", &page.id, buff);
-				page.file = buff;
+				page.file.resize(128);
+				sscanf_s(line_string.data(), "page id=%d file=\"%[^\"]\"", &page.id, page.file.data(), page.file.size());
 				data.pages.push_back(page);
 			} break;
 			case 'k':
@@ -163,33 +162,36 @@ namespace egkr
 
 		font::bitmap_font_resource_data data{};
 		filesystem::read(handle, data.data.type);
-		uint32_t face_length{};
-		filesystem::read(handle, face_length);
-		data.data.face.resize(face_length + 1);
-		filesystem::read(handle, data.data.face.data(), sizeof(const char), data.data.face.size());
+		size_t face_length{};
+		filesystem::read<size_t>(handle, face_length);
+
+		char buff[128]{};
+		filesystem::read(handle, buff, sizeof(const char), face_length);
+
+		data.data.face = buff;
 		filesystem::read(handle, data.data.size);
 		filesystem::read(handle, data.data.line_height);
 		filesystem::read(handle, data.data.baseline);
 		filesystem::read(handle, data.data.atlas_size_x);
 		filesystem::read(handle, data.data.atlas_size_y);
 
-		uint32_t page_count{};
-		filesystem::read(handle, page_count);
+		size_t page_count{};
+		filesystem::read<size_t>(handle, page_count);
 		for (auto i{0U}; i < page_count; ++i)
 		{
 			font::bitmap_font_page page{};
 			filesystem::read(handle, page.id);
 
-			uint32_t file_length{};
-			filesystem::read(handle, file_length);
-			page.file.resize(file_length + 1);
+			size_t file_length{};
+			filesystem::read<size_t>(handle, file_length);
+			page.file.resize(file_length);
 			filesystem::read(handle, page.file.data(), sizeof(const char), page.file.size());
 
 			data.pages.push_back(page);
 		}
 
-		uint32_t glyph_count{};
-		filesystem::write(handle, glyph_count);
+		size_t glyph_count{};
+		filesystem::read<size_t>(handle, glyph_count);
 		for (auto i{ 0U }; i < glyph_count; ++i)
 		{
 			font::glyph glyph{};
@@ -197,14 +199,15 @@ namespace egkr
 			data.data.glyphs.push_back(glyph);
 		}
 
-		uint32_t kerning_count{};
-		filesystem::write(handle, kerning_count);
+		size_t kerning_count{};
+		filesystem::read<size_t>(handle, kerning_count);
 		if (kerning_count > 0)
 		{
 			for (auto i{ 0U }; i < kerning_count; ++i)
 			{
 				font::kerning kerning{};
 				filesystem::read(handle, kerning);
+				data.data.kernings.push_back(kerning);
 			}
 		}
 		filesystem::read(handle, data.data.tab_advance);

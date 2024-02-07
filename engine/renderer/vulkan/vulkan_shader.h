@@ -3,7 +3,7 @@
 #include "pipeline.h"
 #include "renderer/renderer_types.h"
 #include "renderer/renderbuffer.h"
-#include "buffer.h"
+#include "vulkan_renderbuffer.h"
 
 #include "resources/shader.h"
 

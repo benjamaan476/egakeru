@@ -7,7 +7,7 @@
 #include "vulkan_renderpass.h"
 #include "command_buffer.h"
 #include "fence.h"
-#include "buffer.h"
+#include "vulkan_renderbuffer.h"
 
 #include "renderer/vertex_types.h"
 

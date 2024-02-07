@@ -2,7 +2,7 @@
 
 #include "resources/geometry.h"
 #include <renderer/renderbuffer.h>
-#include "buffer.h"
+#include "vulkan_renderbuffer.h"
 
 namespace egkr::geometry
 {

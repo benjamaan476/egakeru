@@ -56,8 +56,9 @@ namespace egkr
 		static bool load_system_font(const system_font_configuration& configuration);
 		static bool load_bitmap_font(const bitmap_font_configuration& configuration);
 
+		static const bitmap_font_lookup& get_font(const std::string& name);
 
-		static bool verify_atlas(const font::data& data, const std::string& text);
+		static bool verify_atlas(std::shared_ptr<font::data> data, const std::string& text);
 
 	private:
 		static bool setup_font_data(font::data& data);

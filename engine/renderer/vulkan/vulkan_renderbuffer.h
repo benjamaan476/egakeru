@@ -38,6 +38,8 @@ namespace egkr
 
 		const auto& get_handle() const { return handle_; }
 
+		uint64_t get_size() const override { return total_size_; }
+
 		bool is_device_local() const;
 		bool is_host_visible() const;
 		bool is_host_coherent() const;

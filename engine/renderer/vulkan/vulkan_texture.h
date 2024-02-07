@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "resources/texture.h"
-#include "buffer.h"
+#include "vulkan_renderbuffer.h"
 #include "command_buffer.h"
 
 namespace egkr

@@ -9,6 +9,8 @@
 #include "resources/mesh.h"
 #include "resources/light.h"
 #include "resources/skybox.h"
+#include "resources/ui_text.h"
+
 #include <debug/debug_box3d.h>
 #include <debug/debug_grid.h>
 
@@ -56,6 +58,7 @@ namespace egkr
 		egkr::skybox::skybox::shared_ptr skybox_{};
 		egkr::vector<mesh::shared_ptr> meshes_{};
 		egkr::vector<mesh::shared_ptr> ui_meshes_{};
+		text::ui_text::shared_ptr test_text_{};
 
 		mesh::shared_ptr sponza_{};
 		bool models_loaded_{};

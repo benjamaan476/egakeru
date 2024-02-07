@@ -5,6 +5,7 @@
 #include "loaders/binary_loader.h"
 #include "loaders/text_loader.h"
 #include "loaders/shader_loader.h"
+#include "loaders/bitmap_font_loader.h"
 #include "loaders/mesh_loader.h"
 
 namespace egkr
@@ -80,6 +81,10 @@ namespace egkr
 			mesh_loader_properties.path = base_path + "meshes";
 
 			register_loader(mesh_loader::create(mesh_loader_properties));
+		}
+		{
+			loader_properties bitmap_font_loader{ .path = base_path + "fonts", .custom_type = {} };
+			register_loader(bitmap_font_loader::create(bitmap_font_loader));
 		}
 		return true;
 	}

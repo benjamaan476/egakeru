@@ -46,6 +46,8 @@ namespace egkr
 
 			virtual void* get_buffer() = 0;
 
+			virtual uint64_t get_size() const = 0;
+
 		protected:
 			type type_{};
 			const renderer_backend* backend_{};

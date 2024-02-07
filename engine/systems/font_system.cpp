@@ -70,21 +70,32 @@ namespace egkr
 
 		auto resource = resource_system::load(configuration.resource_name, resource_type::bitmap_font, nullptr);
 		font.loaded_resource = resource;
-		font.resource_data = (font::bitmap_font_resource_data*)font.loaded_resource->data;
+		font.resource_data = (font::bitmap_font_resource_data*)(font.loaded_resource->data);
+		bool result = setup_font_data(font.resource_data->data);
 		font.resource_data->data.atlas->texture = texture_system::acquire(font.resource_data->pages[0].file);
 
-		bool result = setup_font_data(font.resource_data->data);
 
 		auto id = font_system_->registered_bitmap_fonts_.size();
 		font_system_->registered_bitmap_fonts_.emplace_back( id, font);
 		font_system_->registered_bitmap_fonts_by_name_.emplace(configuration.name, id);
-		return true;
+		return result;
+	}
+
+	const bitmap_font_lookup& font_system::get_font(const std::string& name)
+	{
+		if (!font_system_->registered_bitmap_fonts_by_name_.contains(name))
+		{
+			LOG_ERROR("Tried to acquire a non-registered font, {}", name);
+			return {};
+		}
+
+		return font_system_->registered_bitmap_fonts_[font_system_->registered_bitmap_fonts_by_name_[name]];
 	}
 
 
-	bool font_system::verify_atlas(const font::data& data, const std::string& text)
+	bool font_system::verify_atlas(std::shared_ptr<font::data> data, const std::string& text)
 	{
-		if (data.type == font::type::bitmap)
+		if (data->type == font::type::bitmap)
 		{
 			return true;
 		}
@@ -95,6 +106,7 @@ namespace egkr
 
 	bool font_system::setup_font_data(font::data& data)
 	{
+		data.atlas = texture_map::texture_map::create(font_system_->renderer_context_->get_backend().get(), {});
 		data.atlas->minify = texture_map::filter::linear;
 		data.atlas->magnify = texture_map::filter::linear;
 		data.atlas->repeat_u = texture_map::repeat::clamp_to_edge;

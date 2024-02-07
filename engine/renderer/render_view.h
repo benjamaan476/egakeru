@@ -9,6 +9,11 @@
 
 namespace egkr
 {
+	namespace text
+	{
+		class ui_text;
+	}
+
 	namespace render_view
 	{
 		enum class type
@@ -105,6 +110,12 @@ namespace egkr
 		{
 			egkr::vector<mesh::shared_ptr> meshes{};
 			egkr::vector<geometry::render_data> debug_meshes{};
+		};
+
+		struct ui_packet_data
+		{
+			mesh_packet_data mesh_data;
+			egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
 		};
 
 	}
