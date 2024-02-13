@@ -200,8 +200,6 @@ namespace egkr
 				job_system::job_system::update();
 				application_->game_->update(delta_time);
 
-
-
 				render_packet packet{};
 
 				application_->game_->render(&packet, delta_time);

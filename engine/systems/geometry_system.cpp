@@ -252,6 +252,8 @@ namespace egkr
 
 		generate_tangents(properties.vertices, properties.indices);
 
+		properties.min_extent = { -half_width, -half_depth, -half_height };
+		properties.max_extent = { half_width, half_depth, half_height };
 		return properties;
 	}
 }

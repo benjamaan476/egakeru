@@ -107,7 +107,7 @@ bool sandbox_game::init()
 	grid_ = egkr::debug::debug_grid::create(application_->get_renderer()->get_backend().get(), grid_configuration);
 	grid_->load();
 	camera_ = egkr::camera_system::get_default();
-	camera_->set_position({ 0, 0, 1.F });
+	camera_->set_position({ 0, 0, 0.F });
 
 	dir_light_ = std::make_shared<egkr::light::directional_light>(
 		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
@@ -192,32 +192,64 @@ void sandbox_game::update(double delta_time)
 	{
 		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
 	}
+
+	camera_frustum_ = egkr::frustum::create(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, glm::radians(45.F), 0.1F, 1000.F);
+
+	frame_data.reset();
+	for (auto& mesh : meshes_)
+	{
+		if (mesh->get_generation() == invalid_32_id)
+		{
+			continue;
+		}
+
+		auto model_world = mesh->model().get_world();
+		for (const auto& geo : mesh->get_geometries())
+		{
+			auto extents_min = model_world * egkr::float4{ geo->get_properties().min_extent, 1.F };
+			auto extents_max = model_world * egkr::float4{ geo->get_properties().max_extent, 1.F };
+
+			float min = std::min(std::min(extents_min.x, extents_min.y), extents_min.z);
+			float max = std::max(std::max(extents_max.x, extents_max.y), extents_max.z);
+			float diff = std::abs(max - min);
+
+			float radius = diff * 0.5F;
+
+			egkr::float3 center = egkr::float4{ geo->get_properties().center, 1.F} * model_world;
+
+			if (camera_frustum_.intersects_sphere(center, radius))
+			{
+				frame_data.world_geometries.emplace_back(geo, mesh->get_model());
+			}
+		}
+	}
 }
 
-void sandbox_game::render(egkr::render_packet* render_packet, double /*delta_time*/)
+void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 {
+	auto& model = meshes_[0]->model();
+	glm::quat q({ 0, 0, 0.5F * delta_time });
+	model.rotate(q);
 
-	//auto& model = application_->meshes_[0]->model();
-//glm::quat q({ 0, 0, 0.5F * delta_time });
-//model.rotate(q);
-
-//auto& model_2 = application_->meshes_[1]->model();
-//model_2.rotate(q);
+	auto& model_2 = meshes_[1]->model();
+	model_2.rotate(q);
 
 	egkr::geometry::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
 	egkr::geometry::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
-	egkr::render_view::mesh_packet_data world{ .meshes = meshes_, .debug_meshes = { debug_box, debug_grid} };
+
+	frame_data.debug_geometries.push_back(debug_box);
+	frame_data.debug_geometries.push_back(debug_grid);
 
 	egkr::render_view::skybox_packet_data skybox{ .skybox = skybox_ };
 	auto skybox_view = egkr::view_system::get("skybox");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
 
 	auto world_view = egkr::view_system::get("world-opaque");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &world));
+	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_data));
 
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}", pos.x, pos.y, pos.z);
+	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_data.world_geometries.size());
 
 	more_test_text_->set_text(text);
 	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = {test_text_, more_test_text_} };
@@ -262,7 +294,7 @@ bool sandbox_game::boot()
 		render_view_configuration_.push_back(opaque_world);
 	}
 	{
-		egkr::render_view::configuration ui;
+		egkr::render_view::configuration ui{};
 		ui.name = "ui";
 		ui.width = width_;
 		ui.height = height_;
@@ -325,9 +357,4 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 		}
 	}
 	return false;
-}
-
-void sandbox_game::configure_render_views()
-{
-
 }

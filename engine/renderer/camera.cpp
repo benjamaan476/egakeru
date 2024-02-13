@@ -9,7 +9,8 @@ namespace egkr
 
 	camera::camera(std::string_view name)
 		:name_{ name }
-	{}
+	{
+	}
 
 	void camera::reset()
 	{
@@ -55,22 +56,22 @@ namespace egkr
 
 	float3 camera::get_left() const
 	{
-		return glm::normalize(glm::inverse(view_)[1]);
+		return glm::normalize(glm::inverse(view_)[0]);
 	}
 
 	float3 camera::get_right() const
 	{
-		return -glm::normalize(glm::inverse(view_)[1]);
+		return -glm::normalize(glm::inverse(view_)[0]);
 	}
 
 	float3 camera::get_up() const
 	{
-		return glm::normalize(glm::inverse(view_)[0]);
+		return glm::normalize(glm::inverse(view_)[1]);
 	}
 
 	float3 camera::get_down() const
 	{
-		return -glm::normalize(glm::inverse(view_)[0]);
+		return -glm::normalize(glm::inverse(view_)[1]);
 	}
 
 	void camera::move_forward(float_t amount)

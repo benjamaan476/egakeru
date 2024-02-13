@@ -11,7 +11,7 @@ namespace egkr::geometry
 	}
 
 	geometry::geometry(const renderer_backend* backend, const properties& properties)
-		: resource(properties.id, properties.generation, properties.name), backend_{ backend }
+		: resource(properties.id, properties.generation, properties.name), properties_{properties}, backend_{ backend }
 	{
 		if (properties.material_name == default_material_name_)
 		{

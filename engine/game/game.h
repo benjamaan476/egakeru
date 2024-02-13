@@ -8,6 +8,7 @@ namespace egkr
 	class application;
 	struct render_packet;
 
+
 	class game
 	{
 	public:
@@ -24,11 +25,7 @@ namespace egkr
 		virtual bool boot() = 0;
 		virtual bool shutdown() = 0;
 
-		[[nodiscard]] const auto& get_application_configuration() const
-		{
-			return application_configuration_;
-		}
-
+		[[nodiscard]] const auto& get_application_configuration() const	{ return application_configuration_; }
 		[[nodiscard]] const auto& get_font_system_configuration() const { return font_system_configuration_; }
 		[[nodiscard]] const auto& get_render_view_configuration() const { return render_view_configuration_; }
 

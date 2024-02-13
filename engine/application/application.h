@@ -22,11 +22,11 @@ namespace egkr
 	{
 	public:
 		using unique_ptr = std::unique_ptr<application>;
-		API static bool create(game::unique_ptr game);
+		static bool create(game::unique_ptr game);
 		//Don't call this directly, only here to shutup clang
 		explicit application(game::unique_ptr game);
 
-		API static void run();
+		static void run();
 		void static shutdown();
 
 		[[nodiscard]] const auto* get_renderer() const { return renderer_.get(); }

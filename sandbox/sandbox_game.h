@@ -22,9 +22,10 @@ public:
 
 private:	
 	bool static on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
-	void configure_render_views();
 
 private:
+
+	egkr::frustum camera_frustum_{};
 	egkr::camera::shared_ptr camera_{};
 	egkr::skybox::skybox::shared_ptr skybox_{};
 	egkr::vector<egkr::mesh::shared_ptr> meshes_{};
@@ -39,4 +40,5 @@ private:
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
+	egkr::geometry::frame_data frame_data{};
 };

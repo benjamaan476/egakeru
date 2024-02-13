@@ -42,6 +42,8 @@ namespace egkr
 	void camera_system::create_default()
 	{
 		camera_system_->default_camera_ = camera::create(DEFAULT_CAMERA_NAME);
+		camera_system_->default_camera_->set_rotation({ 0.F, 0.F, glm::radians(180.F) });
+		camera_system_->default_camera_->get_view();
 	}
 
 	camera::shared_ptr camera_system::acquire(std::string_view name)

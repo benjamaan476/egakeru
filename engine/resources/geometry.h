@@ -57,10 +57,12 @@ namespace egkr
 			virtual void free() = 0;
 			void destroy();
 
-			const auto& get_material() const { return material_; }
+			[[nodiscard]] const auto& get_properties() const { return properties_; }
+			[[nodiscard]] const auto& get_material() const { return material_; }
 			void set_material(const material::shared_ptr& material);
 
 		protected:
+			properties properties_{};
 			material::shared_ptr material_{};
 			const renderer_backend* backend_{};
 		};
@@ -69,6 +71,18 @@ namespace egkr
 		{
 			geometry::shared_ptr geometry{};
 			transform model{};
+		};
+
+		struct frame_data
+		{
+			egkr::vector<render_data> world_geometries{};
+			egkr::vector<render_data> debug_geometries{};
+
+			void reset()
+			{
+				world_geometries.clear();
+				debug_geometries.clear();
+			}
 		};
 	}
 }

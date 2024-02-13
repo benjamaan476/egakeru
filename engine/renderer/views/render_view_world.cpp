@@ -55,7 +55,7 @@ namespace egkr::render_view
 	}
 	render_view_packet render_view_world::on_build_packet(void* data)
 	{
-		mesh_packet_data* mesh_data = (mesh_packet_data*)data;
+		geometry::frame_data* mesh_data = (geometry::frame_data*)data;
 
 		render_view_packet packet{};
 
@@ -64,25 +64,8 @@ namespace egkr::render_view
 		packet.view_matrix = camera_->get_view();
 		packet.view_position = camera_->get_position();
 		packet.ambient_colour = ambient_colour_;
-
-		for (auto& mesh : mesh_data->meshes)
-		{
-			for (auto& geo : mesh->get_geometries())
-			{
-				if ((uint8_t)(geo->get_material()->get_diffuse_map()->texture->get_flags() & texture::flags::has_transparency) == 0)
-				{
-					packet.render_data.emplace_back(geo, mesh->get_model());
-				}
-			}
-		}
-
-		for (auto& [geo, model] : mesh_data->debug_meshes)
-		{
-			//for (auto& geo : mesh->get_geometries())
-			{
-				packet.debug_render_data.emplace_back(geo, model);
-			}
-		}
+		packet.render_data = mesh_data->world_geometries;
+		packet.debug_render_data = mesh_data->debug_geometries;
 
 		return packet;
 	}

@@ -41,7 +41,7 @@ namespace egkr
 		std::string name_{};
 		float3 position_{};
 		float3 rotation_{};
-		bool is_dirty_{};
+		bool is_dirty_{true};
 
 		float4x4 view_{};
 	};

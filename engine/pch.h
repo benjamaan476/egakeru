@@ -4,6 +4,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
+#define GLM_
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -51,6 +52,78 @@ namespace egkr
 	{
 		float3 min{};
 		float3 max{};
+	};
+
+	struct plane
+	{
+		egkr::float3 normal{};
+		float distance{};
+
+		constexpr static plane create(const float3& position, const float3& normal)
+		{
+			return { glm::normalize(normal), glm::dot(normal, position) };
+		}
+
+		constexpr float signed_distance(const float3& position) const
+		{
+			return glm::dot(normal, position) - distance;
+		}
+
+		constexpr bool intersects_sphere(const float3& center, float radius) const
+		{
+			return signed_distance(center) > -radius;
+		}
+
+		constexpr bool intersects_aabb(const float3& center, const float3& half_extents) const
+		{
+			float r = half_extents.x * std::abs(normal.x) +
+				half_extents.y * std::abs(normal.y) +
+				half_extents.z * std::abs(normal.z);
+
+			return -r <= signed_distance(center);
+		}
+	};
+
+	struct frustum
+	{
+		std::array<plane, 6> sides{};
+
+		constexpr static frustum create(const float3& position, const float3& forward, const float3& right, const float3& up, float aspect, float fov, float near, float far)
+		{
+			const float half_v = fov * std::tanf(0.5f * fov);
+			const float half_h = half_v * aspect;
+
+			const auto forward_fwd = forward * far;
+
+			return {
+				{
+					plane::create(position + near * forward, forward),
+					plane::create(position + forward_fwd, -forward),
+					plane::create(position, glm::cross(up, half_h * right + forward_fwd)),
+					plane::create(position, glm::cross(half_h * right - forward_fwd, up)),
+					plane::create(position, glm::cross(right, half_v * up - forward_fwd)),
+					plane::create(position, glm::cross(half_v * up + forward_fwd, right))
+				}
+			};
+		}
+
+		bool intersects_sphere(const float3& center, float radius) const
+		{
+			for (const auto& side : sides)
+			{
+				if (!side.intersects_sphere(center, radius))
+				{
+					return false;
+				}
+			}
+			return true;
+			//return std::ranges::all_of(sides, [center, radius](const auto& plane) { return plane.intersects_sphere(center, radius); });
+		}
+
+		constexpr bool intersects_aabb(const float3& center, const float3& half_extents) const
+		{
+			return std::ranges::any_of(sides, [center, half_extents](const auto& plane) {return plane.intersects_aabb(center, half_extents); });
+		}
 	};
 }
 
