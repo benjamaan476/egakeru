@@ -32,7 +32,7 @@ namespace egkr::debug
 		void recalculate_extents();
 	private:
 		const renderer_backend* backend_{};
-		uint32_t unique_id_{};
+		//uint32_t unique_id_{};
 		std::string name_{};
 		egkr::float3 size_{};
 		egkr::extent3d extents_{};

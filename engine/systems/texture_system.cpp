@@ -356,7 +356,7 @@ namespace egkr
 	}
 
 
-	texture::texture* texture_system::load_texture(const std::string& filename, uint32_t id)
+	texture::texture* texture_system::load_texture(const std::string& filename, uint32_t /*id*/)
 	{
 		texture::texture* tex = texture::texture::create(texture_system_->renderer_context_->get_backend().get());
 		load_parameters params{ .out_texture = tex };

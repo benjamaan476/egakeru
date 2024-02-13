@@ -53,7 +53,7 @@ namespace egkr
 		return true;
 	}
 
-	bool font_system::load_system_font(const system_font_configuration& configuration)
+	bool font_system::load_system_font(const system_font_configuration& /*configuration*/)
 	{
 		return false;
 	}
@@ -86,14 +86,15 @@ namespace egkr
 		if (!font_system_->registered_bitmap_fonts_by_name_.contains(name))
 		{
 			LOG_ERROR("Tried to acquire a non-registered font, {}", name);
-			return {};
+			//TODO return from this correctly
+			//return {};
 		}
 
 		return font_system_->registered_bitmap_fonts_[font_system_->registered_bitmap_fonts_by_name_[name]];
 	}
 
 
-	bool font_system::verify_atlas(std::shared_ptr<font::data> data, const std::string& text)
+	bool font_system::verify_atlas(std::shared_ptr<font::data> data, const std::string& /*text*/)
 	{
 		if (data->type == font::type::bitmap)
 		{

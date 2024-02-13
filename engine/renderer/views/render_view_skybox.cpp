@@ -53,7 +53,7 @@ render_view_packet render_view_skybox::on_build_packet(void* data)
 	packet.view_matrix = camera_->get_view();
 	packet.view_position = camera_->get_position();
 	packet.render_data = { { skybox_data->skybox->get_geometry() } };
-	packet.extended_data = skybox_data;
+	packet.extended_data = new skybox_packet_data(*skybox_data);
 	return packet;
 }
 

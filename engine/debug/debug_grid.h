@@ -42,7 +42,7 @@ namespace egkr
 
 		private:
 			const renderer_backend* backend_{};
-			uint32_t unique_id_{};
+			//uint32_t unique_id_{};
 			std::string name_{};
 			orientation orientation_{};
 			uint32_t tile_count_dim0_{};

@@ -29,37 +29,24 @@ namespace egkr
 		API static void run();
 		void static shutdown();
 
+		[[nodiscard]] const auto* get_renderer() const { return renderer_.get(); }
+
 	private:
 		//void reginster_event();
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
-		static bool on_debug_event(event_code code, void* sender, void* listener, const event_context& context);
 		bool is_initialised_{false};
 		std::chrono::nanoseconds last_time_{};
 
 	    bool limit_framerate_{false};
 		std::chrono::milliseconds frame_time_{16ms};
 
-		egkr::skybox::skybox::shared_ptr skybox_{};
-		egkr::vector<mesh::shared_ptr> meshes_{};
-		egkr::vector<mesh::shared_ptr> ui_meshes_{};
-		text::ui_text::shared_ptr test_text_{};
-		text::ui_text::shared_ptr more_test_text_{};
-
-		mesh::shared_ptr sponza_{};
-		bool models_loaded_{};
-		debug::debug_box3d::shared_ptr box_{};
-		debug::debug_grid::shared_ptr grid_{};
-
 		bool is_running_{};
 		bool is_suspended_{};
 		platform::shared_ptr platform_{};
-		uint32_t width_{};
-		uint32_t height_{};
 		std::string name_{};
 		game::unique_ptr game_{};
 		renderer_frontend::unique_ptr renderer_{};
-		std::shared_ptr<light::directional_light> dir_light_{};
 
 	};
 

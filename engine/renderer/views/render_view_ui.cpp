@@ -55,7 +55,7 @@ namespace egkr::render_view
 		packet.render_view = this;
 		packet.projection_matrix = projection_;
 		packet.view_matrix = view_;
-		packet.extended_data = data;
+packet.extended_data =  new ui_packet_data(*ui_data);
 
 		for (const auto& mesh : ui_data->mesh_data.meshes)
 		{

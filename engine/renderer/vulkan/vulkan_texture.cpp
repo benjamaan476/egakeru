@@ -233,7 +233,7 @@ namespace egkr
 			auto staging_buffer = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::staging, size);
 			staging_buffer->bind(0);
 
-			staging_buffer->load_range(0, size, data);
+			staging_buffer->load_range(offset, size, data);
 
 			command_buffer single_use{};
 			single_use.begin_single_use(context_, context_->device.graphics_command_pool);

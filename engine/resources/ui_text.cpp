@@ -95,7 +95,7 @@ namespace egkr
 			regenerate_geometry();
 		}
 
-		void ui_text::acquire(const std::string& name, uint16_t font_size, type type)
+		void ui_text::acquire(const std::string& name, uint16_t /*font_size*/, type type)
 		{
 			if (type == type::bitmap)
 			{
@@ -176,7 +176,7 @@ namespace egkr
 
 				if (!glyph)
 				{
-					codepoint == -1;
+					codepoint = -1;
 					for (auto& g : data_->glyphs)
 					{
 						if (g.codepoint == codepoint)

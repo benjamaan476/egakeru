@@ -3,8 +3,6 @@
 #include "entry.h"
 #include "sandbox_game.h"
 
-
-
 egkr::game::unique_ptr create_game()
 {
 	const uint32_t width_{ 800 };

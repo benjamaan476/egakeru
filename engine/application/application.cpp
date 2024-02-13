@@ -25,7 +25,6 @@ namespace egkr
 		if (!application_)
 		{
 			application_ = std::make_unique<application>(std::move(game));
-			application_->game_->set_application(application_.get());
 			return true;
 		}
 
@@ -35,8 +34,6 @@ namespace egkr
 
 	application::application(game::unique_ptr game)
 	{
-		width_ = game->get_application_configuration().width;
-		height_ = game->get_application_configuration().height;
 		name_ = game->get_application_configuration().name;
 		game_ = std::move(game);
 
@@ -47,7 +44,14 @@ namespace egkr
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform_configuration platform_config = { .start_x = start_x, .start_y = start_y, .width_ = width_, .height_ = height_, .name = name_ };
+		const platform_configuration platform_config = 
+		{ 
+			.start_x = start_x, 
+			.start_y = start_y,
+			.width_ = game_->get_application_configuration().width,
+			.height_ = game_->get_application_configuration().height,
+			.name = name_
+		};
 
 		platform_ = egkr::platform::create(egkr::platform_type::windows);
 		if (platform_ == nullptr)
@@ -84,13 +88,6 @@ namespace egkr
 		if (!geometry_system::create(renderer_.get()))
 		{
 			LOG_FATAL("Failed to create geometry system");
-		}
-
-		bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .resource_name = "Arial32", .size = 32 };
-		font_system_configuration font_system_configuration{ .max_bitmap_font_count = 1, .max_system_font_count = 1, .bitmap_font_configurations = { bitmap_font_configuration } };
-		if (!font_system::create(renderer_.get(), font_system_configuration))
-		{
-			LOG_FATAL("Failed to create font system");
 		}
 
 		shader_system_configuration shader_system_configuration{};
@@ -130,6 +127,14 @@ namespace egkr
 		uint8_t thread_count = 5;
 		auto is_multi = renderer_->get_backend()->is_multithreaded();
 
+		game_->boot();
+
+		if (!font_system::create(renderer_.get(), game_->get_font_system_configuration()))
+		{
+			LOG_FATAL("Failed to create font system");
+		}
+
+
 		std::vector<job::type> types{thread_count};
 
 		std::fill(types.begin(), types.end(), job::type::general);
@@ -163,141 +168,18 @@ namespace egkr
 		light_system::init();
 		job_system::job_system::init();
 
-		dir_light_ = std::make_shared<light::directional_light>(
-			float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
-			float4(0.6F, 0.6F, 0.6F, 1.0F)
-		);
-
-		light_system::add_directional_light(dir_light_);
-		light_system::add_point_light({ float4(-5.5, -5.5, 0.0, 0.F),
-			float4(0.0, 1.0, 0.0, 1.0),
-			1.0, // Constant
-			0.35, // Linear
-			0.44,  // Quadratic
-			0.F });
-
-		light_system::add_point_light({
-			float4(5.5, -5.5, 0.0, 0.0),
-				float4(1.0, 0.0, 0.0, 1.0),
-				1.0, // Constant
-				0.35, // Linear
-				0.44,  // Quadratic
-				0.0 });
-
-		light_system::add_point_light({
-			float4(5.5, 5.5, 0.0, 0.0),
-			float4(0.0, 0.0, 1.0, 1.0),
-			1.0, // Constant
-			0.35, // Linear
-			0.44,  // Quadratic
-			0.0 });
-
-		{
-			render_view::configuration skybox_world{};
-			skybox_world.type = render_view::type::skybox;
-			skybox_world.width = width_;
-			skybox_world.height = height_;
-			skybox_world.name = "skybox";
-			skybox_world.passes.push_back({ "Renderpass.Builtin.Skybox" });
-			skybox_world.view_source = render_view::view_matrix_source::scene_camera;
-			view_system::create_view(skybox_world);
-		}
-		{
-			render_view::configuration opaque_world{};
-			opaque_world.type = render_view::type::world;
-			opaque_world.width = width_;
-			opaque_world.height = height_;
-			opaque_world.name = "world-opaque";
-			opaque_world.passes.push_back({ "Renderpass.Builtin.World" });
-			opaque_world.view_source = render_view::view_matrix_source::scene_camera;
-			view_system::create_view(opaque_world);
-		}
-		{
-			render_view::configuration ui{
-			.name = "ui",
-			.width = width_,
-			.height = height_,
-			.type = render_view::type::ui,
-			.view_source = render_view::view_matrix_source::ui_camera,
-			};
-			ui.passes.push_back({ "Renderpass.Builtin.UI" });
-			view_system::create_view(ui);
-		}
+		game_->set_application(this);
 
 		if (!game_->init())
 		{
 			LOG_ERROR("FAiled to create game");
 		}
 
+		std::ranges::for_each(game_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
 		event::register_event(event_code::key_down, nullptr, application::on_event);
 		event::register_event(event_code::quit, nullptr, application::on_event);
 		event::register_event(event_code::resize, nullptr, application::on_resize);
-		event::register_event(event_code::debug01, nullptr, application::on_debug_event);
-		event::register_event(event_code::debug02, nullptr, application::on_debug_event);
 
-		test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
-		test_text_->set_position({ 50, 250, 0 });
-
-		more_test_text_ = text::ui_text::create(renderer_->get_backend().get(), text::type::bitmap, "Arial 32", 32, "a");
-		more_test_text_->set_position({ 50, 400, 0 });
-
-		skybox_ = skybox::skybox::create(renderer_->get_backend().get());
-
-		auto skybox_geo = geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
-		skybox_->set_geometry(geometry_system::acquire(skybox_geo));
-
-		auto skybox_shader = shader_system::get_shader("Shader.Builtin.Skybox");
-		egkr::vector<texture_map::texture_map::shared_ptr> maps = { skybox_->get_texture_map() };
-		skybox_shader->acquire_instance_resources(maps);
-
-		auto cube_1 = geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
-
-		transform transform_1 = transform::create();
-		auto mesh_1 = mesh::create(geometry_system::acquire(cube_1), transform_1);
-		meshes_.push_back(mesh_1);
-
-		auto cube_2 = geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material");
-
-		transform model_2 = transform::create({ 10.F, 0.F, 0.F });
-		model_2.set_parent(&mesh_1->model());
-		auto mesh_2 = mesh::create(geometry_system::acquire(cube_2), model_2);
-		meshes_.push_back(mesh_2);
-
-		std::vector<vertex_2d> vertices{4};
-
-		vertices[0] = { {0.F, 136.F}, {0.F, 1.F} };
-		vertices[1] = { {512.F, 136.F}, {1.F, 1.F} };
-		vertices[2] = { {512.F, 0.F}, {1.F, 0.F} };
-		vertices[3] = { {0.F, 0.F}, {0.F, 0.F} };
-
-		std::vector<uint32_t> indices{0, 1, 2, 0, 2, 3};
-
-		geometry::properties ui_properties{};
-		ui_properties.name = "test_ui";
-		ui_properties.material_name = "ui_material";
-		ui_properties.vertex_count = 4;
-		ui_properties.vertex_size = sizeof(vertex_2d);
-		ui_properties.vertices = malloc(sizeof(vertex_2d) * 4);
-		std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
-		ui_properties.indices = indices;
-
-		auto ui_geo = geometry::geometry::create(renderer_->get_backend().get(), ui_properties);
-		ui_meshes_.push_back(mesh::create(ui_geo, {}));
-
-		box_ = debug::debug_box3d::create(renderer_->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
-		box_->get_transform().set_position(light_system::get_point_lights()[0].position);
-		box_->load();
-		box_->set_colour((light_system::get_point_lights()[0].colour));
-
-		debug::configuration grid_configuration{};
-		grid_configuration.name = "debug_grid";
-		grid_configuration.orientation = debug::orientation::yz;
-		grid_configuration.tile_count_dim0 = 100;
-		grid_configuration.tile_count_dim1 = 100;
-		grid_configuration.tile_scale = 1;
-
-		grid_ = debug::debug_grid::create(renderer_->get_backend().get(), grid_configuration);
-		grid_->load();
 		is_running_ = true;
 		is_initialised_ = true;
 	}
@@ -318,36 +200,11 @@ namespace egkr
 				job_system::job_system::update();
 				application_->game_->update(delta_time);
 
-				application_->game_->render(delta_time);
 
-				//auto& model = application_->meshes_[0]->model();
-				//glm::quat q({ 0, 0, 0.5F * delta_time });
-				//model.rotate(q);
-
-				//auto& model_2 = application_->meshes_[1]->model();
-				//model_2.rotate(q);
 
 				render_packet packet{};
 
-				geometry::render_data debug_box{ .geometry = application_->box_->get_geometry(), .model = application_->box_->get_transform() };
-				geometry::render_data debug_grid{ .geometry = application_->grid_->get_geometry(), .model = application_->grid_->get_transform() };
-				render_view::mesh_packet_data world{ .meshes = application_->meshes_, .debug_meshes = { debug_box, debug_grid} };
-			
-				render_view::skybox_packet_data skybox{ .skybox = application_->skybox_ };
-				auto skybox_view = view_system::get("skybox");
-				packet.render_views.push_back(view_system::build_packet(skybox_view.get(), &skybox));
-
-				auto world_view = view_system::get("world-opaque");
-				packet.render_views.push_back(view_system::build_packet(world_view.get(), &world));
-
-				auto cam = camera_system::get_default();
-				const auto& pos = cam->get_position();
-				std::string text = std::format("Camera pos: {} {} {}", pos.x, pos.y, pos.z);
-
-				application_->more_test_text_->set_text(text);
-				render_view::ui_packet_data ui{ .mesh_data = application_->ui_meshes_, .texts = {application_->test_text_, application_->more_test_text_} };
-				auto ui_view = view_system::get("ui");
-				packet.render_views.push_back(view_system::build_packet(ui_view.get(), &ui));
+				application_->game_->render(&packet, delta_time);
 
 				application_->renderer_->draw_frame(packet);
 			}
@@ -364,19 +221,10 @@ namespace egkr
 
 	void application::shutdown()
 	{
-		application_->skybox_->destroy();
-		application_->box_->destroy();
-		application_->grid_->unload();
-		application_->meshes_.clear();
-		application_->sponza_->unload();
-
-		application_->ui_meshes_.clear();
-		application_->test_text_.reset();
-		application_->more_test_text_.reset();
-
-		event::unregister_event(event_code::key_down, nullptr, on_event);
-		event::unregister_event(event_code::quit, nullptr, on_event);
-		event::unregister_event(event_code::resize, nullptr, application::on_resize);
+		application_->game_->shutdown();
+		egkr::event::unregister_event(egkr::event_code::key_down, nullptr, on_event);
+		egkr::event::unregister_event(egkr::event_code::quit, nullptr, on_event);
+		egkr::event::unregister_event(egkr::event_code::resize, nullptr, application::on_resize);
 
 		light_system::shutdown();
 		view_system::shutdown();
@@ -422,11 +270,8 @@ namespace egkr
 			const auto& width = context_array[0];
 			const auto& height = context_array[1];
 
-			if (application_->width_ != (uint32_t)width || application_->height_ != (uint32_t)height)
+			if (application_->game_->resize(width, height))
 			{
-				application_->width_ = (uint32_t)width;
-				application_->height_ = (uint32_t)height;
-
 				if (width == 0 && height == 0)
 				{
 					application_->is_suspended_ = true;
@@ -438,44 +283,7 @@ namespace egkr
 					application_->is_suspended_ = false;
 				}
 
-				application_->game_->resize(width, height);
 				application_->renderer_->on_resize(width, height);
-			}
-		}
-		return false;
-	}
-
-	bool application::on_debug_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& /*context*/)
-	{
-		if (code == event_code::debug01)
-		{
-			const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
-
-			static int choice = 0;
-			choice++;
-			choice %= materials.size();
-
-			auto material = material_system::acquire(materials[choice]);
-			application_->meshes_[0]->get_geometries()[0]->set_material(material);
-		}
-
-		if (code == event_code::debug02)
-		{
-			if (!application_->models_loaded_)
-			{
-				LOG_INFO("Loading models");
-				application_->models_loaded_ = true;
-
-				application_->sponza_ = mesh::load("sponza2");
-
-				transform obj = transform::create({ 0, 0, -5 });
-				obj.set_scale({ 0.1F, 0.1F, 0.1F });
-				obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
-
-				application_->sponza_->set_model(obj);
-				application_->meshes_.push_back(application_->sponza_);
-
-				return true;
 			}
 		}
 		return false;

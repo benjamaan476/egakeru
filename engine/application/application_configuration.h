@@ -1,5 +1,8 @@
 #pragma once
 
+#include <systems/font_system.h>
+#include <renderer/render_view.h>
+
 namespace egkr
 {
 	struct application_configuration
@@ -7,5 +10,8 @@ namespace egkr
 		uint32_t width{ 800 };
 		uint32_t height{ 600 };
 		std::string name{};
+
+		font_system_configuration font_systen_configuration_{};
+		render_view::configuration render_view_configuration_{};
 	};
 }
