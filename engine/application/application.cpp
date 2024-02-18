@@ -12,9 +12,6 @@
 #include "systems/job_system.h"
 #include "systems/font_system.h"
 
-#include "resources/transform.h"
-#include "resources/geometry.h"
-
 using namespace std::chrono_literals;
 
 namespace egkr
