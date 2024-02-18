@@ -15,8 +15,8 @@ namespace egkr::debug
 
 		geometry::properties properties{
 			.name = "debug_line",
-			.vertex_count = (uint32_t)vertices_.size(),
 			.vertex_size = sizeof(colour_vertex_3d),
+			.vertex_count = (uint32_t)vertices_.size(),
 			.vertices = vertices_.data()
 		};
 

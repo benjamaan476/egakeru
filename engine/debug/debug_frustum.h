@@ -26,7 +26,6 @@ namespace egkr::debug
 	private:
 		const renderer_backend* backend_{};
 
-		egkr::float4 colour_{};
 		egkr::transform transform_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
 		egkr::geometry::geometry::shared_ptr geometry_{};
