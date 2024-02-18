@@ -47,7 +47,6 @@ namespace egkr
 		std::string name_{};
 		game::unique_ptr game_{};
 		renderer_frontend::unique_ptr renderer_{};
-
 	};
 
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "game/game.h"
-#include "systems/camera_system.h"
 #include "resources/mesh.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"

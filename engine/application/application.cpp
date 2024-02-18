@@ -37,9 +37,10 @@ namespace egkr
 		name_ = game->get_application_configuration().name;
 		game_ = std::move(game);
 
+		system_manager::create();
 		//Init subsystems
 		egkr::log::init();
-		egkr::input::init();
+		system_manager::init();
 		//
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
@@ -213,6 +214,7 @@ namespace egkr
 				application_->platform_->sleep(time_remaining);
 			}
 
+			system_manager::update_input();
 			application_->last_time_ = time;
 		}
 	}
@@ -224,6 +226,7 @@ namespace egkr
 		egkr::event::unregister_event(egkr::event_code::quit, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event_code::resize, nullptr, application::on_resize);
 
+		system_manager::shutdown();
 		light_system::shutdown();
 		view_system::shutdown();
 		shader_system::shutdown();

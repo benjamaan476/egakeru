@@ -20,6 +20,7 @@
 #include <functional> 
 #include <cctype>
 #include <locale>
+#include <ranges>
 
 #include "log/log.h"
 

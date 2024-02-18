@@ -3,12 +3,13 @@
 
 #include "input.h"
 #include <systems/view_system.h>
-#include <systems/material_system.h>
 #include <systems/geometry_system.h>
 #include <systems/shader_system.h>
 #include <systems/light_system.h>
+#include <systems/camera_system.h>
 
 #include <ranges>
+#include <systems/material_system.h>
 
 sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
 	: game(configuration)
@@ -168,7 +169,7 @@ void sandbox_game::update(double delta_time)
 		camera_->move_back(50.F * (float)delta_time);
 	}
 
-	if (egkr::input::is_key_down(egkr::key::t))
+	if (egkr::input::was_key_pressed(egkr::key::t))
 	{
 		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
 	}
@@ -358,15 +359,15 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 	auto* game = (sandbox_game*)listener;
 	if (code == egkr::event_code::debug01)
 	{
-		//const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
+		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
-		//static int choice = 0;
-		//choice++;
-		//choice %= materials.size();
+		static int choice = 0;
+		choice++;
+		choice %= materials.size();
 
-		//auto material = egkr::material_system::acquire(materials[choice]);
-		//game->meshes_[0]->get_geometries()[0]->set_material(material);
-		game->update_frustum_ = !game->update_frustum_;
+		auto material = egkr::material_system::acquire(materials[choice]);
+		game->meshes_[0]->get_geometries()[0]->set_material(material);
+		//game->update_frustum_ = !game->update_frustum_;
 	}
 
 	if (code == egkr::event_code::debug02)

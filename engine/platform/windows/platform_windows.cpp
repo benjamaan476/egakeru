@@ -9,6 +9,8 @@
 #include "input.h"
 #include "event.h"
 
+#include <systems/system.h>
+
 namespace egkr
 {
 	platform_windows::~platform_windows()
@@ -90,6 +92,7 @@ namespace egkr
 			return;
 		}
 		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
+
 		input::process_key((egkr::key)key, pressed);
 	}
 

@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+
+#include <systems/system.h>
 #include "renderer/camera.h"
 
 namespace egkr
