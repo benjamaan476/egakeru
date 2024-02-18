@@ -56,12 +56,12 @@ namespace egkr
 
 	float3 camera::get_left() const
 	{
-		return glm::normalize(glm::inverse(view_)[0]);
+		return -glm::normalize(glm::inverse(view_)[0]);
 	}
 
 	float3 camera::get_right() const
 	{
-		return -glm::normalize(glm::inverse(view_)[0]);
+		return glm::normalize(glm::inverse(view_)[0]);
 	}
 
 	float3 camera::get_up() const
@@ -138,5 +138,20 @@ namespace egkr
 	{
 		rotation_.y += amount;
 		is_dirty_ = true;
+	}
+
+	float camera::get_fov() const
+	{
+		return fov_;
+	}
+
+	float camera::get_near_clip() const
+	{
+		return near_clip_;
+	}
+
+	float camera::get_far_clip() const
+	{
+		return far_clip_;
 	}
 }

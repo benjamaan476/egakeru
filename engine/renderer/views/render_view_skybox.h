@@ -22,10 +22,6 @@ namespace egkr::render_view
 
 	private:
 		uint32_t shader_id_{invalid_32_id};
-		float fov_{ 45.F };
-		float near_clip_{ 0.01F };
-		float far_clip_{ 1000.F };
-
 		float4x4 projection_{};
 
 		uint16_t projection_location_{};

@@ -7,6 +7,7 @@
 #include "resources/light.h"
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
+#include "debug/debug_frustum.h"
 
 class sandbox_game final : public egkr::game
 {
@@ -25,7 +26,9 @@ private:
 
 private:
 
-	egkr::frustum camera_frustum_{};
+	egkr::frustum camera_frustum_;
+	bool update_frustum_{true};
+	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
 	egkr::camera::shared_ptr camera_{};
 	egkr::skybox::skybox::shared_ptr skybox_{};
 	egkr::vector<egkr::mesh::shared_ptr> meshes_{};

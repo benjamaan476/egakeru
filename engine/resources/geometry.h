@@ -27,9 +27,7 @@ namespace egkr
 			std::string material_name{ default_material_name_ };
 
 			float3 center{};
-			float3 min_extent{};
-			float3 max_extent{};
-
+			extent3d extents{};
 			void release()
 			{
 				free(vertices);

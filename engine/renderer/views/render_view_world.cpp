@@ -15,10 +15,7 @@ namespace egkr::render_view
 	{
 		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_MATERIAL);
 		shader_id_ = shader->get_id();
-		near_clip_ = 0.1F;
-		far_clip_ = 1000.F;
-		fov_ = 45.F;
-		projection_ = glm::perspective(fov_, (float)width_ / height_, near_clip_, far_clip_);
+		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
 		event::register_event(event_code::render_mode, this, on_event);
@@ -45,7 +42,7 @@ namespace egkr::render_view
 		{
 			width_ = width;
 			height_ = height;
-			projection_ = glm::perspective(fov_, (float)width_ / height_, near_clip_, far_clip_);
+			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 			for (auto& pass : renderpasses_)
 			{

@@ -27,6 +27,10 @@ namespace egkr
 		[[nodiscard]] float3 get_up() const;
 		[[nodiscard]] float3 get_down() const;
 
+		[[nodiscard]] float get_fov() const;
+		[[nodiscard]] float get_far_clip() const;
+		[[nodiscard]] float get_near_clip() const;
+
 		void move_forward(float_t amount);
 		void move_back(float_t amount);
 		void move_left(float_t amount);
@@ -44,5 +48,9 @@ namespace egkr
 		bool is_dirty_{true};
 
 		float4x4 view_{};
+		
+		float fov_{glm::radians(45.F)};
+		float near_clip_{0.1F};
+		float far_clip_{ 1000.F };
 	};
 }

@@ -8,6 +8,8 @@
 #include <systems/shader_system.h>
 #include <systems/light_system.h>
 
+#include <ranges>
+
 sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
 	: game(configuration)
 {
@@ -99,10 +101,11 @@ bool sandbox_game::init()
 
 	egkr::debug::configuration grid_configuration{};
 	grid_configuration.name = "debug_grid";
-	grid_configuration.orientation = egkr::debug::orientation::yz;
+	grid_configuration.orientation = egkr::debug::orientation::xy;
 	grid_configuration.tile_count_dim0 = 100;
 	grid_configuration.tile_count_dim1 = 100;
 	grid_configuration.tile_scale = 1;
+	grid_configuration.use_third_axis = true;
 
 	grid_ = egkr::debug::debug_grid::create(application_->get_renderer()->get_backend().get(), grid_configuration);
 	grid_->load();
@@ -193,7 +196,11 @@ void sandbox_game::update(double delta_time)
 		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
 	}
 
-	camera_frustum_ = egkr::frustum::create(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, glm::radians(45.F), 0.1F, 1000.F);
+	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
+	if (update_frustum_)
+	{
+		debug_frustum_ = egkr::debug::debug_frustum::create(application_->get_renderer()->get_backend().get(), camera_frustum_);
+	}
 
 	frame_data.reset();
 	for (auto& mesh : meshes_)
@@ -206,22 +213,35 @@ void sandbox_game::update(double delta_time)
 		auto model_world = mesh->model().get_world();
 		for (const auto& geo : mesh->get_geometries())
 		{
-			auto extents_min = model_world * egkr::float4{ geo->get_properties().min_extent, 1.F };
-			auto extents_max = model_world * egkr::float4{ geo->get_properties().max_extent, 1.F };
+			auto extents_max = model_world * egkr::float4{ geo->get_properties().extents.max, 1.F };
+			egkr::float3 t{ extents_max };
+			egkr::float3 center = model_world * egkr::float4{ geo->get_properties().center, 1.F };
 
-			float min = std::min(std::min(extents_min.x, extents_min.y), extents_min.z);
-			float max = std::max(std::max(extents_max.x, extents_max.y), extents_max.z);
-			float diff = std::abs(max - min);
+			const egkr::float3 half_extents{ glm::abs(t - center) };
 
-			float radius = diff * 0.5F;
-
-			egkr::float3 center = egkr::float4{ geo->get_properties().center, 1.F} * model_world;
-
-			if (camera_frustum_.intersects_sphere(center, radius))
+			if (camera_frustum_.intersects_aabb(center, half_extents))
 			{
 				frame_data.world_geometries.emplace_back(geo, mesh->get_model());
 			}
 		}
+	}
+
+	for (auto& mesh : meshes_)
+	{
+		if (mesh->get_generation() == invalid_32_id)
+		{
+			continue;
+		}
+		auto& debug_data = mesh->get_debug_data();
+		if (!debug_data)
+		{
+			debug_data = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, &mesh->model());
+			debug_data->load();
+		}
+
+		debug_data->set_colour({ 0, 1,0, 0});
+		debug_data->set_extents(mesh->extents());
+
 	}
 }
 
@@ -236,9 +256,15 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 
 	egkr::geometry::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
 	egkr::geometry::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
-
+	egkr::geometry::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
 	frame_data.debug_geometries.push_back(debug_box);
 	frame_data.debug_geometries.push_back(debug_grid);
+	frame_data.debug_geometries.push_back(debug_frustum_geo);
+
+	for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
+	{
+		frame_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+	}
 
 	egkr::render_view::skybox_packet_data skybox{ .skybox = skybox_ };
 	auto skybox_view = egkr::view_system::get("skybox");
@@ -256,12 +282,15 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 	auto ui_view = egkr::view_system::get("ui");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
+	frame_data.reset();
 }
 
 bool sandbox_game::resize(uint32_t width, uint32_t height)
 {
 	if (width_ != width || height_ != height)
 	{
+		width_ = width;
+		height_ = height;
 		return true;
 	}
 
@@ -312,12 +341,14 @@ bool sandbox_game::shutdown()
 	skybox_->destroy();
 	box_->destroy();
 	grid_->unload();
+	std::ranges::for_each(meshes_, [](auto& mesh) { mesh->unload(); });
 	meshes_.clear();
-	sponza_->unload();
 
 	ui_meshes_.clear();
 	test_text_.reset();
 	more_test_text_.reset();
+
+	debug_frustum_->destroy();
 
 	return true;
 }
@@ -327,14 +358,15 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 	auto* game = (sandbox_game*)listener;
 	if (code == egkr::event_code::debug01)
 	{
-		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
+		//const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
-		static int choice = 0;
-		choice++;
-		choice %= materials.size();
+		//static int choice = 0;
+		//choice++;
+		//choice %= materials.size();
 
-		auto material = egkr::material_system::acquire(materials[choice]);
-		game->meshes_[0]->get_geometries()[0]->set_material(material);
+		//auto material = egkr::material_system::acquire(materials[choice]);
+		//game->meshes_[0]->get_geometries()[0]->set_material(material);
+		game->update_frustum_ = !game->update_frustum_;
 	}
 
 	if (code == egkr::event_code::debug02)

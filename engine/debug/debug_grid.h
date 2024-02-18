@@ -21,6 +21,7 @@ namespace egkr
 			uint32_t tile_count_dim0{ 1 };
 			uint32_t tile_count_dim1{ 1 };
 			float tile_scale{ 1.F };
+			bool use_third_axis{};
 			egkr::vector<colour_vertex_3d> vertices{};
 		};
 

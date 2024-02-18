@@ -311,30 +311,30 @@ namespace egkr
 				vertex_3d vertex{};
 				vertex.position = positions[index_data.position_index - 1];
 
-				if (vertex.position.x < properties.min_extent.x || !extent_set)
+				if (vertex.position.x < properties.extents.min.x || !extent_set)
 				{
-					properties.min_extent.x = vertex.position.x;
+					properties.extents.min.x = vertex.position.x;
 				}
-				if (vertex.position.y < properties.min_extent.y || !extent_set)
+				if (vertex.position.y < properties.extents.min.y || !extent_set)
 				{
-					properties.min_extent.y = vertex.position.y;
+					properties.extents.min.y = vertex.position.y;
 				}
-				if (vertex.position.z < properties.min_extent.z || !extent_set)
+				if (vertex.position.z < properties.extents.min.z || !extent_set)
 				{
-					properties.min_extent.z = vertex.position.z;
+					properties.extents.min.z = vertex.position.z;
 				}
 
-				if (vertex.position.x > properties.max_extent.x || !extent_set)
+				if (vertex.position.x > properties.extents.max.x || !extent_set)
 				{
-					properties.max_extent.x = vertex.position.x;
+					properties.extents.max.x = vertex.position.x;
 				}
-				if (vertex.position.y > properties.max_extent.y || !extent_set)
+				if (vertex.position.y > properties.extents.max.y || !extent_set)
 				{
-					properties.max_extent.y = vertex.position.y;
+					properties.extents.max.y = vertex.position.y;
 				}
-				if (vertex.position.z > properties.max_extent.z || !extent_set)
+				if (vertex.position.z > properties.extents.max.z || !extent_set)
 				{
-					properties.max_extent.z = vertex.position.z;
+					properties.extents.max.z = vertex.position.z;
 				}
 
 				extent_set = true;
@@ -363,7 +363,7 @@ namespace egkr
 
 		std::copy(vertices.data(), vertices.data() + properties.vertex_count, (vertex_3d*)properties.vertices);
 
-		properties.center = (properties.min_extent + properties.max_extent) / 2.F;
+		properties.center = (properties.extents.min + properties.extents.max) / 2.F;
 
 		generate_tangents(properties.vertices, properties.indices);
 
@@ -537,8 +537,8 @@ namespace egkr
 			filesystem::read(file_handle, property.indices.data(), index_count);
 
 			filesystem::read(file_handle, &property.center, 1);
-			filesystem::read(file_handle, &property.min_extent, 1);
-			filesystem::read(file_handle, &property.max_extent, 1);
+			filesystem::read(file_handle, &property.extents.min, 1);
+			filesystem::read(file_handle, &property.extents.max, 1);
 			geoms.push_back(property);
 		}
 
@@ -568,8 +568,8 @@ namespace egkr
 			filesystem::write(handle, property.indices.data(), sizeof(uint32_t), property.indices.size());
 
 			filesystem::write(handle, property.center, 1);
-			filesystem::write(handle, property.min_extent, 1);
-			filesystem::write(handle, property.max_extent, 1);
+			filesystem::write(handle, property.extents.min, 1);
+			filesystem::write(handle, property.extents.max, 1);
 
 		}
 		return true;

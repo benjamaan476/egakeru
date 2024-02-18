@@ -14,7 +14,7 @@ bool render_view_skybox::on_create()
 	auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_SKYBOX);
 	shader_id_ = shader->get_id();
 
-	projection_ = glm::perspective(fov_, (float)width_ / height_, near_clip_, far_clip_);
+	projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 	projection_location_ = shader->get_uniform_index("projection");
 	view_location_ = shader->get_uniform_index("view");
@@ -34,7 +34,7 @@ void render_view_skybox::on_resize(uint32_t width, uint32_t height)
 	{
 		width_ = width;
 		height_ = height;
-		projection_ = glm::perspective(fov_, (float)width_ / height_, near_clip_, far_clip_);
+		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 		for (auto& pass : renderpasses_)
 		{

@@ -61,7 +61,8 @@ namespace egkr
 
 		constexpr static plane create(const float3& position, const float3& normal)
 		{
-			return { glm::normalize(normal), glm::dot(normal, position) };
+			const auto norm = glm::normalize(normal);
+			return { norm, glm::dot(norm, position) };
 		}
 
 		constexpr float signed_distance(const float3& position) const
@@ -87,25 +88,34 @@ namespace egkr
 	struct frustum
 	{
 		std::array<plane, 6> sides{};
+		float3 position{};
+		float3 forward{};
+		float3 right{};
+		float3 up{};
+		float fov{};
+		float near{};
+		float far{};
+		float aspect{};
 
-		constexpr static frustum create(const float3& position, const float3& forward, const float3& right, const float3& up, float aspect, float fov, float near, float far)
+		frustum() = default;
+		constexpr frustum(const float3& position, const float3& forward, const float3& right, const float3& up, float aspect, float fov, float near, float far)
+			: position{ position }, forward{ forward }, right{ right }, up{ up }, fov{ fov }, near{ near }, far{ far }, aspect{aspect}
 		{
-			const float half_v = fov * std::tanf(0.5f * fov);
+			const float half_v = far * std::tanf(0.5f * fov);
 			const float half_h = half_v * aspect;
 
 			const auto forward_fwd = forward * far;
+			const auto half_right = half_h * right;
+			const auto half_up = half_v * up;
 
-			return {
-				{
-					plane::create(position + near * forward, forward),
-					plane::create(position + forward_fwd, -forward),
-					plane::create(position, glm::cross(up, half_h * right + forward_fwd)),
-					plane::create(position, glm::cross(half_h * right - forward_fwd, up)),
-					plane::create(position, glm::cross(right, half_v * up - forward_fwd)),
-					plane::create(position, glm::cross(half_v * up + forward_fwd, right))
-				}
-			};
-		}
+			sides[0] = plane::create(position + near * forward, forward);
+			sides[1] = plane::create(position + forward_fwd, -forward);
+			sides[2] = plane::create(position, glm::cross(up, half_right + forward_fwd));
+			sides[3] = plane::create(position, glm::cross(forward_fwd - half_right, up));
+			sides[4] = plane::create(position, glm::cross(right, forward_fwd - half_up));
+			sides[5] = plane::create(position, glm::cross(half_up + forward_fwd, right));
+
+		};
 
 		bool intersects_sphere(const float3& center, float radius) const
 		{
@@ -122,7 +132,7 @@ namespace egkr
 
 		constexpr bool intersects_aabb(const float3& center, const float3& half_extents) const
 		{
-			return std::ranges::any_of(sides, [center, half_extents](const auto& plane) {return plane.intersects_aabb(center, half_extents); });
+			return std::ranges::all_of(sides, [center, half_extents](const auto& plane) { return plane.intersects_aabb(center, half_extents); });
 		}
 	};
 }
@@ -133,23 +143,26 @@ constexpr static const uint16_t invalid_16_id = std::numeric_limits<uint16_t>::m
 constexpr static const uint8_t invalid_8_id = std::numeric_limits<uint8_t>::max();
 
 // trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
+static inline void ltrim(std::string& s)
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+									}));
 }
 
 // trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
+static inline void rtrim(std::string& s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+						 }).base(), s.end());
 }
 
 // trim from both ends (in place)
-static inline void trim(std::string &s) {
-    rtrim(s);
-    ltrim(s);
+static inline void trim(std::string& s)
+{
+	rtrim(s);
+	ltrim(s);
 	s.erase(std::remove(s.begin(), s.end(), '\t'), s.end());
 	s.shrink_to_fit();
 }
@@ -163,11 +176,11 @@ static inline void trim(std::string &s) {
 	inline bool isSet(e val, e flag) { return (val & flag) != static_cast<e>(0); } \
 	inline void flipBit(e& val, e flag) { val = isSet(val, flag) ? (val & (~flag)) : (val | flag); }
 
-	struct range
-	{
-		uint64_t offset{};
-		uint64_t size{};
-	};
+struct range
+{
+	uint64_t offset{};
+	uint64_t size{};
+};
 
 static inline uint64_t get_aligned(uint64_t operand, uint64_t granularity)
 {

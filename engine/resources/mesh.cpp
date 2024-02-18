@@ -23,6 +23,64 @@ namespace egkr
 		for (const auto& geo : *geo_configs)
 		{
 			mesh_params->mesh->add_geometry(geometry_system::acquire(geo));
+			auto local_extents = geo.extents;
+			vertex_3d* vertices = (vertex_3d*)geo.vertices;
+
+			for (uint32_t i{}; i < geo.vertex_count; ++i)
+			{
+				const auto vertex = vertices[i];
+				if (vertex.position.x < local_extents.min.x)
+				{
+					local_extents.min.x = vertex.position.x;
+				}
+				if (vertex.position.y < local_extents.min.y)
+				{
+					local_extents.min.y = vertex.position.y;
+				}
+				if (vertex.position.z < local_extents.min.z)
+				{
+					local_extents.min.z = vertex.position.z;
+				}
+				if (vertex.position.x > local_extents.max.x)
+				{
+					local_extents.max.x = vertex.position.x;
+				}
+				if (vertex.position.y > local_extents.max.y)
+				{
+					local_extents.max.y = vertex.position.y;
+				}
+				if (vertex.position.z > local_extents.max.z)
+				{
+					local_extents.max.z = vertex.position.z;
+				}
+			}
+
+			auto& global_extents = mesh_params->mesh->extents();
+
+				if (local_extents.min.x < global_extents.min.x)
+				{
+					global_extents.min.x = local_extents.min.x;
+				}
+				if (local_extents.min.y < global_extents.min.y)
+				{
+					global_extents.min.y = local_extents.min.y;
+				}
+				if (local_extents.min.z < global_extents.min.z)
+				{
+					global_extents.min.z = local_extents.min.z;
+				}
+				if (local_extents.max.x > global_extents.max.x)
+				{
+					global_extents.max.x = local_extents.max.x;
+				}
+				if (local_extents.max.y > global_extents.max.y)
+				{
+					global_extents.max.y = local_extents.max.y;
+				}
+				if (local_extents.max.z > global_extents.max.z)
+				{
+					global_extents.max.z = local_extents.max.z;
+				}
 		}
 
 		mesh_params->mesh->increment_generation();
@@ -77,6 +135,32 @@ namespace egkr
 	void mesh::add_geometry(const geometry::geometry::shared_ptr& geometry)
 	{
 		geometries_.push_back(geometry);
+			auto& global_extents = extents();
+			const auto& geo_extents = geometry->get_properties().extents;
+				if (geo_extents.min.x < global_extents.min.x)
+				{
+					global_extents.min.x = geo_extents.min.x;
+				}
+				if (geo_extents.min.y < global_extents.min.y)
+				{
+					global_extents.min.y = geo_extents.min.y;
+				}
+				if (geo_extents.min.z < global_extents.min.z)
+				{
+					global_extents.min.z = geo_extents.min.z;
+				}
+				if (geo_extents.max.x > global_extents.max.x)
+				{
+					global_extents.max.x = geo_extents.max.x;
+				}
+				if (geo_extents.max.y > global_extents.max.y)
+				{
+					global_extents.max.y = geo_extents.max.y;
+				}
+				if (geo_extents.max.z > global_extents.max.z)
+				{
+					global_extents.max.z = geo_extents.max.z;
+				}
 	}
 
 	void mesh::set_model(const transform& model)
@@ -86,6 +170,12 @@ namespace egkr
 
 	void mesh::unload()
 	{
+		if (debug_data)
+		{
+			debug_data->destroy();
+			debug_data.reset();
+		}
+
 		for (auto& geo : geometries_)
 		{
 			geometry_system::release_geometry(geo);
