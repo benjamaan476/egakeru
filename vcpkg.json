@@ -20,6 +20,7 @@
     "gtest",
     "tinygltf",
     "spirv-reflect",
-    "stb"
+    "stb",
+    "openal-soft"
   ]
 }
