@@ -8,7 +8,10 @@ constexpr static const uint32_t MAX_AUDIO_CHANNELS = 16u;
 
 namespace egkr
 {
-	struct frame_data;
+	namespace geometry
+	{
+		struct frame_data;
+	}
 
 	namespace audio
 	{
@@ -38,25 +41,25 @@ namespace egkr
 
 			explicit audio_system(const system_configuration& configuration);
 
-			void shutdown();
+			static void shutdown();
 
-			bool update(frame_data* frame_data);
+			static bool update(geometry::frame_data* frame_data);
 
-			bool set_listener_orientation(const float3& position, const float3& forward, const float3& up);
+			static bool set_listener_orientation(const float3& position, const float3& forward, const float3& up);
 
-			file* load_chunk(const std::string& name);
-			file* load_stream(const std::string& name);
+			static file* load_chunk(const std::string& name);
+			static file* load_stream(const std::string& name);
 
 			void close(file* file);
 
-			bool set_master_volume(float volume);
-			float get_master_volume() const;
+			static bool set_master_volume(float volume);
+			static float get_master_volume();
 
-			bool set_channel_volume(int8_t channel_id, float volume);
-			float get_channel_volume(int8_t channel_id) const;
+			static bool set_channel_volume(int8_t channel_id, float volume);
+			static float get_channel_volume(int8_t channel_id);
 
-			bool play_channel(int8_t channel_id, file* file, bool loop);
-			bool play_emitter(int8_t channel_id, emitter* emitter);
+			static bool play_channel(int8_t channel_id, file* file, bool loop);
+			static bool play_emitter(int8_t channel_id, emitter* emitter);
 
 			void stop(int8_t channel_id);
 			void pause(int8_t channel_id);

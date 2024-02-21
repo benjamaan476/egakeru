@@ -10,6 +10,8 @@ namespace egkr
 	camera::camera(std::string_view name)
 		:name_{ name }
 	{
+			float3 front = { glm::cos(rotation_.y) * glm::cos(rotation_.z), glm::cos(rotation_.y) * glm::sin(rotation_.z), glm::sin(rotation_.y)};
+			view_ = glm::lookAt(position_, position_ - front, { 0.F, 0.F, 1.F });
 	}
 
 	void camera::reset()

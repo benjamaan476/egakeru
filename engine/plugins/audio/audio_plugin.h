@@ -21,11 +21,11 @@ namespace egkr
 				uint32_t audio_channel_count{};
 			};
 
-			virtual ~plugin() = 0;
+			virtual ~plugin() = default;
 			virtual bool init(const configuration& configuration) = 0;
 			virtual bool shutdown() = 0;
 
-			virtual bool update(frame_data* frame_data) = 0;
+			virtual bool update() = 0;
 
 			virtual float3 get_listener_position() const = 0;
 			virtual bool set_listener_position(const float3& position) = 0;

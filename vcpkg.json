@@ -21,6 +21,7 @@
     "tinygltf",
     "spirv-reflect",
     "stb",
+    "minimp3",
     "openal-soft"
   ]
 }

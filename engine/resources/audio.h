@@ -5,6 +5,7 @@
 
 namespace egkr
 {
+	struct audio_file_internal;
 	namespace audio
 	{
 		struct plugin_data;
@@ -25,6 +26,7 @@ namespace egkr
 			uint32_t sample_rate{};
 			uint32_t total_samples_left{};
 			plugin_data* plugin_data{};
+			audio_file_internal* internal_data{};
 			
 			uint64_t load_samples(uint32_t chunk_size, int32_t count);
 			void* stream_buffer_data();
@@ -41,4 +43,10 @@ namespace egkr
 			uint32_t source_id{};
 		};
 	}
+
+	struct audio_resource_loader_params
+	{
+		audio::type type{};
+		uint64_t chunk_size{};
+	};
 }

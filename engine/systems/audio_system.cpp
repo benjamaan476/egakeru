@@ -4,6 +4,7 @@
 #include <resources/audio.h>
 
 #include <plugins/audio/audio_plugin.h>
+#include <plugins/audio/oal_plugin.h>
 
 namespace egkr::audio
 {
@@ -40,43 +41,44 @@ namespace egkr::audio
 			.chunk_size = configuration_.chunk_size
 		};
 
+		plugin_ = new audio::oal();
 		plugin_->init(plugin_configuration);
 	}
 
 	void audio_system::shutdown()
 	{
-		plugin_->shutdown();
+		state->plugin_->shutdown();
 	}
 
-	bool audio_system::update(frame_data* frame_data)
+	bool audio_system::update(geometry::frame_data* /*frame_data*/)
 	{
-		for (uint32_t i{ 0 }; i < channels_.size(); ++i)
+		for (uint32_t i{ 0 }; i < state->channels_.size(); ++i)
 		{
-			if (channels_[i].emitter)
+			if (state->channels_[i].emitter)
 			{
-				plugin_->set_source_position(i, channels_[i].emitter->position);
-				plugin_->set_looping(i, channels_[i].emitter->looping);
-				plugin_->set_source_gain(i, channels_[i].emitter->volume * master_volume_ * channels_[i].volume);
+				state->plugin_->set_source_position(i, state->channels_[i].emitter->position);
+				state->plugin_->set_looping(i, state->channels_[i].emitter->looping);
+				state->plugin_->set_source_gain(i, state->channels_[i].emitter->volume * state->master_volume_ * state->channels_[i].volume);
 			}
 		}
-		return plugin_->update(frame_data);
+		return state->plugin_->update();
 	}
 
 	bool audio_system::set_listener_orientation(const float3& position, const float3& forward, const float3& up)
 	{
-		plugin_->set_listener_position(position);
-		plugin_->set_orientation(forward, up);
+		state->plugin_->set_listener_position(position);
+		state->plugin_->set_orientation(forward, up);
 		return true;
 	}
 
 	file* audio_system::load_chunk(const std::string& name)
 	{
-		return plugin_->load_chunk(name);
+		return state->plugin_->load_chunk(name);
 	}
 
 	file* audio_system::load_stream(const std::string& name)
 	{
-		return plugin_->load_stream(name);
+		return state->plugin_->load_stream(name);
 	}
 
 	void audio_system::close(file* file)
@@ -86,52 +88,52 @@ namespace egkr::audio
 
 	bool audio_system::set_master_volume(float volume)
 	{
-		master_volume_ = glm::clamp(volume, 0.F, 1.F);
-		for (uint32_t i{ 0 }; i < channels_.size(); ++i)
+		state->master_volume_ = glm::clamp(volume, 0.F, 1.F);
+		for (uint32_t i{ 0 }; i < state->configuration_.audio_channel_count; ++i)
 		{
-			float mix = master_volume_ * channels_[i].volume;
-			if (channels_[i].emitter)
+			float mix = state->master_volume_ * state->channels_[i].volume;
+			if (state->channels_[i].emitter)
 			{
-				mix *= channels_[i].emitter->volume;
+				mix *= state->channels_[i].emitter->volume;
 			}
 
-			plugin_->set_source_gain(i, mix);
+			state->plugin_->set_source_gain(i, mix);
 		}
 
 		return true;
 	}
 
-	float audio_system::get_master_volume() const
+	float audio_system::get_master_volume()
 	{
-		return master_volume_;
+		return state->master_volume_;
 	}
 
 	bool audio_system::set_channel_volume(int8_t channel_id, float volume)
 	{
-		channels_[channel_id].volume = volume;
-		float mix = master_volume_ * channels_[channel_id].volume;
-		if (channels_[channel_id].emitter)
+		state->channels_[channel_id].volume = volume;
+		float mix = state->master_volume_ * state->channels_[channel_id].volume;
+		if (state->channels_[channel_id].emitter)
 		{
-			mix *= channels_[channel_id].emitter->volume;
+			mix *= state->channels_[channel_id].emitter->volume;
 		}
 
-		plugin_->set_source_gain(channel_id, mix);
+		state->plugin_->set_source_gain(channel_id, mix);
 
 		return true;
 	}
 
-	float audio_system::get_channel_volume(int8_t channel_id) const
+	float audio_system::get_channel_volume(int8_t channel_id)
 	{
-		return channels_[channel_id].volume;
+		return state->channels_[channel_id].volume;
 	}
 
 	bool audio_system::play_channel(int8_t channel_id, file* file, bool loop)
 	{
 		if (channel_id == -1)
 		{
-			for (uint32_t i{}; i < channels_.size(); ++i)
+			for (uint32_t i{}; i < state->channels_.size(); ++i)
 			{
-				if (!channels_[i].current && !channels_[i].emitter)
+				if (!state->channels_[i].current && !state->channels_[i].emitter)
 				{
 					channel_id = i;
 					break;
@@ -145,30 +147,30 @@ namespace egkr::audio
 			return false;
 		}
 
-		channels_[channel_id].emitter = nullptr;
-		channels_[channel_id].current = file;
+		state->channels_[channel_id].emitter = nullptr;
+		state->channels_[channel_id].current = file;
 
-		plugin_->set_source_gain(channel_id, channels_[channel_id].volume);
+		state->plugin_->set_source_gain(channel_id, state->channels_[channel_id].volume);
 
 		if (file->type == type::sound_effect)
 		{
-			const float3 position = plugin_->get_listener_position();
-			plugin_->set_source_position(channel_id, position);
-			plugin_->set_looping(channel_id, loop);
+			const float3 position = state->plugin_->get_listener_position();
+			state->plugin_->set_source_position(channel_id, position);
+			state->plugin_->set_looping(channel_id, loop);
 		}
 
-		plugin_->stop_source(channel_id);
+		state->plugin_->stop_source(channel_id);
 
-		return plugin_->play_on_source(file, channel_id);
+		return state->plugin_->play_on_source(file, channel_id);
 	}
 
 	bool audio_system::play_emitter(int8_t channel_id, emitter* emitter)
 	{
 		if (channel_id == -1)
 		{
-			for (uint32_t i{}; i < channels_.size(); ++i)
+			for (uint32_t i{}; i < state->channels_.size(); ++i)
 			{
-				if (!channels_[i].current && !channels_[i].emitter)
+				if (!state->channels_[i].current && !state->channels_[i].emitter)
 				{
 					channel_id = i;
 					break;
@@ -182,10 +184,10 @@ namespace egkr::audio
 			return false;
 		}
 
-		channels_[channel_id].emitter = emitter;
-		channels_[channel_id].current = emitter->audio_file;
+		state->channels_[channel_id].emitter = emitter;
+		state->channels_[channel_id].current = emitter->audio_file;
 
-		return plugin_->play_on_source(emitter->audio_file, channel_id);
+		return state->plugin_->play_on_source(emitter->audio_file, channel_id);
 	}
 
 	void audio_system::stop(int8_t channel_id)
