@@ -27,4 +27,8 @@ function(egakeru_setup_dependencies)
         include_directories(${GLM_INCLUDE_DIRS})
   endif()
 
+  find_package(stb REQUIRED)
+
+find_package(OpenAL REQUIRED)
+
 endfunction()

@@ -5,6 +5,7 @@
 #include "resources/mesh.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"
+#include <resources/audio.h>
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
 #include "debug/debug_frustum.h"
@@ -44,4 +45,9 @@ private:
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
 	egkr::geometry::frame_data frame_data{};
+
+	egkr::audio::file* test_audio{};
+	egkr::audio::file* test_loop_audio{};
+	egkr::audio::file* test_music{};
+	egkr::audio::emitter test_emitter{};
 };

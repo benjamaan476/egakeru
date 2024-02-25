@@ -20,6 +20,8 @@
     "gtest",
     "tinygltf",
     "spirv-reflect",
-    "stb"
+    "stb",
+    "minimp3",
+    "openal-soft"
   ]
 }

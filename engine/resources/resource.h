@@ -13,6 +13,7 @@ namespace egkr
 		mesh,
 		bitmap_font,
 		system_font,
+		audio,
 		custom
 	};
 
