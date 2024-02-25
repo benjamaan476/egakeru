@@ -3,7 +3,6 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include <shared_mutex>
 #include <systems/resource_system.h>
 
 constexpr static const uint32_t OAL_PLUGIN_MUSIC_BUFFER_COUNT = 2u;

@@ -1,5 +1,4 @@
 #include "sandbox_game.h"
-#include "application/application.h"
 
 #include "input.h"
 #include <systems/view_system.h>
@@ -9,17 +8,16 @@
 #include <systems/camera_system.h>
 
 #include <systems/audio_system.h>
-#include <plugins/audio/audio_loader.h>
 
-#include <ranges>
 #include <systems/material_system.h>
 
-//TODO temp
-#include "renderer/renderer_frontend.h"
+#include <renderer/renderer_types.h>
 
 sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
 	: game(configuration)
 {
+	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
+	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
 bool sandbox_game::init()
@@ -134,12 +132,14 @@ bool sandbox_game::init()
 	test_emitter.looping = true;
 	test_emitter.falloff = 1.F;
 
-	egkr::audio::audio_system::set_master_volume(0.7F);
+	egkr::audio::audio_system::set_master_volume(0.001F);
 	egkr::audio::audio_system::set_channel_volume(0, 1.F);
 	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
 	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
 	egkr::audio::audio_system::set_channel_volume(3, 0.25F);
 	egkr::audio::audio_system::set_channel_volume(4, 0.F);
+	egkr::audio::audio_system::set_channel_volume(5, 0.F);
+	egkr::audio::audio_system::set_channel_volume(6, 0.F);
 	egkr::audio::audio_system::set_channel_volume(7, 0.4F);
 
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
@@ -330,8 +330,6 @@ bool sandbox_game::resize(uint32_t width, uint32_t height)
 
 bool sandbox_game::boot()
 {
-	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
-	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 
 	{
 		egkr::render_view::configuration skybox_world{};

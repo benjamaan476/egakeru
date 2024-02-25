@@ -1,11 +1,11 @@
 #pragma once
 
 #include <resources/font.h>
-#include <resources/ui_text.h>
+
+#include <systems/system.h>
 
 namespace egkr
 {
-	class renderer_frontend;
 	struct system_font_configuration
 	{
 		std::string name{};
@@ -20,13 +20,6 @@ namespace egkr
 		std::string resource_name{};
 	};
 
-	struct font_system_configuration
-	{
-		egkr::vector<system_font_configuration> system_font_configurations{};
-		egkr::vector<bitmap_font_configuration> bitmap_font_configurations{};
-		uint8_t max_system_font_count{};
-		uint8_t max_bitmap_font_count{};
-	};
 
 	struct bitmap_font_internal_data
 	{
@@ -40,18 +33,26 @@ namespace egkr
 		bitmap_font_internal_data font;
 	};
 
-	struct ui_text;
-	class font_system
+	class font_system : public system
 	{
 	public:
+		struct configuration
+		{
+			egkr::vector<system_font_configuration> system_font_configurations{};
+			egkr::vector<bitmap_font_configuration> bitmap_font_configurations{};
+			uint8_t max_system_font_count{};
+			uint8_t max_bitmap_font_count{};
+		};
+
 		using bitmap_font_reference = uint32_t;
 		using unique_ptr = std::unique_ptr<font_system>;
-		static bool create(const renderer_frontend* renderer_context, const font_system_configuration& configuration);
+		static font_system* create(const configuration& configuration);
 
-		font_system(const renderer_frontend* context, const font_system_configuration& configuration);
+		explicit font_system(const configuration& configuration);
 
-		static bool init();
-		static bool shutdown();
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
 
 		static bool load_system_font(const system_font_configuration& configuration);
 		static bool load_bitmap_font(const bitmap_font_configuration& configuration);
@@ -63,8 +64,7 @@ namespace egkr
 	private:
 		static bool setup_font_data(font::data& data);
 	private:
-		const renderer_frontend* renderer_context_{};
-		font_system_configuration configuration_{};
+		configuration configuration_{};
 		egkr::vector<bitmap_font_lookup> registered_bitmap_fonts_{};
 		std::unordered_map<std::string, bitmap_font_reference> registered_bitmap_fonts_by_name_{};
 	};

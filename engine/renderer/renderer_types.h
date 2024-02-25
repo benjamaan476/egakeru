@@ -14,7 +14,6 @@
 
 namespace egkr
 {
-
 	enum class backend_type
 	{
 		vulkan,
@@ -38,7 +37,6 @@ namespace egkr
 		float4 pad2{};
 	};
 
-
 	struct render_packet
 	{
 		egkr::vector<render_view::render_view_packet> render_views{};
@@ -51,7 +49,6 @@ namespace egkr
 
 		std::function<void(void)> on_render_target_refresh_required{};
 	};
-
 
 	class renderer_backend
 	{

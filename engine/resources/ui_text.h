@@ -28,7 +28,7 @@ namespace egkr
 			static shared_ptr create(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 			ui_text(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 
-			void set_position(const float3 position);
+			void set_position(const float3& position);
 			void set_text(const std::string& text);
 			void draw() const;
 

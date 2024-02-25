@@ -1,10 +1,7 @@
 #include "application.h"
 #include "input.h"
 
-#include "systems/shader_system.h"
 #include "systems/view_system.h"
-#include "systems/light_system.h"
-#include "systems/font_system.h"
 #include "systems/audio_system.h"
 
 using namespace std::chrono_literals;
@@ -25,17 +22,16 @@ namespace egkr
 	}
 
 	application::application(game::unique_ptr game)
+		: name_{ game->get_application_configuration().name }
 	{
-		name_ = game->get_application_configuration().name;
 		game_ = std::move(game);
 
-		//Init subsystems
 		egkr::log::init();
-		//
+		
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform_configuration platform_config = 
+		const platform::configuration platform_config = 
 		{ 
 			.start_x = start_x, 
 			.start_y = start_y,
@@ -60,14 +56,7 @@ namespace egkr
 
 		renderer_frontend::create(backend_type::vulkan, platform_);
 
-		system_manager::create();
-
-
-		if (!light_system::create())
-		{
-			LOG_FATAL("Failed to create light system");
-			return;
-		}
+		system_manager::create(game_.get());
 
 		if (!renderer->init())
 		{
@@ -76,19 +65,10 @@ namespace egkr
 
 		system_manager::init();
 
-
 		game_->boot();
-
-		if (!font_system::create(renderer.get(), game_->get_font_system_configuration()))
-		{
-			LOG_FATAL("Failed to create font system");
-		}
 
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
-
-		font_system::init();
-		light_system::init();
 
 		game_->set_application(this);
 
@@ -148,7 +128,6 @@ namespace egkr
 		egkr::event::unregister_event(egkr::event_code::resize, nullptr, application::on_resize);
 
 		system_manager::shutdown();
-		light_system::shutdown();
 		renderer->shutdown();
 		application_->platform_->shutdown();
 	}
@@ -182,9 +161,9 @@ namespace egkr
 	{
 		if (code == event_code::resize)
 		{
-			uint32_t width{};
+			int32_t width{};
 			context.get(0, width);
-			uint32_t height{};
+			int32_t height{};
 			context.get(1, height);
 
 			if (application_->game_->resize(width, height))

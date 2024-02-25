@@ -2,7 +2,6 @@
 #include "pch.h"
 #include <vulkan/vulkan.hpp>
 
-
 namespace egkr
 {
 
@@ -31,25 +30,23 @@ namespace egkr
 		}
 	}
 
-	struct platform_configuration
-	{
-		uint32_t start_x{};
-		uint32_t start_y{};
-		uint32_t width_{};
-		uint32_t height_{};
-		std::string name{};
-	};
-
-
 	class platform : public std::enable_shared_from_this<platform>
 	{
 	public:
+		struct configuration
+		{
+			uint32_t start_x{};
+			uint32_t start_y{};
+			uint32_t width_{};
+			uint32_t height_{};
+			std::string name{};
+		};
 		using shared_ptr = std::shared_ptr<platform>;
 		static shared_ptr create(platform_type type);
 
 		virtual ~platform() = default;
 
-		virtual bool startup(const platform_configuration& configuration) = 0;
+		virtual bool startup(const configuration& configuration) = 0;
 		virtual void shutdown() = 0;
 
 		virtual void pump() = 0;

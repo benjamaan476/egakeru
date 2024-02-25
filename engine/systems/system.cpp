@@ -9,26 +9,30 @@
 #include <systems/shader_system.h>
 #include <systems/camera_system.h>
 #include <systems/view_system.h>
+#include <systems/light_system.h>
+#include <systems/font_system.h>
 
 #include <renderer/renderer_frontend.h>
+
+#include <game/game.h>
 
 namespace egkr
 {
 	static std::unique_ptr<system_manager> system_manager_state{};
 
-	void system_manager::create()
+	void system_manager::create(game* game)
 	{
 		if (system_manager_state)
 		{
 			LOG_WARN("System manager already initialised");
 			return;
 		}
-		system_manager_state = std::make_unique<system_manager>();
+		system_manager_state = std::make_unique<system_manager>(game);
 	}
 
-	system_manager::system_manager()
+	system_manager::system_manager(game* game)
 	{
-		register_known();
+		register_known(game);
 		register_extension();
 		register_user();
 	}
@@ -85,7 +89,7 @@ namespace egkr
 		}
 	}
 
-	void system_manager::register_known()
+	void system_manager::register_known(game* game)
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
@@ -105,8 +109,7 @@ namespace egkr
 			registered_systems_.emplace(system_type::geometry, geometry_system::create());
 		}
 		{
-			uint8_t thread_count = 5;
-
+			const uint8_t thread_count = 5;
 			std::vector<job::type> types{ thread_count };
 
 			std::fill(types.begin(), types.end(), job::type::general);
@@ -153,6 +156,13 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::render_view, view_system::create());
 		}
+		{
+			registered_systems_.emplace(system_type::light, light_system::create());
+		}
+
+		{
+			registered_systems_.emplace(system_type::font, font_system::create(game->get_font_system_configuration()));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -178,6 +188,10 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::font]->shutdown();
+		system_manager_state->registered_systems_[system_type::light]->shutdown();
+		system_manager_state->registered_systems_[system_type::render_view]->shutdown();
+		system_manager_state->registered_systems_[system_type::camera]->shutdown();
 		system_manager_state->registered_systems_[system_type::shader]->shutdown();
 		system_manager_state->registered_systems_[system_type::job]->shutdown();
 		system_manager_state->registered_systems_[system_type::geometry]->shutdown();

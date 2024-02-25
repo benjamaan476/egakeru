@@ -20,6 +20,7 @@ namespace egkr
 		render_view,
 		material,
 		geometry,
+		light,
 
 		known_max = 255,
 
@@ -38,11 +39,12 @@ namespace egkr
 		virtual ~system() = default;
 	};
 
+	class game;
 	class system_manager
 	{
 	public:
-		static void create();
-		system_manager();
+		static void create(game* game);
+		explicit system_manager(game* game);
 
 		static bool init();
 		static bool update(float delta_time);
@@ -51,8 +53,7 @@ namespace egkr
 		static void shutdown();
 
 	private:
-
-		void register_known();
+		void register_known(game* game);
 		void register_extension();
 		void register_user(); 
 

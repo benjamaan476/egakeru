@@ -1,10 +1,7 @@
 #include "event.h"
 
-#include <algorithm>
-
 namespace egkr
 {
-
 	struct registered_event
 	{
 		void* listener{};

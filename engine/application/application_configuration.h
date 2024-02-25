@@ -11,7 +11,7 @@ namespace egkr
 		uint32_t height{ 600 };
 		std::string name{};
 
-		font_system_configuration font_systen_configuration_{};
+		font_system::configuration font_systen_configuration_{};
 		render_view::configuration render_view_configuration_{};
 	};
 }

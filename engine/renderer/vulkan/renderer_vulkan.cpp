@@ -1,22 +1,15 @@
 #include "renderer_vulkan.h"
 #include "vulkan_types.h"
 
-#include "platform/windows/platform_windows.h"
 #include "swapchain.h"
-#include "pipeline.h"
 
 #include "vulkan_geometry.h"
 #include "vulkan_shader.h"
 #include "vulkan_render_target.h"
 #include "resources/shader.h"
 
-#include "systems/texture_system.h"
-#include "systems/resource_system.h"
-
 namespace egkr
 {
-
-
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
@@ -972,8 +965,12 @@ namespace egkr
 
 	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const
 	{
-		VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
-		context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
-		return true;
+		if (handle)
+		{
+			VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
+			context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
+			return true;
+		}
+		return false;
 	}
 }
