@@ -3,6 +3,7 @@
 
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
+#include <systems/material_system.h>
 
 
 namespace egkr
@@ -91,6 +92,9 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::texture, texture_system::create({ 1024 }));
 		}
+		{
+			registered_systems_.emplace(system_type::material, material_system::create());
+		}
 	}
 
 	void system_manager::register_extension()
@@ -116,6 +120,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::material]->shutdown();
 		system_manager_state->registered_systems_[system_type::texture]->shutdown();
 		system_manager_state->registered_systems_[system_type::resource]->shutdown();
 		system_manager_state->registered_systems_[system_type::input]->shutdown();

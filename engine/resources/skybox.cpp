@@ -4,9 +4,9 @@
 
 namespace egkr::skybox
 {
-	skybox::shared_ptr skybox::create(const renderer_backend* backend)
+	skybox::shared_ptr skybox::create()
 	{
-		return std::make_shared<skybox>(backend);
+		return std::make_shared<skybox>();
 	}
 
 	void skybox::destroy()
@@ -17,7 +17,7 @@ namespace egkr::skybox
 		cubemap_.reset();
 	}
 
-	skybox::skybox(const renderer_backend* backend)
+	skybox::skybox()
 		: resource(0, invalid_32_id, "skybox")
 	{
 		egkr::texture_map::properties properties
@@ -30,7 +30,7 @@ namespace egkr::skybox
 		.use = texture_map::use::map_cube,
 		};
 
-		cubemap_ = egkr::texture_map::texture_map::create(backend, properties);
+		cubemap_ = egkr::texture_map::texture_map::create(properties);
 		cubemap_->acquire();
 		cubemap_->texture = texture_system::acquire_cube("skybox");
 

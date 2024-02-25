@@ -11,9 +11,9 @@ namespace egkr::skybox
 	{
 	public:
 		using shared_ptr = std::shared_ptr<skybox>;
-		static shared_ptr create(const renderer_backend* backend);
+		static shared_ptr create();
 
-		explicit skybox(const renderer_backend* backend);
+		explicit skybox();
 		~skybox() = default;
 
 		void destroy();

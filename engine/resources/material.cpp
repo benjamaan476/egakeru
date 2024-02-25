@@ -16,7 +16,7 @@ namespace egkr
 	material::material(const renderer_frontend* renderer, const material_properties& properties)
 		: resource(0, 0, properties.name), renderer_{ renderer }, diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
 	{
-		diffuse_map_ = texture_map::texture_map::create(renderer_->get_backend().get(), {});
+		diffuse_map_ = texture_map::texture_map::create({});
 		if (properties.diffuse_map_name == default_diffuse_name)
 		{
 			diffuse_map_->texture = texture_system::get_default_diffuse_texture();
@@ -26,7 +26,7 @@ namespace egkr
 			diffuse_map_->texture = texture_system::acquire(properties.diffuse_map_name);
 		}
 
-		specular_map_ = texture_map::texture_map::create(renderer_->get_backend().get(), {});
+		specular_map_ = texture_map::texture_map::create({});
 		if (properties.specular_map_name == default_specular_name)
 		{
 			specular_map_->texture = texture_system::get_default_specular_texture();
@@ -36,7 +36,7 @@ namespace egkr
 			specular_map_->texture = texture_system::acquire(properties.specular_map_name);
 		}
 
-		normal_map_ = texture_map::texture_map::create(renderer_->get_backend().get(), {});
+		normal_map_ = texture_map::texture_map::create({});
 		if (properties.normal_map_name == default_normal_name)
 		{
 			normal_map_->texture = texture_system::get_default_diffuse_texture();

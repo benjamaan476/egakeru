@@ -44,10 +44,10 @@ namespace egkr
 		{
 		public:
 
-			static texture* create(const renderer_backend* context);
-			static texture* create(const renderer_backend* context, const properties& properties, const uint8_t* data);
-			static void create(const renderer_backend* context, const properties& properties, const uint8_t* data, texture* out_texture);
-			texture(const renderer_backend* backend, const properties& properties);
+			static texture* create();
+			static texture* create(const properties& properties, const uint8_t* data);
+			static void create(const properties& properties, const uint8_t* data, texture* out_texture);
+			texture(const properties& properties);
 			virtual ~texture();
 
 			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
@@ -70,7 +70,6 @@ namespace egkr
 			[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
 
 		protected:
-			const renderer_backend* backend_{};
 			properties properties_{};
 		};
 	}
@@ -115,7 +114,7 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<texture_map>;
-			static shared_ptr create(const renderer_backend* context, const properties& properties);
+			static shared_ptr create(const properties& properties);
 
 			explicit texture_map(const properties& properties);
 			virtual ~texture_map();

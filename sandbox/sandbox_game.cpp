@@ -35,7 +35,7 @@ bool sandbox_game::init()
 	more_test_text_ = egkr::text::ui_text::create(egkr::renderer->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "a");
 	more_test_text_->set_position({ 50, 400, 0 });
 
-	skybox_ = egkr::skybox::skybox::create(egkr::renderer->get_backend().get());
+	skybox_ = egkr::skybox::skybox::create();
 
 	auto skybox_geo = egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
 	skybox_->set_geometry(egkr::geometry_system::acquire(skybox_geo));

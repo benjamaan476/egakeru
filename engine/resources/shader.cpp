@@ -137,7 +137,7 @@ namespace egkr::shader
 				.repeat_w = texture_map::repeat::repeat,
 			};
 
-			auto default_map = texture_map::texture_map::create(renderer_context_, default_properties);
+			auto default_map = texture_map::texture_map::create(default_properties);
 			default_map->acquire();
 			default_map->texture = texture_system::get_default_texture();
 

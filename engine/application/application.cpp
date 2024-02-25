@@ -1,7 +1,6 @@
 #include "application.h"
 #include "input.h"
 
-#include "systems/material_system.h"
 #include "systems/geometry_system.h"
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
@@ -65,10 +64,6 @@ namespace egkr
 
 		renderer_frontend::create(backend_type::vulkan, platform_);
 
-		if (!material_system::create(renderer.get()))
-		{
-			LOG_FATAL("Failed to create material system");
-		}
 
 		if (!geometry_system::create(renderer.get()))
 		{
@@ -151,7 +146,6 @@ namespace egkr
 		system_manager::init();
 
 		shader_system::init();
-		material_system::init();
 		geometry_system::init();
 		font_system::init();
 		camera_system::init();
@@ -221,7 +215,6 @@ namespace egkr
 		light_system::shutdown();
 		view_system::shutdown();
 		shader_system::shutdown();
-		material_system::shutdown();
 		geometry_system::shutdown();
 		renderer->shutdown();
 		job_system::job_system::shutdown();

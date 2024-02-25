@@ -6,19 +6,21 @@
 #include "systems/shader_system.h"
 #include "systems/light_system.h"
 
+#include "renderer/renderer_frontend.h"
+
 namespace egkr
 {
 
 	static material_system::unique_ptr material_system_{};
 
-	bool material_system::create(const renderer_frontend* renderer)
+	material_system* material_system::create()
 	{
-		material_system_ = std::make_unique<material_system>(renderer);
-		return true;
+		material_system_ = std::make_unique<material_system>();
+		return material_system_.get();
 	}
 
-	material_system::material_system(const renderer_frontend* renderer)
-		: renderer_{ renderer }, max_material_count_{ 1024 }
+	material_system::material_system()
+		: max_material_count_{ 1024 }
 	{
 	}
 
@@ -48,21 +50,27 @@ namespace egkr
 		return true;
 	}
 
-	void material_system::shutdown()
+	bool material_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
+	bool material_system::shutdown()
 	{
 		if (material_system_->default_material_)
 		{
-			material_system_->renderer_->free_material(material_system_->default_material_.get());
+			renderer->free_material(material_system_->default_material_.get());
 			material_system_->default_material_.reset();
 		}
 
 		for (auto& material : material_system_->registered_materials_)
 		{
-			material_system_->renderer_->free_material(material.get());
+			renderer->free_material(material.get());
 		}
 		material_system_->registered_materials_.clear();
 
 		material_system_->registered_materials_by_name_.clear();
+		return true;
 	}
 
 	material::shared_ptr material_system::get_default_material()
@@ -105,7 +113,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(material_system_->renderer_, properties);
+		auto new_material = material::create(renderer.get(), properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -222,7 +230,7 @@ namespace egkr
 		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
-		material_system_->default_material_ = material::create(material_system_->renderer_, properties);
+		material_system_->default_material_ = material::create(renderer.get(), properties);
 		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
 
 		for (auto map : texture_maps)
@@ -248,7 +256,7 @@ namespace egkr
 			.use = texture_map::use::map_diffuse
 		};
 
-		auto diffuse_map = texture_map::texture_map::create(material_system_->renderer_->get_backend().get(), diffuse_properties);
+		auto diffuse_map = texture_map::texture_map::create(diffuse_properties);
 		diffuse_map->acquire();
 
 		//Get diffuse map
@@ -262,7 +270,7 @@ namespace egkr
 		texture_map::properties specular_properties = diffuse_properties;
 		specular_properties.use = texture_map::use::map_specular;
 
-		auto specular_map = texture_map::texture_map::create(material_system_->renderer_->get_backend().get(), specular_properties);
+		auto specular_map = texture_map::texture_map::create(specular_properties);
 		specular_map->acquire();
 
 		specular_map->texture = texture_system::acquire(properties.specular_map_name);
@@ -275,7 +283,7 @@ namespace egkr
 		texture_map::properties normal_properties = diffuse_properties;
 		normal_properties.use = texture_map::use::map_normal;
 
-		auto normal_map = texture_map::texture_map::create(material_system_->renderer_->get_backend().get(), normal_properties);
+		auto normal_map = texture_map::texture_map::create(normal_properties);
 		normal_map->acquire();
 		normal_map->texture = texture_system::acquire(properties.normal_map_name);
 		if (normal_map->texture == nullptr)
@@ -290,7 +298,7 @@ namespace egkr
 
 
 		//material.reset();
-		material = material::create(material_system_->renderer_, properties);
+		material = material::create(renderer.get(), properties);
 		if (material->get_generation() == invalid_32_id)
 		{
 			material->set_generation(0);

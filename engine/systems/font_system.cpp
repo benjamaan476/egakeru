@@ -109,7 +109,7 @@ namespace egkr
 
 	bool font_system::setup_font_data(font::data& data)
 	{
-		data.atlas = texture_map::texture_map::create(font_system_->renderer_context_->get_backend().get(), {});
+		data.atlas = texture_map::texture_map::create({});
 		data.atlas->minify = texture_map::filter::linear;
 		data.atlas->magnify = texture_map::filter::linear;
 		data.atlas->repeat_u = texture_map::repeat::clamp_to_edge;
