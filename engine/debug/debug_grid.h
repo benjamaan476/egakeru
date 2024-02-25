@@ -29,9 +29,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<debug_grid>;
-			static shared_ptr create(const renderer_backend* backend, const configuration& configuration);
+			static shared_ptr create(const configuration& configuration);
 
-			debug_grid(const renderer_backend* backend, const configuration& configuration);
+			explicit debug_grid(const configuration& configuration);
 			~debug_grid();
 
 			bool load();
@@ -42,7 +42,6 @@ namespace egkr
 		[[nodiscard]] auto& get_transform() { return transform_; }
 
 		private:
-			const renderer_backend* backend_{};
 			//uint32_t unique_id_{};
 			std::string name_{};
 			orientation orientation_{};

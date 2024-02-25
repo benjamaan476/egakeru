@@ -25,8 +25,8 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<ui_text>;
-			static shared_ptr create(const renderer_backend* backend, type type, const std::string& font_name, uint16_t font_size, const std::string& text);
-			ui_text(const renderer_backend* backend, type type, const std::string& font_name, uint16_t font_size, const std::string& text);
+			static shared_ptr create(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
+			ui_text(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 
 			void set_position(const float3 position);
 			void set_text(const std::string& text);

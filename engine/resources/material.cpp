@@ -57,6 +57,13 @@ namespace egkr
 		normal_map_.reset();
 	}
 
+	void material::free()
+	{
+		diffuse_map_->release();
+		specular_map_->release();
+		normal_map_->release();
+	}
+
 	void material::set_diffuse_colour(const float4 diffuse)
 	{
 		diffuse_colour_ = diffuse;

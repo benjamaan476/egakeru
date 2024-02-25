@@ -2,13 +2,13 @@
 
 namespace egkr::debug
 {
-	debug_box3d::shared_ptr debug_box3d::create(const renderer_backend* backend, const egkr::float3& size, egkr::transform* parent)
+	debug_box3d::shared_ptr debug_box3d::create(const egkr::float3& size, egkr::transform* parent)
 	{
-		return std::make_shared<debug_box3d>(backend, size, parent);
+		return std::make_shared<debug_box3d>(size, parent);
 	}
 
-	debug_box3d::debug_box3d(const renderer_backend* backend, const egkr::float3& size, egkr::transform* parent)
-		: backend_{backend}, size_{size}
+	debug_box3d::debug_box3d(const egkr::float3& size, egkr::transform* parent)
+		: size_{size}
 	{
 		transform_.set_parent(parent);
 		init();
@@ -35,7 +35,7 @@ namespace egkr::debug
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 
-		geometry_ = geometry::geometry::create(backend_, properties);
+		geometry_ = geometry::geometry::create(properties);
 
 		geometry_->increment_generation();
 		return true;

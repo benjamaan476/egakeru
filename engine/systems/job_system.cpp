@@ -1,13 +1,13 @@
 #include "job_system.h"
 
-namespace egkr::job_system
+namespace egkr
 {
 	static job_system::unique_ptr state_{};
 
-	bool job_system::create(const configuration& configuration)
+	job_system* job_system::create(const configuration& configuration)
 	{
 		state_ = std::make_unique<job_system>(configuration);
-		return true;
+		return state_.get();
 	}
 
 	job_system::job_system(const configuration& configuration)
@@ -20,20 +20,27 @@ namespace egkr::job_system
 		LOG_TRACE("Creating {} threads", thread_count_);
 	}
 
+	job_system::~job_system()
+	{
+		low_priority_queue_.reset();
+		normal_priority_queue_.reset();
+		high_priority_queue_.reset();
+	}
+
 	bool job_system::init()
 	{
-		if (state_->thread_count_ > state_->max_thread_count_)
+		if (thread_count_ > max_thread_count_)
 		{
 			LOG_ERROR("Exceeded the max thread count");
 			return false;
 		}
-		state_->running_ = true;
+		running_ = true;
 
-		for (auto i{ 0 }; i < state_->thread_count_; ++i)
+		for (auto i{ 0 }; i < thread_count_; ++i)
 		{
-			auto& thread = state_->threads_[i];
+			auto& thread = threads_[i];
 			thread.index = i;
-			thread.mask = state_->type_masks_[i];
+			thread.mask = type_masks_[i];
 			thread.thread = std::jthread(job_system::run, &thread.index);
 		}
 		return true;
@@ -43,31 +50,28 @@ namespace egkr::job_system
 	{
 		if (state_)
 		{
-			state_->low_priority_queue_.reset();
-			state_->normal_priority_queue_.reset();
-			state_->high_priority_queue_.reset();
-			state_ = nullptr;
+			state_.reset();
 			return true;
 		}
 		return false;
 	}
 
-	void job_system::update()
+	bool job_system::update(float /*delta_time*/)
 	{
-		if (!state_->running_)
+		if (!running_)
 		{
-			return;
+			return false;
 		}
-		process_queue(state_->high_priority_queue_.get(), &state_->high_priority_queue_mutex_);
-		process_queue(state_->normal_priority_queue_.get(), &state_->normal_priority_queue_mutex_);
-		process_queue(state_->low_priority_queue_.get(), &state_->low_priority_queue_mutex_);
+		process_queue(high_priority_queue_.get(), &high_priority_queue_mutex_);
+		process_queue(normal_priority_queue_.get(), &normal_priority_queue_mutex_);
+		process_queue(low_priority_queue_.get(), &low_priority_queue_mutex_);
 
 		for (int i{}; i < job::MAX_JOB_RESULTS; ++i)
 		{
 			job::result entry;
 			{
-				std::lock_guard lock{ state_->results_mutex_ };
-				entry = state_->results_[i];
+				std::lock_guard lock{ results_mutex_ };
+				entry = results_[i];
 			}
 
 			if (entry.index != invalid_16_id)
@@ -81,10 +85,12 @@ namespace egkr::job_system
 			}
 
 			{
-				std::lock_guard lock{ state_->results_mutex_ };
-				state_->results_[i] = {};
+				std::lock_guard lock{ results_mutex_ };
+				results_[i] = {};
 			}
 		}
+
+		return true;
 	}
 
 	void job_system::submit(job::information info)

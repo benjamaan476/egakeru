@@ -9,9 +9,9 @@ namespace egkr::debug
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_box3d>;
-		static shared_ptr create(const renderer_backend* backend, const egkr::float3& size, egkr::transform* parent);
+		static shared_ptr create(const egkr::float3& size, egkr::transform* parent);
 
-		debug_box3d(const renderer_backend* backend, const egkr::float3& size, egkr::transform* parent);
+		debug_box3d(const egkr::float3& size, egkr::transform* parent);
 		~debug_box3d();
 
 		bool init();
@@ -31,7 +31,6 @@ namespace egkr::debug
 		void recalculate_colour();
 		void recalculate_extents();
 	private:
-		const renderer_backend* backend_{};
 		//uint32_t unique_id_{};
 		std::string name_{};
 		egkr::float3 size_{};

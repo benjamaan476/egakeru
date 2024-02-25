@@ -12,8 +12,8 @@ namespace egkr::debug
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_frustum>;
-		static shared_ptr create(const renderer_backend* backend, const egkr::frustum& frustum);
-		debug_frustum(const renderer_backend* backend, const egkr::frustum& frustum);
+		static shared_ptr create(const egkr::frustum& frustum);
+		explicit debug_frustum(const egkr::frustum& frustum);
 
 		void update(const frustum& frustum);
 		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
@@ -24,8 +24,6 @@ namespace egkr::debug
 		void recalculate_lines(const frustum& frustum);
 
 	private:
-		const renderer_backend* backend_{};
-
 		egkr::transform transform_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
 		egkr::geometry::geometry::shared_ptr geometry_{};

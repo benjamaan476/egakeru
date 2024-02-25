@@ -4,8 +4,6 @@
 
 namespace egkr
 {
-	class renderer_backend;
-
 	namespace renderbuffer
 	{
 		enum class type
@@ -23,9 +21,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<renderbuffer>;
-			static shared_ptr create(const renderer_backend* backend, type bffer_type, uint64_t size);
+			static shared_ptr create(type bffer_type, uint64_t size);
 
-			renderbuffer(const renderer_backend* backend, type buffer_type, uint64_t size);
+			renderbuffer(type buffer_type, uint64_t size);
 			virtual ~renderbuffer() = default;
 
 			virtual void bind(uint64_t offset) = 0;
@@ -50,7 +48,6 @@ namespace egkr
 
 		protected:
 			type type_{};
-			const renderer_backend* backend_{};
 			uint64_t total_size_{};
 		};
 	}

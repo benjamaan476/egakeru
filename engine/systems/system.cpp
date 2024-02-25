@@ -4,7 +4,10 @@
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
 #include <systems/material_system.h>
+#include <systems/geometry_system.h>
+#include <systems/job_system.h>
 
+#include <renderer/renderer_frontend.h>
 
 namespace egkr
 {
@@ -95,6 +98,37 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::material, material_system::create());
 		}
+		{
+			registered_systems_.emplace(system_type::geometry, geometry_system::create());
+		}
+		{
+			uint8_t thread_count = 5;
+
+			std::vector<job::type> types{ thread_count };
+
+			std::fill(types.begin(), types.end(), job::type::general);
+			auto is_multi = renderer->get_backend()->is_multithreaded();
+			if (thread_count == 1 || !is_multi)
+			{
+				types[0] |= job::type::gpu_resource | job::type::resource_load;
+			}
+			else if (thread_count == 2)
+			{
+				types[0] |= job::type::gpu_resource;
+				types[1] |= job::type::resource_load;
+			}
+			else
+			{
+				types[0] = job::type::gpu_resource;
+				types[1] = job::type::resource_load;
+			}
+
+			const job_system::configuration configuration{
+				.thread_count = thread_count,
+				.type_masks = types
+			};
+			registered_systems_.emplace(system_type::job, job_system::create(configuration));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -120,6 +154,8 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::job]->shutdown();
+		system_manager_state->registered_systems_[system_type::geometry]->shutdown();
 		system_manager_state->registered_systems_[system_type::material]->shutdown();
 		system_manager_state->registered_systems_[system_type::texture]->shutdown();
 		system_manager_state->registered_systems_[system_type::resource]->shutdown();

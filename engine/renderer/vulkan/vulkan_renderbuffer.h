@@ -11,9 +11,9 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<vulkan_buffer>;
-		static shared_ptr create(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
+		static shared_ptr create(const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
 
-		vulkan_buffer(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
+		vulkan_buffer(const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size);
 		~vulkan_buffer() override;
 
 		void destroy();

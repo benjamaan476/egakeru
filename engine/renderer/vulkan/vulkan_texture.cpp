@@ -231,7 +231,7 @@ namespace egkr
 
 			auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
-			auto staging_buffer = renderbuffer::renderbuffer::create(renderer->get_backend().get(), renderbuffer::type::staging, size);
+			auto staging_buffer = renderbuffer::renderbuffer::create(renderbuffer::type::staging, size);
 			staging_buffer->bind(0);
 
 			staging_buffer->load_range(offset, size, data);

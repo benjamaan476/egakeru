@@ -31,14 +31,14 @@ namespace egkr
 
 	bool material_system::init()
 	{
-		if (material_system_->max_material_count_ == 0)
+		if (max_material_count_ == 0)
 		{
 			LOG_FATAL("Material max count must be > 0");
 			return false;
 		}
 
-		material_system_->registered_materials_.reserve(material_system_->max_material_count_);
-		material_system_->registered_materials_by_name_.reserve(material_system_->max_material_count_);
+		registered_materials_.reserve(max_material_count_);
+		registered_materials_by_name_.reserve(max_material_count_);
 
 		if (!create_default_material())
 		{

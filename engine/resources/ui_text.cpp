@@ -54,12 +54,12 @@ namespace egkr
 			}
 
 		}
-		ui_text::shared_ptr ui_text::create(const renderer_backend* backend, text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
+		ui_text::shared_ptr ui_text::create(text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
 		{
-			return std::make_shared<ui_text>(backend, type, font_name, font_size, text);
+			return std::make_shared<ui_text>(type, font_name, font_size, text);
 		}
 
-		ui_text::ui_text(const renderer_backend* backend, text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
+		ui_text::ui_text(text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
 			: type_{type}, text_{text}
 		{
 			acquire(font_name, font_size, type);
@@ -78,12 +78,12 @@ namespace egkr
 
 			instance_id_ = ui_shader->acquire_instance_resources({ data_->atlas });
 
-			vertex_buffer_ = renderbuffer::renderbuffer::create(backend, renderbuffer::type::vertex, text_length * quad_size);
+			vertex_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::vertex, text_length * quad_size);
 			vertex_buffer_->bind(0);
 
 			constexpr static const uint32_t quad_index_size = 6 * sizeof(uint32_t);
 
-			index_buffer_ = renderbuffer::renderbuffer::create(backend, renderbuffer::type::index, text_length * quad_index_size);
+			index_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::index, text_length * quad_index_size);
 			index_buffer_->bind(0);
 
 			if (!font_system::verify_atlas(data_, text))

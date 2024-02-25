@@ -10,9 +10,9 @@ namespace egkr::debug
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_line>;
-		static shared_ptr create(const renderer_backend* backend, const float3& point_0, const float3& point_1);
+		static shared_ptr create(const float3& point_0, const float3& point_1);
 
-		debug_line(const renderer_backend* backend, const float3& point_0, const float3& point_1);
+		debug_line(const float3& point_0, const float3& point_1);
 
 		void set_points(const float3& point_0, const float3& point_1);
 
@@ -20,7 +20,6 @@ namespace egkr::debug
 		void recalculate_points();
 
 	private:
-		const renderer_backend* backend_{};
 		float3 point_0_{};
 		float3 point_1_{};
 		transform transform_{};

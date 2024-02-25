@@ -921,7 +921,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		return geometry::vulkan_geometry::create(this, &context_, properties);
+		return geometry::vulkan_geometry::create(&context_, properties);
 	}
 
 	render_target::render_target::shared_ptr renderer_vulkan::create_render_target() const
@@ -936,7 +936,7 @@ namespace egkr
 
 	renderbuffer::renderbuffer::shared_ptr renderer_vulkan::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
 	{
-		return vulkan_buffer::create(this, &context_, buffer_type, size);
+		return vulkan_buffer::create(&context_, buffer_type, size);
 	}
 
 	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)

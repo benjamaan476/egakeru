@@ -1,12 +1,10 @@
 #include "application.h"
 #include "input.h"
 
-#include "systems/geometry_system.h"
 #include "systems/shader_system.h"
 #include "systems/camera_system.h"
 #include "systems/view_system.h"
 #include "systems/light_system.h"
-#include "systems/job_system.h"
 #include "systems/font_system.h"
 #include "systems/audio_system.h"
 
@@ -32,7 +30,6 @@ namespace egkr
 		name_ = game->get_application_configuration().name;
 		game_ = std::move(game);
 
-		system_manager::create();
 		//Init subsystems
 		egkr::log::init();
 		//
@@ -64,11 +61,7 @@ namespace egkr
 
 		renderer_frontend::create(backend_type::vulkan, platform_);
 
-
-		if (!geometry_system::create(renderer.get()))
-		{
-			LOG_FATAL("Failed to create geometry system");
-		}
+		system_manager::create();
 
 		shader_system_configuration shader_system_configuration{};
 		shader_system_configuration.max_global_textures = 31;
@@ -106,8 +99,6 @@ namespace egkr
 
 		system_manager::init();
 
-		uint8_t thread_count = 5;
-		auto is_multi = renderer->get_backend()->is_multithreaded();
 
 		game_->boot();
 
@@ -119,39 +110,11 @@ namespace egkr
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
 
-
-		std::vector<job::type> types{thread_count};
-
-		std::fill(types.begin(), types.end(), job::type::general);
-		if (thread_count == 1 || !is_multi)
-		{
-			types[0] |= job::type::gpu_resource | job::type::resource_load;
-		}
-		else if(thread_count == 2)
-		{
-			types[0] |= job::type::gpu_resource;
-			types[1] |= job::type::resource_load;
-		}
-		else
-		{
-			types[0] = job::type::gpu_resource;
-			types[1] = job::type::resource_load;
-		}
-
-		if (!job_system::job_system::create({ .thread_count = thread_count, .type_masks = types }))
-		{
-			LOG_FATAL("Failed to create job system");
-		}
-
-		system_manager::init();
-
 		shader_system::init();
-		geometry_system::init();
 		font_system::init();
 		camera_system::init();
 		view_system::init();
 		light_system::init();
-		job_system::job_system::init();
 
 		game_->set_application(this);
 
@@ -183,7 +146,6 @@ namespace egkr
 			if (!application_->is_suspended_)
 			{
 				system_manager::update(delta_time);
-				job_system::job_system::update();
 				application_->game_->update(delta_time);
 
 				render_packet packet{};
@@ -215,9 +177,7 @@ namespace egkr
 		light_system::shutdown();
 		view_system::shutdown();
 		shader_system::shutdown();
-		geometry_system::shutdown();
 		renderer->shutdown();
-		job_system::job_system::shutdown();
 		application_->platform_->shutdown();
 	}
 

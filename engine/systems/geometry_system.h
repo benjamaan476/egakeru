@@ -3,23 +3,23 @@
 #include "pch.h"
 #include "resources/geometry.h"
 
-#include "renderer/renderer_frontend.h"
+#include <systems/system.h>
 
 namespace egkr
 {
-
-	class geometry_system
+	class geometry_system : public system
 	{
 	public:
 		using geometry_reference = uint32_t;
 		using unique_ptr = std::unique_ptr<geometry_system>;
 
-		static bool create(const renderer_frontend* renderer_context);
-		geometry_system(const renderer_frontend* renderer_context);
+		static geometry_system* create();
+		geometry_system();
 		~geometry_system();
 
-		static bool init();
-		static void shutdown();
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
 
 		static geometry::geometry::shared_ptr acquire(uint32_t id);
 		static geometry::geometry::shared_ptr acquire(const geometry::properties& properties);
@@ -32,7 +32,6 @@ namespace egkr
 		static geometry::properties generate_plane(uint32_t width, uint32_t height, uint32_t x_segments, uint32_t y_segments, uint32_t tile_x, uint32_t tile_y, std::string_view name, std::string_view material_name);
 
 	private:
-		const renderer_frontend* renderer_context_{};
 		uint32_t max_geometry_count_{};
 
 		geometry::geometry::shared_ptr default_geometry_{};
