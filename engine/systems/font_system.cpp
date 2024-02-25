@@ -4,6 +4,8 @@
 #include <systems/texture_system.h>
 
 #include <resources/ui_text.h>
+#include "renderer/renderer_frontend.h"
+
 
 namespace egkr
 {

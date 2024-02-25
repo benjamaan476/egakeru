@@ -1,10 +1,12 @@
 #pragma once
 
 #include "pch.h"
-#include "renderer/renderer_frontend.h"
 #include "renderer/renderer_types.h"
 
 #include "resources/texture.h"
+
+#include <systems/system.h>
+
 namespace egkr
 {
 	constexpr static std::string_view default_texture_name{"default"};
@@ -27,18 +29,20 @@ namespace egkr
 		resource::shared_ptr resource;
 	};
 
-	class texture_system
+	class texture_system : public system
 	{
 	public:
 		using unique_ptr = std::unique_ptr<texture_system>;
 		using texture_handle = uint32_t;
 
-		static void create(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
+		static texture_system* create(const texture_system_configuration& properties);
 		static texture::texture* wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data);
 
-		texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties);
-		static bool init();
-		static void shutdown();
+		explicit texture_system(const texture_system_configuration& properties);
+
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
 
 		static void resize(texture::texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);
 
@@ -61,7 +65,6 @@ namespace egkr
 		static bool job_start(void* params, void* result_data);
 
 	private:
-		const renderer_frontend* renderer_context_{};
 		texture::texture* default_texture_{};
 		texture::texture* default_diffuse_texture_{};
 		texture::texture* default_specular_texture_{};

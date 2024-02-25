@@ -11,12 +11,11 @@
 
 namespace egkr
 {
-
 	class renderer_frontend
 	{
 	public:
 		using unique_ptr = std::unique_ptr<renderer_frontend>;
-		API static unique_ptr create(backend_type type, const platform::shared_ptr& platform);
+		API static bool create(backend_type type, const platform::shared_ptr& platform);
 
 		renderer_frontend(backend_type type, const platform::shared_ptr& platform);
 
@@ -48,4 +47,5 @@ namespace egkr
 		uint32_t ui_shader_id{};
 		//TODO temp
 	};
+	inline renderer_frontend::unique_ptr renderer{};
 }

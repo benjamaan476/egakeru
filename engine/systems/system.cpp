@@ -1,6 +1,10 @@
 #include "system.h"
 #include <input.h>
 
+#include <systems/resource_system.h>
+#include <systems/texture_system.h>
+
+
 namespace egkr
 {
 	static std::unique_ptr<system_manager> system_manager_state{};
@@ -14,6 +18,14 @@ namespace egkr
 		}
 		system_manager_state = std::make_unique<system_manager>();
 	}
+
+	system_manager::system_manager()
+	{
+		register_known();
+		register_extension();
+		register_user();
+	}
+
 	bool system_manager::init()
 	{
 		if (!system_manager_state)
@@ -21,7 +33,14 @@ namespace egkr
 			LOG_ERROR("System manager not created. Failed to init");
 			return false;
 		}
-		system_manager_state->registered_systems_.emplace(system_type::input, input::create());
+
+		for (auto system : system_manager_state->registered_systems_ | std::views::values)
+		{
+			if (!system->init())
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 	
@@ -59,6 +78,29 @@ namespace egkr
 		}
 	}
 
+	void system_manager::register_known()
+	{
+		registered_systems_.emplace(system_type::input, input::create());
+		{
+			resource_system_configuration resource_system_configuration{};
+			resource_system_configuration.max_loader_count = 10;
+			resource_system_configuration.base_path = "../../../../assets/";
+
+			registered_systems_.emplace(system_type::resource, resource_system::create(resource_system_configuration));
+		}
+		{
+			registered_systems_.emplace(system_type::texture, texture_system::create({ 1024 }));
+		}
+	}
+
+	void system_manager::register_extension()
+	{
+	}
+
+	void system_manager::register_user()
+	{
+	}
+
 	void system_manager::shutdown_extension()
 	{ 
 	}
@@ -70,12 +112,12 @@ namespace egkr
 
 	void system_manager::shutdown_known()
 	{
-		if (system_manager_state)
+		if (!system_manager_state)
 		{
-			for (auto& system : system_manager_state->registered_systems_ | std::views::values)
-			{
-				system->shutdown();
-			}
+			return;
 		}
+		system_manager_state->registered_systems_[system_type::texture]->shutdown();
+		system_manager_state->registered_systems_[system_type::resource]->shutdown();
+		system_manager_state->registered_systems_[system_type::input]->shutdown();
 	}
 }

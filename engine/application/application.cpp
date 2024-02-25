@@ -1,8 +1,6 @@
 #include "application.h"
 #include "input.h"
 
-#include "systems/resource_system.h"
-#include "systems/texture_system.h"
 #include "systems/material_system.h"
 #include "systems/geometry_system.h"
 #include "systems/shader_system.h"
@@ -38,7 +36,6 @@ namespace egkr
 		system_manager::create();
 		//Init subsystems
 		egkr::log::init();
-		system_manager::init();
 		//
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
@@ -66,25 +63,14 @@ namespace egkr
 			return;
 		}
 
-		renderer_ = renderer_frontend::create(backend_type::vulkan, platform_);
+		renderer_frontend::create(backend_type::vulkan, platform_);
 
-		resource_system_configuration resource_system_configuration{};
-		resource_system_configuration.max_loader_count = 10;
-		resource_system_configuration.base_path = "../../../../assets/";
-
-		if (!resource_system::create(resource_system_configuration))
-		{
-			LOG_FATAL("Failed to create resource system");
-		}
-		resource_system::init();
-
-		texture_system::create(renderer_.get(), { 1024 });
-		if (!material_system::create(renderer_.get()))
+		if (!material_system::create(renderer.get()))
 		{
 			LOG_FATAL("Failed to create material system");
 		}
 
-		if (!geometry_system::create(renderer_.get()))
+		if (!geometry_system::create(renderer.get()))
 		{
 			LOG_FATAL("Failed to create geometry system");
 		}
@@ -95,18 +81,18 @@ namespace egkr
 		shader_system_configuration.max_shader_count = 1024;
 		shader_system_configuration.max_uniform_count = 128;
 
-		if (!shader_system::create(renderer_.get(), shader_system_configuration))
+		if (!shader_system::create(renderer.get(), shader_system_configuration))
 		{
 			LOG_FATAL("Failed to create shader system");
 		}
 
 
-		if (!camera_system::create(renderer_.get(), { 31 }))
+		if (!camera_system::create(renderer.get(), { 31 }))
 		{
 			LOG_FATAL("Failed to create camera system");
 		}
 
-		if (!view_system::create(renderer_.get()))
+		if (!view_system::create(renderer.get()))
 		{
 			LOG_FATAL("Failed to create view system");
 			return;
@@ -118,17 +104,19 @@ namespace egkr
 			return;
 		}
 
-		if (!renderer_->init())
+		if (!renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
+		system_manager::init();
+
 		uint8_t thread_count = 5;
-		auto is_multi = renderer_->get_backend()->is_multithreaded();
+		auto is_multi = renderer->get_backend()->is_multithreaded();
 
 		game_->boot();
 
-		if (!font_system::create(renderer_.get(), game_->get_font_system_configuration()))
+		if (!font_system::create(renderer.get(), game_->get_font_system_configuration()))
 		{
 			LOG_FATAL("Failed to create font system");
 		}
@@ -160,8 +148,9 @@ namespace egkr
 			LOG_FATAL("Failed to create job system");
 		}
 
+		system_manager::init();
+
 		shader_system::init();
-		texture_system::init();
 		material_system::init();
 		geometry_system::init();
 		font_system::init();
@@ -199,6 +188,7 @@ namespace egkr
 
 			if (!application_->is_suspended_)
 			{
+				system_manager::update(delta_time);
 				job_system::job_system::update();
 				application_->game_->update(delta_time);
 
@@ -206,7 +196,7 @@ namespace egkr
 
 				application_->game_->render(&packet, delta_time);
 
-				application_->renderer_->draw_frame(packet);
+				renderer->draw_frame(packet);
 			}
 			auto frame_duration = application_->platform_->get_time() - frame_time;
 			if (application_->limit_framerate_ && frame_duration < application_->frame_time_)
@@ -231,10 +221,9 @@ namespace egkr
 		light_system::shutdown();
 		view_system::shutdown();
 		shader_system::shutdown();
-		texture_system::shutdown();
 		material_system::shutdown();
 		geometry_system::shutdown();
-		application_->renderer_->shutdown();
+		renderer->shutdown();
 		job_system::job_system::shutdown();
 		application_->platform_->shutdown();
 	}
@@ -285,7 +274,7 @@ namespace egkr
 					application_->is_suspended_ = false;
 				}
 
-				application_->renderer_->on_resize(width, height);
+				renderer->on_resize(width, height);
 			}
 		}
 		return false;

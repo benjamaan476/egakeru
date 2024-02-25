@@ -14,6 +14,9 @@
 #include <ranges>
 #include <systems/material_system.h>
 
+//TODO temp
+#include "renderer/renderer_frontend.h"
+
 sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
 	: game(configuration)
 {
@@ -26,13 +29,13 @@ bool sandbox_game::init()
 	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_game::on_debug_event);
 	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_game::on_debug_event);
 
-	test_text_ = egkr::text::ui_text::create(application_->get_renderer()->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
+	test_text_ = egkr::text::ui_text::create(egkr::renderer->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
 
-	more_test_text_ = egkr::text::ui_text::create(application_->get_renderer()->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "a");
+	more_test_text_ = egkr::text::ui_text::create(egkr::renderer->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "a");
 	more_test_text_->set_position({ 50, 400, 0 });
 
-	skybox_ = egkr::skybox::skybox::create(application_->get_renderer()->get_backend().get());
+	skybox_ = egkr::skybox::skybox::create(egkr::renderer->get_backend().get());
 
 	auto skybox_geo = egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
 	skybox_->set_geometry(egkr::geometry_system::acquire(skybox_geo));
@@ -95,10 +98,10 @@ bool sandbox_game::init()
 	std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 	ui_properties.indices = indices;
 
-	auto ui_geo = egkr::geometry::geometry::create(application_->get_renderer()->get_backend().get(), ui_properties);
+	auto ui_geo = egkr::geometry::geometry::create(egkr::renderer->get_backend().get(), ui_properties);
 	ui_meshes_.push_back(egkr::mesh::create(ui_geo, {}));
 
-	box_ = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
+	box_ = egkr::debug::debug_box3d::create(egkr::renderer->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
 	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
 	box_->load();
 	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
@@ -111,7 +114,7 @@ bool sandbox_game::init()
 	grid_configuration.tile_scale = 1;
 	grid_configuration.use_third_axis = true;
 
-	grid_ = egkr::debug::debug_grid::create(application_->get_renderer()->get_backend().get(), grid_configuration);
+	grid_ = egkr::debug::debug_grid::create(egkr::renderer->get_backend().get(), grid_configuration);
 	grid_->load();
 	camera_ = egkr::camera_system::get_default();
 	camera_->set_position({ 0, 0, 0.F });
@@ -222,7 +225,7 @@ void sandbox_game::update(double delta_time)
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
 	if (update_frustum_)
 	{
-		debug_frustum_ = egkr::debug::debug_frustum::create(application_->get_renderer()->get_backend().get(), camera_frustum_);
+		debug_frustum_ = egkr::debug::debug_frustum::create(egkr::renderer->get_backend().get(), camera_frustum_);
 	}
 
 	frame_data.reset();
@@ -258,7 +261,7 @@ void sandbox_game::update(double delta_time)
 		auto& debug_data = mesh->get_debug_data();
 		if (!debug_data)
 		{
-			debug_data = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, &mesh->model());
+			debug_data = egkr::debug::debug_box3d::create(egkr::renderer->get_backend().get(), { 0.2, 0.2, 0.2 }, &mesh->model());
 			debug_data->load();
 		}
 

@@ -47,9 +47,10 @@ namespace egkr
 		}
 	}
 
-	renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
+	bool renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
 	{
-		return std::make_unique<renderer_frontend>(type, platform);
+		renderer = std::make_unique<renderer_frontend>(type, platform);
+		return true;
 	}
 
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)

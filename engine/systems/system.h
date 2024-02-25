@@ -42,14 +42,20 @@ namespace egkr
 	{
 	public:
 		static void create();
+		system_manager();
 
 		static bool init();
-		bool update(float delta_time);
+		static bool update(float delta_time);
 		static void update_input();
 
 		static void shutdown();
 
 	private:
+
+		void register_known();
+		void register_extension();
+		void register_user(); 
+
 		static void shutdown_known();
 		static void shutdown_extension();
 		static void shutdown_user();

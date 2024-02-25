@@ -69,6 +69,11 @@ namespace egkr
 
 	void input::process_key(key key, bool pressed)
 	{
+		if (key == key::unknown)
+		{
+			return;
+		}
+
 		auto& key_state = state->current_keyboard.keys[(int16_t)key];
 
 		if (key_state != pressed)
