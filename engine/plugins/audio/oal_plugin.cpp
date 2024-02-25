@@ -93,6 +93,8 @@ namespace egkr::audio
                 { 
                     update_stream(s->current, s);
                 }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2));
             }
             return 0;
         }
