@@ -41,6 +41,8 @@ if(DEFINED TRACY_MEMORY)
     target_compile_definitions(engine PRIVATE TRACY_MEMORY)
 endif()
 
+message(WARNING noeos ${OPENAL_LIBRARY})
+
 target_link_libraries(
   engine
   PRIVATE egakeru::egakeru_options
@@ -49,6 +51,8 @@ target_link_libraries(
           Vulkan::Headers
           glm::glm
 )
+
+target_link_libraries(engine PRIVATE ${OPENAL_LIBRARY})
 
 target_link_system_libraries(
   engine

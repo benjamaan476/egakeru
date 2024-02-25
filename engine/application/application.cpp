@@ -11,6 +11,7 @@
 #include "systems/light_system.h"
 #include "systems/job_system.h"
 #include "systems/font_system.h"
+#include "systems/audio_system.h"
 
 using namespace std::chrono_literals;
 
@@ -131,6 +132,9 @@ namespace egkr
 		{
 			LOG_FATAL("Failed to create font system");
 		}
+
+		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
+		audio::audio_system::create(audio_configuration);
 
 
 		std::vector<job::type> types{thread_count};

@@ -24,6 +24,7 @@ target_link_system_libraries(
           glfw
           glm::glm
 )
+target_link_libraries(sandbox PRIVATE ${OPENAL_LIBRARY})
 
 target_include_directories(sandbox PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
 

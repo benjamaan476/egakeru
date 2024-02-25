@@ -8,6 +8,9 @@
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
 
+#include <systems/audio_system.h>
+#include <plugins/audio/audio_loader.h>
+
 #include <ranges>
 #include <systems/material_system.h>
 
@@ -95,7 +98,7 @@ bool sandbox_game::init()
 	auto ui_geo = egkr::geometry::geometry::create(application_->get_renderer()->get_backend().get(), ui_properties);
 	ui_meshes_.push_back(egkr::mesh::create(ui_geo, {}));
 
-	box_ = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), {0.2, 0.2, 0.2}, nullptr);
+	box_ = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
 	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
 	box_->load();
 	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
@@ -120,6 +123,24 @@ bool sandbox_game::init()
 
 	egkr::light_system::add_directional_light(dir_light_);
 
+	test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
+	test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
+	test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
+
+	test_emitter.audio_file = test_loop_audio;
+	test_emitter.looping = true;
+	test_emitter.falloff = 1.F;
+
+	egkr::audio::audio_system::set_master_volume(0.7F);
+	egkr::audio::audio_system::set_channel_volume(0, 1.F);
+	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
+	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
+	egkr::audio::audio_system::set_channel_volume(3, 0.25F);
+	egkr::audio::audio_system::set_channel_volume(4, 0.F);
+	egkr::audio::audio_system::set_channel_volume(7, 0.4F);
+
+	egkr::audio::audio_system::play_emitter(6, &test_emitter);
+	egkr::audio::audio_system::play_channel(7, test_music, true);
 
 
 	return true;
@@ -197,6 +218,7 @@ void sandbox_game::update(double delta_time)
 		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
 	}
 
+	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
 	if (update_frustum_)
 	{
@@ -244,6 +266,8 @@ void sandbox_game::update(double delta_time)
 		debug_data->set_extents(mesh->extents());
 
 	}
+
+	egkr::audio::audio_system::update(&frame_data);
 }
 
 void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
@@ -339,6 +363,7 @@ bool sandbox_game::boot()
 
 bool sandbox_game::shutdown()
 {
+	egkr::audio::audio_system::shutdown();
 	skybox_->destroy();
 	box_->destroy();
 	grid_->unload();
