@@ -8,14 +8,14 @@ namespace egkr
 {
 	static view_system::unique_ptr view_system_{};
 
-	bool view_system::create(const renderer_frontend* renderer)
+	view_system* view_system::create()
 	{
-		view_system_ = std::make_unique<view_system>(renderer);
-		return true;
+		view_system_ = std::make_unique<view_system>();
+		return view_system_.get();
 	}
 
-	view_system::view_system(const renderer_frontend* renderer)
-		: renderer_{ renderer }, max_view_count_{ 31 }
+	view_system::view_system()
+		: max_view_count_{ 31 }
 	{}
 
 	view_system::~view_system()
@@ -26,6 +26,12 @@ namespace egkr
 	{
 		return true;
 	}
+
+	bool view_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
 	bool view_system::shutdown()
 	{
 		if (view_system_)
@@ -62,7 +68,7 @@ namespace egkr
 			return;
 		}
 
-		auto render_view = render_view::render_view::create(view_system_->renderer_, configuration);
+		auto render_view = render_view::render_view::create(configuration);
 
 		if (!render_view->on_create())
 		{

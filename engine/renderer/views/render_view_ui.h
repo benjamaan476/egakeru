@@ -13,7 +13,7 @@ namespace egkr
 		class render_view_ui : public render_view
 		{
 		public:
-			render_view_ui(const renderer_frontend* renderer, const configuration& configuration);
+			render_view_ui(const configuration& configuration);
 			~render_view_ui() override = default;
 
 			bool on_create() override;

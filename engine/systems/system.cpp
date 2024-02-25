@@ -8,6 +8,7 @@
 #include <systems/job_system.h>
 #include <systems/shader_system.h>
 #include <systems/camera_system.h>
+#include <systems/view_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -148,6 +149,9 @@ namespace egkr
 				.max_registered_cameras = 31
 			};
 			registered_systems_.emplace(system_type::camera, camera_system::create(configuration));
+		}
+		{
+			registered_systems_.emplace(system_type::render_view, view_system::create());
 		}
 	}
 

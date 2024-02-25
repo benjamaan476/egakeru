@@ -63,12 +63,6 @@ namespace egkr
 		system_manager::create();
 
 
-		if (!view_system::create(renderer.get()))
-		{
-			LOG_FATAL("Failed to create view system");
-			return;
-		}
-
 		if (!light_system::create())
 		{
 			LOG_FATAL("Failed to create light system");
@@ -94,7 +88,6 @@ namespace egkr
 		audio::audio_system::create(audio_configuration);
 
 		font_system::init();
-		view_system::init();
 		light_system::init();
 
 		game_->set_application(this);
@@ -156,7 +149,6 @@ namespace egkr
 
 		system_manager::shutdown();
 		light_system::shutdown();
-		view_system::shutdown();
 		renderer->shutdown();
 		application_->platform_->shutdown();
 	}
