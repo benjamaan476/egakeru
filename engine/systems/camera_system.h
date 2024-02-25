@@ -6,24 +6,26 @@
 
 namespace egkr
 {
-	struct camera_system_configuration
-	{
-		uint16_t max_registered_cameras{ 16 };
-	};
 
 	constexpr static std::string_view DEFAULT_CAMERA_NAME{ "default" };
 
 	class renderer_frontend;
-	class camera_system
+	class camera_system : public system
 	{
 	public:
+		struct configuration
+		{
+			uint16_t max_registered_cameras{ 16 };
+		};
+
 		using unique_ptr = std::unique_ptr<camera_system>;
-		static bool create(const renderer_frontend* renderer_context, const camera_system_configuration& configuration);
+		static camera_system* create(const configuration& configuration);
 
-		camera_system(const renderer_frontend* renderer_context, const camera_system_configuration& configuration);
+		explicit camera_system(const configuration& configuration);
 
-		static bool init();
-		static bool shutdown();
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
 
 
 		static camera::shared_ptr acquire(std::string_view name);
@@ -33,8 +35,7 @@ namespace egkr
 	private:
 		static void create_default();
 	private:
-		const renderer_frontend* renderer_context_{};
-		camera_system_configuration configuration_{};
+		configuration configuration_{};
 
 		std::unordered_map<std::string, uint32_t> camera_id_by_name_{};
 		egkr::vector<camera::shared_ptr> cameras_{};

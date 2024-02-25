@@ -111,7 +111,7 @@ namespace egkr
 	{
 		event_context context{};
 		const int array_size{ 4 };
-		context = std::array<int32_t, array_size>{ width, height };
+		context.context_ = std::array<int32_t, array_size>{ width, height };
 		event::fire_event(event_code::resize, nullptr, context);
 	}
 

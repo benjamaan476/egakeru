@@ -201,19 +201,22 @@ void sandbox_game::update(double delta_time)
 	if (egkr::input::is_key_down(egkr::key::key_0))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 0U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 0U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::key_1))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 1U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 1U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::key_2))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 2U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 2U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::l))

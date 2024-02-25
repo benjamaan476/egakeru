@@ -912,7 +912,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto shade = shader::vulkan_shader::create(this, &context_, properties);
+		auto shade = shader::vulkan_shader::create(&context_, properties);
 
 		return shade;
 	}

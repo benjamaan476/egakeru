@@ -6,13 +6,13 @@
 
 namespace egkr::shader
 {
-    shader::shared_ptr vulkan_shader::create(const renderer_backend* renderer, const vulkan_context* context, const properties& properties)
+    shader::shared_ptr vulkan_shader::create(const vulkan_context* context, const properties& properties)
     {
-        return std::make_shared<vulkan_shader>(renderer, context, properties);
+        return std::make_shared<vulkan_shader>(context, properties);
     }
 
-    vulkan_shader::vulkan_shader(const renderer_backend* renderer, const vulkan_context* context, const properties& properties)
-        : shader(renderer, properties), context_{ context }
+    vulkan_shader::vulkan_shader(const vulkan_context* context, const properties& properties)
+        : shader(properties), context_{ context }
     {
     }
 	vulkan_shader::~vulkan_shader()

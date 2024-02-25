@@ -6,6 +6,8 @@
 #include <systems/material_system.h>
 #include <systems/geometry_system.h>
 #include <systems/job_system.h>
+#include <systems/shader_system.h>
+#include <systems/camera_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -129,6 +131,24 @@ namespace egkr
 			};
 			registered_systems_.emplace(system_type::job, job_system::create(configuration));
 		}
+		{
+			shader_system::configuration configuration
+			{
+			.max_shader_count = 1024,
+			.max_uniform_count = 128,
+			.max_global_textures = 31,
+			.max_instance_textures = 31,
+			};
+
+			registered_systems_.emplace(system_type::shader, shader_system::create(configuration));
+		}
+		{
+			camera_system::configuration configuration
+			{
+				.max_registered_cameras = 31
+			};
+			registered_systems_.emplace(system_type::camera, camera_system::create(configuration));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -154,6 +174,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::shader]->shutdown();
 		system_manager_state->registered_systems_[system_type::job]->shutdown();
 		system_manager_state->registered_systems_[system_type::geometry]->shutdown();
 		system_manager_state->registered_systems_[system_type::material]->shutdown();

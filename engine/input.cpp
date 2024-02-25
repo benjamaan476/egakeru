@@ -83,7 +83,7 @@ namespace egkr
 			auto code = pressed ? event_code::key_down : event_code::key_up;
 			event_context context{};
 			const int array_size{ 8 };
-			context = std::array<int16_t, array_size>{ (int16_t)key };
+			context.context_ = std::array<int16_t, array_size>{ (int16_t)key };
 
 			event::fire_event(code, nullptr, context);
 		}
@@ -120,7 +120,7 @@ namespace egkr
 			auto code = pressed ? event_code::mouse_down : event_code::mouse_up;
 			event_context context{};
 			const int array_size{ 8 };
-			context = std::array<int16_t, array_size>{ (int16_t)button };
+			context.context_ = std::array<int16_t, array_size>{ (int16_t)button };
 			event::fire_event(code, nullptr, context);
 		}
 

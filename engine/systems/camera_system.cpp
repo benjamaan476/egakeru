@@ -5,37 +5,40 @@ namespace egkr
 {
 	static camera_system::unique_ptr camera_system_{};
 
-	bool camera_system::create(const renderer_frontend* renderer_context, const camera_system_configuration& configuration)
+	camera_system* camera_system::create(const configuration& configuration)
 	{
-		camera_system_ = std::make_unique<camera_system>(renderer_context, configuration);
-		return true;
+		camera_system_ = std::make_unique<camera_system>(configuration);
+		return camera_system_.get();
 	}
 
-	camera_system::camera_system(const renderer_frontend* renderer_context, const camera_system_configuration& configuration)
-		: renderer_context_{ renderer_context }, configuration_{ configuration }
+	camera_system::camera_system(const configuration& configuration)
+		: configuration_{ configuration }
 	{}
 
 	bool camera_system::init()
 	{
-		const auto& configuration = camera_system_->configuration_;
-
-		if (configuration.max_registered_cameras == 0)
+		if (configuration_.max_registered_cameras == 0)
 		{
 			LOG_ERROR("Max cameras must be non-zero");
 			return false;
 		}
 
-		camera_system_->cameras_.reserve(configuration.max_registered_cameras);
-		camera_system_->camera_id_by_name_.reserve(configuration.max_registered_cameras);
+		cameras_.reserve(configuration_.max_registered_cameras);
+		camera_id_by_name_.reserve(configuration_.max_registered_cameras);
 
 		create_default();
 		return true;
 	}
 
+	bool camera_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
 	bool camera_system::shutdown()
 	{
-		camera_system_->cameras_.clear();
-		camera_system_->camera_id_by_name_.clear();
+		cameras_.clear();
+		camera_id_by_name_.clear();
 		return true;
 	}
 

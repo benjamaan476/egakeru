@@ -2,34 +2,37 @@
 #include "pch.h"
 
 #include "resources/shader.h"
+#include <systems/system.h>
 
 #include <unordered_map>
 
 namespace egkr
 {
 	class renderer_frontend;
-	struct shader_system_configuration
-	{
-		uint16_t max_shader_count{};
-		uint16_t max_uniform_count{};
-		uint8_t max_global_textures{};
-		uint8_t max_instance_textures{};
-	};
 
 	static std::string BUILTIN_SHADER_NAME_SKYBOX{ "Shader.Builtin.Skybox" };
 	static std::string BUILTIN_SHADER_NAME_MATERIAL{ "Shader.Builtin.Material" };
 	static std::string BUILTIN_SHADER_NAME_UI{ "Shader.Builtin.UI" };
 
-	class shader_system
+	class shader_system : public system
 	{
 	public:
+		struct configuration
+		{
+			uint16_t max_shader_count{};
+			uint16_t max_uniform_count{};
+			uint8_t max_global_textures{};
+			uint8_t max_instance_textures{};
+		};
 		using unique_ptr = std::unique_ptr<shader_system>;
-		static bool create(const renderer_frontend* renderer_context, const shader_system_configuration& configuration);
+		static shader_system* create(const configuration& configuration);
 
-		shader_system(const renderer_frontend* renderer_context, const shader_system_configuration& configuration);
+		explicit shader_system(const configuration& configuration);
 
-		static bool init();
-		static bool shutdown();
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
+
 		static shader::shader::shared_ptr create_shader(const shader::properties& properties);
 		[[nodiscard]] static uint32_t get_shader_id(const std::string& shader_name);
 		[[nodiscard]] static shader::shader::shared_ptr get_shader(const std::string& shader_name);
@@ -51,11 +54,10 @@ namespace egkr
 	private:
 		static uint32_t new_shader_id();
 	private:
-		const renderer_frontend* renderer_context_{};
-		shader_system_configuration configuration_{};
+		configuration configuration_{};
 
 		std::unordered_map<std::string, uint32_t> shader_id_by_name_{};
 		egkr::vector<shader::shader::shared_ptr> shaders_{};
-		uint32_t current_shader_id_{invalid_32_id};
+		uint32_t current_shader_id_{ invalid_32_id };
 	};
 }

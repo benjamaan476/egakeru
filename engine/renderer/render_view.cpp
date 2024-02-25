@@ -52,8 +52,7 @@ namespace egkr::render_view
 		{
 		case event_code::render_mode:
 		{
-			const auto& context_array = std::get<std::array<uint32_t, 4>>(context);
-			view->mode_ = context_array[0];
+			context.get(0, view->mode_);
 		} break;
 		default:
 			return false;

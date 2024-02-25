@@ -2,7 +2,6 @@
 #include "input.h"
 
 #include "systems/shader_system.h"
-#include "systems/camera_system.h"
 #include "systems/view_system.h"
 #include "systems/light_system.h"
 #include "systems/font_system.h"
@@ -63,22 +62,6 @@ namespace egkr
 
 		system_manager::create();
 
-		shader_system_configuration shader_system_configuration{};
-		shader_system_configuration.max_global_textures = 31;
-		shader_system_configuration.max_instance_textures = 31;
-		shader_system_configuration.max_shader_count = 1024;
-		shader_system_configuration.max_uniform_count = 128;
-
-		if (!shader_system::create(renderer.get(), shader_system_configuration))
-		{
-			LOG_FATAL("Failed to create shader system");
-		}
-
-
-		if (!camera_system::create(renderer.get(), { 31 }))
-		{
-			LOG_FATAL("Failed to create camera system");
-		}
 
 		if (!view_system::create(renderer.get()))
 		{
@@ -110,9 +93,7 @@ namespace egkr
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
 
-		shader_system::init();
 		font_system::init();
-		camera_system::init();
 		view_system::init();
 		light_system::init();
 
@@ -176,7 +157,6 @@ namespace egkr
 		system_manager::shutdown();
 		light_system::shutdown();
 		view_system::shutdown();
-		shader_system::shutdown();
 		renderer->shutdown();
 		application_->platform_->shutdown();
 	}
@@ -190,10 +170,10 @@ namespace egkr
 
 		if (code == event_code::key_down)
 		{
-			const size_t array_size{ 8 };
-			auto key = (egkr::key)std::get<std::array<int16_t, array_size>>(context)[0];
+			int16_t key_value{};
+			context.get(0, key_value);
 
-			switch (key)
+			switch ((key)key_value)
 			{
 			case egkr::key::esc:
 				application_->is_running_ = false;
@@ -210,9 +190,10 @@ namespace egkr
 	{
 		if (code == event_code::resize)
 		{
-			const auto& context_array = std::get<std::array<int32_t, 4>>(context);
-			const auto& width = context_array[0];
-			const auto& height = context_array[1];
+			uint32_t width{};
+			context.get(0, width);
+			uint32_t height{};
+			context.get(1, height);
 
 			if (application_->game_->resize(width, height))
 			{
