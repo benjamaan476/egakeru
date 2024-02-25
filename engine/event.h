@@ -22,20 +22,41 @@ namespace egkr
 		event_code_size
 	};
 
-	using event_context = std::variant <
-		std::array<int64_t, 2>,
-		std::array<uint64_t, 2>,
-		std::array<double_t, 2>,
+	template<class... Ts>
+	struct overloaded : Ts...
+	{
+		using Ts::operator()...;
+	};
 
-		std::array<float_t, 4>,
-		std::array<int32_t, 4>,
-		std::array<uint32_t, 4>,
+	template<class... Ts>
+	overloaded(Ts...) -> overloaded<Ts...>;
 
-		std::array<int16_t, 8>,
-		std::array<uint16_t, 8>,
+	struct event_context
+	{
+		using context = std::variant <
+			std::array<int64_t, 2>,
+			std::array<uint64_t, 2>,
+			std::array<double_t, 2>,
 
-		std::array<int8_t, 16>,
-		std::array<uint8_t, 16>>;
+			std::array<float_t, 4>,
+			std::array<int32_t, 4>,
+			std::array<uint32_t, 4>,
+
+			std::array<int16_t, 8>,
+			std::array<uint16_t, 8>,
+
+			std::array<int8_t, 16>,
+			std::array<uint8_t, 16>>;
+
+		context context_{};
+
+		template<typename T>
+		void get(uint32_t index, T& value) const
+		{
+			constexpr uint32_t count = 16 / sizeof(T);
+			value = std::get<std::array<T, count>>(context_)[index];
+		}
+	};
 
 	using event_callback = std::function<bool(event_code, void*, void*, const event_context&)>;
 

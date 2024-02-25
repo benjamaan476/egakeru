@@ -5,8 +5,8 @@
 
 namespace egkr::render_view
 {
-render_view_skybox::render_view_skybox(const renderer_frontend* renderer, const configuration& configuration)
-	: render_view(renderer, configuration)
+render_view_skybox::render_view_skybox(const configuration& configuration)
+	: render_view(configuration)
 {}
 
 bool render_view_skybox::on_create()

@@ -47,9 +47,10 @@ namespace egkr
 		}
 	}
 
-	renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
+	bool renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
 	{
-		return std::make_unique<renderer_frontend>(type, platform);
+		renderer = std::make_unique<renderer_frontend>(type, platform);
+		return true;
 	}
 
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
@@ -221,6 +222,46 @@ namespace egkr
 	void renderer_frontend::free_material(material* texture) const
 	{
 		return backend_->free_material(texture);
+	}
+
+	texture::texture* renderer_frontend::create_texture() const
+	{
+		return backend_->create_texture();
+	}
+
+	texture::texture* renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data) const
+	{
+		return backend_->create_texture(properties, data);
+	}
+
+	void renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
+	{
+		backend_->create_texture(properties, data, out_texture);
+	}
+
+	shader::shader::shared_ptr renderer_frontend::create_shader(const shader::properties& properties) const
+	{
+		return backend_->create_shader(properties);
+	}
+
+	geometry::geometry::shared_ptr renderer_frontend::create_geometry(const geometry::properties& properties) const
+	{
+		return backend_->create_geometry(properties);
+	}
+
+	render_target::render_target::shared_ptr renderer_frontend::create_render_target() const
+	{
+		return backend_->create_render_target();
+	}
+
+	texture_map::texture_map::shared_ptr renderer_frontend::create_texture_map(const texture_map::properties& properties) const
+	{
+		return backend_->create_texture_map(properties);
+	}
+
+	renderbuffer::renderbuffer::shared_ptr renderer_frontend::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
+	{
+		return backend_->create_renderbuffer(buffer_type, size);
 	}
 
 	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const

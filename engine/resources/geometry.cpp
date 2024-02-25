@@ -1,17 +1,17 @@
 #include "geometry.h"
 
 #include "systems/material_system.h"
-#include "renderer/renderer_types.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr::geometry
 {
-	geometry::shared_ptr geometry::create(const renderer_backend* backend, const properties& properties)
+	geometry::shared_ptr geometry::create(const properties& properties)
 	{
-		return backend->create_geometry(properties);
+		return renderer->create_geometry(properties);
 	}
 
-	geometry::geometry(const renderer_backend* backend, const properties& properties)
-		: resource(properties.id, properties.generation, properties.name), properties_{properties}, backend_{ backend }
+	geometry::geometry(const properties& properties)
+		: resource(properties.id, properties.generation, properties.name), properties_{properties}
 	{
 		if (properties.material_name == default_material_name_)
 		{

@@ -8,7 +8,6 @@
 
 namespace egkr
 {
-	class renderer_backend;
 	namespace shader
 	{
 		enum class cull_mode
@@ -133,7 +132,6 @@ namespace egkr
 			uint8_t instance_uniform_count{};
 			uint8_t instance_uniform_sampler_count{};
 			uint8_t local_uniform_count{};
-			
 		};
 
 		enum state
@@ -165,9 +163,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<shader>;
-			static shared_ptr create(const renderer_backend* renderer_context, const properties& properties);
+			static shared_ptr create(const properties& properties);
 
-			shader(const renderer_backend* renderer_context, const properties& properties);
+			explicit shader(const properties& properties);
 			virtual ~shader();
 
 			uint32_t get_uniform_index(std::string_view uniform_name);
@@ -248,7 +246,6 @@ namespace egkr
 			egkr::vector<range> push_const_ranges_;
 			uint16_t attribute_stride_{};
 
-			const renderer_backend* renderer_context_{};
 			primitive_topology_type topology_types_{};
 			int16_t bound_pipeline_index_{};
 		};

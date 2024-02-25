@@ -3,13 +3,16 @@
 #include "systems/resource_system.h"
 #include "systems/job_system.h"
 
+#include "renderer/renderer_frontend.h"
+
 namespace egkr
 {
 	static texture_system::unique_ptr texture_system_{};
 
-	void texture_system::create(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
+	texture_system* texture_system::create(const texture_system_configuration& properties)
 	{
-		texture_system_ = std::make_unique<texture_system>(renderer_context, properties);
+		texture_system_ = std::make_unique<texture_system>(properties);
+		return texture_system_.get();
 	}
 
 	texture::texture* texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
@@ -26,7 +29,7 @@ namespace egkr
 		properties.data = internal_data;
 		properties.texture_type = texture::type::texture_2d;
 
-		auto t = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, nullptr);
+		auto t = texture::texture::create(properties, nullptr);
 		if (register_texture)
 		{
 			id = texture_system_->registered_textures_.size();
@@ -38,8 +41,8 @@ namespace egkr
 		return t;
 	}
 
-	texture_system::texture_system(const renderer_frontend* renderer_context, const texture_system_configuration& properties)
-		: renderer_context_{ renderer_context }, max_texture_count_{	properties.max_texture_count}
+	texture_system::texture_system(const texture_system_configuration& properties)
+		: max_texture_count_{	properties.max_texture_count}
 	{
 		if (max_texture_count_ == 0)
 		{
@@ -85,7 +88,7 @@ namespace egkr
 			}
 		}
 
-		texture_system_->default_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_texture_properties, (uint8_t*)data.data());
+		texture_system_->default_texture_ = texture::texture::create(default_texture_properties, (uint8_t*)data.data());
 		{
 			texture::properties default_diffuse_properties{};
 			default_diffuse_properties.name = default_diffuse_name;
@@ -96,7 +99,7 @@ namespace egkr
 			default_diffuse_properties.texture_type = texture::type::texture_2d;
 
 			egkr::vector<uint32_t> diffuse_data(default_diffuse_properties.width * default_diffuse_properties.height, 0xFFFFFFFF);
-			texture_system_->default_diffuse_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_diffuse_properties, (uint8_t*)diffuse_data.data());
+			texture_system_->default_diffuse_texture_ = texture::texture::create(default_diffuse_properties, (uint8_t*)diffuse_data.data());
 		}
 
 		texture::properties default_specular_properties{};
@@ -108,7 +111,7 @@ namespace egkr
 		default_specular_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
-		texture_system_->default_specular_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_specular_properties, (uint8_t*)spec_data.data());
+		texture_system_->default_specular_texture_ = texture::texture::create(default_specular_properties, (uint8_t*)spec_data.data());
 		
 		texture::properties default_normal_properties{};
 		default_normal_properties.name = default_normal_name;
@@ -133,12 +136,17 @@ namespace egkr
 				normal_data[index_bpp + 3] = 255;
 			}
 		}
-		texture_system_->default_normal_texture_ = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), default_normal_properties, (uint8_t*)normal_data.data());
+		texture_system_->default_normal_texture_ = texture::texture::create(default_normal_properties, (uint8_t*)normal_data.data());
 		
 		return true;
 	}
 
-	void texture_system::shutdown()
+	bool texture_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
+	bool texture_system::shutdown()
 	{
 		if (texture_system_->default_texture_)
 		{
@@ -167,6 +175,7 @@ namespace egkr
 		}
 		texture_system_->registered_textures_.clear();
 		texture_system_->registered_textures_by_name_.clear();
+		return true;
 	}
 
 	void texture_system::resize(texture::texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
@@ -358,7 +367,7 @@ namespace egkr
 
 	texture::texture* texture_system::load_texture(const std::string& filename, uint32_t /*id*/)
 	{
-		texture::texture* tex = texture::texture::create(texture_system_->renderer_context_->get_backend().get());
+		texture::texture* tex = texture::texture::create();
 		load_parameters params{ .out_texture = tex };
 		params.name = (char*)malloc(filename.size());
 		memcpy(params.name, filename.data(), filename.size());
@@ -410,7 +419,7 @@ namespace egkr
 		}
 
 		texture::properties properties{ .name = name.data(), .id = id, .width = width, .height = height, .channel_count = channel_count, .texture_type = texture::type::cube};
-		auto temp_texture = texture::texture::create(texture_system_->renderer_context_->get_backend().get(), properties, pixels);
+		auto temp_texture = texture::texture::create(properties, pixels);
 		free(pixels);
 		return temp_texture;
 	}
@@ -423,7 +432,7 @@ namespace egkr
 		auto properties = (texture::properties*)resource->data;
 
 		load_params->out_texture->free();
-		texture::texture::create(texture_system_->renderer_context_->get_backend().get(), *properties, (const uint8_t*)properties->data, load_params->out_texture);
+		texture::texture::create(*properties, (const uint8_t*)properties->data, load_params->out_texture);
 
 		load_params->out_texture->increment_generation();
 		resource_system::unload(load_params->resource);

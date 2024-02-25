@@ -1,17 +1,18 @@
 #include "geometry_system.h"
 #include "geometry_utils.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
 	static geometry_system::unique_ptr geometry_system_{};
-	bool geometry_system::create(const renderer_frontend* renderer_context)
+	geometry_system* geometry_system::create()
 	{
-		geometry_system_ = std::make_unique<geometry_system>(renderer_context);
-		return true;
+		geometry_system_ = std::make_unique<geometry_system>();
+		return geometry_system_.get();
 	}
 
-	geometry_system::geometry_system(const renderer_frontend* renderer_context)
-		: renderer_context_{ renderer_context }, max_geometry_count_{ 4096 }
+	geometry_system::geometry_system()
+		: max_geometry_count_{ 4096 }
 	{
 	}
 
@@ -22,22 +23,27 @@ namespace egkr
 
 	bool geometry_system::init()
 	{
-		if (geometry_system_->max_geometry_count_ == 0)
+		if (max_geometry_count_ == 0)
 		{
 			LOG_FATAL("Material max count must be > 0");
 			return false;
 		}
 
-		geometry_system_->registered_geometries_.reserve(geometry_system_->max_geometry_count_);
+		registered_geometries_.reserve(max_geometry_count_);
 		
 		auto properties = generate_cube(10, 10, 10, 1, 1, "default", "test_material");
 		generate_tangents(properties.vertices, properties.indices);
-		geometry_system_->default_geometry_ = geometry::geometry::create(geometry_system_->renderer_context_->get_backend().get(), properties);
+		default_geometry_ = geometry::geometry::create(properties);
 
 		return true;
 	}
 
-	void geometry_system::shutdown()
+	bool geometry_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
+	bool geometry_system::shutdown()
 	{
 		if (geometry_system_->default_geometry_)
 		{
@@ -50,7 +56,7 @@ namespace egkr
 			geometry->free();
 		}
 		geometry_system_->registered_geometries_.clear();
-
+		return true;
 	}
 
 	geometry::geometry::shared_ptr geometry_system::acquire(uint32_t /*id*/)
@@ -60,7 +66,7 @@ namespace egkr
 
 	geometry::geometry::shared_ptr geometry_system::acquire(const geometry::properties& properties)
 	{
-		return geometry::geometry::create(geometry_system_->renderer_context_->get_backend().get(), properties);
+		return geometry::geometry::create(properties);
 	}
 
 	void geometry_system::release_geometry(const geometry::geometry::shared_ptr& geometry)

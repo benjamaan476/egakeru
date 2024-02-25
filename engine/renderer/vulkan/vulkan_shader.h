@@ -99,9 +99,9 @@ namespace egkr::shader
 	{
 	public:
 		using shared_ptr = std::shared_ptr<shader>;
-		static shared_ptr create(const renderer_backend* renderer, const vulkan_context* context, const properties& properties);
+		static shared_ptr create(const vulkan_context* context, const properties& properties);
 
-		vulkan_shader(const renderer_backend* renderer, const vulkan_context* context, const properties& properties);
+		vulkan_shader(const vulkan_context* context, const properties& properties);
 		~vulkan_shader() override;
 
 		void free() override;

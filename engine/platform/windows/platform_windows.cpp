@@ -28,7 +28,7 @@ namespace egkr
 		return nullptr;
 	}
 
-	bool platform_windows::startup(const platform_configuration& configuration)
+	bool platform_windows::startup(const platform::configuration& configuration)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -50,8 +50,8 @@ namespace egkr
 		startup_time_ = std::chrono::steady_clock::now();
 		is_initialised_ = true;
 		return true;
-
 	}
+
 	void platform_windows::shutdown()
 	{
 		if (is_initialised_)
@@ -64,14 +64,17 @@ namespace egkr
 
 		is_initialised_ = false;
 	}
+
 	void platform_windows::pump()
 	{
 		glfwPollEvents();
 	}
+
 	bool platform_windows::is_running() const
 	{
 		return glfwWindowShouldClose(window_) == 0;
 	}
+
 	std::chrono::nanoseconds platform_windows::get_time() const
 	{
 		return std::chrono::steady_clock::now() - startup_time_;
@@ -90,6 +93,7 @@ namespace egkr
 			return;
 		}
 		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
+
 		input::process_key((egkr::key)key, pressed);
 	}
 
@@ -108,7 +112,7 @@ namespace egkr
 	{
 		event_context context{};
 		const int array_size{ 4 };
-		context = std::array<int32_t, array_size>{ width, height };
+		context.context_ = std::array<int32_t, array_size>{ width, height };
 		event::fire_event(event_code::resize, nullptr, context);
 	}
 
@@ -135,5 +139,4 @@ namespace egkr
 
 		return { width_, height_ };
 	}
-
 }

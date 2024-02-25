@@ -3,7 +3,6 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include <shared_mutex>
 #include <systems/resource_system.h>
 
 constexpr static const uint32_t OAL_PLUGIN_MUSIC_BUFFER_COUNT = 2u;
@@ -93,6 +92,8 @@ namespace egkr::audio
                 { 
                     update_stream(s->current, s);
                 }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(2));
             }
             return 0;
         }

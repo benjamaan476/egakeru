@@ -29,8 +29,6 @@ namespace egkr
 		static void run();
 		void static shutdown();
 
-		[[nodiscard]] const auto* get_renderer() const { return renderer_.get(); }
-
 	private:
 		//void reginster_event();
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
@@ -46,8 +44,6 @@ namespace egkr
 		platform::shared_ptr platform_{};
 		std::string name_{};
 		game::unique_ptr game_{};
-		renderer_frontend::unique_ptr renderer_{};
-
 	};
 
 }

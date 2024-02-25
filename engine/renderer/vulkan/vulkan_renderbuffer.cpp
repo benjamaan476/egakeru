@@ -4,13 +4,13 @@
 
 namespace egkr
 {
-	vulkan_buffer::shared_ptr vulkan_buffer::create(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size)
+	vulkan_buffer::shared_ptr vulkan_buffer::create(const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size)
 	{
-		return std::make_shared<vulkan_buffer>(backend, context, buffer_type, size);
+		return std::make_shared<vulkan_buffer>(context, buffer_type, size);
 	}
 
-	vulkan_buffer::vulkan_buffer(const renderer_backend* backend, const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size)
-		: renderbuffer{ backend, buffer_type, size }, context_{ context }
+	vulkan_buffer::vulkan_buffer(const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size)
+		: renderbuffer{ buffer_type, size }, context_{ context }
 	{
 		switch (buffer_type)
 		{
@@ -129,7 +129,7 @@ namespace egkr
 		if (is_device_local() && !is_host_visible())
 		{
 			//Create staging read buffer then read from that
-			auto read_buffer = renderbuffer::renderbuffer::create(backend_, egkr::renderbuffer::type::read, size);
+			auto read_buffer = renderbuffer::renderbuffer::create(egkr::renderbuffer::type::read, size);
 			read_buffer->bind(0);
 
 			copy_range(offset, read_buffer.get(), 0, size);
@@ -184,7 +184,7 @@ namespace egkr
 		if (is_device_local() && !is_host_visible())
 		{
 			//Create a staging buffer and load into that 
-			auto staging = renderbuffer::renderbuffer::create(backend_, egkr::renderbuffer::type::staging, size);
+			auto staging = renderbuffer::renderbuffer::create(egkr::renderbuffer::type::staging, size);
 			staging->bind(0);
 
 			staging->load_range(0, size, data);

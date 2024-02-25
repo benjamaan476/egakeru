@@ -14,7 +14,7 @@ namespace egkr
 		~platform_windows() final;
 
 		static shared_ptr create();
-		bool startup(const platform_configuration& configuration) final;
+		bool startup(const platform::configuration& configuration) final;
 		void shutdown() final;
 
 		void pump() final;

@@ -1,27 +1,28 @@
 #include "texture.h"
 
 #include "renderer/renderer_types.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
 	namespace texture
 	{
-		texture* texture::create(const renderer_backend* context)
+		texture* texture::create()
 		{
-			return context->create_texture();
+			return renderer->create_texture();
 		}
 
-		texture* texture::create(const renderer_backend* context, const properties& properties, const uint8_t* data)
+		texture* texture::create(const properties& properties, const uint8_t* data)
 		{
-			return context->create_texture(properties, data);
+			return renderer->create_texture(properties, data);
 		}
-		void texture::create(const renderer_backend* context, const properties& properties, const uint8_t* data, texture* out_texture)
+		void texture::create(const properties& properties, const uint8_t* data, texture* out_texture)
 		{
-			return context->create_texture(properties, data, out_texture);
+			return renderer->create_texture(properties, data, out_texture);
 		}
 
-		texture::texture(const renderer_backend* backend, const properties& properties)
-			: resource(properties.id, properties.generation, properties.name), backend_{backend}, properties_{ properties }
+		texture::texture(const properties& properties)
+			: resource(properties.id, properties.generation, properties.name), properties_{ properties }
 		{
 			data = (void*)properties.data;
 		}
@@ -47,10 +48,10 @@ namespace egkr
 
 	namespace texture_map
 	{
-		texture_map::shared_ptr texture_map::texture_map::create(const renderer_backend* context, const properties& properties)
+		texture_map::shared_ptr texture_map::texture_map::create(const properties& properties)
 		{
 			{
-				return context->create_texture_map(properties);
+				return renderer->create_texture_map(properties);
 			}
 		}
 

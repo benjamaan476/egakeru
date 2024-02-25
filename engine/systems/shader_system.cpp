@@ -1,44 +1,46 @@
 #include "shader_system.h"
-#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
 	static shader_system::unique_ptr shader_system_{};
 
-	bool shader_system::create(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
+	shader_system* shader_system::create(const configuration& configuration)
 	{
-		shader_system_ = std::make_unique<shader_system>(renderer_context, configuration);
-		return true;
+		shader_system_ = std::make_unique<shader_system>(configuration);
+		return shader_system_.get();
 	}
 
-	shader_system::shader_system(const renderer_frontend* renderer_context, const shader_system_configuration& configuration)
-		: renderer_context_{ renderer_context }, configuration_{ configuration }
+	shader_system::shader_system(const configuration& configuration)
+		: configuration_{ configuration }
 	{
 	}
 
 	bool shader_system::init()
 	{
-		const auto& configuration = shader_system_->configuration_;
-
-		if (configuration.max_global_textures == 0)
+		if (configuration_.max_global_textures == 0)
 		{
 			LOG_ERROR("Max global textures must be non-zero");
 			return false;
 		}
 
-		shader_system_->shaders_.reserve(configuration.max_shader_count);
-		shader_system_->shader_id_by_name_.reserve(configuration.max_shader_count);
+		shaders_.reserve(configuration_.max_shader_count);
+		shader_id_by_name_.reserve(configuration_.max_shader_count);
+		return true;
+	}
+
+	bool shader_system::update(float /*delta_time*/)
+	{
 		return true;
 	}
 
 	bool shader_system::shutdown()
 	{
-		for (const auto& shader : shader_system_->shaders_)
+		for (const auto& shader : shaders_)
 		{
 			shader->free();
 		}
-		shader_system_->shaders_.clear();
-		shader_system_->shader_id_by_name_.clear();
+		shaders_.clear();
+		shader_id_by_name_.clear();
 		return true;
 	}
 
@@ -46,7 +48,7 @@ namespace egkr
 	{
 		uint32_t id = new_shader_id();
 
-		auto shader = shader::shader::create(shader_system_->renderer_context_->get_backend().get(), properties);
+		auto shader = shader::shader::create(properties);
 		shader->set_id(id);
 
 		shader_system_->shaders_.push_back(shader);

@@ -1,20 +1,8 @@
 #include "application.h"
 #include "input.h"
 
-#include "systems/resource_system.h"
-#include "systems/texture_system.h"
-#include "systems/material_system.h"
-#include "systems/geometry_system.h"
-#include "systems/shader_system.h"
-#include "systems/camera_system.h"
 #include "systems/view_system.h"
-#include "systems/light_system.h"
-#include "systems/job_system.h"
-#include "systems/font_system.h"
 #include "systems/audio_system.h"
-
-#include "resources/transform.h"
-#include "resources/geometry.h"
 
 using namespace std::chrono_literals;
 
@@ -34,18 +22,16 @@ namespace egkr
 	}
 
 	application::application(game::unique_ptr game)
+		: name_{ game->get_application_configuration().name }
 	{
-		name_ = game->get_application_configuration().name;
 		game_ = std::move(game);
 
-		//Init subsystems
 		egkr::log::init();
-		egkr::input::init();
-		//
+		
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform_configuration platform_config = 
+		const platform::configuration platform_config = 
 		{ 
 			.start_x = start_x, 
 			.start_y = start_y,
@@ -68,109 +54,21 @@ namespace egkr
 			return;
 		}
 
-		renderer_ = renderer_frontend::create(backend_type::vulkan, platform_);
+		renderer_frontend::create(backend_type::vulkan, platform_);
 
-		resource_system_configuration resource_system_configuration{};
-		resource_system_configuration.max_loader_count = 10;
-		resource_system_configuration.base_path = "../../../../assets/";
+		system_manager::create(game_.get());
 
-		if (!resource_system::create(resource_system_configuration))
-		{
-			LOG_FATAL("Failed to create resource system");
-		}
-		resource_system::init();
-
-		texture_system::create(renderer_.get(), { 1024 });
-		if (!material_system::create(renderer_.get()))
-		{
-			LOG_FATAL("Failed to create material system");
-		}
-
-		if (!geometry_system::create(renderer_.get()))
-		{
-			LOG_FATAL("Failed to create geometry system");
-		}
-
-		shader_system_configuration shader_system_configuration{};
-		shader_system_configuration.max_global_textures = 31;
-		shader_system_configuration.max_instance_textures = 31;
-		shader_system_configuration.max_shader_count = 1024;
-		shader_system_configuration.max_uniform_count = 128;
-
-		if (!shader_system::create(renderer_.get(), shader_system_configuration))
-		{
-			LOG_FATAL("Failed to create shader system");
-		}
-
-
-		if (!camera_system::create(renderer_.get(), { 31 }))
-		{
-			LOG_FATAL("Failed to create camera system");
-		}
-
-		if (!view_system::create(renderer_.get()))
-		{
-			LOG_FATAL("Failed to create view system");
-			return;
-		}
-
-		if (!light_system::create())
-		{
-			LOG_FATAL("Failed to create light system");
-			return;
-		}
-
-		if (!renderer_->init())
+		if (!renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
-		uint8_t thread_count = 5;
-		auto is_multi = renderer_->get_backend()->is_multithreaded();
+		system_manager::init();
 
 		game_->boot();
 
-		if (!font_system::create(renderer_.get(), game_->get_font_system_configuration()))
-		{
-			LOG_FATAL("Failed to create font system");
-		}
-
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
-
-
-		std::vector<job::type> types{thread_count};
-
-		std::fill(types.begin(), types.end(), job::type::general);
-		if (thread_count == 1 || !is_multi)
-		{
-			types[0] |= job::type::gpu_resource | job::type::resource_load;
-		}
-		else if(thread_count == 2)
-		{
-			types[0] |= job::type::gpu_resource;
-			types[1] |= job::type::resource_load;
-		}
-		else
-		{
-			types[0] = job::type::gpu_resource;
-			types[1] = job::type::resource_load;
-		}
-
-		if (!job_system::job_system::create({ .thread_count = thread_count, .type_masks = types }))
-		{
-			LOG_FATAL("Failed to create job system");
-		}
-
-		shader_system::init();
-		texture_system::init();
-		material_system::init();
-		geometry_system::init();
-		font_system::init();
-		camera_system::init();
-		view_system::init();
-		light_system::init();
-		job_system::job_system::init();
 
 		game_->set_application(this);
 
@@ -201,14 +99,14 @@ namespace egkr
 
 			if (!application_->is_suspended_)
 			{
-				job_system::job_system::update();
+				system_manager::update(delta_time);
 				application_->game_->update(delta_time);
 
 				render_packet packet{};
 
 				application_->game_->render(&packet, delta_time);
 
-				application_->renderer_->draw_frame(packet);
+				renderer->draw_frame(packet);
 			}
 			auto frame_duration = application_->platform_->get_time() - frame_time;
 			if (application_->limit_framerate_ && frame_duration < application_->frame_time_)
@@ -217,6 +115,7 @@ namespace egkr
 				application_->platform_->sleep(time_remaining);
 			}
 
+			system_manager::update_input();
 			application_->last_time_ = time;
 		}
 	}
@@ -228,14 +127,8 @@ namespace egkr
 		egkr::event::unregister_event(egkr::event_code::quit, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event_code::resize, nullptr, application::on_resize);
 
-		light_system::shutdown();
-		view_system::shutdown();
-		shader_system::shutdown();
-		texture_system::shutdown();
-		material_system::shutdown();
-		geometry_system::shutdown();
-		application_->renderer_->shutdown();
-		job_system::job_system::shutdown();
+		system_manager::shutdown();
+		renderer->shutdown();
 		application_->platform_->shutdown();
 	}
 
@@ -248,10 +141,10 @@ namespace egkr
 
 		if (code == event_code::key_down)
 		{
-			const size_t array_size{ 8 };
-			auto key = (egkr::key)std::get<std::array<int16_t, array_size>>(context)[0];
+			int16_t key_value{};
+			context.get(0, key_value);
 
-			switch (key)
+			switch ((key)key_value)
 			{
 			case egkr::key::esc:
 				application_->is_running_ = false;
@@ -268,9 +161,10 @@ namespace egkr
 	{
 		if (code == event_code::resize)
 		{
-			const auto& context_array = std::get<std::array<int32_t, 4>>(context);
-			const auto& width = context_array[0];
-			const auto& height = context_array[1];
+			int32_t width{};
+			context.get(0, width);
+			int32_t height{};
+			context.get(1, height);
 
 			if (application_->game_->resize(width, height))
 			{
@@ -285,7 +179,7 @@ namespace egkr
 					application_->is_suspended_ = false;
 				}
 
-				application_->renderer_->on_resize(width, height);
+				renderer->on_resize(width, height);
 			}
 		}
 		return false;

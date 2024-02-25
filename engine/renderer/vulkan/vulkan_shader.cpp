@@ -6,13 +6,13 @@
 
 namespace egkr::shader
 {
-    shader::shared_ptr vulkan_shader::create(const renderer_backend* renderer, const vulkan_context* context, const properties& properties)
+    shader::shared_ptr vulkan_shader::create(const vulkan_context* context, const properties& properties)
     {
-        return std::make_shared<vulkan_shader>(renderer, context, properties);
+        return std::make_shared<vulkan_shader>(context, properties);
     }
 
-    vulkan_shader::vulkan_shader(const renderer_backend* renderer, const vulkan_context* context, const properties& properties)
-        : shader(renderer, properties), context_{ context }
+    vulkan_shader::vulkan_shader(const vulkan_context* context, const properties& properties)
+        : shader(properties), context_{ context }
     {
     }
 	vulkan_shader::~vulkan_shader()
@@ -335,7 +335,7 @@ namespace egkr::shader
 		set_global_ubo_stride(get_aligned(get_global_ubo_size(), 256));
 		set_ubo_stride(get_aligned(get_ubo_size(), 256));
 
-		uniform_buffer = renderbuffer::renderbuffer::create(renderer_context_, renderbuffer::type::uniform, get_global_ubo_stride() + (get_ubo_stride() * max_material_count));
+		uniform_buffer = renderbuffer::renderbuffer::create(renderbuffer::type::uniform, get_global_ubo_stride() + (get_ubo_stride() * max_material_count));
 		uniform_buffer->bind(0);
 
 		mapped_uniform_buffer_memory = uniform_buffer->map_memory(0, VK_WHOLE_SIZE);

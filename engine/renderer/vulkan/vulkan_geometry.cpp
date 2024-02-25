@@ -4,9 +4,9 @@
 
 namespace egkr::geometry
 {
-	geometry::shared_ptr vulkan_geometry::create(const renderer_backend* backend, const vulkan_context* context, const properties& properties)
+	geometry::shared_ptr vulkan_geometry::create(const vulkan_context* context, const properties& properties)
 	{
-		auto geom = std::make_shared<vulkan_geometry>(backend, context, properties);
+		auto geom = std::make_shared<vulkan_geometry>(context, properties);
 
 		if (properties.vertex_count)
 		{
@@ -19,8 +19,8 @@ namespace egkr::geometry
 		return geom;
 	}
 
-	vulkan_geometry::vulkan_geometry(const renderer_backend* backend, const vulkan_context* context, const properties& properties)
-		: geometry(backend, properties), context_{context}
+	vulkan_geometry::vulkan_geometry(const vulkan_context* context, const properties& properties)
+		: geometry(properties), context_{context}
 	{}
 
 	vulkan_geometry::~vulkan_geometry()
@@ -37,7 +37,7 @@ namespace egkr::geometry
 		vertex_count_ = properties.vertex_count;
 		vertex_size_ = properties.vertex_size;
 
-		vertex_buffer_ = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::vertex, vertex_buffer_size);
+		vertex_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::vertex, vertex_buffer_size);
 		vertex_buffer_->bind(0);
 
 		vertex_buffer_->load_range(0, vertex_buffer_size, properties.vertices);
@@ -46,7 +46,7 @@ namespace egkr::geometry
 		if (index_count_)
 		{
 			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
-			index_buffer_ = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::index, index_buffer_size);
+			index_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::index, index_buffer_size);
 			index_buffer_->bind(0);
 			index_buffer_->load_range(0, index_buffer_size, properties.indices.data());
 		}
@@ -85,7 +85,7 @@ namespace egkr::geometry
 		{
 			context_->device.logical_device.waitIdle();
 
-			backend_->free_material(material_.get());
+			material_->free();
 
 			if (vertex_buffer_)
 			{

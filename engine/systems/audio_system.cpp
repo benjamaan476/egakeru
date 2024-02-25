@@ -8,8 +8,6 @@
 
 namespace egkr::audio
 {
-
-
 	static audio_system::unique_ptr state{};
 
 	bool audio_system::create(const system_configuration& configuration)

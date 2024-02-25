@@ -1,9 +1,7 @@
 #pragma once
 #include <pch.h>
 
-#include <resources/skybox.h>
 #include <renderer/render_view.h>
-#include <renderer/camera.h>
 
 namespace egkr::render_view
 {
@@ -11,7 +9,7 @@ namespace egkr::render_view
 	class render_view_skybox : public render_view
 	{
 	public:
-		render_view_skybox(const renderer_frontend* renderer, const configuration& configuration);
+		explicit render_view_skybox(const configuration& configuration);
 		~render_view_skybox() override = default;
 
 		bool on_create() override;

@@ -5,10 +5,10 @@ namespace egkr
 
 	static light_system::unique_ptr light_system_{};
 
-	bool light_system::create()
+	light_system* light_system::create()
 	{
 		light_system_ = std::make_unique<light_system>();
-		return true;
+		return light_system_.get();
 	}
 
 	light_system::light_system()
@@ -24,15 +24,18 @@ namespace egkr
 	{
 		return true;
 	}
+
+	bool light_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
 	bool light_system::shutdown()
 	{
-		if (light_system_)
-		{
-			light_system_->point_lights_.clear();
-			light_system_->directional_light_.reset();
+		point_lights_.clear();
+		directional_light_.reset();
 
-			light_system_ = nullptr;
-		}
+		light_system_ = nullptr;
 		return true;
 	}
 

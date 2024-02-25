@@ -8,9 +8,10 @@ namespace egkr::render_view
 {
 
 
-	render_view_world::render_view_world(const renderer_frontend* renderer, const configuration& configuration)
-		: render_view(renderer, configuration)
+	render_view_world::render_view_world(const configuration& configuration)
+		: render_view(configuration)
 	{}
+
 	bool render_view_world::on_create()
 	{
 		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_MATERIAL);

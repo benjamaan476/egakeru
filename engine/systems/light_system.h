@@ -2,21 +2,24 @@
 #include <pch.h>
 
 #include <resources/light.h>
+#include <systems/system.h>
 
 namespace egkr
 {
-	class renderer_frontend;
-		class light_system
+		class light_system : public system
 		{
 		public:
 			using light_reference = uint32_t;
 			using unique_ptr = std::unique_ptr<light_system>;
-			static bool create();
-			light_system();
-			~light_system();
+			
+			static light_system* create();
 
-			static bool init();
-			static bool shutdown();
+			light_system();
+			~light_system() override;
+
+			bool init() override;
+			bool update(float delta_time) override;
+			bool shutdown() override;
 
 			static bool add_directional_light(const std::shared_ptr<light::directional_light>& light);
 			static bool remove_directional_light();
@@ -31,6 +34,5 @@ namespace egkr
 			int32_t max_point_light_count_{};
 			std::vector<light::point_light> point_lights_{};
 			std::shared_ptr<light::directional_light> directional_light_{};
-
 		};
 }

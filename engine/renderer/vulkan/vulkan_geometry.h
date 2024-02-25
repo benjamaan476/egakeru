@@ -9,9 +9,9 @@ namespace egkr::geometry
 	class vulkan_geometry : public geometry
 	{
 	public:
-		static shared_ptr create(const renderer_backend* backend, const vulkan_context* context, const properties& properties);
+		static shared_ptr create(const vulkan_context* context, const properties& properties);
 
-		vulkan_geometry(const renderer_backend* backend, const vulkan_context* context, const properties& properties);
+		vulkan_geometry(const vulkan_context* context, const properties& properties);
 		~vulkan_geometry() override;
 
 		bool populate(const properties& properties) override;

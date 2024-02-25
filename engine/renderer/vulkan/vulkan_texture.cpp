@@ -1,6 +1,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_types.h"
 
+#include <renderer/renderer_frontend.h>
 namespace egkr
 {
 	namespace image
@@ -22,9 +23,9 @@ namespace egkr
 			}
 		}
 
-		vulkan_texture* vulkan_texture::create(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
+		vulkan_texture* vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
 		{
-			auto img = new vulkan_texture(backend, context, width_, height_, properties);
+			auto img = new vulkan_texture(context, width_, height_, properties);
 
 			if (create_view)
 			{
@@ -33,9 +34,9 @@ namespace egkr
 			return img;
 		}
 
-		vulkan_texture* vulkan_texture::create_raw(const renderer_backend* backend, const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
+		vulkan_texture* vulkan_texture::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
 		{
-			auto img = new vulkan_texture(backend, context, width, height, properties);
+			auto img = new vulkan_texture(context, width, height, properties);
 
 			if (create_view)
 			{
@@ -76,11 +77,11 @@ namespace egkr
 		}
 
 		vulkan_texture::vulkan_texture()
-			: texture(nullptr, {})
+			: texture({})
 		{}
 
-		vulkan_texture::vulkan_texture(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
-			: texture(backend, properties), context_{ context }, width_{ width_ }, height_{ height_ }
+		vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
+			: texture(properties), context_{ context }, width_{ width_ }, height_{ height_ }
 		{
 
 		}
@@ -230,7 +231,7 @@ namespace egkr
 
 			auto image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
-			auto staging_buffer = renderbuffer::renderbuffer::create(backend_, renderbuffer::type::staging, size);
+			auto staging_buffer = renderbuffer::renderbuffer::create(renderbuffer::type::staging, size);
 			staging_buffer->bind(0);
 
 			staging_buffer->load_range(offset, size, data);
@@ -443,7 +444,10 @@ namespace egkr
 		{
 			if (context_)
 			{
-				texture->destroy();
+				if (texture)
+				{
+					texture->destroy();
+				}
 
 				if (sampler)
 				{

@@ -1,22 +1,15 @@
 #include "renderer_vulkan.h"
 #include "vulkan_types.h"
 
-#include "platform/windows/platform_windows.h"
 #include "swapchain.h"
-#include "pipeline.h"
 
 #include "vulkan_geometry.h"
 #include "vulkan_shader.h"
 #include "vulkan_render_target.h"
 #include "resources/shader.h"
 
-#include "systems/texture_system.h"
-#include "systems/resource_system.h"
-
 namespace egkr
 {
-
-
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
@@ -890,7 +883,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -900,7 +893,7 @@ namespace egkr
 
 	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
 	{
-		auto tex = image::vulkan_texture::create(this, &context_, properties.width, properties.height, properties, true);
+		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -912,7 +905,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		auto shade = shader::vulkan_shader::create(this, &context_, properties);
+		auto shade = shader::vulkan_shader::create(&context_, properties);
 
 		return shade;
 	}
@@ -921,7 +914,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		return geometry::vulkan_geometry::create(this, &context_, properties);
+		return geometry::vulkan_geometry::create(&context_, properties);
 	}
 
 	render_target::render_target::shared_ptr renderer_vulkan::create_render_target() const
@@ -936,7 +929,7 @@ namespace egkr
 
 	renderbuffer::renderbuffer::shared_ptr renderer_vulkan::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
 	{
-		return vulkan_buffer::create(this, &context_, buffer_type, size);
+		return vulkan_buffer::create(&context_, buffer_type, size);
 	}
 
 	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)
@@ -972,8 +965,12 @@ namespace egkr
 
 	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const
 	{
-		VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
-		context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
-		return true;
+		if (handle)
+		{
+			VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
+			context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
+			return true;
+		}
+		return false;
 	}
 }

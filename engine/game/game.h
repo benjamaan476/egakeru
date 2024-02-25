@@ -8,7 +8,6 @@ namespace egkr
 	class application;
 	struct render_packet;
 
-
 	class game
 	{
 	public:
@@ -33,7 +32,7 @@ namespace egkr
 
 	protected:
 		[[nodiscard]] auto* get_application() const { return application_;}
-		font_system_configuration font_system_configuration_{};
+		font_system::configuration font_system_configuration_{};
 		egkr::vector<render_view::configuration> render_view_configuration_{};
 
 		application* application_;

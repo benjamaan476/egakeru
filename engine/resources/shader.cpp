@@ -1,22 +1,22 @@
 #include "shader.h"
 
 #include "systems/texture_system.h"
+#include <renderer/renderer_frontend.h>
 
 namespace egkr::shader
 {
-	shader::shared_ptr shader::create(const renderer_backend* renderer_context, const properties& properties)
+	shader::shared_ptr shader::create(const properties& properties)
 	{
-		auto shade = renderer_context->create_shader(properties);
+		auto shade = renderer->create_shader(properties);
 
-		auto renderpass = renderer_context->get_renderpass(properties.renderpass_name);
+		auto renderpass = renderer->get_renderpass(properties.renderpass_name);
 		shade->populate(renderpass, properties.stage_filenames, properties.stages);
 		return shade;
 	}
 
-	shader::shader(const renderer_backend* renderer_context, const properties& properties)
+	shader::shader(const properties& properties)
 		: resource(0, 0, properties.name),
 		properties_{ properties }, 
-		renderer_context_{ renderer_context },
 		topology_types_{ properties.topology_types }
 	{
 		//TODO make backend renderer shader
@@ -59,7 +59,6 @@ namespace egkr::shader
 	{
 		return uniforms_[index];
 	}
-
 
 	void shader::set_bound_scope(scope scope)
 	{
@@ -137,7 +136,7 @@ namespace egkr::shader
 				.repeat_w = texture_map::repeat::repeat,
 			};
 
-			auto default_map = texture_map::texture_map::create(renderer_context_, default_properties);
+			auto default_map = texture_map::texture_map::create(default_properties);
 			default_map->acquire();
 			default_map->texture = texture_system::get_default_texture();
 

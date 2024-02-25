@@ -2,13 +2,12 @@
 
 namespace egkr::debug
 {
-	debug_frustum::shared_ptr debug_frustum::create(const renderer_backend* backend, const egkr::frustum& frustum)
+	debug_frustum::shared_ptr debug_frustum::create(const egkr::frustum& frustum)
 	{
-		return std::make_shared<debug_frustum>(backend, frustum);
+		return std::make_shared<debug_frustum>(frustum);
 	}
 
-	debug_frustum::debug_frustum(const renderer_backend* backend, const egkr::frustum& frustum)
-		: backend_{ backend }
+	debug_frustum::debug_frustum(const egkr::frustum& frustum)
 	{
 		vertices_.resize(2 * 12);
 
@@ -20,7 +19,7 @@ namespace egkr::debug
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 
-		geometry_ = geometry::geometry::create(backend_, properties);
+		geometry_ = geometry::geometry::create(properties);
 
 		geometry_->increment_generation();
 	}

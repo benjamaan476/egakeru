@@ -1,21 +1,23 @@
 #include "sandbox_game.h"
-#include "application/application.h"
 
 #include "input.h"
 #include <systems/view_system.h>
-#include <systems/material_system.h>
 #include <systems/geometry_system.h>
 #include <systems/shader_system.h>
 #include <systems/light_system.h>
+#include <systems/camera_system.h>
 
 #include <systems/audio_system.h>
-#include <plugins/audio/audio_loader.h>
 
-#include <ranges>
+#include <systems/material_system.h>
+
+#include <renderer/renderer_types.h>
 
 sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
 	: game(configuration)
 {
+	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
+	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
 bool sandbox_game::init()
@@ -25,13 +27,13 @@ bool sandbox_game::init()
 	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_game::on_debug_event);
 	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_game::on_debug_event);
 
-	test_text_ = egkr::text::ui_text::create(application_->get_renderer()->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
+	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
 
-	more_test_text_ = egkr::text::ui_text::create(application_->get_renderer()->get_backend().get(), egkr::text::type::bitmap, "Arial 32", 32, "a");
+	more_test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "a");
 	more_test_text_->set_position({ 50, 400, 0 });
 
-	skybox_ = egkr::skybox::skybox::create(application_->get_renderer()->get_backend().get());
+	skybox_ = egkr::skybox::skybox::create();
 
 	auto skybox_geo = egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
 	skybox_->set_geometry(egkr::geometry_system::acquire(skybox_geo));
@@ -94,10 +96,10 @@ bool sandbox_game::init()
 	std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 	ui_properties.indices = indices;
 
-	auto ui_geo = egkr::geometry::geometry::create(application_->get_renderer()->get_backend().get(), ui_properties);
+	auto ui_geo = egkr::geometry::geometry::create(ui_properties);
 	ui_meshes_.push_back(egkr::mesh::create(ui_geo, {}));
 
-	box_ = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, nullptr);
+	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
 	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
 	box_->load();
 	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
@@ -110,7 +112,7 @@ bool sandbox_game::init()
 	grid_configuration.tile_scale = 1;
 	grid_configuration.use_third_axis = true;
 
-	grid_ = egkr::debug::debug_grid::create(application_->get_renderer()->get_backend().get(), grid_configuration);
+	grid_ = egkr::debug::debug_grid::create(grid_configuration);
 	grid_->load();
 	camera_ = egkr::camera_system::get_default();
 	camera_->set_position({ 0, 0, 0.F });
@@ -130,12 +132,14 @@ bool sandbox_game::init()
 	test_emitter.looping = true;
 	test_emitter.falloff = 1.F;
 
-	egkr::audio::audio_system::set_master_volume(0.7F);
+	egkr::audio::audio_system::set_master_volume(0.001F);
 	egkr::audio::audio_system::set_channel_volume(0, 1.F);
 	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
 	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
 	egkr::audio::audio_system::set_channel_volume(3, 0.25F);
 	egkr::audio::audio_system::set_channel_volume(4, 0.F);
+	egkr::audio::audio_system::set_channel_volume(5, 0.F);
+	egkr::audio::audio_system::set_channel_volume(6, 0.F);
 	egkr::audio::audio_system::set_channel_volume(7, 0.4F);
 
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
@@ -189,7 +193,7 @@ void sandbox_game::update(double delta_time)
 		camera_->move_back(50.F * (float)delta_time);
 	}
 
-	if (egkr::input::is_key_down(egkr::key::t))
+	if (egkr::input::was_key_pressed(egkr::key::t))
 	{
 		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
 	}
@@ -197,19 +201,22 @@ void sandbox_game::update(double delta_time)
 	if (egkr::input::is_key_down(egkr::key::key_0))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 0U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 0U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::key_1))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 1U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 1U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::key_2))
 	{
 		const uint32_t array_size{ 4 };
-		egkr::event_context context = std::array<uint32_t, array_size>{ 2U };
+		egkr::event_context context;
+		context.context_ = std::array<uint32_t, array_size>{ 2U };
 		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
 	}
 	if (egkr::input::is_key_down(egkr::key::l))
@@ -221,7 +228,7 @@ void sandbox_game::update(double delta_time)
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
 	if (update_frustum_)
 	{
-		debug_frustum_ = egkr::debug::debug_frustum::create(application_->get_renderer()->get_backend().get(), camera_frustum_);
+		debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
 	}
 
 	frame_data.reset();
@@ -257,7 +264,7 @@ void sandbox_game::update(double delta_time)
 		auto& debug_data = mesh->get_debug_data();
 		if (!debug_data)
 		{
-			debug_data = egkr::debug::debug_box3d::create(application_->get_renderer()->get_backend().get(), { 0.2, 0.2, 0.2 }, &mesh->model());
+			debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, &mesh->model());
 			debug_data->load();
 		}
 
@@ -323,8 +330,6 @@ bool sandbox_game::resize(uint32_t width, uint32_t height)
 
 bool sandbox_game::boot()
 {
-	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
-	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 
 	{
 		egkr::render_view::configuration skybox_world{};
@@ -383,15 +388,15 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 	auto* game = (sandbox_game*)listener;
 	if (code == egkr::event_code::debug01)
 	{
-		//const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
+		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
-		//static int choice = 0;
-		//choice++;
-		//choice %= materials.size();
+		static int choice = 0;
+		choice++;
+		choice %= materials.size();
 
-		//auto material = egkr::material_system::acquire(materials[choice]);
-		//game->meshes_[0]->get_geometries()[0]->set_material(material);
-		game->update_frustum_ = !game->update_frustum_;
+		auto material = egkr::material_system::acquire(materials[choice]);
+		game->meshes_[0]->get_geometries()[0]->set_material(material);
+		//game->update_frustum_ = !game->update_frustum_;
 	}
 
 	if (code == egkr::event_code::debug02)

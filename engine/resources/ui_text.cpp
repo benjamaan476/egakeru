@@ -6,8 +6,6 @@
 
 namespace egkr
 {
-
-
 	namespace text
 	{
 		bool bytes_to_codepoint(const std::string& bytes, uint32_t offset, int32_t& out_codepoint, uint8_t& out_advance)
@@ -54,12 +52,12 @@ namespace egkr
 			}
 
 		}
-		ui_text::shared_ptr ui_text::create(const renderer_backend* backend, text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
+		ui_text::shared_ptr ui_text::create(text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
 		{
-			return std::make_shared<ui_text>(backend, type, font_name, font_size, text);
+			return std::make_shared<ui_text>(type, font_name, font_size, text);
 		}
 
-		ui_text::ui_text(const renderer_backend* backend, text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
+		ui_text::ui_text(text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
 			: type_{type}, text_{text}
 		{
 			acquire(font_name, font_size, type);
@@ -78,12 +76,12 @@ namespace egkr
 
 			instance_id_ = ui_shader->acquire_instance_resources({ data_->atlas });
 
-			vertex_buffer_ = renderbuffer::renderbuffer::create(backend, renderbuffer::type::vertex, text_length * quad_size);
+			vertex_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::vertex, text_length * quad_size);
 			vertex_buffer_->bind(0);
 
 			constexpr static const uint32_t quad_index_size = 6 * sizeof(uint32_t);
 
-			index_buffer_ = renderbuffer::renderbuffer::create(backend, renderbuffer::type::index, text_length * quad_index_size);
+			index_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::index, text_length * quad_index_size);
 			index_buffer_->bind(0);
 
 			if (!font_system::verify_atlas(data_, text))
@@ -116,12 +114,12 @@ namespace egkr
 
 		void ui_text::regenerate_geometry()
 		{
-			uint32_t char_length = text_.size();
+			const uint32_t char_length = text_.size();
 			constexpr static const uint64_t verts_per_quad{ 4 };
 			constexpr static const uint64_t indices_per_quad{ 6 };
 
-			uint64_t vertex_buffer_size = sizeof(vertex_2d) * verts_per_quad * char_length;
-			uint64_t index_buffer_size = sizeof(uint32_t) * indices_per_quad * char_length;
+			const uint64_t vertex_buffer_size = sizeof(vertex_2d) * verts_per_quad * char_length;
+			const uint64_t index_buffer_size = sizeof(uint32_t) * indices_per_quad * char_length;
 
 			if (vertex_buffer_size > vertex_buffer_->get_size())
 			{
@@ -211,10 +209,10 @@ namespace egkr
 						tmaxy = 1 - tmaxy;
 					}
 
-					vertex_2d p0{ .position = {minx, miny}, .tex = {tminx, tminy} };
-					vertex_2d p1{ .position = {maxx, miny}, .tex = {tmaxx, tminy} };
-					vertex_2d p2{ .position = {maxx, maxy}, .tex = {tmaxx, tmaxy} };
-					vertex_2d p3{ .position = {minx, maxy}, .tex = {tminx, tmaxy} };
+					const vertex_2d p0{ .position = {minx, miny}, .tex = {tminx, tminy} };
+					const vertex_2d p1{ .position = {maxx, miny}, .tex = {tmaxx, tminy} };
+					const vertex_2d p2{ .position = {maxx, maxy}, .tex = {tmaxx, tmaxy} };
+					const vertex_2d p3{ .position = {minx, maxy}, .tex = {tminx, tmaxy} };
 
 					vertex_buffer_data[(uc * 4) + 0] = p0;
 					vertex_buffer_data[(uc * 4) + 1] = p1;
@@ -263,7 +261,7 @@ namespace egkr
 			index_buffer_->load_range(0, index_buffer_size, index_buffer_data.data());
 		}
 
-		void ui_text::set_position(const float3 position)
+		void ui_text::set_position(const float3& position)
 		{
 			transform_.set_position(position);
 		}

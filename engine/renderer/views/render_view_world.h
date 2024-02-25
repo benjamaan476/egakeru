@@ -12,7 +12,7 @@ namespace egkr::render_view
 	class render_view_world : public render_view
 	{
 	public:
-		render_view_world(const renderer_frontend* renderer, const configuration& configuration);
+		explicit render_view_world(const configuration& configuration);
 		~render_view_world() override = default;
 		bool on_create() override;
 		bool on_destroy() override;

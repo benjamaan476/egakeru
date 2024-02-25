@@ -2,14 +2,13 @@
 
 namespace egkr::debug
 {
-	debug_grid::shared_ptr debug_grid::create(const renderer_backend* backend, const configuration& configuration)
+	debug_grid::shared_ptr debug_grid::create(const configuration& configuration)
 	{
-		return std::make_shared<debug_grid>(backend, configuration);
+		return std::make_shared<debug_grid>(configuration);
 	}
 
-	debug_grid::debug_grid(const renderer_backend* backend, const configuration& configuration)
-		: backend_{ backend },
-		name_{ configuration.name },
+	debug_grid::debug_grid(const configuration& configuration)
+		: name_{ configuration.name },
 		orientation_{ configuration.orientation },
 		tile_count_dim0_{ configuration.tile_count_dim0 },
 		tile_count_dim1_{ configuration.tile_count_dim1 },
@@ -157,7 +156,7 @@ namespace egkr::debug
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 
-		geometry_ = geometry::geometry::create(backend_, properties);
+		geometry_ = geometry::geometry::create(properties);
 		 
 		geometry_->increment_generation();
 		return true;

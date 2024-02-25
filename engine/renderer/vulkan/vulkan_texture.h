@@ -33,12 +33,12 @@ namespace egkr
 		class vulkan_texture : public texture::texture
 		{
 		public:
-			static vulkan_texture* create(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view);
-			static vulkan_texture* create_raw(const renderer_backend* backend, const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view);
+			static vulkan_texture* create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view);
+			static vulkan_texture* create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view);
 			void create_view(const properties& properties);
 
 			vulkan_texture();
-			vulkan_texture(const renderer_backend* backend, const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties);
+			vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties);
 			~vulkan_texture() override;
 
 			bool populate(const egkr::texture::properties& properties, const uint8_t* data) override;

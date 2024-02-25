@@ -59,9 +59,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<render_view>;
-			static shared_ptr create(const renderer_frontend* renderer, const configuration& configuration);
+			static shared_ptr create(const configuration& configuration);
 
-			explicit render_view(const renderer_frontend* renderer, const configuration& configuration);
+			explicit render_view(const configuration& configuration);
 			virtual ~render_view() = default;
 
 			virtual bool on_create() = 0;

@@ -3,53 +3,54 @@
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
 
-#include <resources/ui_text.h>
-
 namespace egkr
 {
 	static font_system::unique_ptr font_system_{};
 
-	
-	bool font_system::create(const renderer_frontend* renderer_context, const font_system_configuration& configuration)
+	font_system* font_system::create(const configuration& configuration)
 	{
-		font_system_ = std::make_unique<font_system>(renderer_context, configuration);
-		return true;
+		font_system_ = std::make_unique<font_system>(configuration);
+		return font_system_.get();
 	}
 
-	font_system::font_system(const renderer_frontend* context, const font_system_configuration& configuration)
-		:renderer_context_{ context }, configuration_{ configuration }
+	font_system::font_system(const configuration& configuration)
+		: configuration_{ configuration }
 	{}
 
 	bool font_system::init()
 	{
-		if (font_system_->configuration_.max_bitmap_font_count < 1 || font_system_->configuration_.max_system_font_count < 1)
+		if (configuration_.max_bitmap_font_count < 1 || configuration_.max_system_font_count < 1)
 		{
 			LOG_ERROR("Invalid font system configuration, must have space for at least one font");
 			return false;
 		}
 
-		for (const auto& bitmap: font_system_->configuration_.bitmap_font_configurations)
+		for (const auto& bitmap: configuration_.bitmap_font_configurations)
 		{
 			load_bitmap_font(bitmap);
 		}
 
-		for (const auto& system_configuration: font_system_->configuration_.system_font_configurations)
+		for (const auto& system_configuration: configuration_.system_font_configurations)
 		{
 			load_system_font(system_configuration);
 		}
 		return true;
 	}
 
+	bool font_system::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
 	bool font_system::shutdown()
 	{
-		for (auto& font : font_system_->registered_bitmap_fonts_)
+		for (auto& font : registered_bitmap_fonts_)
 		{
 			resource_system::unload(font.font.loaded_resource);
 			font.font.resource_data = nullptr;
 		}
-		font_system_->registered_bitmap_fonts_.clear();
-
-		font_system_->registered_bitmap_fonts_by_name_.clear();
+		registered_bitmap_fonts_.clear();
+		registered_bitmap_fonts_by_name_.clear();
 		return true;
 	}
 
@@ -107,7 +108,7 @@ namespace egkr
 
 	bool font_system::setup_font_data(font::data& data)
 	{
-		data.atlas = texture_map::texture_map::create(font_system_->renderer_context_->get_backend().get(), {});
+		data.atlas = texture_map::texture_map::create({});
 		data.atlas->minify = texture_map::filter::linear;
 		data.atlas->magnify = texture_map::filter::linear;
 		data.atlas->repeat_u = texture_map::repeat::clamp_to_edge;

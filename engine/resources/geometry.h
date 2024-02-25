@@ -9,7 +9,6 @@
 
 namespace egkr
 {
-	class renderer_backend;
 	namespace geometry
 	{
 		struct properties
@@ -44,9 +43,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<geometry>;
-			static shared_ptr create(const renderer_backend* backend, const properties& properties);
+			static shared_ptr create(const properties& properties);
 
-			geometry(const renderer_backend* backend, const properties& properties);
+			explicit geometry(const properties& properties);
 			virtual ~geometry() = default;
 
 			virtual bool populate(const properties& properties) = 0;
@@ -62,7 +61,6 @@ namespace egkr
 		protected:
 			properties properties_{};
 			material::shared_ptr material_{};
-			const renderer_backend* backend_{};
 		};
 
 		struct render_data
