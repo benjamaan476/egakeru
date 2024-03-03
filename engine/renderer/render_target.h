@@ -65,8 +65,9 @@ namespace egkr
 				egkr::vector<attachment_configuration> attachments{};
 			};
 
-			render_target() = default;
+			render_target(const configuration& configuration);
 
+			const auto& get_attachments() const { return attachments_; }
 			virtual ~render_target();
 			virtual bool populate(egkr::vector<texture::texture*> attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height) = 0;
 			virtual bool free(bool free_internal_memory) = 0;

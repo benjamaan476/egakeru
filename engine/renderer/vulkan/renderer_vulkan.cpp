@@ -392,22 +392,8 @@ namespace egkr
 		context_.surface = create_surface();
 		context_.device.create(&context_);
 		context_.swapchain = swapchain::create(&context_);
-		context_.on_render_target_refresh_required = configuration.on_render_target_refresh_required;
 		out_window_attachment_count = context_.swapchain->get_image_count();
 
-		for (const auto& pass_configuration : configuration.renderpass_configurations)
-		{
-			if (context_.renderpass_by_name.contains(pass_configuration.name))
-			{
-				LOG_ERROR("Renderpass already registered. Cannot register renderpass multiple times");
-				return false;
-			}
-
-			auto pass = renderpass::vulkan_renderpass::create(this, &context_, pass_configuration);
-
-			pass->populate(1.F, 0, !pass_configuration.previous_name.empty(), !pass_configuration.next_name.empty());
-			context_.renderpass_by_name[pass_configuration.name] = pass;
-		}
 
 		create_command_buffers();
 
@@ -435,12 +421,6 @@ namespace egkr
 		if (context_.instance)
 		{
 			context_.device.logical_device.waitIdle();
-
-			for (auto& [name, pass] : context_.renderpass_by_name)
-			{
-				pass->free();
-			}
-			context_.renderpass_by_name.clear();
 
 			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
 			{
@@ -517,22 +497,30 @@ namespace egkr
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.reset();
 		command_buffer.begin(false, false, false);
-		vk::Viewport viewport{};
-		viewport
-			.setX(0)
-			.setY(context_.framebuffer_height)
-			.setWidth(context_.framebuffer_width)
-			.setHeight(-(float)context_.framebuffer_height)
-			.setMinDepth(0.F)
-			.setMaxDepth(1.F);
 
-		vk::Rect2D scissor{};
-		scissor
-			.setOffset({ 0, 0 })
-			.setExtent({ context_.framebuffer_width, context_.framebuffer_height });
+		context_.viewport_rect = { 0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height };
 
-		command_buffer.get_handle().setViewport(0, viewport);
-		command_buffer.get_handle().setScissor(0, scissor);
+		set_viewport(context_.viewport_rect);
+
+		//vk::Viewport viewport{};
+		//viewport
+		//	.setX(0)
+		//	.setY(context_.framebuffer_height)
+		//	.setWidth(context_.framebuffer_width)
+		//	.setHeight(-(float)context_.framebuffer_height)
+		//	.setMinDepth(0.F)
+		//	.setMaxDepth(1.F);
+
+		context_.scissor_rect = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
+		set_scissor(context_.scissor_rect);
+
+		//vk::Rect2D scissor{};
+		//scissor
+		//	.setOffset({ 0, 0 })
+		//	.setExtent({ context_.framebuffer_width, context_.framebuffer_height });
+
+		//command_buffer.get_handle().setViewport(0, viewport);
+		//command_buffer.get_handle().setScissor(0, scissor);
 
 		return true;
 	}
@@ -849,11 +837,6 @@ namespace egkr
 		}
 
 		context_.swapchain->recreate();
-
-		if (context_.on_render_target_refresh_required)
-		{
-			context_.on_render_target_refresh_required();
-		}
 
 		create_command_buffers();
 		context_.recreating_swapchain = false;

@@ -51,7 +51,7 @@ namespace egkr
 		vk::SwapchainKHR swapchain_{};
 
 		egkr::vector<texture::texture*> render_textures_{};
-		texture::texture* depth_attachment_{};
+		egkr::vector<texture::texture*> depth_attachments_{};
 
 		uint32_t image_count_{};
 		uint8_t max_frames_in_flight_{3};

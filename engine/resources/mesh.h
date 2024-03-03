@@ -49,5 +49,6 @@ namespace egkr
 		extent3d extents_{};
 		//TODO how to do this properly?
 		debug::debug_box3d::shared_ptr debug_data{};
+		uint64_t unique_id_{};
 	};
 }

@@ -187,13 +187,30 @@ namespace egkr
 		{
 			ZoneScoped;
 
+			vk::ImageUsageFlags usage;
+			vk::ImageAspectFlags aspect;
+			vk::Format format;
+
+			if ((uint32_t)(properties_.flags & egkr::texture::flags::depth) != 0)
+			{
+				usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+				aspect = vk::ImageAspectFlagBits::eDepth;
+				format = context_->device.depth_format;
+			}
+			else
+			{
+				usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+				aspect = vk::ImageAspectFlagBits::eColor;
+				format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
+			}
+
 			{
 				image::properties properties{};
 				properties.tiling = vk::ImageTiling::eOptimal;
-				properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+				properties.usage = usage;
 				properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-				properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
-				properties.image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
+				properties.aspect_flags = aspect;
+				properties.image_format = format;
 
 				create(properties);
 
@@ -245,6 +262,42 @@ namespace egkr
 
 			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
 			return true;
+		}
+
+		void vulkan_texture::read_data(uint64_t offset, uint32_t size, void* out_memory)
+		{
+			auto format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
+
+			auto staging = renderbuffer::renderbuffer::create(renderbuffer::type::read, size);
+			staging->bind(0);
+
+			command_buffer single_use{};
+			single_use.begin_single_use(context_, context_->device.graphics_command_pool);
+			transition_layout(single_use, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal);
+			copy_to_buffer(single_use, *(vk::Buffer*)staging->get_buffer());
+			transition_layout(single_use, format, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
+			staging->read(offset, size, out_memory);
+			staging->unbind();
+		}
+
+		void vulkan_texture::read_pixel(uint32_t x, uint32_t y, uint4* out_rgba)
+		{
+			auto format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
+
+			auto staging = renderbuffer::renderbuffer::create(renderbuffer::type::read, sizeof(uint4));
+			staging->bind(0);
+
+			command_buffer single_use{};
+			single_use.begin_single_use(context_, context_->device.graphics_command_pool);
+			transition_layout(single_use, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal);
+			copy_pixel_to_buffer(single_use, properties_.texture_type, *(vk::Buffer*)staging->get_buffer(), x, y);
+			transition_layout(single_use, format, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
+			staging->read(0, sizeof(uint4), out_rgba);
+			staging->unbind();
 		}
 
 		bool vulkan_texture::resize(uint32_t width, uint32_t height)
@@ -346,6 +399,24 @@ namespace egkr
 				destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
 
 			}
+			else if (old_layout == vk::ImageLayout::eTransferSrcOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal)
+			{
+				barrier
+					.setSrcAccessMask(vk::AccessFlagBits::eTransferRead)
+					.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+
+				source_stage = vk::PipelineStageFlagBits::eTransfer;
+				destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+			}
+			else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferSrcOptimal)
+			{
+				barrier
+					.setSrcAccessMask({})
+					.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+
+				source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+				destination_stage = vk::PipelineStageFlagBits::eTransfer;
+			}
 			else
 			{
 				LOG_FATAL("Unsupported transition");
@@ -375,6 +446,54 @@ namespace egkr
 				.setImageExtent({ width_, height_, 1 });
 
 			command_buffer.get_handle().copyBufferToImage(buffer, image_, vk::ImageLayout::eTransferDstOptimal, image_copy);
+		}
+
+		void vulkan_texture::copy_to_buffer(command_buffer command_buffer, vk::Buffer buffer)
+		{
+			ZoneScoped;
+
+			vk::ImageSubresourceLayers subresource{};
+			subresource
+				.setAspectMask(vk::ImageAspectFlagBits::eColor)
+				.setMipLevel(0)
+				.setBaseArrayLayer(0);
+
+			subresource.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
+
+			vk::BufferImageCopy image_copy{};
+			image_copy
+				.setBufferOffset(0)
+				.setBufferRowLength(0)
+				.setBufferImageHeight(0)
+				.setImageSubresource(subresource)
+				.setImageExtent({ width_, height_, 1 });
+
+			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
+
+		}
+		void vulkan_texture::copy_pixel_to_buffer(command_buffer command_buffer, egkr::texture::type type, vk::Buffer buffer, uint32_t x, uint32_t y)
+		{
+			ZoneScoped;
+
+			vk::ImageSubresourceLayers subresource{};
+			subresource
+				.setAspectMask(vk::ImageAspectFlagBits::eColor)
+				.setMipLevel(0)
+				.setBaseArrayLayer(0);
+
+			subresource.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
+
+			vk::BufferImageCopy image_copy{};
+			image_copy
+				.setBufferOffset(0)
+				.setBufferRowLength(0)
+				.setBufferImageHeight(0)
+				.setImageSubresource(subresource)
+				.setImageExtent({ width_, height_, 1 })
+				.setImageOffset({ x, y, 1 });
+
+			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
+
 		}
 	}
 

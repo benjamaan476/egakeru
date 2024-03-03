@@ -83,7 +83,6 @@ namespace egkr
 		vk::SurfaceKHR surface{};
 		swapchain::shared_ptr swapchain{};
 
-		std::unordered_map<std::string, renderpass::renderpass::shared_ptr> renderpass_by_name{};
 		egkr::vector<command_buffer> graphics_command_buffers{};
 
 		egkr::vector<vk::Semaphore> image_available_semaphore{};
@@ -103,7 +102,6 @@ namespace egkr
 
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
-		std::function<void(void)> on_render_target_refresh_required{};
 
 		bool multithreading_enabled{};
 
@@ -112,6 +110,9 @@ namespace egkr
 #elif
 
 #endif
+
+		float4 viewport_rect{};
+		float4 scissor_rect{};
 
 	};
 

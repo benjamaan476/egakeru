@@ -45,9 +45,6 @@ namespace egkr
 	struct renderer_backend_configuration
 	{
 		std::string application_name{};
-		egkr::vector<renderpass::configuration> renderpass_configurations{};
-
-		std::function<void(void)> on_render_target_refresh_required{};
 	};
 
 	class renderer_backend
@@ -73,11 +70,15 @@ namespace egkr
 		virtual texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const = 0;
 		virtual renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const = 0;
 
-		virtual texture::texture* get_window_attachment(uint8_t index) = 0;
-		virtual texture::texture* get_depth_attachment() = 0;
-		virtual uint8_t get_window_index() = 0;
+		virtual void set_viewport(const float4& rect) const = 0;
+		virtual void reset_viewport() const = 0;
+		virtual void set_scissor(const float4& rect) const = 0;
+		virtual void reset_scissor() const = 0;
 
-		virtual renderpass::renderpass* get_renderpass(std::string_view name) const = 0;
+		virtual texture::texture* get_window_attachment(uint8_t index) const = 0;
+		virtual texture::texture* get_depth_attachment(uint8_t index) const = 0;
+		virtual uint8_t get_window_attachment_count() const = 0;
+		virtual uint8_t get_window_index() const = 0;
 
 		uint32_t get_frame_number() const { return frame_number_; }
 

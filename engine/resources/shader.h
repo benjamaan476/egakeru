@@ -115,12 +115,18 @@ namespace egkr
 			}
 		}
 
+		enum class flags
+		{
+			depth_write = 0x01,
+			depth_test = 0x02,
+		};
+		ENUM_CLASS_OPERATORS(flags)
+
 		struct properties
 		{
 			std::string name{};
 			egkr::vector<attribute_configuration> attributes{};
 			egkr::vector<uniform_configuration> uniforms{};
-			std::string renderpass_name{};
 			egkr::vector<stages> stages{};
 			egkr::vector<std::string> stage_names{};
 			egkr::vector<std::string> stage_filenames{};
@@ -132,6 +138,9 @@ namespace egkr
 			uint8_t instance_uniform_count{};
 			uint8_t instance_uniform_sampler_count{};
 			uint8_t local_uniform_count{};
+
+			bool depth_test{};
+			bool depth_write{};
 		};
 
 		enum state

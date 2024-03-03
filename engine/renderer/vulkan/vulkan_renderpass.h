@@ -27,7 +27,6 @@ namespace egkr
 				return renderpass_;
 			}
 
-			bool populate(float depth, float stencil, bool has_previous, bool has_next) override;
 			bool begin(render_target::render_target* render_target) const override;
 			bool end() override;
 			void free() override;

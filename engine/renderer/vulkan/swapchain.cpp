@@ -32,9 +32,9 @@ namespace egkr
 			context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
 		}
 
-		if (depth_attachment_)
+		if (auto depth : depth_attachments_)
 		{
-			depth_attachment_->destroy();
+			depth->destroy();
 		}
 
 
@@ -58,6 +58,8 @@ namespace egkr
 	void swapchain::recreate()
 	{
 		ZoneScoped;
+
+		event::fire_event(event_code::render_target_refresh_required, nullptr, {});
 
 		destroy();
 		create();
@@ -120,6 +122,7 @@ namespace egkr
 		image_count_ = swapchain_support.capabilities.minImageCount + 1;
 		max_frames_in_flight_ = image_count_ - 1;
 		render_targets_.resize(image_count_);
+		depth_attachments_.resize(image_count_);
 
 		if (swapchain_support.capabilities.maxImageCount > 0 && image_count_ > swapchain_support.capabilities.maxImageCount)
 		{
@@ -301,9 +304,11 @@ namespace egkr
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
 		//auto img = image::vulkan_texture::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
-
-		depth_attachment_ = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
-		((image::vulkan_texture*)(depth_attachment_))->create(depth_image_properties);
+		for (auto depth : depth_attachments_)
+		{
+			depth = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
+			((image::vulkan_texture*)(depth))->create(depth_image_properties);
+		}
 		return swapchain_images;
 	}
 

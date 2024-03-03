@@ -50,7 +50,7 @@ namespace egkr
 			type type{};
 			view_matrix_source view_source{};
 			projection_matrix_source projection_source{};
-			std::vector<pass_configuration> passes{};
+			std::vector<renderpass::configuration> passes{};
 		};
 
 		struct render_view_packet;
@@ -70,6 +70,8 @@ namespace egkr
 			virtual render_view_packet on_build_packet(void* data) = 0;
 			virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
 
+			virtual bool regenerate_attachment_targets(uint32_t pass_index, render_target::attachment* attachment) = 0;
+
 			static bool on_event(egkr::event_code code, void* sender, void* listener, const event_context& context);
 
 		protected:
@@ -79,7 +81,7 @@ namespace egkr
 			uint32_t height_{};
 			type type_{};
 			uint32_t mode_{};
-			std::vector<renderpass::renderpass*> renderpasses_{};
+			std::vector<renderpass::renderpass> renderpasses_{};
 			std::string custom_shader_name_{};
 			camera::shared_ptr camera_{};
 		};
