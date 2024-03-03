@@ -14,7 +14,7 @@ namespace egkr::render_view
 
 	bool render_view_world::on_create()
 	{
-		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_MATERIAL);
+		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : "Shader.Builtin.Material");
 		shader_id_ = shader->get_id();
 		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };

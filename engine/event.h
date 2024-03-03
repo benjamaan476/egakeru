@@ -15,10 +15,12 @@ namespace egkr
 		mouse_down,
 		mouse_move,
 		resize,
+		render_target_refresh_required,
 
 		debug01,
 		debug02,
 		render_mode,
+		hover_id_changed,
 		event_code_size
 	};
 

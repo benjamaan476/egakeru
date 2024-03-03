@@ -8,12 +8,6 @@
 
 namespace egkr
 {
-	class renderer_frontend;
-
-	static std::string BUILTIN_SHADER_NAME_SKYBOX{ "Shader.Builtin.Skybox" };
-	static std::string BUILTIN_SHADER_NAME_MATERIAL{ "Shader.Builtin.Material" };
-	static std::string BUILTIN_SHADER_NAME_UI{ "Shader.Builtin.UI" };
-
 	class shader_system : public system
 	{
 	public:

@@ -72,7 +72,7 @@ namespace egkr
 				text_length = 1;
 			}
 
-			auto ui_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_UI);
+			auto ui_shader = shader_system::get_shader("Shader.Builtin.UI");
 
 			instance_id_ = ui_shader->acquire_instance_resources({ data_->atlas });
 

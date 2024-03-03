@@ -11,7 +11,7 @@ render_view_skybox::render_view_skybox(const configuration& configuration)
 
 bool render_view_skybox::on_create()
 {
-	auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_SKYBOX);
+	auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : "Shader.Builtin.Skybox");
 	shader_id_ = shader->get_id();
 
 	projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());

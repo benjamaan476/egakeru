@@ -126,7 +126,7 @@ namespace egkr
 		//}
 		
 		auto shader = shader_system::get_shader(new_material->get_shader_id());
-		if (material_system_->material_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_MATERIAL)
+		if (material_system_->material_shader_id_ == invalid_32_id && properties.shader_name == "Shader.Builtin.Material")
 		{
 			material_system_->material_shader_id_ = shader->get_id();
 			material_shader_uniform_location locations{};
@@ -146,7 +146,7 @@ namespace egkr
 			locations.num_point_lights = shader->get_uniform_index("num_point_lights");
 			material_system_->material_locations_ = locations;
 		}
-		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == BUILTIN_SHADER_NAME_UI)
+		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == "Shader.Builtin.UI")
 		{
 			material_system_->ui_shader_id_ = shader->get_id();
 			ui_shader_uniform_location locations{};
@@ -229,7 +229,7 @@ namespace egkr
 		properties.specular_map_name = default_specular_name;
 		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
-		properties.shader_name = BUILTIN_SHADER_NAME_MATERIAL;
+		properties.shader_name = "Shader.Builtin.Material";
 		material_system_->default_material_ = material::create(renderer.get(), properties);
 		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
 
@@ -238,7 +238,7 @@ namespace egkr
 			map->acquire();
 		}
 
-		auto mat_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_MATERIAL);
+		auto mat_shader = shader_system::get_shader("Shader.Builtin.Material");
 		auto id = mat_shader->acquire_instance_resources(texture_maps);
 		material_system_->default_material_->set_internal_id(id);
 		return true;

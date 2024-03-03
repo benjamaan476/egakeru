@@ -14,7 +14,7 @@ namespace egkr::render_view
 
 	bool render_view_ui::on_create()
 	{
-		shader_ = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_UI);
+		shader_ = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : "Shader.Builtin.UI");
 		shader_id_ = shader_->get_id();
 
 		diffuse_map_location_ = shader_->get_uniform_index("diffuse_texture");

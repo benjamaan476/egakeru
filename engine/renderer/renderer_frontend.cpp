@@ -138,11 +138,11 @@ namespace egkr
 		ui_renderpass_->set_render_targets(ui_render_targets_);
 		regenerate_render_targets();
 
-		auto skybox_shader_resource = resource_system::load(BUILTIN_SHADER_NAME_SKYBOX, resource_type::shader, nullptr);
+		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource_type::shader, nullptr);
 		shader_system::create_shader(*(shader::properties*)skybox_shader_resource->data);
 		resource_system::unload(skybox_shader_resource);
 
-		auto resource = resource_system::load(BUILTIN_SHADER_NAME_MATERIAL, resource_type::shader, nullptr);
+		auto resource = resource_system::load( "Shader.Builtin.Material", resource_type::shader, nullptr);
 		auto shader = (shader::properties*)resource->data;
 
 		shader_system::create_shader(*shader);
@@ -150,16 +150,16 @@ namespace egkr
 		resource_system::unload(resource);
 
 
-		auto ui_resource = resource_system::load(BUILTIN_SHADER_NAME_UI, resource_type::shader, nullptr);
+		auto ui_resource = resource_system::load("Shader.Builtin.UI", resource_type::shader, nullptr);
 		auto ui_shader = (shader::properties*)ui_resource->data;
 
 		shader_system::create_shader(*ui_shader);
 
 		resource_system::unload(ui_resource);
 
-		skybox_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_SKYBOX);
-		material_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_MATERIAL);
-		ui_shader_id = shader_system::get_shader_id(BUILTIN_SHADER_NAME_UI);
+		skybox_shader_id = shader_system::get_shader_id("Shader.Builtin.Skybox");
+		material_shader_id = shader_system::get_shader_id("Shader.Builtin.Material");
+		ui_shader_id = shader_system::get_shader_id("Shader.Builtin.UI");
 
 		return backen_init;
 	}
