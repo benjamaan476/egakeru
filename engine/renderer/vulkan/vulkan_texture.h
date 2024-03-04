@@ -44,8 +44,8 @@ namespace egkr
 			bool populate(const egkr::texture::properties& properties, const uint8_t* data) override;
 			bool populate_writeable() override;
 			bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) override;
-			void read_data(uint64_t offset, uint32_t size, void* out_memory);
-			void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba);
+			void read_data(uint64_t offset, uint32_t size, void* out_memory) override;
+			void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) override;
 			bool resize(uint32_t width, uint32_t height) override;
 			void free() override;
 
@@ -56,7 +56,7 @@ namespace egkr
 			void transition_layout(command_buffer command_buffer, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
 			void copy_from_buffer(command_buffer command_buffer, vk::Buffer buffer);
 			void copy_to_buffer(command_buffer command_buffer, vk::Buffer buffer);
-			void copy_pixel_to_buffer(command_buffer command_buffer, egkr::texture::type type, vk::Buffer buffer, uint32_t x, uint32_t y);
+			void copy_pixel_to_buffer(command_buffer command_buffer, vk::Buffer buffer, uint32_t x, uint32_t y);
 
 			[[nodiscard]] const auto& get_image() const { return image_; }
 			void set_image(vk::Image image) { image_ = image; }

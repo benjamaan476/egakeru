@@ -4,6 +4,8 @@
 #include <systems/shader_system.h>
 #include <renderer/vertex_types.h>
 
+#include <identifier.h>
+
 namespace egkr
 {
 	namespace text
@@ -91,6 +93,12 @@ namespace egkr
 			}
 
 			regenerate_geometry();
+			unique_id_ = identifier::acquire_unique_id(this);
+		}
+
+		ui_text::~ui_text()
+		{
+			identifier::release_id(unique_id_);
 		}
 
 		void ui_text::acquire(const std::string& name, uint16_t /*font_size*/, type type)

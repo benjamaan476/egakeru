@@ -36,11 +36,6 @@ namespace egkr
 			default_orthogonal
 		};
 
-		struct pass_configuration
-		{
-			std::string name{};
-		};
-
 		struct configuration
 		{
 			std::string name{};
@@ -70,8 +65,9 @@ namespace egkr
 			virtual render_view_packet on_build_packet(void* data) = 0;
 			virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
 
-			virtual bool regenerate_attachment_targets(uint32_t pass_index, render_target::attachment* attachment) = 0;
+			virtual bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) = 0;
 
+			void regenerate_render_targets();
 			static bool on_event(egkr::event_code code, void* sender, void* listener, const event_context& context);
 
 		protected:
@@ -81,7 +77,7 @@ namespace egkr
 			uint32_t height_{};
 			type type_{};
 			uint32_t mode_{};
-			std::vector<renderpass::renderpass> renderpasses_{};
+			std::vector<renderpass::renderpass::shared_ptr> renderpasses_{};
 			std::string custom_shader_name_{};
 			camera::shared_ptr camera_{};
 		};

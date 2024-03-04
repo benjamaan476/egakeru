@@ -96,7 +96,6 @@ namespace egkr
 		uint32_t image_index{};
 		uint32_t current_frame{};
 
-		bool recreating_swapchain{};
 		uint32_t framebuffer_size_generation{};
 		uint32_t framebuffer_last_size_generation{};
 
@@ -104,6 +103,7 @@ namespace egkr
 		uint64_t geometry_index_offset{};
 
 		bool multithreading_enabled{};
+		bool recreating_swapchain{};
 
 #ifdef ENABLE_DEBUG_MACRO
 		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
@@ -113,7 +113,6 @@ namespace egkr
 
 		float4 viewport_rect{};
 		float4 scissor_rect{};
-
 	};
 
 	struct queue_family_indices

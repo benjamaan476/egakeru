@@ -292,7 +292,7 @@ namespace egkr
 			command_buffer single_use{};
 			single_use.begin_single_use(context_, context_->device.graphics_command_pool);
 			transition_layout(single_use, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal);
-			copy_pixel_to_buffer(single_use, properties_.texture_type, *(vk::Buffer*)staging->get_buffer(), x, y);
+			copy_pixel_to_buffer(single_use, *(vk::Buffer*)staging->get_buffer(), x, y);
 			transition_layout(single_use, format, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
@@ -471,7 +471,7 @@ namespace egkr
 			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
 
 		}
-		void vulkan_texture::copy_pixel_to_buffer(command_buffer command_buffer, egkr::texture::type type, vk::Buffer buffer, uint32_t x, uint32_t y)
+		void vulkan_texture::copy_pixel_to_buffer(command_buffer command_buffer, vk::Buffer buffer, uint32_t x, uint32_t y)
 		{
 			ZoneScoped;
 
@@ -489,8 +489,8 @@ namespace egkr
 				.setBufferRowLength(0)
 				.setBufferImageHeight(0)
 				.setImageSubresource(subresource)
-				.setImageExtent({ width_, height_, 1 })
-				.setImageOffset({ x, y, 1 });
+				.setImageExtent({ 1, 1, 1 })
+				.setImageOffset({ (int32_t)x, (int32_t)y, 1 });
 
 			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
 

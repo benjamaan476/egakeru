@@ -1,6 +1,7 @@
 #include "render_view_ui.h"
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
+#include <systems/resource_system.h>
 #include <renderer/renderer_types.h>
 
 #include <resources/ui_text.h>
@@ -10,12 +11,18 @@ namespace egkr::render_view
 {
 	render_view_ui::render_view_ui(const configuration& configuration)
 		:render_view(configuration)
-	{}
+	{
+	}
 
 	bool render_view_ui::on_create()
 	{
-		shader_ = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : "Shader.Builtin.UI");
-		shader_id_ = shader_->get_id();
+		auto ui_resource = resource_system::load("Shader.Builtin.UI", resource_type::shader, nullptr);
+		auto ui_shader = (shader::properties*)ui_resource->data;
+
+		shader_system::create_shader(*ui_shader, renderpasses_[0].get());
+
+		resource_system::unload(ui_resource);
+		shader_ = shader_system::get_shader("Shader.Builtin.UI");
 
 		diffuse_map_location_ = shader_->get_uniform_index("diffuse_texture");
 		diffuse_colour_location_ = shader_->get_uniform_index("diffuse_colour");
@@ -25,11 +32,14 @@ namespace egkr::render_view
 		far_clip_ = 100.F;
 		projection_ = glm::ortho(0.F, (float)width_, (float)height_, 0.F, near_clip_, far_clip_);
 		view_ = float4x4{ 1.F };
+
+		event::register_event(event_code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 
 	bool render_view_ui::on_destroy()
 	{
+		event::unregister_event(event_code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 
@@ -45,7 +55,7 @@ namespace egkr::render_view
 			{
 				pass->set_render_area(width_, height_);
 			}
-	}
+		}
 	}
 
 	render_view_packet render_view_ui::on_build_packet(void* data)
@@ -56,7 +66,7 @@ namespace egkr::render_view
 		packet.render_view = this;
 		packet.projection_matrix = projection_;
 		packet.view_matrix = view_;
-packet.extended_data =  new ui_packet_data(*ui_data);
+		packet.extended_data = new ui_packet_data(*ui_data);
 
 		for (const auto& mesh : ui_data->mesh_data.meshes)
 		{
@@ -75,9 +85,10 @@ packet.extended_data =  new ui_packet_data(*ui_data);
 		{
 			pass->begin(pass->get_render_targets()[render_target_index].get());
 
-			shader_system::use(shader_id_);
+			shader_->use();
+			shader_->bind_globals();
 
-			material_system::apply_global(shader_id_, render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
+			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
 
 			for (auto render_data : render_view_packet->render_data)
 			{
@@ -117,4 +128,28 @@ packet.extended_data =  new ui_packet_data(*ui_data);
 		return true;
 	}
 
+	bool render_view_ui::on_event(event_code code, void* /*sender*/, void* listener, const event_context& /*context*/)
+	{
+		auto* self = (render_view_ui*)listener;
+
+		if (!self)
+		{
+			return false;
+		}
+
+		switch (code)
+		{
+		case egkr::event_code::render_target_refresh_required:
+			self->regenerate_render_targets();
+			return false;
+		default:
+			break;
+		}
+		return false;
+	}
+
+	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
+	{
+		return true;
+	}
 }

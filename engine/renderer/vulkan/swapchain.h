@@ -28,10 +28,10 @@ namespace egkr
 
 		const auto& get_format() const { return format_; }
 		const auto& get_image_count() const { return image_count_; }
-		const auto& get_depth_attachment() const { return depth_attachment_; }
 		const auto& get_max_frames_in_flight() const { return max_frames_in_flight_; }
 
 		const auto& get_render_texture(uint32_t frame) const { return render_textures_[frame]; }
+		const auto& get_depth_attachment(uint32_t frame) const { return depth_attachments_[frame]; }
 		const auto& get_framebuffer(uint32_t frame) const { return render_targets_[frame]; }
 		auto& get_render_targets() const { return render_targets_; }
 	private:

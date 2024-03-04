@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "vulkan_renderpass.h"
+#include <resources/shader.h>
 
 namespace egkr
 {

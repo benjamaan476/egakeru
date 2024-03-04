@@ -1,18 +1,23 @@
 #include "renderpass.h"
 #include "renderer_types.h"
+#include <renderer/renderer_frontend.h>
 
 namespace egkr::renderpass
 {
 
-	renderpass::renderpass(const renderer_backend* renderer, const configuration& configuration) :  render_area_{configuration.render_area}, renderer_{ renderer }
+	renderpass::shared_ptr renderpass::create(const configuration& configuration)
 	{
-		clear_colour_ = configuration.clear_colour;
-		clear_flags_ = configuration.clear_flags;
+		return renderer->create_renderpass(configuration);		
+	}
+
+	renderpass::renderpass(const configuration& configuration)
+		: render_area_{ configuration.render_area }, clear_colour_{ configuration.clear_colour }, clear_flags_{ configuration.clear_flags }, depth_{ configuration.depth }, stencil_{configuration.stencil}
+	{
 	}
 	
 	renderpass::~renderpass()
 	{
-		render_targets.clear();
+		render_targets_.clear();
 	}
 
 void renderpass::set_render_area(uint32_t width, uint32_t height)

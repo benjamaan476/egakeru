@@ -32,16 +32,11 @@ namespace egkr
 			context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
 		}
 
-		if (auto depth : depth_attachments_)
+		for (auto depth : depth_attachments_)
 		{
 			depth->destroy();
 		}
 
-
-		for (auto& texture : render_textures_)
-		{
-			texture->free();
-		}
 		render_textures_.clear();
 
 		image_count_ = 0;

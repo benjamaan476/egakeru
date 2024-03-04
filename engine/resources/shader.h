@@ -138,9 +138,7 @@ namespace egkr
 			uint8_t instance_uniform_count{};
 			uint8_t instance_uniform_sampler_count{};
 			uint8_t local_uniform_count{};
-
-			bool depth_test{};
-			bool depth_write{};
+			flags flags{};
 		};
 
 		enum state
@@ -172,7 +170,7 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<shader>;
-			static shared_ptr create(const properties& properties);
+			static shared_ptr create(const properties& properties, renderpass::renderpass* pass);
 
 			explicit shader(const properties& properties);
 			virtual ~shader();
@@ -257,6 +255,8 @@ namespace egkr
 
 			primitive_topology_type topology_types_{};
 			int16_t bound_pipeline_index_{};
+
+			flags flags_{};
 		};
 	}
 }

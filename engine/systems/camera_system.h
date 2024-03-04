@@ -33,7 +33,7 @@ namespace egkr
 		static camera::shared_ptr get_default();
 
 	private:
-		static void create_default();
+		void create_default();
 	private:
 		configuration configuration_{};
 

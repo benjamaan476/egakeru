@@ -290,7 +290,6 @@ namespace egkr::shader
 		pipeline_properties.descriptor_set_layout = descriptor_set_layout;
 		pipeline_properties.shader_stage_info = stage_create_infos;
 		pipeline_properties.is_wireframe = false;
-		pipeline_properties.depth_test_enabled = true;
 		pipeline_properties.scissor = scissor;
 		pipeline_properties.viewport = viewport;
 		pipeline_properties.push_constant_ranges = get_push_constant_ranges();
@@ -518,7 +517,6 @@ namespace egkr::shader
 		vulkan_instance_state instance_state;
 
 		instance_state.instance_textures = texture_maps;
-
 		instance_state.offset = get_global_ubo_stride();
 
 		egkr::vector<vk::DescriptorSetLayout> layouts{ descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE], descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE], descriptor_set_layout[DESCRIPTOR_SET_INDEX_INSTANCE] };

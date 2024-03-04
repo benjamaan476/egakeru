@@ -41,6 +41,7 @@ namespace egkr
 		}
 
 		[[nodiscard]] auto& get_debug_data() { return debug_data; }
+		[[nodiscard]] auto& unique_id() { return unique_id_; }
 
 		static shared_ptr load(std::string_view name);
 	private:
@@ -49,6 +50,6 @@ namespace egkr
 		extent3d extents_{};
 		//TODO how to do this properly?
 		debug::debug_box3d::shared_ptr debug_data{};
-		uint64_t unique_id_{};
+		uint32_t unique_id_{};
 	};
 }

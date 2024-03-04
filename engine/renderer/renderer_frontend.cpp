@@ -28,25 +28,6 @@ void operator delete(void* ptr) noexcept
 
 namespace egkr
 {
-	void renderer_frontend::regenerate_render_targets()
-	{
-		for (auto i{ 0U }; i < window_attachment_count; ++i)
-		{
-			auto world = world_render_targets_[i].get();
-			world->free(true);
-
-			ui_render_targets_[i]->free(true);
-			skybox_render_targets_[i]->free(true);
-
-			auto colour = backend_->get_window_attachment(i);
-			auto depth = backend_->get_depth_attachment();
-
-			skybox_render_targets_[i]->populate({colour}, skybox_renderpass_, framebuffer_width_, framebuffer_height_);
-			world->populate({ colour, depth }, world_renderpass_, framebuffer_width_, framebuffer_height_);
-			ui_render_targets_[i]->populate({ colour }, ui_renderpass_, framebuffer_width_, framebuffer_height_);
-		}
-	}
-
 	bool renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
 	{
 		renderer = std::make_unique<renderer_frontend>(type, platform);
@@ -78,112 +59,14 @@ namespace egkr
 
 	bool renderer_frontend::init()
 	{
-		egkr::vector<renderpass::configuration> renderpasses{};
-
-		renderpass::configuration skybox{};
-		skybox.name = "Renderpass.Builtin.Skybox";
-		skybox.previous_name = "";
-		skybox.next_name = "world-opaque";
-		skybox.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
-		skybox.clear_flags = renderpass::clear_flags::colour;
-		renderpasses.push_back(skybox);
-
-
-		renderpass::configuration world{};
-		world.name = "Renderpass.Builtin.World";
-		world.previous_name = "skybox";
-		world.next_name = "ui";
-		world.clear_colour = { 0.F, 0.F, 0.2F, 1.F };
-		world.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
-		world.clear_flags = renderpass::clear_flags::depth | renderpass::clear_flags::stencil;
-		renderpasses.push_back(world);
-
-		renderpass::configuration ui{};
-		ui.name = "Renderpass.Builtin.UI";
-		ui.previous_name = "world-opaque";
-		ui.next_name = "";
-		ui.clear_flags = renderpass::clear_flags::none;
-		ui.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
-		renderpasses.push_back(ui);
-
 		renderer_backend_configuration configuration{};
-		configuration.on_render_target_refresh_required = std::bind(&renderer_frontend::regenerate_render_targets, this);
-		configuration.renderpass_configurations = renderpasses;
-
 		auto backen_init = backend_->init(configuration, window_attachment_count);
-
-		skybox_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.Skybox");
-		world_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.World");
-		ui_renderpass_ = backend_->get_renderpass("Renderpass.Builtin.UI");
-
-		for (auto& render_target : skybox_render_targets_)
-		{
-			render_target = backend_->create_render_target();
-		}
-
-		skybox_renderpass_->set_render_targets(skybox_render_targets_);
-
-		for (auto& render_target : world_render_targets_)
-		{
-			render_target = backend_->create_render_target();
-		}
-
-		world_renderpass_->set_render_targets(world_render_targets_);
-
-		for (auto& render_target : ui_render_targets_)
-		{
-			render_target = backend_->create_render_target();
-		}
-
-		ui_renderpass_->set_render_targets(ui_render_targets_);
-		regenerate_render_targets();
-
-		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource_type::shader, nullptr);
-		shader_system::create_shader(*(shader::properties*)skybox_shader_resource->data);
-		resource_system::unload(skybox_shader_resource);
-
-		auto resource = resource_system::load( "Shader.Builtin.Material", resource_type::shader, nullptr);
-		auto shader = (shader::properties*)resource->data;
-
-		shader_system::create_shader(*shader);
-
-		resource_system::unload(resource);
-
-
-		auto ui_resource = resource_system::load("Shader.Builtin.UI", resource_type::shader, nullptr);
-		auto ui_shader = (shader::properties*)ui_resource->data;
-
-		shader_system::create_shader(*ui_shader);
-
-		resource_system::unload(ui_resource);
-
-		skybox_shader_id = shader_system::get_shader_id("Shader.Builtin.Skybox");
-		material_shader_id = shader_system::get_shader_id("Shader.Builtin.Material");
-		ui_shader_id = shader_system::get_shader_id("Shader.Builtin.UI");
 
 		return backen_init;
 	}
 
 	void renderer_frontend::shutdown()
 	{
-		for (auto& target : skybox_render_targets_)
-		{
-			target->free(true);
-		}
-		skybox_render_targets_.clear();
-
-		for (auto& target : world_render_targets_)
-		{
-			target->free(true);
-		}
-		world_render_targets_.clear();
-
-		for (auto& target : ui_render_targets_)
-		{
-			target->free(true);
-		}
-		ui_render_targets_.clear();
-
 		backend_->shutdown();
 	}
 
@@ -194,15 +77,10 @@ namespace egkr
 
 		view_system::on_window_resize(width, height);
 
-		world_renderpass_->get_render_area().z = width;
-		world_renderpass_->get_render_area().w = height;
-		ui_renderpass_->get_render_area().z = width;
-		ui_renderpass_->get_render_area().w = height;
-
 		backend_->resize(width, height);
 	}
 
-	void renderer_frontend::draw_frame(const render_packet& packet)
+	void renderer_frontend::draw_frame(render_packet& packet) const
 	{
 		if (backend_->begin_frame())
 		{
@@ -249,9 +127,14 @@ namespace egkr
 		return backend_->create_geometry(properties);
 	}
 
-	render_target::render_target::shared_ptr renderer_frontend::create_render_target() const
+	render_target::render_target::shared_ptr renderer_frontend::create_render_target(egkr::vector<render_target::attachment> attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const
 	{
-		return backend_->create_render_target();
+		return backend_->create_render_target(attachments, pass, width, height);
+	}
+
+	renderpass::renderpass::shared_ptr renderer_frontend::create_renderpass(const renderpass::configuration& configuration) const
+	{
+		return backend_->create_renderpass(configuration);
 	}
 
 	texture_map::texture_map::shared_ptr renderer_frontend::create_texture_map(const texture_map::properties& properties) const
@@ -264,9 +147,23 @@ namespace egkr
 		return backend_->create_renderbuffer(buffer_type, size);
 	}
 
-	renderpass::renderpass* renderer_frontend::get_renderpass(std::string_view renderpass_name) const
+	void renderer_frontend::set_viewport(const float4& rect) const
 	{
-		return backend_->get_renderpass(renderpass_name);
+		backend_->set_viewport(rect);
 	}
 
+	void renderer_frontend::reset_viewport() const
+	{
+		backend_->reset_viewport();
+	}
+
+	void renderer_frontend::set_scissor(const float4& rect) const
+	{
+		backend_->set_scissor(rect);
+	}
+
+	void renderer_frontend::reset_scissor() const
+	{
+		backend_->reset_scissor();
+	}
 }

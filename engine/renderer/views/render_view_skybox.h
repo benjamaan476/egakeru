@@ -2,6 +2,7 @@
 #include <pch.h>
 
 #include <renderer/render_view.h>
+#include <resources/shader.h>
 
 namespace egkr::render_view
 {
@@ -17,9 +18,10 @@ namespace egkr::render_view
 		void on_resize(uint32_t width, uint32_t height) override;
 		render_view_packet on_build_packet(void* data) override;
 		bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const override;
-
+		bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) override;
+		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 	private:
-		uint32_t shader_id_{invalid_32_id};
+		shader::shader::shared_ptr shader_{};
 		float4x4 projection_{};
 
 		uint16_t projection_location_{};

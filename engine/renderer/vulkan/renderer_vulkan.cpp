@@ -376,6 +376,7 @@ namespace egkr
 
 	bool renderer_vulkan::init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count)
 	{
+		application_name_ = configuration.application_name;
 		ZoneScoped;
 
 		if (!init_instance())
@@ -502,25 +503,9 @@ namespace egkr
 
 		set_viewport(context_.viewport_rect);
 
-		//vk::Viewport viewport{};
-		//viewport
-		//	.setX(0)
-		//	.setY(context_.framebuffer_height)
-		//	.setWidth(context_.framebuffer_width)
-		//	.setHeight(-(float)context_.framebuffer_height)
-		//	.setMinDepth(0.F)
-		//	.setMaxDepth(1.F);
-
 		context_.scissor_rect = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
 		set_scissor(context_.scissor_rect);
 
-		//vk::Rect2D scissor{};
-		//scissor
-		//	.setOffset({ 0, 0 })
-		//	.setExtent({ context_.framebuffer_width, context_.framebuffer_height });
-
-		//command_buffer.get_handle().setViewport(0, viewport);
-		//command_buffer.get_handle().setScissor(0, scissor);
 
 		return true;
 	}
@@ -900,9 +885,14 @@ namespace egkr
 		return geometry::vulkan_geometry::create(&context_, properties);
 	}
 
-	render_target::render_target::shared_ptr renderer_vulkan::create_render_target() const
+	render_target::render_target::shared_ptr renderer_vulkan::create_render_target(const egkr::vector<render_target::attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const
 	{
-		return render_target::vulkan_render_target::create(&context_);
+		return render_target::vulkan_render_target::create(&context_, attachments, pass, width, height);
+	}
+
+	renderpass::renderpass::shared_ptr renderer_vulkan::create_renderpass(const renderpass::configuration& configuration) const
+	{
+		return renderpass::vulkan_renderpass::create(&context_, configuration);
 	}
 
 	texture_map::texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
@@ -915,7 +905,43 @@ namespace egkr
 		return vulkan_buffer::create(&context_, buffer_type, size);
 	}
 
-	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index)
+	void renderer_vulkan::set_viewport(const float4& rect) const
+	{
+		vk::Viewport viewport{};
+		viewport
+			.setX(rect.x)
+			.setY(rect.y)
+			.setWidth(rect.z)
+			.setHeight(rect.w)
+			.setMinDepth(0.F)
+			.setMaxDepth(1.F);
+
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		command_buffer.get_handle().setViewport(0, viewport);
+	}
+
+	void renderer_vulkan::reset_viewport() const
+	{
+		set_viewport(context_.viewport_rect);
+	}
+
+	void renderer_vulkan::set_scissor(const float4& rect) const
+	{
+		vk::Rect2D scissor{};
+		scissor
+			.setOffset({ (int32_t)rect.x, (int32_t)rect.y })
+			.setExtent({ (uint32_t)rect.z, (uint32_t)rect.w });
+
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		command_buffer.get_handle().setScissor(0, scissor);
+	}
+
+	void renderer_vulkan::reset_scissor() const
+	{
+		set_scissor(context_.scissor_rect);
+	}
+
+	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index) const
 	{
 		if (index >= context_.swapchain->get_image_count())
 		{
@@ -925,25 +951,14 @@ namespace egkr
 		return context_.swapchain->get_render_texture(index);
 	}
 
-	texture::texture* renderer_vulkan::get_depth_attachment()
+	texture::texture* renderer_vulkan::get_depth_attachment(uint8_t index) const
 	{
-		return context_.swapchain->get_depth_attachment();
+		return context_.swapchain->get_depth_attachment(index);
 	}
 
-	uint8_t renderer_vulkan::get_window_index()
+	uint8_t renderer_vulkan::get_window_index() const
 	{
 		return context_.image_index;
-	}
-
-	renderpass::renderpass* renderer_vulkan::get_renderpass(std::string_view name) const
-	{
-		if (context_.renderpass_by_name.contains(name.data()))
-		{
-			return context_.renderpass_by_name.at(name.data()).get();
-		}
-
-		LOG_ERROR("Attaempted to get unknown renderpass");
-		return nullptr;
 	}
 
 	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const

@@ -63,9 +63,11 @@ namespace egkr
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
-		system_manager::init();
 
 		game_->boot();
+		std::ranges::for_each(game_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
+
+		system_manager::init();
 
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
@@ -77,7 +79,6 @@ namespace egkr
 			LOG_ERROR("FAiled to create game");
 		}
 
-		std::ranges::for_each(game_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
 		event::register_event(event_code::key_down, nullptr, application::on_event);
 		event::register_event(event_code::quit, nullptr, application::on_event);
 		event::register_event(event_code::resize, nullptr, application::on_resize);
@@ -153,6 +154,7 @@ namespace egkr
 				break;
 			}
 		}
+
 
 		return false;
 	}

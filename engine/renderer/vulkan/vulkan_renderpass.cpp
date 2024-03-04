@@ -5,21 +5,14 @@
 
 namespace egkr::renderpass
 {
-	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const renderer_backend* renderer, vulkan_context* context, const egkr::renderpass::configuration& configuration)
+	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const vulkan_context* context, const egkr::renderpass::configuration& configuration)
 	{
-		return std::make_shared<vulkan_renderpass>(renderer, context, configuration);
+		return std::make_shared<vulkan_renderpass>(context, configuration);
 	}
 
-	vulkan_renderpass::vulkan_renderpass(const renderer_backend* renderer, vulkan_context* context, const egkr::renderpass::configuration& configuration)
-		: renderpass{renderer, configuration}, context_{ context } 
+	vulkan_renderpass::vulkan_renderpass(const vulkan_context* context, const egkr::renderpass::configuration& configuration)
+		: renderpass{configuration}, context_{ context } 
 	{
-		render_area_ = configuration.render_area;
-		clear_flags_ = configuration.clear_flags;
-		clear_colour_ = configuration.clear_colour;
-
-		depth_ = configuration.depth;
-		stencil_ = configuration.stencil;
-
 		vk::SubpassDescription subpasses{};
 		subpasses
 			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
@@ -27,9 +20,7 @@ namespace egkr::renderpass
 		egkr::vector<vk::AttachmentDescription> colour_attachments{};
 		egkr::vector<vk::AttachmentDescription> depth_attachments{};
 
-		for (const auto& target : configuration.targets)
-		{
-			for (const auto& attachment_config : target.attachments)
+			for (const auto& attachment_config : configuration.target.attachments)
 			{
 				vk::AttachmentDescription attach{};
 				if (attachment_config.type == render_target::attachment_type::colour)
@@ -86,7 +77,7 @@ namespace egkr::renderpass
 
 					attach.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare);
 					attach.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare);
-					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eAttachmentOptimal : vk::ImageLayout::eUndefined);
+					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined);
 					attach.setFinalLayout(attachment_config.present_after ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eColorAttachmentOptimal);
 
 					colour_attachments.push_back(attach);
@@ -152,8 +143,57 @@ namespace egkr::renderpass
 					depth_attachments.push_back(attach);
 				}
 			}
+
+		uint32_t attachment_added{};
+
+		egkr::vector<vk::AttachmentReference> colour_attachment_references{};
+		for (auto i{ 0U }; i < colour_attachments.size(); ++i)
+		{
+			vk::AttachmentReference ref{};
+			ref
+				.setAttachment(attachment_added)
+				.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+			colour_attachment_references.push_back(ref);
+
+			++attachment_added;
 		}
 
+		subpasses.setColorAttachments(colour_attachment_references);
+
+		egkr::vector<vk::AttachmentReference> depth_attachment_references{};
+		for (auto i{ 0U }; i < depth_attachments.size(); ++i)
+		{
+			vk::AttachmentReference ref{};
+			ref
+				.setAttachment(attachment_added)
+				.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+			depth_attachment_references.push_back(ref);
+
+			++attachment_added;
+		}
+
+		vk::SubpassDependency dependencies{};
+		dependencies
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setSrcAccessMask(vk::AccessFlagBits::eNone)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
+
+		egkr::vector<vk::AttachmentDescription> attachments{ colour_attachments };
+		for (const auto& depth : depth_attachments)
+		{
+			attachments.push_back(depth);
+		}
+
+		vk::RenderPassCreateInfo create_info{};
+		create_info
+			.setAttachments(attachments)
+			.setSubpasses(subpasses)
+			.setDependencies(dependencies);
+
+		renderpass_ = context_->device.logical_device.createRenderPass(create_info, context_->allocator);
 	}
 
 	vulkan_renderpass::~vulkan_renderpass()
@@ -223,7 +263,7 @@ namespace egkr::renderpass
 		return true;
 	}
 
-	bool vulkan_renderpass::end()
+	bool vulkan_renderpass::end() const
 	{
 		ZoneScoped;
 
