@@ -297,6 +297,7 @@ namespace egkr::shader
 		pipeline_properties.input_attribute_description = configuration.attributes;
 		pipeline_properties.cull_mode = properties_.cull_mode;
 		pipeline_properties.shader_name = properties_.name;
+		pipeline_properties.shader_flags = properties_.flags;
 		bool pipeline_bound{};
 
 		if (topology_types_ & primitive_topology_type::point_list)

@@ -9,6 +9,28 @@ namespace egkr::render_target
 		return std::make_shared<vulkan_render_target>(context, attachments, renderpass, width, height);
 	}
 
+	render_target::shared_ptr vulkan_render_target::create(const vulkan_context* context, const egkr::vector<attachment_configuration>& attachments)
+	{
+		return std::make_shared<vulkan_render_target>(context, attachments);
+	}
+
+	vulkan_render_target::vulkan_render_target(const vulkan_context* context, const egkr::vector<attachment_configuration>& attachments)
+		: render_target(), context_{ context }
+	{
+		for (const auto& configuration : attachments)
+		{
+			attachment attach
+			{
+				.type = configuration.type,
+				.source = configuration.source,
+				.load_operation = configuration.load_operation,
+				.store_operation = configuration.store_operation,
+				.present_after = configuration.present_after
+			};
+			attachments_.push_back(attach);
+		}
+	}
+
 	vulkan_render_target::vulkan_render_target(const vulkan_context* context, const egkr::vector<egkr::render_target::attachment>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height)
 		: render_target(), context_{context}
 	{

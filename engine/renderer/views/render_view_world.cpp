@@ -79,8 +79,7 @@ namespace egkr::render_view
 		{
 			pass->begin(pass->get_render_targets()[render_target_index].get());
 
-			shader_->use();
-			shader_->bind_globals();
+			shader_system::use(shader_->get_id());
 
 			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
 			for (egkr::geometry::render_data render_data : render_view_packet->render_data)
@@ -121,25 +120,4 @@ namespace egkr::render_view
 	{
 		return true;
 	}
-
-	bool render_view_world::on_event(event_code code, void* /*sender*/, void* listener, const event_context& /*context*/)
-	{
-		auto* self = (render_view_world*)listener;
-
-		if (!self)
-		{
-			return false;
-		}
-
-		switch (code)
-		{
-		case egkr::event_code::render_target_refresh_required:
-			self->regenerate_render_targets();
-			return false;
-		default:
-			break;
-		}
-		return false;
-	}
-
 }

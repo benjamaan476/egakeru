@@ -54,10 +54,10 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		event::fire_event(event_code::render_target_refresh_required, nullptr, {});
-
 		destroy();
 		create();
+
+		event::fire_event(event_code::render_target_refresh_required, nullptr, {});
 	}
 
 	uint32_t swapchain::acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence)
@@ -299,7 +299,7 @@ namespace egkr
 		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
 
 		//auto img = image::vulkan_texture::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
-		for (auto depth : depth_attachments_)
+		for (auto& depth : depth_attachments_)
 		{
 			depth = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
 			((image::vulkan_texture*)(depth))->create(depth_image_properties);

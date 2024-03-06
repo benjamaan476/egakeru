@@ -42,7 +42,12 @@ namespace egkr::render_view
 
 		for (const auto& pass : configuration.passes)
 		{
-			renderpasses_.push_back(renderpass::renderpass::create(pass));
+			auto renderpass = renderpass::renderpass::create(pass);
+			//for (auto& target : renderpass->get_render_targets())
+			{
+				//target = render_target::render_target::create(pass.target.attachments);
+			}
+			renderpasses_.push_back(renderpass);
 		}
 
 		regenerate_render_targets();
@@ -52,12 +57,16 @@ namespace egkr::render_view
 	{
 		for (const auto& pass : renderpasses_)
 		{
-			for (auto& target : pass->get_render_targets())
+			for (auto i{ 0U }; i < pass->get_render_target_count(); ++i)
 			{
-				target->destroy();
-				for (auto i{ 0U }; i < target->get_attachments().size(); ++i)
+				auto& target = pass->get_render_target(i);
+				if (target)
 				{
-					auto& attachment = target->get_attachments()[i];
+					target->free(false);
+				}
+				for (auto a{ 0U }; a < target->get_attachments().size(); ++a)
+				{
+					auto& attachment = target->get_attachments()[a];
 					if (attachment.source == render_target::attachment_source::default_source)
 					{
 						if (attachment.type == render_target::attachment_type::colour)
@@ -76,7 +85,7 @@ namespace egkr::render_view
 					}
 					else if (attachment.source == render_target::attachment_source::view)
 					{
-						regenerate_attachment_target(i, attachment);
+						regenerate_attachment_target(a, attachment);
 					}
 				}
 

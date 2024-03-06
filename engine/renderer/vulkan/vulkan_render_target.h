@@ -12,7 +12,9 @@ namespace egkr
 		{
 		public:
 			static shared_ptr create(const vulkan_context* context, const egkr::vector<egkr::render_target::attachment>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height);
+			static shared_ptr create(const vulkan_context* context, const egkr::vector<attachment_configuration>& attachments);
 
+			vulkan_render_target(const vulkan_context* context, const egkr::vector<attachment_configuration>& attachments);
 			vulkan_render_target(const vulkan_context* context, const egkr::vector<egkr::render_target::attachment>& attachments, renderpass::renderpass* renderpass, uint32_t width, uint32_t height);
 
 			~vulkan_render_target() override;

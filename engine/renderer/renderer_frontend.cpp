@@ -75,9 +75,8 @@ namespace egkr
 		framebuffer_width_ = width;
 		framebuffer_height_ = height;
 
-		view_system::on_window_resize(width, height);
-
 		backend_->resize(width, height);
+		view_system::on_window_resize(width, height);
 	}
 
 	void renderer_frontend::draw_frame(render_packet& packet) const
@@ -127,9 +126,14 @@ namespace egkr
 		return backend_->create_geometry(properties);
 	}
 
-	render_target::render_target::shared_ptr renderer_frontend::create_render_target(egkr::vector<render_target::attachment> attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const
+	render_target::render_target::shared_ptr renderer_frontend::create_render_target(const egkr::vector<render_target::attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const
 	{
 		return backend_->create_render_target(attachments, pass, width, height);
+	}
+
+	render_target::render_target::shared_ptr renderer_frontend::create_render_target(const egkr::vector<render_target::attachment_configuration>& attachments) const
+	{
+		return backend_->create_render_target(attachments);
 	}
 
 	renderpass::renderpass::shared_ptr renderer_frontend::create_renderpass(const renderpass::configuration& configuration) const

@@ -51,8 +51,10 @@ namespace egkr
 			virtual bool end() const = 0;
 			virtual void free() = 0;
 
+			uint32_t get_render_target_count() const { return render_targets_.size(); }
 			[[nodiscard]] auto& get_render_targets() {return render_targets_;}
-			[[nodiscard]] auto& get_render_target(uint32_t index) const {return render_targets_[index];}
+			[[nodiscard]] const auto& get_render_target(uint32_t index) const {return render_targets_[index];}
+			[[nodiscard]] auto& get_render_target(uint32_t index) {return render_targets_[index];}
 			void set_render_targets(const egkr::vector<render_target::render_target::shared_ptr>& targets)
 			{
 				render_targets_ = targets;
@@ -66,7 +68,7 @@ namespace egkr
 			clear_flags clear_flags_{};
 			float_t depth_{};
 			uint32_t stencil_{};
-			egkr::vector<render_target::render_target::shared_ptr> render_targets_;
+			egkr::vector<render_target::render_target::shared_ptr> render_targets_{ 3 };
 
 		private:
 			uint16_t id{ invalid_16_id };

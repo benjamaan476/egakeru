@@ -171,13 +171,14 @@ namespace egkr::renderpass
 
 			++attachment_added;
 		}
+		subpasses.setPDepthStencilAttachment(depth_attachment_references.empty() ? nullptr : depth_attachment_references.data());
 
 		vk::SubpassDependency dependencies{};
 		dependencies
 			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
 			.setDstSubpass(0)
 			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-			.setSrcAccessMask(vk::AccessFlagBits::eNone)
+			.setSrcAccessMask(vk::AccessFlagBits::eNoneKHR)
 			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
 			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
 

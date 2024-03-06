@@ -31,6 +31,7 @@ namespace egkr
 		shader::shader::shared_ptr create_shader(const shader::properties& properties) const override;
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const override;
 		render_target::render_target::shared_ptr create_render_target(const egkr::vector<render_target::attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const override;
+		render_target::render_target::shared_ptr create_render_target(const egkr::vector<render_target::attachment_configuration>& attachments) const override;
 		renderpass::renderpass::shared_ptr create_renderpass(const renderpass::configuration& configuration) const override;
 		texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const override;
 		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const override;
@@ -45,8 +46,8 @@ namespace egkr
 		uint8_t get_window_index() const override;
 
 #ifdef ENABLE_DEBUG_MACRO
-		bool set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const;
-#define SET_DEBUG_NAME(type, handle, name) set_debug_obj_name(type, handle, name);
+		static bool set_debug_obj_name(const vulkan_context* context, VkObjectType type, uint64_t handle, const std::string& name);
+#define SET_DEBUG_NAME(context, type, handle, name) renderer_vulkan::set_debug_obj_name(context, type, handle, name);
 #else
 #define SET_DEBUG_NAME(type, handle, name)
 #endif // ENABLE_DEBUG_MACRO

@@ -472,6 +472,12 @@ namespace egkr
 		context_.framebuffer_height = height;
 
 		++context_.framebuffer_size_generation;
+
+		if (context_.framebuffer_size_generation != context_.framebuffer_last_size_generation)
+		{
+			context_.device.logical_device.waitIdle();
+			recreate_swapchain();
+		}
 	}
 
 	bool renderer_vulkan::begin_frame()
@@ -485,12 +491,6 @@ namespace egkr
 			return false;
 		}
 
-		if (context_.framebuffer_size_generation != context_.framebuffer_last_size_generation)
-		{
-			context_.device.logical_device.waitIdle();
-			recreate_swapchain();
-			return false;
-		}
 
 		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
 		context_.image_index = context_.swapchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
@@ -854,8 +854,8 @@ namespace egkr
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
 		return tex;
 	}
 
@@ -864,8 +864,8 @@ namespace egkr
 		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-		SET_DEBUG_NAME(VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
 		*(image::vulkan_texture*)out_texture = *tex;
 	}
 
@@ -890,6 +890,11 @@ namespace egkr
 		return render_target::vulkan_render_target::create(&context_, attachments, pass, width, height);
 	}
 
+	render_target::render_target::shared_ptr renderer_vulkan::create_render_target(const egkr::vector<render_target::attachment_configuration>& attachments) const
+	{
+		return render_target::vulkan_render_target::create(&context_, attachments);
+	}
+	
 	renderpass::renderpass::shared_ptr renderer_vulkan::create_renderpass(const renderpass::configuration& configuration) const
 	{
 		return renderpass::vulkan_renderpass::create(&context_, configuration);
@@ -961,14 +966,16 @@ namespace egkr
 		return context_.image_index;
 	}
 
-	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const
+#ifdef ENABLE_DEBUG_MACRO
+	bool renderer_vulkan::set_debug_obj_name(const vulkan_context* context, VkObjectType type, uint64_t handle, const std::string& name)
 	{
 		if (handle)
 		{
 			VkDebugUtilsObjectNameInfoEXT info{ .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, .objectType = type, .objectHandle = handle, .pObjectName = name.data() };
-			context_.pfn_set_debug_name((VkDevice)context_.device.logical_device, &info);
+			context->pfn_set_debug_name((VkDevice)context->device.logical_device, &info);
 			return true;
 		}
 		return false;
 	}
+#endif
 }

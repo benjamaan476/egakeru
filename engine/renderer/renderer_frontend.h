@@ -31,7 +31,8 @@ namespace egkr
 		void create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const;
 		shader::shader::shared_ptr create_shader(const shader::properties& properties) const;
 		geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const;
-		render_target::render_target::shared_ptr create_render_target(egkr::vector<render_target::attachment> attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const;
+		render_target::render_target::shared_ptr create_render_target(const egkr::vector<render_target::attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const;
+		render_target::render_target::shared_ptr create_render_target(const egkr::vector<render_target::attachment_configuration>& attachments) const;
 		renderpass::renderpass::shared_ptr create_renderpass(const renderpass::configuration& configuration) const;
 		texture_map::texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const;
 		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const;

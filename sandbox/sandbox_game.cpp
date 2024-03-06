@@ -131,26 +131,26 @@ bool sandbox_game::init()
 
 	egkr::light_system::add_directional_light(dir_light_);
 
-	//test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
-	//test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
-	//test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
+	test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
+	test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
+	test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
 
-	//test_emitter.audio_file = test_loop_audio;
-	//test_emitter.looping = true;
-	//test_emitter.falloff = 1.F;
+	test_emitter.audio_file = test_loop_audio;
+	test_emitter.looping = true;
+	test_emitter.falloff = 1.F;
 
-	egkr::audio::audio_system::set_master_volume(0.001F);
+	egkr::audio::audio_system::set_master_volume(0.F);
 	egkr::audio::audio_system::set_channel_volume(0, 1.F);
 	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
 	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
 	egkr::audio::audio_system::set_channel_volume(3, 0.25F);
 	egkr::audio::audio_system::set_channel_volume(4, 0.F);
 	egkr::audio::audio_system::set_channel_volume(5, 0.F);
-	egkr::audio::audio_system::set_channel_volume(6, 0.F);
-	egkr::audio::audio_system::set_channel_volume(7, 0.4F);
+	egkr::audio::audio_system::set_channel_volume(6, 1.F);
+	egkr::audio::audio_system::set_channel_volume(7, 0.0F);
 
-	//egkr::audio::audio_system::play_emitter(6, &test_emitter);
-	//egkr::audio::audio_system::play_channel(7, test_music, true);
+	egkr::audio::audio_system::play_emitter(6, &test_emitter);
+	egkr::audio::audio_system::play_channel(7, test_music, true);
 
 
 	return true;
@@ -231,7 +231,7 @@ void sandbox_game::update(double delta_time)
 		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
 	}
 
-	//egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
+	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
 	if (update_frustum_)
 	{
@@ -280,7 +280,7 @@ void sandbox_game::update(double delta_time)
 
 	}
 
-	//egkr::audio::audio_system::update(&frame_data);
+	egkr::audio::audio_system::update(&frame_data);
 }
 
 void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
@@ -342,7 +342,7 @@ bool sandbox_game::boot()
 		egkr::renderpass::configuration renderpass_configuration
 		{
 			.name = "Renderpass.Builtin.Skybox",
-			.render_area = {0, 0, 1280, 720},
+			.render_area = {0, 0, 800, 600},
 			.clear_colour = {0, 0, 0.2F, 1.F},
 			.clear_flags = egkr::renderpass::clear_flags::colour,
 			.depth = 1.F,
@@ -373,7 +373,7 @@ bool sandbox_game::boot()
 		egkr::renderpass::configuration renderpass_configuration
 		{
 			.name = "Renderpass.Builtin.World",
-			.render_area = {0, 0, 1280, 720},
+			.render_area = {0, 0, 800, 600},
 			.clear_colour = {0, 0, 0.2F, 1.F},
 			.clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
 			.depth = 1.F,
@@ -402,8 +402,6 @@ bool sandbox_game::boot()
 		renderpass_configuration.target.attachments.push_back(colour_attachment_configration);
 		renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
 
-
-
 		egkr::render_view::configuration opaque_world{};
 		opaque_world.type = egkr::render_view::type::world;
 		opaque_world.width = width_;
@@ -418,9 +416,9 @@ bool sandbox_game::boot()
 		egkr::renderpass::configuration renderpass_configuration
 		{
 			.name = "Renderpass.Builtin.UI",
-			.render_area = {0, 0, 1280, 720},
+			.render_area = {0, 0, 800, 600},
 			.clear_colour = {0, 0, 0.2F, 1.F},
-			.clear_flags = egkr::renderpass::clear_flags::colour,
+			.clear_flags = egkr::renderpass::clear_flags::none,
 			.depth = 1.F,
 			.stencil = 0
 		};
@@ -451,7 +449,7 @@ bool sandbox_game::boot()
 
 bool sandbox_game::shutdown()
 {
-	//egkr::audio::audio_system::shutdown();
+	egkr::audio::audio_system::shutdown();
 	skybox_->destroy();
 	box_->destroy();
 	grid_->unload();

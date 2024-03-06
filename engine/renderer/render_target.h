@@ -65,7 +65,8 @@ namespace egkr
 		public:
 			using shared_ptr = std::shared_ptr<render_target>;
 
-			API static shared_ptr create(egkr::vector<attachment> attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height);
+			static shared_ptr create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height);
+			static shared_ptr create(const egkr::vector<attachment_configuration>& attachments);
 			render_target();
 
 			const auto& get_attachments() const { return attachments_; }

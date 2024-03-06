@@ -85,8 +85,7 @@ namespace egkr::render_view
 		{
 			pass->begin(pass->get_render_targets()[render_target_index].get());
 
-			shader_->use();
-			shader_->bind_globals();
+			shader_system::use(shader_->get_id());
 
 			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
 
@@ -126,26 +125,6 @@ namespace egkr::render_view
 			pass->end();
 		}
 		return true;
-	}
-
-	bool render_view_ui::on_event(event_code code, void* /*sender*/, void* listener, const event_context& /*context*/)
-	{
-		auto* self = (render_view_ui*)listener;
-
-		if (!self)
-		{
-			return false;
-		}
-
-		switch (code)
-		{
-		case egkr::event_code::render_target_refresh_required:
-			self->regenerate_render_targets();
-			return false;
-		default:
-			break;
-		}
-		return false;
 	}
 
 	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)

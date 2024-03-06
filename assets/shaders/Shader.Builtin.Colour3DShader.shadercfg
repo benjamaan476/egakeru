@@ -1,6 +1,5 @@
 version=1.0
 name=Shader.Builtin.Colour3DShader
-renderpass=Renderpass.Builtin.World
 stages=vertex,fragment
 stagefiles=shaders/Builtin.Colour3DShader.vert.spv,shaders/Builtin.Colour3DShader.frag.spv
 topology=line_list
