@@ -1,12 +1,5 @@
 #include "renderer_frontend.h"
-#include "event.h"
 
-#include "systems/texture_system.h"
-#include "systems/geometry_system.h"
-#include "systems/resource_system.h"
-#include "systems/material_system.h"
-#include "systems/shader_system.h"
-#include "systems/camera_system.h"
 #include "systems/view_system.h"
 
 #include "vulkan/renderer_vulkan.h"

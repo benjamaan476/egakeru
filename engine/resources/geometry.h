@@ -38,7 +38,6 @@ namespace egkr
 			}
 		};
 
-		struct render_data;
 		class geometry : public resource
 		{
 		public:

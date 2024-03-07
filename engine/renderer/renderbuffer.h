@@ -47,8 +47,8 @@ namespace egkr
 			virtual uint64_t get_size() const = 0;
 
 		protected:
-			type type_{};
 			uint64_t total_size_{};
+			type type_{};
 		};
 	}
 }

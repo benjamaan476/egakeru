@@ -2,8 +2,6 @@
 #include "pch.h"
 #include "renderer_types.h"
 #include "renderpass.h"
-#include "event.h"
-#include "renderer/camera.h"
 
 #include "resources/material.h"
 #include "resources/texture.h"

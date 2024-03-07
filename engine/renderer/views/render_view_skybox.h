@@ -6,12 +6,10 @@
 
 namespace egkr::render_view
 {
-
 	class render_view_skybox : public render_view
 	{
 	public:
 		explicit render_view_skybox(const configuration& configuration);
-		~render_view_skybox() override = default;
 
 		bool on_create() override;
 		bool on_destroy() override;
