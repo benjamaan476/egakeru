@@ -13,7 +13,6 @@ namespace egkr
 	shader_loader::shader_loader(const loader_properties& properties)
 		: resource_loader{ resource_type::shader, properties }
 	{
-
 	}
 
 	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)

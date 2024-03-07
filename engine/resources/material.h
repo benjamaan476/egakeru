@@ -9,8 +9,6 @@ namespace egkr
 {
 	constexpr static std::string_view default_material_name_{ "default" };
 
-
-
 	enum class material_type
 	{
 		world,
@@ -28,14 +26,13 @@ namespace egkr
 		float4 diffuse_colour{ 0.588F, 0.588F, 0.588F, 1.F };
 	};
 
-	class renderer_frontend;
 	class material : public resource
 	{
 	public:
 		using shared_ptr = std::shared_ptr<material>;
-		static shared_ptr create(const renderer_frontend* renderer, const material_properties& properties);
+		static shared_ptr create(const material_properties& properties);
 
-		explicit material(const renderer_frontend* renderer, const material_properties& properties);
+		explicit material(const material_properties& properties);
 		~material();
 
 		void free();
@@ -67,7 +64,6 @@ namespace egkr
 		[[nodiscard]] auto get_render_frame() const { return render_frame_number_; }
 		void set_render_frame(uint32_t frame) { render_frame_number_ = frame; }
 	private:
-		const renderer_frontend* renderer_{};
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
 		texture_map::texture_map::shared_ptr diffuse_map_{};
@@ -78,6 +74,5 @@ namespace egkr
 		uint32_t shader_id_{invalid_32_id};
 		uint32_t internal_id_{ invalid_32_id };
 		uint32_t render_frame_number_{ invalid_32_id };
-
 	};
 }

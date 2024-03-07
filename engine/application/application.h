@@ -5,17 +5,6 @@
 #include "game/game.h"
 #include "event.h"
 
-#include "resources/geometry.h"
-#include "resources/mesh.h"
-#include "resources/light.h"
-#include "resources/skybox.h"
-#include "resources/ui_text.h"
-
-#include <debug/debug_box3d.h>
-#include <debug/debug_grid.h>
-
-#include "renderer/renderer_frontend.h"
-
 namespace egkr
 {
 	class application

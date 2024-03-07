@@ -40,7 +40,6 @@ namespace egkr
 		uint32_t height_{};
 
 	private:
-
 		application_configuration application_configuration_{};
 	};
 

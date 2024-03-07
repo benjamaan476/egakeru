@@ -1,7 +1,6 @@
 #include "material_system.h"
 
 #include "texture_system.h"
-#include "platform/filesystem.h"
 #include "systems/resource_system.h"
 #include "systems/shader_system.h"
 #include "systems/light_system.h"
@@ -113,7 +112,7 @@ namespace egkr
 			return nullptr;
 		}
 
-		auto new_material = material::create(renderer.get(), properties);
+		auto new_material = material::create(properties);
 		load_material(properties, new_material);
 
 		//if (new_material->get_generation() == invalid_id)
@@ -230,7 +229,7 @@ namespace egkr
 		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = "Shader.Builtin.Material";
-		material_system_->default_material_ = material::create(renderer.get(), properties);
+		material_system_->default_material_ = material::create(properties);
 		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
 
 		for (auto map : texture_maps)
@@ -296,9 +295,8 @@ namespace egkr
 		auto shader = shader_system::get_shader(properties.shader_name);
 		auto id = shader->acquire_instance_resources(maps);
 
-
 		//material.reset();
-		material = material::create(renderer.get(), properties);
+		material = material::create(properties);
 		if (material->get_generation() == invalid_32_id)
 		{
 			material->set_generation(0);

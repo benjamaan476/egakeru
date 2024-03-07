@@ -4,6 +4,8 @@
 #include "systems/view_system.h"
 #include "systems/audio_system.h"
 
+#include "renderer/renderer_frontend.h"
+
 using namespace std::chrono_literals;
 
 namespace egkr
@@ -55,14 +57,12 @@ namespace egkr
 		}
 
 		renderer_frontend::create(backend_type::vulkan, platform_);
-
 		system_manager::create(game_.get());
 
 		if (!renderer->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
-
 
 		game_->boot();
 		std::ranges::for_each(game_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
@@ -104,9 +104,7 @@ namespace egkr
 				application_->game_->update(delta_time);
 
 				render_packet packet{};
-
 				application_->game_->render(&packet, delta_time);
-
 				renderer->draw_frame(packet);
 			}
 			auto frame_duration = application_->platform_->get_time() - frame_time;
@@ -154,7 +152,6 @@ namespace egkr
 				break;
 			}
 		}
-
 
 		return false;
 	}

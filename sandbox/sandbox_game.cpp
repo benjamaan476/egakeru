@@ -6,9 +6,7 @@
 #include <systems/shader_system.h>
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
-
 #include <systems/audio_system.h>
-
 #include <systems/material_system.h>
 
 #include <renderer/renderer_types.h>
