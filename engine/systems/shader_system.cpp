@@ -44,11 +44,11 @@ namespace egkr
 		return true;
 	}
 
-	shader::shader::shared_ptr shader_system::create_shader(const shader::properties& properties)
+	shader::shader::shared_ptr shader_system::create_shader(const shader::properties& properties, renderpass::renderpass* pass)
 	{
 		uint32_t id = new_shader_id();
 
-		auto shader = shader::shader::create(properties);
+		auto shader = shader::shader::create(properties, pass);
 		shader->set_id(id);
 
 		shader_system_->shaders_.push_back(shader);

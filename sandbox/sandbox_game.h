@@ -23,6 +23,7 @@ public:
 
 private:	
 	bool static on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
+	bool static on_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
 
 private:
 
@@ -49,4 +50,6 @@ private:
 	egkr::audio::file* test_loop_audio{};
 	egkr::audio::file* test_music{};
 	egkr::audio::emitter test_emitter{};
+
+	uint32_t hovered_object_id_{};
 };

@@ -5,17 +5,6 @@
 #include "game/game.h"
 #include "event.h"
 
-#include "resources/geometry.h"
-#include "resources/mesh.h"
-#include "resources/light.h"
-#include "resources/skybox.h"
-#include "resources/ui_text.h"
-
-#include <debug/debug_box3d.h>
-#include <debug/debug_grid.h>
-
-#include "renderer/renderer_frontend.h"
-
 namespace egkr
 {
 	class application
@@ -34,13 +23,13 @@ namespace egkr
 		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
 		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
 		bool is_initialised_{false};
-		std::chrono::nanoseconds last_time_{};
-
 	    bool limit_framerate_{false};
-		std::chrono::milliseconds frame_time_{16ms};
-
 		bool is_running_{};
 		bool is_suspended_{};
+
+		std::chrono::nanoseconds last_time_{};
+		std::chrono::milliseconds frame_time_{16ms};
+
 		platform::shared_ptr platform_{};
 		std::string name_{};
 		game::unique_ptr game_{};

@@ -13,7 +13,6 @@ namespace egkr
 	shader_loader::shader_loader(const loader_properties& properties)
 		: resource_loader{ resource_type::shader, properties }
 	{
-
 	}
 
 	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)
@@ -88,9 +87,19 @@ namespace egkr
 			{
 				properties.name = value;
 			}
-			else if (variable_name == "renderpass")
+			else if (variable_name == "depth_write")
 			{
-				properties.renderpass_name = value;
+				if (std::stoi(value))
+				{
+					properties.flags |= shader::flags::depth_write;
+				}
+			}
+			else if (variable_name == "depth_test")
+			{
+				if (std::stoi(value))
+				{
+					properties.flags |= shader::flags::depth_test;
+				}
 			}
 			else if (variable_name == "stages")
 			{

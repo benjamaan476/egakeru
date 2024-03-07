@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "command_buffer.h"
-#include "renderer/renderer_types.h"
 #include "renderer/renderpass.h"
 
 namespace egkr
@@ -15,9 +14,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<vulkan_renderpass>;
-			static shared_ptr create(const renderer_backend* renderer, vulkan_context* context, const configuration& configuration);
+			static shared_ptr create(const vulkan_context* context, const configuration& configuration);
 
-			vulkan_renderpass(const renderer_backend* renderer, vulkan_context* context, const configuration& configuration);
+			vulkan_renderpass(const vulkan_context* context, const configuration& configuration);
 			~vulkan_renderpass() override;
 
 			void destroy();
@@ -27,16 +26,13 @@ namespace egkr
 				return renderpass_;
 			}
 
-			bool populate(float depth, float stencil, bool has_previous, bool has_next) override;
 			bool begin(render_target::render_target* render_target) const override;
-			bool end() override;
+			bool end() const override;
 			void free() override;
 
 		private:
-			vulkan_context* context_{};
+			const vulkan_context* context_{};
 			vk::RenderPass renderpass_{};
-			float_t depth_{};
-			uint32_t stencil_{};
 
 			state state_{};
 		};

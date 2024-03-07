@@ -1,6 +1,7 @@
 #include "vulkan_renderbuffer.h"
 
 #include "vulkan_types.h"
+#include "renderer_vulkan.h"
 
 namespace egkr
 {
@@ -12,28 +13,34 @@ namespace egkr
 	vulkan_buffer::vulkan_buffer(const vulkan_context* context, egkr::renderbuffer::type buffer_type, uint64_t size)
 		: renderbuffer{ buffer_type, size }, context_{ context }
 	{
+		std::string buffer_name{};
 		switch (buffer_type)
 		{
 			using enum egkr::renderbuffer::type;
 		case vertex:
 			usage_ = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
 			memory_property_flags_ = vk::MemoryPropertyFlagBits::eDeviceLocal;
+			buffer_name = "_vertex_";
 			break;
 		case index:
 			usage_ = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
 			memory_property_flags_ = vk::MemoryPropertyFlagBits::eDeviceLocal;
+			buffer_name = "_index_";
 			break;
 		case uniform:
 			usage_ = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst;
 			memory_property_flags_ = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eDeviceLocal;
+			buffer_name = "_uniform_";
 			break;
 		case staging:
 			usage_ = vk::BufferUsageFlagBits::eTransferSrc;
 			memory_property_flags_ = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+			buffer_name = "_staging_";
 			break;
 		case read:
 			usage_ = vk::BufferUsageFlagBits::eTransferDst;
 			memory_property_flags_ = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+			buffer_name = "_read_";
 			break;
 		case storage:
 			LOG_ERROR("Storage buffers not supported yet");
@@ -53,6 +60,8 @@ namespace egkr
 
 		memory_requirements_ = context_->device.logical_device.getBufferMemoryRequirements(handle_);
 		memory_index_ = context_->device.find_memory_index(memory_requirements_.memoryTypeBits, memory_property_flags_);
+
+		SET_DEBUG_NAME(context_, VkObjectType::VK_OBJECT_TYPE_BUFFER, (uint64_t)(const VkBuffer)handle_, "buffer" + buffer_name);
 
 		if (memory_index_ == -1u)
 		{

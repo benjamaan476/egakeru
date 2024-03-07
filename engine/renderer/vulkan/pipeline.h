@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "vulkan_renderpass.h"
+#include <resources/shader.h>
 
 namespace egkr
 {
@@ -16,9 +17,9 @@ namespace egkr
 		vk::Rect2D scissor{};
 		egkr::vector<range> push_constant_ranges{};
 		bool is_wireframe{};
-		bool depth_test_enabled{};
 		shader::primitive_topology_type topology_types{};
 		shader::cull_mode cull_mode{};
+		shader::flags shader_flags{};
 	};
 
 	class pipeline

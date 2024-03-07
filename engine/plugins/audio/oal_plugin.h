@@ -8,7 +8,6 @@ namespace egkr::audio
 	class oal : public audio::plugin
 	{
 	public:
-		~oal() override = default;
 		bool init(const configuration& configuration) override;
 		bool shutdown() override;
 

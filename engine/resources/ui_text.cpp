@@ -4,6 +4,8 @@
 #include <systems/shader_system.h>
 #include <renderer/vertex_types.h>
 
+#include <identifier.h>
+
 namespace egkr
 {
 	namespace text
@@ -72,7 +74,7 @@ namespace egkr
 				text_length = 1;
 			}
 
-			auto ui_shader = shader_system::get_shader(BUILTIN_SHADER_NAME_UI);
+			auto ui_shader = shader_system::get_shader("Shader.Builtin.UI");
 
 			instance_id_ = ui_shader->acquire_instance_resources({ data_->atlas });
 
@@ -91,6 +93,12 @@ namespace egkr
 			}
 
 			regenerate_geometry();
+			unique_id_ = identifier::acquire_unique_id(this);
+		}
+
+		ui_text::~ui_text()
+		{
+			identifier::release_id(unique_id_);
 		}
 
 		void ui_text::acquire(const std::string& name, uint16_t /*font_size*/, type type)

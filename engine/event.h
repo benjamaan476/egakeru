@@ -15,10 +15,12 @@ namespace egkr
 		mouse_down,
 		mouse_move,
 		resize,
+		render_target_refresh_required,
 
 		debug01,
 		debug02,
 		render_mode,
+		hover_id_changed,
 		event_code_size
 	};
 
@@ -63,17 +65,9 @@ namespace egkr
 	class event
 	{
 	public:
-
 		static void create();
-		//bool on_event(event_code code, void* sender, void* listenter, const event_context& context);
 		static bool register_event(event_code code, void* listener, const event_callback& callback);
 		static bool unregister_event(event_code code, void* listener, const event_callback& callback);
-
 		static void fire_event(event_code code, void* sender, const event_context& context);
-
-	private:
-		 
 	};
-
-	static event event_system;
 }

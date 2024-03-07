@@ -56,14 +56,18 @@ namespace egkr
 			.setAlphaToOneEnable(false);
 
 		vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info{};
-		if (properties.depth_test_enabled)
+		if ((uint32_t)(properties.shader_flags & shader::flags::depth_test) != 0)
 		{
 			depth_stencil_create_info
 				.setDepthTestEnable(true)
-				.setDepthWriteEnable(true)
 				.setDepthCompareOp(vk::CompareOp::eLess)
 				.setDepthBoundsTestEnable(false)
 				.setStencilTestEnable(false);
+
+			if ((uint32_t)(properties.shader_flags & shader::flags::depth_write) != 0)
+			{
+				depth_stencil_create_info.setDepthWriteEnable(true);
+			}
 		}
 
 		vk::PipelineColorBlendAttachmentState colour_blend_attachment{};
