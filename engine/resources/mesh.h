@@ -40,6 +40,8 @@ namespace egkr
 			return model_;
 		}
 
+		[[nodiscard]] const auto& get_unique_id() const { return unique_id_; }
+
 		[[nodiscard]] auto& get_debug_data() { return debug_data; }
 		[[nodiscard]] auto& unique_id() { return unique_id_; }
 

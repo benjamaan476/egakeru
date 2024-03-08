@@ -1,0 +1,15 @@
+version=1.0
+name=Shader.Builtin.UIPick
+stages=vertex,fragment
+stagefiles=shaders/Builtin.UIPickShader.vert.spv,shaders/Builtin.UIPickShader.frag.spv
+
+depth_test=0
+depth_write=0
+
+attribute=vec2,in_position
+attribute=vec2,in_texture
+
+uniform=mat4,0,projection
+uniform=mat4,0,view
+uniform=vec3,1,id_colour
+uniform=mat4,2,model

@@ -20,7 +20,8 @@ namespace egkr
 		{
 			skybox,
 			world,
-			ui
+			ui,
+			pick
 		};
 
 		enum class view_matrix_source
@@ -113,6 +114,13 @@ namespace egkr
 		struct ui_packet_data
 		{
 			mesh_packet_data mesh_data;
+			egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
+		};
+
+		struct pick_packet_data
+		{
+			mesh_packet_data world_mesh_data{};
+			mesh_packet_data ui_mesh_data{};
 			egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
 		};
 

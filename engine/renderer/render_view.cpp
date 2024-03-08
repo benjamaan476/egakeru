@@ -106,6 +106,7 @@ namespace egkr::render_view
 		} break;
 		case event_code::render_target_refresh_required:
 			view->regenerate_render_targets();
+			return false;
 		default:
 			return false;
 		}

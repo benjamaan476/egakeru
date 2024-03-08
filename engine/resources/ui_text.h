@@ -36,6 +36,7 @@ namespace egkr
 			void acquire(const std::string& name, uint16_t font_size, type type);
 
 			[[nodiscard]] uint32_t get_id() const { return instance_id_; }
+			[[nodiscard]] uint32_t get_unique_id() const { return unique_id_; }
 			[[nodiscard]] std::shared_ptr<font::data> get_data() const { return data_; }
 			[[nodiscard]] uint64_t get_render_frame() const { return render_frame_number_; }
 			[[nodiscard]] transform get_transform() const { return transform_; }

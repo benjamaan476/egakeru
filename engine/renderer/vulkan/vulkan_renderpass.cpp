@@ -210,6 +210,15 @@ namespace egkr::renderpass
 			renderpass_ = VK_NULL_HANDLE;
 		}
 
+		if (!render_targets_.empty())
+		{
+			for (auto& target : render_targets_)
+			{
+				target->destroy();
+			}
+			render_targets_.clear();
+		}
+
 		context_ = nullptr;
 	}
 
