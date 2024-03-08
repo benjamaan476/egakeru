@@ -106,6 +106,11 @@ namespace egkr::render_view
 				{
 					shader_system::bind_instance(text->get_id());
 
+					auto atlas = text->get_data()->atlas;
+					if (atlas->texture->get_generation() == invalid_32_id)
+					{
+						continue;
+					}
 					shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
 					constexpr static const float4 white_colour{ 1, 1, 1, 1 };
 					shader_system::set_uniform(diffuse_colour_location_, &white_colour);

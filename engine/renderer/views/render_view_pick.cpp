@@ -174,8 +174,8 @@ namespace egkr::render_view
 				auto& render_data = render_view_packet->render_data[i];
 				world_shader_info.shader->bind_instances(render_data.unique_id);
 
-				const auto [r, g, b] = u32_to_rgb(render_data.unique_id);
-				float3 id_colour = rgbu_to_float3(r, g, b);
+			//	const auto [r, g, b] = u32_to_rgb(render_data.unique_id);
+				float3 id_colour = rgbu_to_float3(255, 0, 120);
 				shader_system::set_uniform(world_shader_info.id_colour_location, &id_colour);
 
 				bool needs_update = !instance_updated[render_data.unique_id];

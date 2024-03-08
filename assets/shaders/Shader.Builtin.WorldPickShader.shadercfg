@@ -1,10 +1,10 @@
 version=1.0
-name=Shader.Builtin.UIPick
+name=Shader.Builtin.WorldPick
 stages=vertex,fragment
 stagefiles=shaders/Builtin.WorldPickShader.vert.spv,shaders/Builtin.WorldPickShader.frag.spv
 
-depth_test=0
-depth_write=0
+depth_test=1
+depth_write=1
 
 attribute=vec3,in_position
 attribute=vec3,in_normal

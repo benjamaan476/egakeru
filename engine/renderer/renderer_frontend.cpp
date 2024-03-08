@@ -68,8 +68,8 @@ namespace egkr
 		framebuffer_width_ = width;
 		framebuffer_height_ = height;
 
-		backend_->resize(width, height);
 		view_system::on_window_resize(width, height);
+		backend_->resize(width, height);
 	}
 
 	void renderer_frontend::draw_frame(render_packet& packet)
