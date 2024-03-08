@@ -94,7 +94,6 @@ namespace egkr::render_view
 		};
 
 		world_shader_info.view = camera_->get_view();
-		ui_shader_info.view = camera_->get_view();
 
 		uint32_t hightest_instance_id{};
 		for (const auto& world_mesh : packet_data->world_mesh_data.meshes)
@@ -171,19 +170,20 @@ namespace egkr::render_view
 
 			for (auto i{ 0U }; i < render_data.world_mesh_data.meshes.size(); ++i)
 			{
-				auto& render_data = render_view_packet->render_data[i];
-				world_shader_info.shader->bind_instances(render_data.unique_id);
+				auto data = render_view_packet->render_data[i];
+				shader_system::bind_instance(data.unique_id);
 
-			//	const auto [r, g, b] = u32_to_rgb(render_data.unique_id);
-				float3 id_colour = rgbu_to_float3(255, 0, 120);
+				const auto [r, g, b] = u32_to_rgb(data.unique_id);
+				float3 id_colour = rgbu_to_float3(r, g, b);
 				shader_system::set_uniform(world_shader_info.id_colour_location, &id_colour);
 
-				bool needs_update = !instance_updated[render_data.unique_id];
+				bool needs_update = !instance_updated[data.unique_id];
 				shader_system::apply_instance(needs_update);
-				instance_updated[render_data.unique_id] = true;
+				instance_updated[data.unique_id] = true;
 
-				shader_system::set_uniform(world_shader_info.model_location, &render_data.model);
-				render_data.geometry->draw();
+				const auto& world = data.model.get_world();
+				shader_system::set_uniform(world_shader_info.model_location, &world);
+				data.geometry->draw();
 			}
 			pass->end();
 
@@ -232,10 +232,10 @@ namespace egkr::render_view
 
 			//pass->end();
 
-			uint16_t x_coord = std::clamp((int32_t)mouse_x, 0, (int32_t)width_ - 1);
-			uint16_t y_coord = std::clamp((int32_t)mouse_y, 0, (int32_t)height_ - 1);
+			//uint16_t x_coord = std::clamp((int32_t)mouse_x, 0, (int32_t)width_ - 1);
+			//uint16_t y_coord = std::clamp((int32_t)mouse_y, 0, (int32_t)height_ - 1);
 
-			auto pixel = colour_target_attachment->read_pixel(x_coord, y_coord);
+			auto pixel = colour_target_attachment->read_pixel(width_ / 2, height_ / 2);
 			uint32_t id = rgba_to_u32(pixel.r, pixel.g, pixel.b);
 
 			event_context context{};

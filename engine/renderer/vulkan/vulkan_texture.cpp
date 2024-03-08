@@ -481,9 +481,8 @@ namespace egkr
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setMipLevel(0)
-				.setBaseArrayLayer(0);
-
-			subresource.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
+				.setBaseArrayLayer(0)
+				.setLayerCount(properties_.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 			vk::BufferImageCopy image_copy{};
 			image_copy

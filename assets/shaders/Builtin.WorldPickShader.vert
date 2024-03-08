@@ -1,7 +1,7 @@
 #version 450
 
-layout(location = 0) in vec2 in_position;
-layout(location = 1) in vec2 in_texture;
+layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_texcoord;
 layout(location = 3) in vec4 in_colour;
 layout(location = 4) in vec4 in_tangent;
@@ -16,5 +16,5 @@ layout(push_constant) uniform push_constants {
 } u_push_constants;
 
 void main() {
-	gl_Position = global_ubo.projection * global_ubo.view * u_push_constants.model * vec4(in_position, 0, 1.0);
+	gl_Position = global_ubo.projection * global_ubo.view * u_push_constants.model * vec4(in_position, 1.0);
 }
