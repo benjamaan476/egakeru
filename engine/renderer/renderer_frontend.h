@@ -20,7 +20,7 @@ namespace egkr
 		API bool init();
 		API void shutdown();
 		API void on_resize(uint32_t width, uint32_t height);
-		API void draw_frame(render_packet& packet) const;
+		API void draw_frame(render_packet& packet);
 
 		void free_material(material* texture) const;
 

@@ -18,7 +18,7 @@ namespace egkr
 
 		virtual bool init() = 0;
 		virtual void update(double delta_time) = 0;
-		virtual void render(render_packet* render_packet, double delta_time) = 0;
+		virtual void render(render_packet& render_packet, double delta_time) = 0;
 		virtual bool resize(uint32_t width, uint32_t height) = 0;
 
 		virtual bool boot() = 0;

@@ -55,7 +55,7 @@ namespace egkr
 			virtual bool populate_writeable() = 0;
 			virtual bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) = 0;
 			virtual void read_data(uint64_t offset, uint32_t size, void* out_memory) = 0;
-			virtual void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) = 0;
+			virtual uint4 read_pixel(uint32_t x, uint32_t y) = 0;
 			virtual bool resize(uint32_t width, uint32_t height) = 0;
 			virtual void free() = 0;
 

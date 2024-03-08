@@ -2,6 +2,7 @@
 #include "renderer/views/render_view_ui.h"
 #include "renderer/views/render_view_world.h"
 #include "renderer/views/render_view_skybox.h"
+#include "renderer/views/render_view_pick.h"
 
 #include <renderer/renderer_frontend.h>
 #include <systems/camera_system.h>
@@ -21,6 +22,10 @@ namespace egkr::render_view
 		else if (configuration.type == type::skybox)
 		{
 			return std::make_shared<render_view_skybox>(configuration);
+		}
+		else if (configuration.type == type::pick)
+		{
+			return std::make_shared<render_view_pick>(configuration);
 		}
 		else
 		{
@@ -49,8 +54,11 @@ namespace egkr::render_view
 			}
 			renderpasses_.push_back(renderpass);
 		}
+	}
 
-		regenerate_render_targets();
+	render_view::~render_view()
+	{
+		std::ranges::for_each(renderpasses_, [](auto& pass) { pass->free(); });
 	}
 
 	void render_view::regenerate_render_targets()

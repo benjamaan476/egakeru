@@ -9,6 +9,7 @@ namespace egkr::render_view
 	render_view_world::render_view_world(const configuration& configuration)
 		: render_view(configuration)
 	{
+		regenerate_render_targets();
 	}
 
 	bool render_view_world::on_create()
@@ -73,7 +74,7 @@ namespace egkr::render_view
 
 		return packet;
 	}
-	bool render_view_world::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const
+	bool render_view_world::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index)
 	{
 		for (auto& pass : renderpasses_)
 		{
@@ -116,7 +117,7 @@ namespace egkr::render_view
 		return true;
 	}
 
-	bool render_view_world::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
+	bool render_view_world::regenerate_attachment_target(uint32_t /*pass_index*/, render_target::attachment& /*attachment*/)
 	{
 		return true;
 	}

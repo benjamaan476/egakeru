@@ -72,12 +72,12 @@ namespace egkr
 		view_system::on_window_resize(width, height);
 	}
 
-	void renderer_frontend::draw_frame(render_packet& packet) const
+	void renderer_frontend::draw_frame(render_packet& packet)
 	{
 		if (backend_->begin_frame())
 		{
 			auto attachment_index = backend_->get_window_index();
-			for (auto& view : packet.render_views)
+			for (render_view::render_view_packet& view : packet.render_views)
 			{
 				if (!view_system::on_render(view.render_view, &view, backend_->get_frame_number(), attachment_index))
 				{

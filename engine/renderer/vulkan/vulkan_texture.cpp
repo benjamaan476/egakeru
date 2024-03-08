@@ -282,7 +282,7 @@ namespace egkr
 			staging->unbind();
 		}
 
-		void vulkan_texture::read_pixel(uint32_t x, uint32_t y, uint4* out_rgba)
+		uint4 vulkan_texture::read_pixel(uint32_t x, uint32_t y)
 		{
 			auto format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
@@ -296,8 +296,11 @@ namespace egkr
 			transition_layout(single_use, format, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 			single_use.end_single_use(context_, context_->device.graphics_command_pool, context_->device.graphics_queue);
-			staging->read(0, sizeof(uint4), out_rgba);
+			uint4 rgba{};
+			staging->read(0, sizeof(uint4), &rgba);
 			staging->unbind();
+
+			return rgba;
 		}
 
 		bool vulkan_texture::resize(uint32_t width, uint32_t height)
@@ -411,7 +414,6 @@ namespace egkr
 			else if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferSrcOptimal)
 			{
 				barrier
-					.setSrcAccessMask({})
 					.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
 
 				source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
@@ -466,9 +468,9 @@ namespace egkr
 				.setBufferRowLength(0)
 				.setBufferImageHeight(0)
 				.setImageSubresource(subresource)
-				.setImageExtent({ width_, height_, 1 });
+				.setImageExtent({ width_, height_, 0 });
 
-			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
+			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferSrcOptimal, buffer, image_copy);
 
 		}
 		void vulkan_texture::copy_pixel_to_buffer(command_buffer command_buffer, vk::Buffer buffer, uint32_t x, uint32_t y)
@@ -490,9 +492,9 @@ namespace egkr
 				.setBufferImageHeight(0)
 				.setImageSubresource(subresource)
 				.setImageExtent({ 1, 1, 1 })
-				.setImageOffset({ (int32_t)x, (int32_t)y, 1 });
+				.setImageOffset({ (int32_t)x, (int32_t)y, 0 });
 
-			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferDstOptimal, buffer, image_copy);
+			command_buffer.get_handle().copyImageToBuffer(image_, vk::ImageLayout::eTransferSrcOptimal, buffer, image_copy);
 
 		}
 	}

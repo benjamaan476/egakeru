@@ -12,6 +12,7 @@ namespace egkr::render_view
 	render_view_ui::render_view_ui(const configuration& configuration)
 		:render_view(configuration)
 	{
+		regenerate_render_targets();
 	}
 
 	bool render_view_ui::on_create()
@@ -79,7 +80,7 @@ namespace egkr::render_view
 		return packet;
 	}
 
-	bool render_view_ui::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const
+	bool render_view_ui::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index)
 	{
 		for (auto& pass : renderpasses_)
 		{
@@ -91,10 +92,9 @@ namespace egkr::render_view
 
 			for (auto render_data : render_view_packet->render_data)
 			{
-				auto m = render_data.geometry->get_material();
+				auto& m = render_data.geometry->get_material();
 
 				bool needs_update = m->get_render_frame() != frame_number;
-
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
@@ -127,7 +127,7 @@ namespace egkr::render_view
 		return true;
 	}
 
-	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
+	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, render_target::attachment& /*attachment*/)
 	{
 		return true;
 	}

@@ -59,8 +59,9 @@ if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)
 endif()
 
-add_definitions(-DENABLE_DEBUG_MACRO)
-
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    add_definitions(-DENABLE_DEBUG_MACRO)
+endif()
 # Adding the src:
 add_subdirectory(engine)
 add_subdirectory(sandbox)

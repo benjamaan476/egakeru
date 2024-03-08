@@ -18,10 +18,6 @@ namespace egkr
 		: max_view_count_{ 31 }
 	{}
 
-	view_system::~view_system()
-	{
-	}
-
 	bool view_system::init()
 	{
 		return true;
@@ -106,7 +102,7 @@ namespace egkr
 		return	view->on_build_packet(data);
 	}
 
-	bool view_system::on_render(const render_view::render_view* view, const render_view::render_view_packet* packet, uint32_t frame_number, uint32_t render_target_index)
+	bool view_system::on_render(render_view::render_view* view, const render_view::render_view_packet* packet, uint32_t frame_number, uint32_t render_target_index)
 	{
 		return view->on_render(packet, frame_number, render_target_index);
 	}

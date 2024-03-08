@@ -341,7 +341,7 @@ namespace egkr
 
 		}
 
-		LOG_WARN("Tried to release and unregistered texture.");
+		LOG_WARN("Tried to release an unregistered texture.");
 	}
 
 	texture::texture* texture_system::get_default_texture()

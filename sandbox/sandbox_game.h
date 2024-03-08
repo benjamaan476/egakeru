@@ -15,7 +15,7 @@ public:
 	explicit sandbox_game(const egkr::application_configuration& configuration);
 	bool init() final;
 	void update(double delta_time) final;
-	void render(egkr::render_packet* render_packet, double delta_time) final;
+	void render(egkr::render_packet& render_packet, double delta_time) final;
 	bool resize(uint32_t width, uint32_t height) final;
 
 	bool boot() final;

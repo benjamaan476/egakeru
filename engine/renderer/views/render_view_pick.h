@@ -36,8 +36,8 @@ namespace egkr::render_view
 		bool on_destroy() override;
 		void on_resize(uint32_t width, uint32_t height) override;
 		render_view_packet on_build_packet(void* data) override;
-		bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const override;
-		bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) override;
+		bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) override;
+		bool regenerate_attachment_target(uint32_t pass_index, render_target::attachment& attachment) override;
 
 		void acquire_shader_instances();
 		void release_shader_instances();
@@ -50,5 +50,6 @@ namespace egkr::render_view
 		egkr::vector<bool> instance_updated{};
 		int16_t mouse_x{};
 		int16_t mouse_y{};
+		pick_packet_data render_data{};
 	};
 }

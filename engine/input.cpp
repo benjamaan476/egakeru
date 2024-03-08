@@ -136,8 +136,17 @@ namespace egkr
 		return { 0, 0 };
 	}
 
-	void input::process_mouse_move()
+	void input::process_mouse_move(int16_t x, int16_t y)
 	{
+		if (state->current_mouse.x != x || state->current_mouse.y != y)
+		{
+			state->current_mouse.x = x;
+			state->current_mouse.y = y;
+
+			event_context context{};
+			context.context_ = std::array<int16_t, 8>{x, y};
+			event::fire_event(event_code::mouse_move, nullptr, context);
+		}
 	}
 
 	void input::process_mouse_wheel()

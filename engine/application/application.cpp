@@ -104,7 +104,7 @@ namespace egkr
 				application_->game_->update(delta_time);
 
 				render_packet packet{};
-				application_->game_->render(&packet, delta_time);
+				application_->game_->render(packet, delta_time);
 				renderer->draw_frame(packet);
 			}
 			auto frame_duration = application_->platform_->get_time() - frame_time;

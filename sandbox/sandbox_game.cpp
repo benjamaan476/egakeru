@@ -26,7 +26,7 @@ bool sandbox_game::init()
 
 	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_game::on_debug_event);
 	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_game::on_debug_event);
-	egkr::event::register_event(egkr::event_code::hover_id_changed, nullptr, sandbox_game::on_event);
+	egkr::event::register_event(egkr::event_code::hover_id_changed, this, sandbox_game::on_event);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -281,7 +281,7 @@ void sandbox_game::update(double delta_time)
 	egkr::audio::audio_system::update(&frame_data);
 }
 
-void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
+void sandbox_game::render(egkr::render_packet& render_packet, double delta_time)
 {
 	auto& model = meshes_[0]->model();
 	glm::quat q({ 0, 0, 0.5F * delta_time });
@@ -304,20 +304,23 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 
 	egkr::render_view::skybox_packet_data skybox{ .skybox = skybox_ };
 	auto skybox_view = egkr::view_system::get("skybox");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
+	render_packet.render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
 
 	auto world_view = egkr::view_system::get("world-opaque");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_data));
+	render_packet.render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_data));
 
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_data.world_geometries.size());
-
+	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn\t Hovered id: {}", pos.x, pos.y, pos.z, frame_data.world_geometries.size(), hovered_object_id_);
 	more_test_text_->set_text(text);
+
 	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = {test_text_, more_test_text_} };
 	auto ui_view = egkr::view_system::get("ui");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
+	render_packet.render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
+	egkr::render_view::pick_packet_data pick{ .world_mesh_data = {meshes_}, .ui_mesh_data = {ui_meshes_}, .texts = {test_text_, more_test_text_} };
+	auto pick_view = egkr::view_system::get("pick");
+	render_packet.render_views.push_back(egkr::view_system::build_packet(pick_view.get(), &pick));
 	frame_data.reset();
 }
 
@@ -441,7 +444,73 @@ bool sandbox_game::boot()
 		ui.passes.push_back(renderpass_configuration);
 		render_view_configuration_.push_back(ui);
 	}
+	{
+		egkr::renderpass::configuration pick_pass_world_configuration
+		{
+			.name = "Renderpass.Builtin.WorldPick",
+		    .render_area = {0, 0, 800, 600},
+			.clear_colour = {1, 1 ,1, 1},
+			.clear_flags = egkr::renderpass::clear_flags::colour | egkr::renderpass::clear_flags::depth,
+			.depth = 1.F,
+			.stencil = 0
+		};
 
+		egkr::render_target::attachment_configuration world_colour
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::view,
+			.load_operation = egkr::render_target::load_operation::dont_care,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		egkr::render_target::attachment_configuration world_depth
+		{
+			.type = egkr::render_target::attachment_type::depth,
+			.source = egkr::render_target::attachment_source::view,
+			.load_operation = egkr::render_target::load_operation::dont_care,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		pick_pass_world_configuration.target.attachments.push_back(world_colour);
+		pick_pass_world_configuration.target.attachments.push_back(world_depth);
+
+		egkr::renderpass::configuration pick_pass_ui_configuration
+		{
+			.name = "Renderpass.Builtin.UIPick",
+			.render_area = {0, 0, 800, 600},
+			.clear_colour = {1, 1 ,1, 1},
+			.clear_flags = egkr::renderpass::clear_flags::none,
+			.depth = 1.F,
+			.stencil = 0
+		};
+
+		egkr::render_target::attachment_configuration ui_colour
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::view,
+			.load_operation = egkr::render_target::load_operation::load,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		pick_pass_ui_configuration.target.attachments.push_back(ui_colour);
+
+		egkr::render_view::configuration pick_view_configuration
+		{
+			.name = "pick",
+			.width = width_,
+			.height = height_,
+			.type = egkr::render_view::type::pick,
+			.view_source = egkr::render_view::view_matrix_source::ui_camera,
+		};
+
+		pick_view_configuration.passes.push_back(pick_pass_world_configuration);
+		pick_view_configuration.passes.push_back(pick_pass_ui_configuration);
+
+		render_view_configuration_.push_back(pick_view_configuration);
+	}
 	return true;
 }
 

@@ -44,6 +44,7 @@ namespace egkr
 		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
+		glfwSetCursorPosCallback(window_, &platform_windows::mouse_callback);
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
 		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
 
@@ -95,6 +96,17 @@ namespace egkr
 		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
 
 		input::process_key((egkr::key)key, pressed);
+	}
+
+	void platform_windows::mouse_callback(GLFWwindow* window, double x, double y)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Mouse event from wrong window");
+			return;
+		}
+
+		input::process_mouse_move((int16_t)x, (int16_t)y);
 	}
 
 	void platform_windows::on_close(GLFWwindow* window)

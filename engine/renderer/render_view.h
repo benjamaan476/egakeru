@@ -58,15 +58,15 @@ namespace egkr
 			static shared_ptr create(const configuration& configuration);
 
 			explicit render_view(const configuration& configuration);
-			virtual ~render_view() = default;
+			virtual ~render_view();
 
 			virtual bool on_create() = 0;
 			virtual bool on_destroy() = 0;
 			virtual void on_resize(uint32_t width, uint32_t height) = 0;
 			virtual render_view_packet on_build_packet(void* data) = 0;
-			virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
+			virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) = 0;
 
-			virtual bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) = 0;
+			virtual bool regenerate_attachment_target(uint32_t pass_index, render_target::attachment& attachment) = 0;
 
 			void regenerate_render_targets();
 			static bool on_event(egkr::event_code code, void* sender, void* listener, const event_context& context);
@@ -85,7 +85,7 @@ namespace egkr
 
 		struct render_view_packet
 		{
-			const render_view* render_view{};
+			render_view* render_view{};
 			float4x4 view_matrix{1.F};
 			float4x4 projection_matrix{1.F};
 
