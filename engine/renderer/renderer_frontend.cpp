@@ -106,7 +106,7 @@ namespace egkr
 		ui.render_area = { 0, 0, framebuffer_width_, framebuffer_height_ };
 		renderpasses.push_back(ui);
 
-		renderer_backend_configuration configuration{};
+		renderer_backend::configuration configuration{};
 		configuration.on_render_target_refresh_required = std::bind(&renderer_frontend::regenerate_render_targets, this);
 		configuration.renderpass_configurations = renderpasses;
 

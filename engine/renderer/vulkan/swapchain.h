@@ -13,11 +13,16 @@ namespace egkr
 	class swapchain
 	{
 	public:
+		struct configuration
+		{
+			renderer_backend::flags flags{};
+		};
+
 		using shared_ptr = std::shared_ptr<swapchain>;
 
-		static shared_ptr create(vulkan_context* context);
+		static shared_ptr create(vulkan_context* context, const configuration& configuration);
 
-		explicit swapchain(vulkan_context* context);
+		explicit swapchain(vulkan_context* context, const configuration& configuration);
 		~swapchain();
 
 		void destroy();
@@ -38,12 +43,13 @@ namespace egkr
 
 		void create();
 		static vk::SurfaceFormatKHR choose_swapchain_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats);
-		static vk::PresentModeKHR choose_swapchain_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes);
+		vk::PresentModeKHR choose_swapchain_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes);
 		vk::Extent2D choose_swapchain_extent(const vk::SurfaceCapabilitiesKHR& capabilities);
 		std::vector<vk::Image> get_swapchain_images(vk::SwapchainKHR swapchain);
 
 	private:
 		vulkan_context* context_;
+		configuration configuration_{};
 		egkr::vector<render_target::render_target::shared_ptr> render_targets_{};
 
 		vk::SurfaceFormatKHR format_{};
