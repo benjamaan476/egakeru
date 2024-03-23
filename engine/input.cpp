@@ -16,6 +16,7 @@ namespace egkr
 	bool input::init()
 	{
 		LOG_INFO("Initialised input");
+		keymaps.reserve(5);
 		return true;
 	}
 
@@ -115,8 +116,10 @@ namespace egkr
 		{
 			key_state = pressed;
 
-			for (auto& map : state->keymaps | std::views::reverse)
+			for (auto i = state->keymaps.size() - 1; i > 0; --i)
 			{
+				//Need to do it this way as keys can remove keymaps which invalidates iterators
+				auto& map = state->keymaps[i];
 				auto* binding = map.entries[std::to_underlying(key)].bindings;
 				bool unset{};
 
