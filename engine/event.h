@@ -56,6 +56,15 @@ namespace egkr
 			constexpr uint32_t count = 16 / sizeof(T);
 			value = std::get<std::array<T, count>>(context_)[index];
 		}
+
+		template<typename T>
+		void set(uint32_t index, T value)
+		{
+			constexpr uint32_t count = 16 / sizeof(T);
+			auto v = std::array<T, count>{};
+			v[index] = value;
+			context_ = v;
+		}
 	};
 
 	using event_callback = std::function<bool(event_code, void*, void*, const event_context&)>;

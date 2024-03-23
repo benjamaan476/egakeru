@@ -130,13 +130,13 @@ namespace egkr
 		is_dirty_ = true;
 	}
 
-	void camera::camera_yaw(float amount)
+	void camera::yaw(float amount)
 	{
 		rotation_.z += amount;
 		is_dirty_ = true;
 	}
 
-	void camera::camera_pitch(float amount)
+	void camera::pitch(float amount)
 	{
 		rotation_.y += amount;
 		is_dirty_ = true;

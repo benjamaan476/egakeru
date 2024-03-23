@@ -19,10 +19,45 @@ namespace egkr
 		return true;
 	}
 
-	bool input::update(float /*delta_time*/ )
+	bool input::update(float /*delta_time*/)
 	{
 		previous_keyboard = current_keyboard;
 		previous_mouse = current_mouse;
+
+		for (auto i{ 0U }; i < std::to_underlying(key::key_count); ++i)
+		{
+			if (is_key_down((key)i) && was_key_down((key)i))
+			{
+				for (auto& map : keymaps | std::views::reverse)
+				{
+					auto* binding = map.entries[i].bindings;
+					bool unset{};
+
+					while (binding)
+					{
+						if (binding->type == keymap::entry_bind_type::unset)
+						{
+							unset = true;
+							break;
+						}
+						else if (binding->type == keymap::entry_bind_type::hold)
+						{
+							if (binding->callback && check_modifiers(binding->modifier))
+							{
+								binding->callback((key)i, binding->type, binding->modifier, binding->user_data);
+							}
+						}
+						binding = binding->next;
+					}
+
+					if (unset || map.overrides_all)
+					{
+						break;
+					}
+				}
+			}
+		}
+
 		return true;
 	}
 
@@ -80,10 +115,45 @@ namespace egkr
 		{
 			key_state = pressed;
 
+			for (auto& map : state->keymaps | std::views::reverse)
+			{
+				auto* binding = map.entries[std::to_underlying(key)].bindings;
+				bool unset{};
+
+				while (binding)
+				{
+					if (binding->type == keymap::entry_bind_type::unset)
+					{
+						unset = true;
+						break;
+					}
+					else if (pressed && binding->type == keymap::entry_bind_type::press)
+					{
+						if (binding->callback && check_modifiers(binding->modifier))
+						{
+							binding->callback(key, binding->type, binding->modifier, binding->user_data);
+						}
+					}
+					else if (!pressed && binding->type == keymap::entry_bind_type::release)
+					{
+						if (binding->callback && check_modifiers(binding->modifier))
+						{
+							binding->callback(key, binding->type, binding->modifier, binding->user_data);
+						}
+					}
+
+					binding = binding->next;
+				}
+
+				if (unset || map.overrides_all)
+				{
+					break;
+				}
+			}
+
 			auto code = pressed ? event_code::key_down : event_code::key_up;
 			event_context context{};
-			const int array_size{ 8 };
-			context.context_ = std::array<int16_t, array_size>{ (int16_t)key };
+			context.set(0, std::to_underlying(key));
 
 			event::fire_event(code, nullptr, context);
 		}
@@ -142,5 +212,44 @@ namespace egkr
 
 	void input::process_mouse_wheel()
 	{
+	}
+
+	void input::push_keymap(const keymap& keymap)
+	{
+		state->keymaps.push_back(keymap);
+	}
+
+	void input::pop_keymap()
+	{
+		state->keymaps.pop_back();
+	}
+
+	bool input::check_modifiers(keymap::modifier modifier)
+	{
+		if (modifier & keymap::modifier::shift)
+		{
+			if (!is_key_down(key::left_shift) && !is_key_down(key::right_shift))
+			{
+				return false;
+			}
+		}
+
+		if (modifier & keymap::modifier::control)
+		{
+			if (!is_key_down(key::left_control) && !is_key_down(key::right_control))
+			{
+				return false;
+			}
+		}
+
+		if (modifier & keymap::modifier::alt)
+		{
+			if (!is_key_down(key::left_alt) && !is_key_down(key::right_alt))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

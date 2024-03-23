@@ -963,6 +963,7 @@ namespace egkr
 		return nullptr;
 	}
 
+#ifdef ENABLE_DEBUG_MACRO
 	bool renderer_vulkan::set_debug_obj_name(VkObjectType type, uint64_t handle, const std::string& name) const
 	{
 		if (handle)
@@ -973,4 +974,5 @@ namespace egkr
 		}
 		return false;
 	}
+#endif
 }

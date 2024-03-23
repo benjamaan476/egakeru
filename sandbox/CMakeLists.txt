@@ -2,12 +2,12 @@
 file(GLOB SOURCES
     entry.cpp
     sandbox_game.cpp
+    sandbox_keybinds.cpp
 )
 
 add_executable(sandbox $<TARGET_OBJECTS:engine> ${SOURCES})
 
 include_directories(${engine_SOURCE_DIR})
-
 
 target_link_libraries(
   sandbox

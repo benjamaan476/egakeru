@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-
+#include "keymap.h"
 #include "application/application_configuration.h"
 
 namespace egkr
@@ -27,9 +27,13 @@ namespace egkr
 		[[nodiscard]] const auto& get_application_configuration() const	{ return application_configuration_; }
 		[[nodiscard]] const auto& get_font_system_configuration() const { return font_system_configuration_; }
 		[[nodiscard]] const auto& get_render_view_configuration() const { return render_view_configuration_; }
+		[[nodiscard]] const auto& get_camera() const { return camera_; }
+		[[nodiscard]] double get_delta_time() { return delta_time_; }
+
+		[[nodiscard]] const auto& get_console_keymap() const { return console_keymap; }
+		[[nodiscard]] auto& get_console_keymap() { return console_keymap; }
 
 		void set_application(application* app);
-
 	protected:
 		[[nodiscard]] auto* get_application() const { return application_;}
 		font_system::configuration font_system_configuration_{};
@@ -38,6 +42,10 @@ namespace egkr
 		application* application_;
 		uint32_t width_{};
 		uint32_t height_{};
+
+		egkr::camera::shared_ptr camera_{};
+		double delta_time_{};
+		keymap console_keymap{};
 
 	private:
 

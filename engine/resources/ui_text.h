@@ -38,7 +38,12 @@ namespace egkr
 			[[nodiscard]] std::shared_ptr<font::data> get_data() const { return data_; }
 			[[nodiscard]] uint64_t get_render_frame() const { return render_frame_number_; }
 			[[nodiscard]] transform get_transform() const { return transform_; }
+			[[nodiscard]] const auto& get_text() const { return text_; }
+			[[nodiscard]] bool has_text() const { return text_.size() != 0; }
 			void set_render_frame(uint64_t frame) { render_frame_number_ = frame;}
+
+			void pop_back();
+			void push_back(char c);
 		private:
 			void regenerate_geometry();
 		private:

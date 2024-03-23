@@ -1,4 +1,5 @@
 #include "sandbox_game.h"
+#include "sandbox_keybinds.h"
 
 #include "input.h"
 #include <systems/view_system.h>
@@ -145,84 +146,15 @@ bool sandbox_game::init()
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
 	egkr::audio::audio_system::play_channel(7, test_music, true);
 
+	egkr::debug_console::create();
+	egkr::debug_console::load();
 
 	return true;
 }
 
 void sandbox_game::update(double delta_time)
 {
-	auto temp_speed{ 50.F };
-
-	if (egkr::input::is_key_down(egkr::key::a))
-	{
-		camera_->camera_yaw(1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::d))
-	{
-		camera_->camera_yaw(-1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::e))
-	{
-		camera_->camera_pitch(-1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::q))
-	{
-		camera_->camera_pitch(1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::w))
-	{
-		camera_->move_forward(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::x))
-	{
-		camera_->move_up(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::space))
-	{
-		camera_->move_down(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::s))
-	{
-		camera_->move_back(50.F * (float)delta_time);
-	}
-
-	if (egkr::input::was_key_pressed(egkr::key::t))
-	{
-		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
-	}
-
-	if (egkr::input::is_key_down(egkr::key::key_0))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 0U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::key_1))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 1U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::key_2))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 2U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::l))
-	{
-		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
-	}
+	delta_time_ = delta_time;
 
 	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
@@ -274,6 +206,7 @@ void sandbox_game::update(double delta_time)
 	}
 
 	egkr::audio::audio_system::update(&frame_data);
+	egkr::debug_console::update();
 }
 
 void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
@@ -309,7 +242,14 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_data.world_geometries.size());
 
 	more_test_text_->set_text(text);
-	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = {test_text_, more_test_text_} };
+
+	egkr::vector<egkr::text::ui_text::shared_ptr> texts{ test_text_, more_test_text_ };
+	if (egkr::debug_console::is_visible())
+	{
+		texts.push_back(egkr::debug_console::get_text());
+		texts.push_back(egkr::debug_console::get_entry_text());
+	}
+	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
 	auto ui_view = egkr::view_system::get("ui");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
@@ -362,11 +302,14 @@ bool sandbox_game::boot()
 		render_view_configuration_.push_back(ui);
 	}
 
+	egkr::setup_keymaps((game*)this);
+
 	return true;
 }
 
 bool sandbox_game::shutdown()
 {
+	egkr::debug_console::shutdown();
 	egkr::audio::audio_system::shutdown();
 	skybox_->destroy();
 	box_->destroy();

@@ -1,5 +1,6 @@
 #include "application.h"
 #include "input.h"
+#include "console.h"
 
 #include "systems/view_system.h"
 #include "systems/audio_system.h"
@@ -27,7 +28,8 @@ namespace egkr
 		game_ = std::move(game);
 
 		egkr::log::init();
-		
+		egkr::console::create();
+
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
@@ -128,6 +130,7 @@ namespace egkr
 		egkr::event::unregister_event(egkr::event_code::resize, nullptr, application::on_resize);
 
 		system_manager::shutdown();
+		console::shutdown();
 		renderer->shutdown();
 		application_->platform_->shutdown();
 	}
@@ -141,7 +144,7 @@ namespace egkr
 
 		if (code == event_code::key_down)
 		{
-			int16_t key_value{};
+			uint16_t key_value{};
 			context.get(0, key_value);
 
 			switch ((key)key_value)
