@@ -1,4 +1,4 @@
-#include "console.h"
+#include "console_system.h"
 
 namespace egkr
 {
@@ -11,11 +11,17 @@ namespace egkr
 		return state.get();
 	}
 
-	void console::init()
+	bool console::init()
 	{
+		return true;
 	}
 
-	void console::shutdown()
+	bool console::update(float /*delta_time*/)
+	{
+		return true;
+	}
+
+	bool console::shutdown()
 	{
 		if (state)
 		{
@@ -23,6 +29,7 @@ namespace egkr
 			state->registered_commands_.clear();
 			state.reset();
 		}
+		return true;
 	}
 
 	void console::register_consumer(void* instance, consumer_callback callback)

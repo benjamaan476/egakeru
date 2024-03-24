@@ -1,6 +1,5 @@
 #include "engine.h"
 #include "input.h"
-#include "console.h"
 
 #include "systems/view_system.h"
 #include "systems/audio_system.h"
@@ -29,7 +28,6 @@ namespace egkr
 		application_ = std::move(application);
 
 		egkr::log::init();
-		egkr::console::create();
 
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
@@ -131,7 +129,6 @@ namespace egkr
 		egkr::event::unregister_event(egkr::event_code::resize, nullptr, engine::on_resize);
 
 		system_manager::shutdown();
-		console::shutdown();
 		renderer->shutdown();
 		engine_->platform_->shutdown();
 	}

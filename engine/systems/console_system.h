@@ -1,11 +1,11 @@
 #pragma once
 #include "pch.h"
-
+#include "systems/system.h"
 namespace egkr
 {
 	using consumer_callback = std::function<bool(void*, log_level, std::string)>;
 
-	class console
+	class console : public system
 	{
 	public:
 		struct argument
@@ -36,8 +36,9 @@ namespace egkr
 		using unique_ptr = std::unique_ptr<console>;
 		static console* create();
 
-		static void init();
-		static void shutdown();
+		bool init() override;
+		bool update(float delta_time) override;
+		bool shutdown() override;
 
 		static void register_consumer(void* instance, consumer_callback callback);
 		static void write_line(void* instance, log_level level, const std::string& message);

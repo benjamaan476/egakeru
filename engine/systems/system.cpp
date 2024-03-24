@@ -11,6 +11,7 @@
 #include <systems/view_system.h>
 #include <systems/light_system.h>
 #include <systems/font_system.h>
+#include <systems/console_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -163,6 +164,9 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::font, font_system::create(application->get_font_system_configuration()));
 		}
+		{
+			registered_systems_.emplace(system_type::console, console::create());
+		}
 	}
 
 	void system_manager::register_extension()
@@ -188,6 +192,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();
 		system_manager_state->registered_systems_[system_type::light]->shutdown();
 		system_manager_state->registered_systems_[system_type::render_view]->shutdown();

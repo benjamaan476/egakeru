@@ -1,11 +1,10 @@
 #include "debug_console.h"
-#include "console.h"
+#include "systems/console_system.h"
 #include "input.h"
 
 namespace egkr
 {
 	static debug_console::unique_ptr state;
-
 
 	debug_console* debug_console::create()
 	{
