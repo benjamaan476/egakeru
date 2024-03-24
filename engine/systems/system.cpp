@@ -14,25 +14,25 @@
 
 #include <renderer/renderer_frontend.h>
 
-#include <game/game.h>
+#include <application/application.h>
 
 namespace egkr
 {
 	static std::unique_ptr<system_manager> system_manager_state{};
 
-	void system_manager::create(game* game)
+	void system_manager::create(application* application)
 	{
 		if (system_manager_state)
 		{
 			LOG_WARN("System manager already initialised");
 			return;
 		}
-		system_manager_state = std::make_unique<system_manager>(game);
+		system_manager_state = std::make_unique<system_manager>(application);
 	}
 
-	system_manager::system_manager(game* game)
+	system_manager::system_manager(application* application)
 	{
-		register_known(game);
+		register_known(application);
 		register_extension();
 		register_user();
 	}
@@ -89,7 +89,7 @@ namespace egkr
 		}
 	}
 
-	void system_manager::register_known(game* game)
+	void system_manager::register_known(application* application)
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
@@ -161,7 +161,7 @@ namespace egkr
 		}
 
 		{
-			registered_systems_.emplace(system_type::font, font_system::create(game->get_font_system_configuration()));
+			registered_systems_.emplace(system_type::font, font_system::create(application->get_font_system_configuration()));
 		}
 	}
 

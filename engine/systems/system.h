@@ -39,12 +39,12 @@ namespace egkr
 		virtual ~system() = default;
 	};
 
-	class game;
+	class application;
 	class system_manager
 	{
 	public:
-		static void create(game* game);
-		explicit system_manager(game* game);
+		static void create(application* application);
+		explicit system_manager(application* application);
 
 		static bool init();
 		static bool update(float delta_time);
@@ -53,7 +53,7 @@ namespace egkr
 		static void shutdown();
 
 	private:
-		void register_known(game* game);
+		void register_known(application* application);
 		void register_extension();
 		void register_user(); 
 

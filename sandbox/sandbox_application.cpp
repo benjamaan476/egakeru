@@ -1,7 +1,6 @@
-#include "sandbox_game.h"
+#include "sandbox_application.h"
 #include "sandbox_keybinds.h"
 
-#include "input.h"
 #include <systems/view_system.h>
 #include <systems/geometry_system.h>
 #include <systems/shader_system.h>
@@ -14,19 +13,19 @@
 
 #include <renderer/renderer_types.h>
 
-sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
-	: game(configuration)
+sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
+	: application(configuration)
 {
 	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
 	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
-bool sandbox_game::init()
+bool sandbox_application::init()
 {
-	LOG_INFO("Sandbox game created");
+	LOG_INFO("Sandbox application created");
 
-	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_game::on_debug_event);
-	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_game::on_debug_event);
+	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_application::on_debug_event);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -152,7 +151,7 @@ bool sandbox_game::init()
 	return true;
 }
 
-void sandbox_game::update(double delta_time)
+void sandbox_application::update(double delta_time)
 {
 	delta_time_ = delta_time;
 
@@ -209,7 +208,7 @@ void sandbox_game::update(double delta_time)
 	egkr::debug_console::update();
 }
 
-void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
+void sandbox_application::render(egkr::render_packet* render_packet, double delta_time)
 {
 	auto& model = meshes_[0]->model();
 	glm::quat q({ 0, 0, 0.5F * delta_time });
@@ -256,7 +255,7 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 	frame_data.reset();
 }
 
-bool sandbox_game::resize(uint32_t width, uint32_t height)
+bool sandbox_application::resize(uint32_t width, uint32_t height)
 {
 	if (width_ != width || height_ != height)
 	{
@@ -268,7 +267,7 @@ bool sandbox_game::resize(uint32_t width, uint32_t height)
 	return false;
 }
 
-bool sandbox_game::boot()
+bool sandbox_application::boot()
 {
 
 	{
@@ -302,12 +301,12 @@ bool sandbox_game::boot()
 		render_view_configuration_.push_back(ui);
 	}
 
-	egkr::setup_keymaps((game*)this);
+	egkr::setup_keymaps(this);
 
 	return true;
 }
 
-bool sandbox_game::shutdown()
+bool sandbox_application::shutdown()
 {
 	egkr::debug_console::shutdown();
 	egkr::audio::audio_system::shutdown();
@@ -326,9 +325,9 @@ bool sandbox_game::shutdown()
 	return true;
 }
 
-bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& /*context*/)
+bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& /*context*/)
 {
-	auto* game = (sandbox_game*)listener;
+	auto* application = (sandbox_application*)listener;
 	if (code == egkr::event_code::debug01)
 	{
 		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
@@ -338,25 +337,25 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 		choice %= materials.size();
 
 		auto material = egkr::material_system::acquire(materials[choice]);
-		game->meshes_[0]->get_geometries()[0]->set_material(material);
-		//game->update_frustum_ = !game->update_frustum_;
+		application->meshes_[0]->get_geometries()[0]->set_material(material);
+		//application->update_frustum_ = !application->update_frustum_;
 	}
 
 	if (code == egkr::event_code::debug02)
 	{
-		if (!game->models_loaded_)
+		if (!application->models_loaded_)
 		{
 			LOG_INFO("Loading models");
-			game->models_loaded_ = true;
+			application->models_loaded_ = true;
 
-			game->sponza_ = egkr::mesh::load("sponza2");
+			application->sponza_ = egkr::mesh::load("sponza2");
 
 			egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
 			obj.set_scale({ 0.1F, 0.1F, 0.1F });
 			obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
 
-			game->sponza_->set_model(obj);
-			game->meshes_.push_back(game->sponza_);
+			application->sponza_->set_model(obj);
+			application->meshes_.push_back(application->sponza_);
 
 			return true;
 		}

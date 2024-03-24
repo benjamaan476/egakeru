@@ -1,49 +1,56 @@
 #pragma once
 #include "pch.h"
-
-#include "platform/platform.h"
-#include "game/game.h"
-#include "event.h"
-
-#include "resources/geometry.h"
-#include "resources/mesh.h"
-#include "resources/light.h"
-#include "resources/skybox.h"
-#include "resources/ui_text.h"
-
-#include <debug/debug_box3d.h>
-#include <debug/debug_grid.h>
-
-#include "renderer/renderer_frontend.h"
+#include "keymap.h"
+#include "engine/engine_configuration.h"
 
 namespace egkr
 {
+	class engine;
+	struct render_packet;
+
 	class application
 	{
 	public:
 		using unique_ptr = std::unique_ptr<application>;
-		static bool create(game::unique_ptr game);
-		//Don't call this directly, only here to shutup clang
-		explicit application(game::unique_ptr game);
+		API explicit application(engine_configuration configuration);
 
-		static void run();
-		void static shutdown();
+		API virtual ~application()  = default;
+
+		virtual bool init() = 0;
+		virtual void update(double delta_time) = 0;
+		virtual void render(render_packet* render_packet, double delta_time) = 0;
+		virtual bool resize(uint32_t width, uint32_t height) = 0;
+
+		virtual bool boot() = 0;
+		virtual bool shutdown() = 0;
+
+		[[nodiscard]] const auto& get_engine_configuration() const	{ return engine_configuration_; }
+		[[nodiscard]] const auto& get_font_system_configuration() const { return font_system_configuration_; }
+		[[nodiscard]] const auto& get_render_view_configuration() const { return render_view_configuration_; }
+		[[nodiscard]] const auto& get_camera() const { return camera_; }
+		[[nodiscard]] double get_delta_time() { return delta_time_; }
+
+		[[nodiscard]] const auto& get_console_keymap() const { return console_keymap; }
+		[[nodiscard]] auto& get_console_keymap() { return console_keymap; }
+
+		void set_engine(engine* engine);
+	protected:
+		[[nodiscard]] auto* get_engine() const { return engine_;}
+		font_system::configuration font_system_configuration_{};
+		egkr::vector<render_view::configuration> render_view_configuration_{};
+
+		engine* engine_;
+		uint32_t width_{};
+		uint32_t height_{};
+
+		egkr::camera::shared_ptr camera_{};
+		double delta_time_{};
+		keymap console_keymap{};
 
 	private:
-		//void reginster_event();
-		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
-		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
-		bool is_initialised_{false};
-		std::chrono::nanoseconds last_time_{};
 
-	    bool limit_framerate_{false};
-		std::chrono::milliseconds frame_time_{16ms};
-
-		bool is_running_{};
-		bool is_suspended_{};
-		platform::shared_ptr platform_{};
-		std::string name_{};
-		game::unique_ptr game_{};
+		engine_configuration engine_configuration_{};
 	};
 
+	static application::unique_ptr application_{};
 }

@@ -2,6 +2,6 @@
 
 namespace egkr
 {
-	class game;
-	void setup_keymaps(game* game_instance);
+	class application;
+	void setup_keymaps(application* application_instance);
 }

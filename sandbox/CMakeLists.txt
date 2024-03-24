@@ -1,7 +1,7 @@
 
 file(GLOB SOURCES
     entry.cpp
-    sandbox_game.cpp
+    sandbox_application.cpp
     sandbox_keybinds.cpp
 )
 

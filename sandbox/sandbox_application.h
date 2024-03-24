@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/game.h"
+#include "application/application.h"
 #include "resources/mesh.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"
@@ -10,10 +10,10 @@
 #include "debug/debug_frustum.h"
 #include "debug/debug_console.h"
 
-class sandbox_game final : public egkr::game
+class sandbox_application final : public egkr::application
 {
 public:
-	explicit sandbox_game(const egkr::application_configuration& configuration);
+	explicit sandbox_application(const egkr::engine_configuration& configuration);
 	bool init() final;
 	void update(double delta_time) final;
 	void render(egkr::render_packet* render_packet, double delta_time) final;
