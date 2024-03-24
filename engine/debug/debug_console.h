@@ -32,13 +32,22 @@ namespace egkr
 		static bool is_visible();
 		static void toggle_visibility();
 
+
 	private:
-		int32_t line_display_count_{10};
+		int32_t line_display_count_{ 10 };
 		int32_t line_offset_{};
 		egkr::vector<std::string> lines_{};
 
 		text::ui_text::shared_ptr text_control_{};
 		text::ui_text::shared_ptr entry_control_{};
+
+		struct command_history_entry
+		{
+			std::string command{};
+		};
+
+		egkr::vector<command_history_entry> history_{};
+		//int32_t history_offset_{};
 		bool is_dirty_{};
 		bool is_visible_{false};
 	};

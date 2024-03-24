@@ -15,21 +15,13 @@ namespace egkr
 		mouse_down,
 		mouse_move,
 		resize,
+		evar_changed,
 
 		debug01,
 		debug02,
 		render_mode,
 		event_code_size
 	};
-
-	template<class... Ts>
-	struct overloaded : Ts...
-	{
-		using Ts::operator()...;
-	};
-
-	template<class... Ts>
-	overloaded(Ts...) -> overloaded<Ts...>;
 
 	struct event_context
 	{

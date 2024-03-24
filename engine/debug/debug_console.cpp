@@ -136,6 +136,7 @@ namespace egkr
 			{
 				if (state->entry_control_->has_text())
 				{
+					state->history_.emplace_back(state->entry_control_->get_text());
 					console::execute_command(state->entry_control_->get_text());
 
 					state->entry_control_->set_text("");
