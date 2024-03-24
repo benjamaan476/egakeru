@@ -16,6 +16,7 @@ namespace egkr
 		mouse_move,
 		resize,
 		render_target_refresh_required,
+		evar_changed,
 
 		debug01,
 		debug02,
@@ -23,15 +24,6 @@ namespace egkr
 		hover_id_changed,
 		event_code_size
 	};
-
-	template<class... Ts>
-	struct overloaded : Ts...
-	{
-		using Ts::operator()...;
-	};
-
-	template<class... Ts>
-	overloaded(Ts...) -> overloaded<Ts...>;
 
 	struct event_context
 	{
@@ -57,6 +49,15 @@ namespace egkr
 		{
 			constexpr uint32_t count = 16 / sizeof(T);
 			value = std::get<std::array<T, count>>(context_)[index];
+		}
+
+		template<typename T>
+		void set(uint32_t index, T value)
+		{
+			constexpr uint32_t count = 16 / sizeof(T);
+			auto v = std::array<T, count>{};
+			v[index] = value;
+			context_ = v;
 		}
 	};
 

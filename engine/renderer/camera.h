@@ -38,8 +38,8 @@ namespace egkr
 		void move_up(float_t amount);
 		void move_down(float_t amount);
 
-		void camera_yaw(float amount);
-		void camera_pitch(float amount);
+		void yaw(float amount);
+		void pitch(float amount);
 
 	private:
 		std::string name_{};

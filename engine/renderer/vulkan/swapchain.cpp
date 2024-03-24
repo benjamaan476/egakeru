@@ -5,13 +5,13 @@
 
 namespace egkr
 {
-	swapchain::shared_ptr swapchain::create(vulkan_context* context)
+	swapchain::shared_ptr swapchain::create(vulkan_context* context, const configuration& configuration)
 	{
-		return std::make_shared<swapchain>(context);
+		return std::make_shared<swapchain>(context, configuration);
 	}
 
-	swapchain::swapchain(vulkan_context* context)
-		: context_{context}
+	swapchain::swapchain(vulkan_context* context, const configuration& configuration)
+		: context_{context}, configuration_{configuration}
 	{
 		create();
 	}
@@ -185,16 +185,29 @@ namespace egkr
 
 	vk::PresentModeKHR swapchain::choose_swapchain_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes)
 	{
-		for (const auto& available_present_mode : available_present_modes)
+		vk::PresentModeKHR present_mode{};
+		if ((configuration_.flags & renderer_backend::flags::vsync) != 0)
 		{
-			if (available_present_mode == vk::PresentModeKHR::eMailbox)
+			present_mode = vk::PresentModeKHR::eFifo;
+
+			if ((configuration_.flags & renderer_backend::flags::power_saving) != 0)
 			{
-				return available_present_mode;
+				for (const auto& available_present_mode : available_present_modes)
+				{
+					if (available_present_mode == vk::PresentModeKHR::eMailbox)
+					{
+						present_mode = available_present_mode;
+						break;
+					}
+				}
 			}
 		}
+		else
+		{
+			present_mode = vk::PresentModeKHR::eImmediate;
+		}
 
-		LOG_WARN("No ideal present mode found, picking first mode");
-		return available_present_modes[0];
+		return present_mode;
 	}
 
 	vk::Extent2D swapchain::choose_swapchain_extent(const vk::SurfaceCapabilitiesKHR& capabilities)

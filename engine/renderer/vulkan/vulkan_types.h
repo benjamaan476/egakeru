@@ -107,8 +107,6 @@ namespace egkr
 
 #ifdef ENABLE_DEBUG_MACRO
 		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
-#elif
-
 #endif
 
 		float4 viewport_rect{};

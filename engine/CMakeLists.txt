@@ -9,8 +9,8 @@ ${engine_SOURCE_DIR}/*.cpp
 set(HEADERS 
     log/log.h
     platform/platform.h
+    engine/*.h
     application/*.h
-    game/*.h
     event.h
     input.h
     renderer/*.h
@@ -40,8 +40,6 @@ endif()
 if(DEFINED TRACY_MEMORY)
     target_compile_definitions(engine PRIVATE TRACY_MEMORY)
 endif()
-
-message(WARNING noeos ${OPENAL_LIBRARY})
 
 target_link_libraries(
   engine

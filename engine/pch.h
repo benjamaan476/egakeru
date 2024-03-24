@@ -22,6 +22,12 @@
 #include <locale>
 #include <ranges>
 
+enum log_level
+{
+	info
+};
+
+
 #include "log/log.h"
 
 namespace egkr

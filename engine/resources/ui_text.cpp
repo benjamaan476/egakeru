@@ -120,9 +120,33 @@ namespace egkr
 			LOG_ERROR("Unrecognised font type");
 		}
 
+		void ui_text::pop_back()
+		{
+			text_.pop_back();
+			if (!font_system::verify_atlas(data_, text_))
+			{
+				LOG_ERROR("Failed to verify atlas");
+				return;
+			}
+			regenerate_geometry();
+		}
+
+		void ui_text::push_back(char c)
+		{
+			text_.push_back(c);
+			if (!font_system::verify_atlas(data_, text_))
+			{
+				LOG_ERROR("Failed to verify atlas");
+				return;
+			}
+			regenerate_geometry();
+		}
+
 		void ui_text::regenerate_geometry()
 		{
-			const uint32_t char_length = text_.size();
+			uint32_t char_length = text_.size();
+			char_length = std::max(char_length, 1u);
+
 			constexpr static const uint64_t verts_per_quad{ 4 };
 			constexpr static const uint64_t indices_per_quad{ 6 };
 

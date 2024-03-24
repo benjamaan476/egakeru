@@ -11,28 +11,30 @@
 #include <systems/view_system.h>
 #include <systems/light_system.h>
 #include <systems/font_system.h>
+#include <systems/console_system.h>
+#include <systems/evar_system.h>
 
 #include <renderer/renderer_frontend.h>
 
-#include <game/game.h>
+#include <application/application.h>
 
 namespace egkr
 {
 	static std::unique_ptr<system_manager> system_manager_state{};
 
-	void system_manager::create(game* game)
+	void system_manager::create(application* application)
 	{
 		if (system_manager_state)
 		{
 			LOG_WARN("System manager already initialised");
 			return;
 		}
-		system_manager_state = std::make_unique<system_manager>(game);
+		system_manager_state = std::make_unique<system_manager>(application);
 	}
 
-	system_manager::system_manager(game* game)
+	system_manager::system_manager(application* application)
 	{
-		register_known(game);
+		register_known(application);
 		register_extension();
 		register_user();
 	}
@@ -89,13 +91,15 @@ namespace egkr
 		}
 	}
 
-	void system_manager::register_known(game* game)
+	void system_manager::register_known(application* application)
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
-			resource_system_configuration resource_system_configuration{};
-			resource_system_configuration.max_loader_count = 10;
-			resource_system_configuration.base_path = "../../../../assets/";
+			const resource_system_configuration resource_system_configuration
+			{
+			    .max_loader_count = 10,
+			    .base_path = "../../../../assets/",
+			};
 
 			registered_systems_.emplace(system_type::resource, resource_system::create(resource_system_configuration));
 		}
@@ -136,7 +140,7 @@ namespace egkr
 			registered_systems_.emplace(system_type::job, job_system::create(configuration));
 		}
 		{
-			shader_system::configuration configuration
+			const shader_system::configuration configuration
 			{
 			.max_shader_count = 1024,
 			.max_uniform_count = 128,
@@ -147,7 +151,7 @@ namespace egkr
 			registered_systems_.emplace(system_type::shader, shader_system::create(configuration));
 		}
 		{
-			camera_system::configuration configuration
+			const camera_system::configuration configuration
 			{
 				.max_registered_cameras = 31
 			};
@@ -161,7 +165,13 @@ namespace egkr
 		}
 
 		{
-			registered_systems_.emplace(system_type::font, font_system::create(game->get_font_system_configuration()));
+			registered_systems_.emplace(system_type::font, font_system::create(application->get_font_system_configuration()));
+		}
+		{
+			registered_systems_.emplace(system_type::console, console::create());
+		}
+		{
+			registered_systems_.emplace(system_type::evar, evar_system::create());
 		}
 	}
 
@@ -188,6 +198,8 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::evar]->shutdown();
+		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();
 		system_manager_state->registered_systems_[system_type::light]->shutdown();
 		system_manager_state->registered_systems_[system_type::render_view]->shutdown();

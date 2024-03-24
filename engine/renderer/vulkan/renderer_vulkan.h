@@ -17,7 +17,7 @@ namespace egkr
 		explicit renderer_vulkan(platform::shared_ptr platform);
 		~renderer_vulkan() override;
 
-		bool init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count) final;
+		bool init(const configuration& configuration, uint8_t& out_window_attachment_count) final;
 		void shutdown() final;
 		void resize(uint32_t width_, uint32_t height_) final;
 		bool begin_frame() final;
@@ -75,7 +75,7 @@ namespace egkr
 		platform::shared_ptr platform_{};
 
 #ifdef NDEBUG
-		const bool enable_validation_layers_ = false;
+		const bool enable_validation_layers_ = true;
 #else
 		const bool enable_validation_layers_ = true;
 #endif

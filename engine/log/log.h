@@ -20,7 +20,6 @@ namespace egkr
 	};
 }
 
-
 #define LOG_TRACE(...) egkr::log::get_logger()->trace(__VA_ARGS__)
 #define LOG_INFO(...)  egkr::log::get_logger()->info(__VA_ARGS__)
 #define LOG_WARN(...)  egkr::log::get_logger()->warn(__VA_ARGS__)

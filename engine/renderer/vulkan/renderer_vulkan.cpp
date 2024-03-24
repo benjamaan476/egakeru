@@ -374,7 +374,7 @@ namespace egkr
 		shutdown();
 	}
 
-	bool renderer_vulkan::init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count)
+	bool renderer_vulkan::init(const configuration& configuration, uint8_t& out_window_attachment_count)
 	{
 		application_name_ = configuration.application_name;
 		ZoneScoped;
@@ -392,7 +392,7 @@ namespace egkr
 
 		context_.surface = create_surface();
 		context_.device.create(&context_);
-		context_.swapchain = swapchain::create(&context_);
+		context_.swapchain = swapchain::create(&context_, {configuration.flags});
 		out_window_attachment_count = context_.swapchain->get_image_count();
 
 

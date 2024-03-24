@@ -42,18 +42,25 @@ namespace egkr
 		egkr::vector<render_view::render_view_packet> render_views{};
 	};
 
-	struct renderer_backend_configuration
-	{
-		std::string application_name{};
-	};
-
 	class renderer_backend
 	{
 	public:
-		using unique_ptr = std::unique_ptr<renderer_backend>;
 
+		enum flags : uint8_t
+		{
+			vsync = 0x01,
+			power_saving = 0x02
+		};
+
+		struct configuration
+		{
+			std::string application_name{};
+			flags flags;
+		};
+
+		using unique_ptr = std::unique_ptr<renderer_backend>;
 		virtual ~renderer_backend() = default;
-		virtual bool init(const renderer_backend_configuration& configuration, uint8_t& out_window_attachment_count) = 0;
+		virtual bool init(const configuration& configuration, uint8_t& out_window_attachment_count) = 0;
 		virtual void shutdown() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame() = 0;

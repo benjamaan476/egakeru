@@ -52,7 +52,7 @@ namespace egkr
 
 	bool renderer_frontend::init()
 	{
-		renderer_backend_configuration configuration{};
+		renderer_backend::configuration configuration{};
 		auto backen_init = backend_->init(configuration, window_attachment_count);
 
 		return backen_init;

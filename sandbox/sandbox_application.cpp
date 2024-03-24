@@ -1,6 +1,6 @@
-#include "sandbox_game.h"
+#include "sandbox_application.h"
+#include "sandbox_keybinds.h"
 
-#include "input.h"
 #include <systems/view_system.h>
 #include <systems/geometry_system.h>
 #include <systems/shader_system.h>
@@ -11,22 +11,21 @@
 
 #include <renderer/renderer_types.h>
 
-#include <identifier.h>
+#include "identifier.h"
 
-sandbox_game::sandbox_game(const egkr::application_configuration& configuration)
-	: game(configuration)
+sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
+	: application(configuration)
 {
 	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
 	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
-bool sandbox_game::init()
+bool sandbox_application::init()
 {
-	LOG_INFO("Sandbox game created");
+	LOG_INFO("Sandbox application created");
 
-	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_game::on_debug_event);
-	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_game::on_debug_event);
-	egkr::event::register_event(egkr::event_code::hover_id_changed, nullptr, sandbox_game::on_event);
+	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_application::on_debug_event);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -150,84 +149,15 @@ bool sandbox_game::init()
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
 	egkr::audio::audio_system::play_channel(7, test_music, true);
 
+	egkr::debug_console::create();
+	egkr::debug_console::load();
 
 	return true;
 }
 
-void sandbox_game::update(double delta_time)
+void sandbox_application::update(double delta_time)
 {
-	auto temp_speed{ 50.F };
-
-	if (egkr::input::is_key_down(egkr::key::a))
-	{
-		camera_->camera_yaw(1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::d))
-	{
-		camera_->camera_yaw(-1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::e))
-	{
-		camera_->camera_pitch(-1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::q))
-	{
-		camera_->camera_pitch(1.F * delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::w))
-	{
-		camera_->move_forward(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::x))
-	{
-		camera_->move_up(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::space))
-	{
-		camera_->move_down(temp_speed * (float)delta_time);
-	}
-
-	if (egkr::input::is_key_down(egkr::key::s))
-	{
-		camera_->move_back(50.F * (float)delta_time);
-	}
-
-	if (egkr::input::was_key_pressed(egkr::key::t))
-	{
-		egkr::event::fire_event(egkr::event_code::debug01, nullptr, {});
-	}
-
-	if (egkr::input::is_key_down(egkr::key::key_0))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 0U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::key_1))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 1U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::key_2))
-	{
-		const uint32_t array_size{ 4 };
-		egkr::event_context context;
-		context.context_ = std::array<uint32_t, array_size>{ 2U };
-		egkr::event::fire_event(egkr::event_code::render_mode, nullptr, context);
-	}
-	if (egkr::input::is_key_down(egkr::key::l))
-	{
-		egkr::event::fire_event(egkr::event_code::debug02, nullptr, {});
-	}
+	delta_time_ = delta_time;
 
 	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
@@ -279,9 +209,10 @@ void sandbox_game::update(double delta_time)
 	}
 
 	egkr::audio::audio_system::update(&frame_data);
+	egkr::debug_console::update();
 }
 
-void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
+void sandbox_application::render(egkr::render_packet* render_packet, double delta_time)
 {
 	auto& model = meshes_[0]->model();
 	glm::quat q({ 0, 0, 0.5F * delta_time });
@@ -314,14 +245,21 @@ void sandbox_game::render(egkr::render_packet* render_packet, double delta_time)
 	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_data.world_geometries.size());
 
 	more_test_text_->set_text(text);
-	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = {test_text_, more_test_text_} };
+
+	egkr::vector<egkr::text::ui_text::shared_ptr> texts{ test_text_, more_test_text_ };
+	if (egkr::debug_console::is_visible())
+	{
+		texts.push_back(egkr::debug_console::get_text());
+		texts.push_back(egkr::debug_console::get_entry_text());
+	}
+	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
 	auto ui_view = egkr::view_system::get("ui");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
 	frame_data.reset();
 }
 
-bool sandbox_game::resize(uint32_t width, uint32_t height)
+bool sandbox_application::resize(uint32_t width, uint32_t height)
 {
 	if (width_ != width || height_ != height)
 	{
@@ -333,7 +271,7 @@ bool sandbox_game::resize(uint32_t width, uint32_t height)
 	return false;
 }
 
-bool sandbox_game::boot()
+bool sandbox_application::boot()
 {
 
 	{
@@ -442,11 +380,14 @@ bool sandbox_game::boot()
 		render_view_configuration_.push_back(ui);
 	}
 
+	egkr::setup_keymaps(this);
+
 	return true;
 }
 
-bool sandbox_game::shutdown()
+bool sandbox_application::shutdown()
 {
+	egkr::debug_console::shutdown();
 	egkr::audio::audio_system::shutdown();
 	skybox_->destroy();
 	box_->destroy();
@@ -463,9 +404,9 @@ bool sandbox_game::shutdown()
 	return true;
 }
 
-bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& /*context*/)
+bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& /*context*/)
 {
-	auto* game = (sandbox_game*)listener;
+	auto* application = (sandbox_application*)listener;
 	if (code == egkr::event_code::debug01)
 	{
 		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
@@ -475,26 +416,25 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 		choice %= materials.size();
 
 		auto material = egkr::material_system::acquire(materials[choice]);
-		game->meshes_[0]->get_geometries()[0]->set_material(material);
-		//game->update_frustum_ = !game->update_frustum_;
+		application->meshes_[0]->get_geometries()[0]->set_material(material);
+		//application->update_frustum_ = !application->update_frustum_;
 	}
 
 	if (code == egkr::event_code::debug02)
 	{
-		if (!game->models_loaded_)
+		if (!application->models_loaded_)
 		{
 			LOG_INFO("Loading models");
-			game->models_loaded_ = true;
+			application->models_loaded_ = true;
 
-			game->sponza_ = egkr::mesh::load("sponza2");
-			game->sponza_->unique_id() = egkr::identifier::acquire_unique_id(game->sponza_.get());
+			application->sponza_ = egkr::mesh::load("sponza2");
 
 			egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
 			obj.set_scale({ 0.1F, 0.1F, 0.1F });
 			obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
 
-			game->sponza_->set_model(obj);
-			game->meshes_.push_back(game->sponza_);
+			application->sponza_->set_model(obj);
+			application->meshes_.push_back(application->sponza_);
 
 			return true;
 		}
@@ -502,9 +442,9 @@ bool sandbox_game::on_debug_event(egkr::event_code code, void* /*sender*/, void*
 	return false;
 }
 
-bool sandbox_game::on_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& context)
+bool sandbox_application::on_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& context)
 {
-	auto* game = (sandbox_game*)listener;
+	auto* game = (sandbox_application*)listener;
 	if (code == egkr::event_code::hover_id_changed)
 	{
 		context.get(0, game->hovered_object_id_);

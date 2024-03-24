@@ -1,16 +1,16 @@
 #pragma once
 
 #include "pch.h"
+#include "engine/engine.h"
 #include "application/application.h"
-#include "game/game.h"
 
-extern egkr::game::unique_ptr create_game();
+extern egkr::application::unique_ptr create_application();
 
 int main()
 {
-	auto game = create_game();
+	auto application = create_application();
 
-	egkr::application::create(std::move(game));
-	egkr::application::run();
-	egkr::application::shutdown();
+	egkr::engine::create(std::move(application));
+	egkr::engine::run();
+	egkr::engine::shutdown();
 }
