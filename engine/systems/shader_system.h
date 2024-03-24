@@ -8,12 +8,6 @@
 
 namespace egkr
 {
-	class renderer_frontend;
-
-	static std::string BUILTIN_SHADER_NAME_SKYBOX{ "Shader.Builtin.Skybox" };
-	static std::string BUILTIN_SHADER_NAME_MATERIAL{ "Shader.Builtin.Material" };
-	static std::string BUILTIN_SHADER_NAME_UI{ "Shader.Builtin.UI" };
-
 	class shader_system : public system
 	{
 	public:
@@ -33,7 +27,7 @@ namespace egkr
 		bool update(float delta_time) override;
 		bool shutdown() override;
 
-		static shader::shader::shared_ptr create_shader(const shader::properties& properties);
+		static shader::shader::shared_ptr create_shader(const shader::properties& properties, renderpass::renderpass* pass);
 		[[nodiscard]] static uint32_t get_shader_id(const std::string& shader_name);
 		[[nodiscard]] static shader::shader::shared_ptr get_shader(const std::string& shader_name);
 		[[nodiscard]] static shader::shader::shared_ptr get_shader(uint32_t shader_id);

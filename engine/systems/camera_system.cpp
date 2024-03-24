@@ -13,7 +13,9 @@ namespace egkr
 
 	camera_system::camera_system(const configuration& configuration)
 		: configuration_{ configuration }
-	{}
+	{
+		create_default();
+	}
 
 	bool camera_system::init()
 	{
@@ -26,7 +28,6 @@ namespace egkr
 		cameras_.reserve(configuration_.max_registered_cameras);
 		camera_id_by_name_.reserve(configuration_.max_registered_cameras);
 
-		create_default();
 		return true;
 	}
 
@@ -44,7 +45,7 @@ namespace egkr
 
 	void camera_system::create_default()
 	{
-		camera_system_->default_camera_ = camera::create(DEFAULT_CAMERA_NAME);
+		default_camera_ = camera::create(DEFAULT_CAMERA_NAME);
 	}
 
 	camera::shared_ptr camera_system::acquire(std::string_view name)

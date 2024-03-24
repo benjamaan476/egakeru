@@ -6,16 +6,20 @@
 
 namespace egkr::render_view
 {
-
-
 	render_view_world::render_view_world(const configuration& configuration)
 		: render_view(configuration)
-	{}
+	{
+	}
 
 	bool render_view_world::on_create()
 	{
-		auto shader = shader_system::get_shader(custom_shader_name_ != "" ? custom_shader_name_ : BUILTIN_SHADER_NAME_MATERIAL);
-		shader_id_ = shader->get_id();
+		auto resource = resource_system::load("Shader.Builtin.Material", resource_type::shader, nullptr);
+		auto shader = (shader::properties*)resource->data;
+		shader_system::create_shader(*shader, renderpasses_[0].get());
+		resource_system::unload(resource);
+
+		shader_ = shader_system::get_shader("Shader.Builtin.Material");
+
 		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
@@ -24,17 +28,19 @@ namespace egkr::render_view
 		std::string colour_3d_shader_name = "Shader.Builtin.Colour3DShader";
 		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource_type::shader, nullptr);
 		auto properties = (shader::properties*)colour_shader->data;
-		shader_system::create_shader(*properties);
+		shader_system::create_shader(*properties, renderpasses_[0].get());
 		resource_system::unload(colour_shader);
 
 		auto col_shader = shader_system::get_shader(colour_3d_shader_name);
 		locations_.projection = col_shader->get_uniform_index("projection");
 		locations_.view = col_shader->get_uniform_index("view");
 		locations_.model = col_shader->get_uniform_index("model");
+		event::register_event(event_code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 	bool render_view_world::on_destroy()
 	{
+		event::unregister_event(event_code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 	void render_view_world::on_resize(uint32_t width, uint32_t height)
@@ -73,9 +79,9 @@ namespace egkr::render_view
 		{
 			pass->begin(pass->get_render_targets()[render_target_index].get());
 
-			shader_system::use(shader_id_);
+			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_id_, render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
+			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
 			for (egkr::geometry::render_data render_data : render_view_packet->render_data)
 			{
 				auto m = render_data.geometry->get_material();
@@ -107,6 +113,11 @@ namespace egkr::render_view
 			}
 			pass->end();
 		}
+		return true;
+	}
+
+	bool render_view_world::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
+	{
 		return true;
 	}
 }

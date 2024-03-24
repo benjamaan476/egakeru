@@ -64,9 +64,10 @@ namespace egkr
 			LOG_FATAL("Failed to initialise renderer");
 		}
 
-		system_manager::init();
-
 		application_->boot();
+		std::ranges::for_each(application_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
+
+		system_manager::init();
 
 		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
 		audio::audio_system::create(audio_configuration);
@@ -78,7 +79,6 @@ namespace egkr
 			LOG_ERROR("FAiled to create application");
 		}
 
-		std::ranges::for_each(application_->get_render_view_configuration(), [](const auto& config) { view_system::create_view(config); });
 		event::register_event(event_code::key_down, nullptr, engine::on_event);
 		event::register_event(event_code::quit, nullptr, engine::on_event);
 		event::register_event(event_code::resize, nullptr, engine::on_resize);
@@ -126,7 +126,7 @@ namespace egkr
 		engine_->application_->shutdown();
 		egkr::event::unregister_event(egkr::event_code::key_down, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event_code::quit, nullptr, on_event);
-		egkr::event::unregister_event(egkr::event_code::resize, nullptr, engine::on_resize);
+		egkr::event::unregister_event(egkr::event_code::resize, nullptr, on_resize);
 
 		system_manager::shutdown();
 		renderer->shutdown();

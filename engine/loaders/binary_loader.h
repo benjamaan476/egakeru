@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pch.h"
 #include "resource_loader.h"
 
 namespace egkr
@@ -12,7 +11,6 @@ namespace egkr
 		static unique_ptr create(const loader_properties& properties);
 
 		explicit binary_loader(const loader_properties& properties);
-		~binary_loader() override = default;
 
 		resource::shared_ptr load(std::string_view name, void* params) override;
 		bool unload(const resource::shared_ptr& resource) override;

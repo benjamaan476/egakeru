@@ -83,7 +83,6 @@ namespace egkr
 		vk::SurfaceKHR surface{};
 		swapchain::shared_ptr swapchain{};
 
-		std::unordered_map<std::string, renderpass::renderpass::shared_ptr> renderpass_by_name{};
 		egkr::vector<command_buffer> graphics_command_buffers{};
 
 		egkr::vector<vk::Semaphore> image_available_semaphore{};
@@ -97,20 +96,21 @@ namespace egkr
 		uint32_t image_index{};
 		uint32_t current_frame{};
 
-		bool recreating_swapchain{};
 		uint32_t framebuffer_size_generation{};
 		uint32_t framebuffer_last_size_generation{};
 
 		uint64_t geometry_vertex_offset{};
 		uint64_t geometry_index_offset{};
-		std::function<void(void)> on_render_target_refresh_required{};
 
 		bool multithreading_enabled{};
+		bool recreating_swapchain{};
 
 #ifdef ENABLE_DEBUG_MACRO
 		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
 #endif
 
+		float4 viewport_rect{};
+		float4 scissor_rect{};
 	};
 
 	struct queue_family_indices

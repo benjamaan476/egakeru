@@ -3,19 +3,17 @@
 
 namespace egkr
 {
-	void command_buffer::begin_render_pass(const vk::RenderPassBeginInfo& renderpass_info)
+	void command_buffer::begin_render_pass(const vk::RenderPassBeginInfo& renderpass_info) const
 	{
 		ZoneScoped;
 
 		command_buffer_.beginRenderPass(renderpass_info, vk::SubpassContents::eInline);
-		state_ = command_buffer_state::in_render_pass;
 	}
-	void command_buffer::end_render_pass()
+	void command_buffer::end_render_pass() const
 	{
 		ZoneScoped;
 
 		command_buffer_.endRenderPass();
-		state_ = command_buffer_state::recording;
 	}
 	void command_buffer::allocate(const vulkan_context* context, vk::CommandPool pool, bool is_primary)
 	{
@@ -44,7 +42,7 @@ namespace egkr
 		state_ = command_buffer_state::not_allocated;
 	}
 
-	void command_buffer::begin(bool is_single_use, bool is_renderpass_continue, bool is_simultaneous_use)
+	void command_buffer::begin(bool is_single_use, bool is_renderpass_continue, bool is_simultaneous_use) const
 	{
 		ZoneScoped;
 
@@ -70,15 +68,13 @@ namespace egkr
 			.setFlags(usage);
 
 		command_buffer_.begin(begin_info);
-		state_ = command_buffer_state::recording;
 	}
 
-	void command_buffer::end()
+	void command_buffer::end() const
 	{
 		ZoneScoped;
 
 		command_buffer_.end();
-		state_ = command_buffer_state::recording_ended;
 	}
 
 	void command_buffer::update_submitted()

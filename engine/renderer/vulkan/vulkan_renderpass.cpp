@@ -5,19 +5,196 @@
 
 namespace egkr::renderpass
 {
-	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const renderer_backend* renderer, vulkan_context* context, const egkr::renderpass::configuration& configuration)
+	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const vulkan_context* context, const egkr::renderpass::configuration& configuration)
 	{
-		return std::make_shared<vulkan_renderpass>(renderer, context, configuration);
+		return std::make_shared<vulkan_renderpass>(context, configuration);
 	}
 
-	vulkan_renderpass::vulkan_renderpass(const renderer_backend* renderer, vulkan_context* context, const egkr::renderpass::configuration& configuration)
-		: renderpass{renderer, configuration}, context_{ context } 
+	vulkan_renderpass::vulkan_renderpass(const vulkan_context* context, const egkr::renderpass::configuration& configuration)
+		: renderpass{configuration}, context_{ context } 
 	{
-		render_area_ = configuration.render_area;
-		clear_flags_ = configuration.clear_flags;
-		clear_colour_ = configuration.clear_colour;
-		has_previous_ = !configuration.previous_name.empty();
-		has_next_ = !configuration.next_name.empty();
+		vk::SubpassDescription subpasses{};
+		subpasses
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
+
+		egkr::vector<vk::AttachmentDescription> colour_attachments{};
+		egkr::vector<vk::AttachmentDescription> depth_attachments{};
+
+			for (const auto& attachment_config : configuration.target.attachments)
+			{
+				vk::AttachmentDescription attach{};
+				if (attachment_config.type == render_target::attachment_type::colour)
+				{
+					bool do_clear_colour = clear_flags_ & clear_flags::colour;
+					if (attachment_config.source == render_target::attachment_source::default_source)
+					{
+						attach.setFormat(context_->swapchain->get_format().format);
+					}
+					else
+					{
+						attach.setFormat(vk::Format::eR8G8B8A8Unorm);
+					}
+
+					attach.setSamples(vk::SampleCountFlagBits::e1);
+
+					if (attachment_config.load_operation == render_target::load_operation::dont_care)
+					{
+						attach.setLoadOp(do_clear_colour ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare);
+					}
+					else
+					{
+						if (attachment_config.load_operation == render_target::load_operation::load)
+						{
+							if (do_clear_colour)
+							{
+								attach.setLoadOp(vk::AttachmentLoadOp::eClear);
+							}
+							else
+							{
+								attach.setLoadOp(vk::AttachmentLoadOp::eLoad);
+							}
+						}
+						else
+						{
+							LOG_FATAL("Invalid combination of load and clear specified");
+							return;
+						}
+					}
+
+					if (attachment_config.store_operation == render_target::store_operation::dont_care)
+					{
+						attach.setStoreOp(vk::AttachmentStoreOp::eDontCare);
+					}
+					else if (attachment_config.store_operation == render_target::store_operation::store)
+					{
+						attach.setStoreOp(vk::AttachmentStoreOp::eStore);
+					}
+					else
+					{
+						LOG_FATAL("Invalid store operation");
+						return;
+					}
+
+					attach.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare);
+					attach.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare);
+					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined);
+					attach.setFinalLayout(attachment_config.present_after ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eColorAttachmentOptimal);
+
+					colour_attachments.push_back(attach);
+				}
+				else if (attachment_config.type == render_target::attachment_type::depth)
+				{
+					bool do_clear_depth = clear_flags_ & clear_flags::depth;
+
+					if (attachment_config.source == render_target::attachment_source::default_source)
+					{
+						attach.setFormat(context_->device.depth_format);
+					}
+					else
+					{
+						attach.setFormat(context_->device.depth_format);
+					}
+
+					attach.setSamples(vk::SampleCountFlagBits::e1);
+
+					if (attachment_config.load_operation == render_target::load_operation::dont_care)
+					{
+						attach.setLoadOp(do_clear_depth ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare);
+					}
+					else
+					{
+						if (attachment_config.load_operation == render_target::load_operation::load)
+						{
+							if (do_clear_depth)
+							{
+								attach.setLoadOp(vk::AttachmentLoadOp::eClear);
+							}
+							else
+							{
+								attach.setLoadOp(vk::AttachmentLoadOp::eLoad);
+							}
+						}
+						else
+						{
+							LOG_FATAL("Invalid combination of load and clear specified");
+							return;
+						}
+					}
+
+					if (attachment_config.store_operation == render_target::store_operation::dont_care)
+					{
+						attach.setStoreOp(vk::AttachmentStoreOp::eDontCare);
+					}
+					else if (attachment_config.store_operation == render_target::store_operation::store)
+					{
+						attach.setStoreOp(vk::AttachmentStoreOp::eStore);
+					}
+					else
+					{
+						LOG_FATAL("Invalid store operation");
+						return;
+					}
+
+					attach.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare);
+					attach.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare);
+
+					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined);
+					attach.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+					depth_attachments.push_back(attach);
+				}
+			}
+
+		uint32_t attachment_added{};
+
+		egkr::vector<vk::AttachmentReference> colour_attachment_references{};
+		for (auto i{ 0U }; i < colour_attachments.size(); ++i)
+		{
+			vk::AttachmentReference ref{};
+			ref
+				.setAttachment(attachment_added)
+				.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+			colour_attachment_references.push_back(ref);
+
+			++attachment_added;
+		}
+
+		subpasses.setColorAttachments(colour_attachment_references);
+
+		egkr::vector<vk::AttachmentReference> depth_attachment_references{};
+		for (auto i{ 0U }; i < depth_attachments.size(); ++i)
+		{
+			vk::AttachmentReference ref{};
+			ref
+				.setAttachment(attachment_added)
+				.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+			depth_attachment_references.push_back(ref);
+
+			++attachment_added;
+		}
+		subpasses.setPDepthStencilAttachment(depth_attachment_references.empty() ? nullptr : depth_attachment_references.data());
+
+		vk::SubpassDependency dependencies{};
+		dependencies
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setSrcAccessMask(vk::AccessFlagBits::eNoneKHR)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
+
+		egkr::vector<vk::AttachmentDescription> attachments{ colour_attachments };
+		for (const auto& depth : depth_attachments)
+		{
+			attachments.push_back(depth);
+		}
+
+		vk::RenderPassCreateInfo create_info{};
+		create_info
+			.setAttachments(attachments)
+			.setSubpasses(subpasses)
+			.setDependencies(dependencies);
+
+		renderpass_ = context_->device.logical_device.createRenderPass(create_info, context_->allocator);
 	}
 
 	vulkan_renderpass::~vulkan_renderpass()
@@ -34,83 +211,6 @@ namespace egkr::renderpass
 		}
 
 		context_ = nullptr;
-	}
-
-	bool vulkan_renderpass::populate(float depth, float stencil, bool has_previous, bool has_next)
-	{
-		ZoneScoped;
-
-		depth_ = depth;
-		stencil_ = stencil;
-
-		const bool do_clear = (clear_flags_ & egkr::renderpass::clear_flags::colour) != 0;
-		const bool do_depth = (clear_flags_ & egkr::renderpass::clear_flags::depth) != 0;
-
-		vk::AttachmentDescription colour_attachment{};
-		colour_attachment
-			.setFormat(context_->swapchain->get_format().format)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(do_clear ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eLoad)
-			.setStoreOp(vk::AttachmentStoreOp::eStore)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(has_previous? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined)
-			.setFinalLayout(has_next? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::ePresentSrcKHR);
-
-		vk::AttachmentReference colour_attachment_reference{};
-		colour_attachment_reference
-			.setAttachment(0)
-			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
-
-		//TODO other attachment types (input, resolve, preserve)
-		//TODO configurable
-		egkr::vector<vk::AttachmentDescription> attachment_descriptions{ colour_attachment };
-
-		if (do_depth)
-		{
-			vk::AttachmentDescription depth_attachment{};
-			depth_attachment
-				.setFormat(context_->device.depth_format) // TODO configure
-				.setSamples(vk::SampleCountFlagBits::e1)
-				.setLoadOp(has_previous_ ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare)
-				.setStoreOp(vk::AttachmentStoreOp::eDontCare)
-				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-				.setInitialLayout(vk::ImageLayout::eUndefined)
-				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-
-			attachment_descriptions.push_back(depth_attachment);
-		}
-
-		vk::AttachmentReference depth_attachment_reference{};
-		depth_attachment_reference
-			.setAttachment(1)
-			.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-		vk::SubpassDescription subpass{};
-		subpass
-			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-			.setColorAttachments(colour_attachment_reference)
-			.setPDepthStencilAttachment(do_depth ? &depth_attachment_reference : nullptr);
-
-		vk::SubpassDependency subpass_dependencies{};
-		subpass_dependencies
-			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-			.setDstSubpass(0)
-			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-			.setSrcAccessMask(vk::AccessFlagBits::eNoneKHR)
-			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
-
-		vk::RenderPassCreateInfo renderpass_info{};
-		renderpass_info
-			.setAttachments(attachment_descriptions)
-			.setSubpasses(subpass)
-			.setDependencies(subpass_dependencies);
-
-		renderpass_ = context_->device.logical_device.createRenderPass(renderpass_info, context_->allocator);
-		return true;
 	}
 
 	bool vulkan_renderpass::begin(render_target::render_target* render_target) const
@@ -147,6 +247,16 @@ namespace egkr::renderpass
 			clear_depth.setDepthStencil({ depth_, do_clear_stencil ? stencil_ : 0 });
 			clear_colours.push_back(clear_depth);
 		}
+		else
+		{
+			for (const auto& target : render_target->get_attachments())
+			{
+				if (target.type == render_target::attachment_type::depth)
+				{
+					clear_colours.emplace_back();
+				}
+			}
+		}
 
 		begin_info.setClearValues(clear_colours);
 
@@ -154,7 +264,7 @@ namespace egkr::renderpass
 		return true;
 	}
 
-	bool vulkan_renderpass::end()
+	bool vulkan_renderpass::end() const
 	{
 		ZoneScoped;
 

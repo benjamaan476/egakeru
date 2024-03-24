@@ -202,3 +202,23 @@ static inline uint64_t get_aligned(uint64_t operand, uint64_t granularity)
 #define FrameMarkNamed(name) 
 #endif
 
+static inline constexpr float convert_range(float value, float old_min, float old_max, float new_min, float new_max)
+{
+	return (((value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min;
+}
+
+static inline constexpr uint32_t rgba_to_u32(uint32_t r, uint32_t g, uint32_t b)
+{
+	return (((r & 0xFF) << 16) | ((g & 0xFF) << 8) | ((b & 0xFF)));
+}
+
+static inline constexpr std::tuple<uint32_t, uint32_t, uint32_t> u32_to_rgb(uint32_t value)
+{
+	return { (value >> 16) & 0xFF, (value >> 8) & 0xFF, (value >> 0) & 0xFF };
+}
+
+static inline constexpr egkr::float3 rgbu_to_float3(uint32_t r, uint32_t g, uint32_t b)
+{
+	return { r / 255.0F, g / 255.0F, b / 255.0F };
+}
+

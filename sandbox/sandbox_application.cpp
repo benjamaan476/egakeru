@@ -6,12 +6,12 @@
 #include <systems/shader_system.h>
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
-
 #include <systems/audio_system.h>
-
 #include <systems/material_system.h>
 
 #include <renderer/renderer_types.h>
+
+#include "identifier.h"
 
 sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
 	: application(configuration)
@@ -46,6 +46,7 @@ bool sandbox_application::init()
 
 	egkr::transform transform_1 = egkr::transform::create();
 	auto mesh_1 = egkr::mesh::create(egkr::geometry_system::acquire(cube_1), transform_1);
+	mesh_1->unique_id() = egkr::identifier::acquire_unique_id(mesh_1.get());
 	meshes_.push_back(mesh_1);
 
 	auto cube_2 = egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material");
@@ -53,6 +54,7 @@ bool sandbox_application::init()
 	egkr::transform model_2 = egkr::transform::create({ 10.F, 0.F, 0.F });
 	model_2.set_parent(&mesh_1->model());
 	auto mesh_2 = egkr::mesh::create(egkr::geometry_system::acquire(cube_2), model_2);
+	mesh_2->unique_id() = egkr::identifier::acquire_unique_id(mesh_2.get());
 	meshes_.push_back(mesh_2);
 
 	egkr::light_system::add_point_light({ egkr::float4(-5.5, -5.5, 0.0, 0.F),
@@ -97,7 +99,9 @@ bool sandbox_application::init()
 	ui_properties.indices = indices;
 
 	auto ui_geo = egkr::geometry::geometry::create(ui_properties);
-	ui_meshes_.push_back(egkr::mesh::create(ui_geo, {}));
+	auto ui_mesh = egkr::mesh::create(ui_geo, {});
+	ui_mesh->unique_id() = egkr::identifier::acquire_unique_id(ui_mesh.get());
+	ui_meshes_.push_back(ui_mesh);
 
 	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
 	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
@@ -132,15 +136,15 @@ bool sandbox_application::init()
 	test_emitter.looping = true;
 	test_emitter.falloff = 1.F;
 
-	egkr::audio::audio_system::set_master_volume(0.001F);
+	egkr::audio::audio_system::set_master_volume(0.F);
 	egkr::audio::audio_system::set_channel_volume(0, 1.F);
 	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
 	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
 	egkr::audio::audio_system::set_channel_volume(3, 0.25F);
 	egkr::audio::audio_system::set_channel_volume(4, 0.F);
 	egkr::audio::audio_system::set_channel_volume(5, 0.F);
-	egkr::audio::audio_system::set_channel_volume(6, 0.F);
-	egkr::audio::audio_system::set_channel_volume(7, 0.4F);
+	egkr::audio::audio_system::set_channel_volume(6, 1.F);
+	egkr::audio::audio_system::set_channel_volume(7, 0.0F);
 
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
 	egkr::audio::audio_system::play_channel(7, test_music, true);
@@ -271,33 +275,108 @@ bool sandbox_application::boot()
 {
 
 	{
+		egkr::renderpass::configuration renderpass_configuration
+		{
+			.name = "Renderpass.Builtin.Skybox",
+			.render_area = {0, 0, 800, 600},
+			.clear_colour = {0, 0, 0.2F, 1.F},
+			.clear_flags = egkr::renderpass::clear_flags::colour,
+			.depth = 1.F,
+			.stencil = 0
+		};
+
+		egkr::render_target::attachment_configuration attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::dont_care,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		renderpass_configuration.target.attachments.push_back(attachment_configration);
+
 		egkr::render_view::configuration skybox_world{};
 		skybox_world.type = egkr::render_view::type::skybox;
 		skybox_world.width = width_;
 		skybox_world.height = height_;
 		skybox_world.name = "skybox";
-		skybox_world.passes.push_back({ "Renderpass.Builtin.Skybox" });
+		skybox_world.passes.push_back(renderpass_configuration);
 		skybox_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
 		render_view_configuration_.push_back(skybox_world);
 	}
 	{
+		egkr::renderpass::configuration renderpass_configuration
+		{
+			.name = "Renderpass.Builtin.World",
+			.render_area = {0, 0, 800, 600},
+			.clear_colour = {0, 0, 0.2F, 1.F},
+			.clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
+			.depth = 1.F,
+			.stencil = 0
+		};
+
+		egkr::render_target::attachment_configuration colour_attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::load,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+	
+		egkr::render_target::attachment_configuration depth_attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::depth,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::dont_care,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		renderpass_configuration.target.attachments.push_back(colour_attachment_configration);
+		renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
+
 		egkr::render_view::configuration opaque_world{};
 		opaque_world.type = egkr::render_view::type::world;
 		opaque_world.width = width_;
 		opaque_world.height = height_;
 		opaque_world.name = "world-opaque";
-		opaque_world.passes.push_back({ "Renderpass.Builtin.World" });
+		opaque_world.passes.push_back(renderpass_configuration);
 		opaque_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
+
 		render_view_configuration_.push_back(opaque_world);
 	}
 	{
+		egkr::renderpass::configuration renderpass_configuration
+		{
+			.name = "Renderpass.Builtin.UI",
+			.render_area = {0, 0, 800, 600},
+			.clear_colour = {0, 0, 0.2F, 1.F},
+			.clear_flags = egkr::renderpass::clear_flags::none,
+			.depth = 1.F,
+			.stencil = 0
+		};
+
+		egkr::render_target::attachment_configuration attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::load,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = true
+		};
+
+		renderpass_configuration.target.attachments.push_back(attachment_configration);
+
 		egkr::render_view::configuration ui{};
 		ui.name = "ui";
 		ui.width = width_;
 		ui.height = height_;
 		ui.type = egkr::render_view::type::ui;
 		ui.view_source = egkr::render_view::view_matrix_source::ui_camera;
-		ui.passes.push_back({ "Renderpass.Builtin.UI" });
+		ui.passes.push_back(renderpass_configuration);
 		render_view_configuration_.push_back(ui);
 	}
 
@@ -359,6 +438,16 @@ bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/
 
 			return true;
 		}
+	}
+	return false;
+}
+
+bool sandbox_application::on_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& context)
+{
+	auto* game = (sandbox_application*)listener;
+	if (code == egkr::event_code::hover_id_changed)
+	{
+		context.get(0, game->hovered_object_id_);
 	}
 	return false;
 }

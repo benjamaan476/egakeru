@@ -22,8 +22,8 @@ namespace egkr
 		void allocate(const vulkan_context* context, vk::CommandPool pool, bool is_primary);
 		void free(const vulkan_context* context, vk::CommandPool pool);
 
-		void begin(bool is_single_use, bool is_renderpass_continue, bool is_simultaneous_use);
-		void end();
+		void begin(bool is_single_use, bool is_renderpass_continue, bool is_simultaneous_use) const;
+		void end() const;
 
 		void update_submitted();
 		void reset();
@@ -31,8 +31,8 @@ namespace egkr
 		void begin_single_use(const vulkan_context* context, vk::CommandPool pool);
 		void end_single_use(const vulkan_context* context, vk::CommandPool pool, vk::Queue queue);
 
-		void begin_render_pass(const vk::RenderPassBeginInfo& renderpass_info);
-		void end_render_pass();
+		void begin_render_pass(const vk::RenderPassBeginInfo& renderpass_info) const;
+		void end_render_pass() const;
 
 		auto& get_handle() const { return command_buffer_; }
 	private:

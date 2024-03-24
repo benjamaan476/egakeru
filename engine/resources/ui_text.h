@@ -27,6 +27,7 @@ namespace egkr
 			using shared_ptr = std::shared_ptr<ui_text>;
 			static shared_ptr create(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 			ui_text(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
+			~ui_text();
 
 			void set_position(const float3& position);
 			void set_text(const std::string& text);
@@ -56,6 +57,7 @@ namespace egkr
 			transform transform_{};
 			uint32_t instance_id_{invalid_32_id};
 			uint64_t render_frame_number_{};
+			uint32_t unique_id_{};
 		};
 	}
 }

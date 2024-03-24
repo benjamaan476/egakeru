@@ -5,19 +5,19 @@
 
 namespace egkr::shader
 {
-	shader::shared_ptr shader::create(const properties& properties)
+	shader::shared_ptr shader::create(const properties& properties, renderpass::renderpass* pass)
 	{
 		auto shade = renderer->create_shader(properties);
 
-		auto renderpass = renderer->get_renderpass(properties.renderpass_name);
-		shade->populate(renderpass, properties.stage_filenames, properties.stages);
+		shade->populate(pass, properties.stage_filenames, properties.stages);
 		return shade;
 	}
 
 	shader::shader(const properties& properties)
 		: resource(0, 0, properties.name),
 		properties_{ properties }, 
-		topology_types_{ properties.topology_types }
+		topology_types_{ properties.topology_types },
+		flags_{properties.flags}
 	{
 		//TODO make backend renderer shader
 		state_ = state::uninitialised;

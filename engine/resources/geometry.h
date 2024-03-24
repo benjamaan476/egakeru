@@ -38,7 +38,6 @@ namespace egkr
 			}
 		};
 
-		struct render_data;
 		class geometry : public resource
 		{
 		public:
@@ -67,6 +66,7 @@ namespace egkr
 		{
 			geometry::shared_ptr geometry{};
 			transform model{};
+			uint64_t unique_id{};
 		};
 
 		struct frame_data

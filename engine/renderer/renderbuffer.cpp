@@ -10,7 +10,7 @@ namespace egkr::renderbuffer
 	}
 
 	renderbuffer::renderbuffer(type buffer_type, uint64_t size)
-		: type_{ buffer_type }, total_size_{ size }
+		:  total_size_{ size }, type_{ buffer_type }
 	{
 
 	}
