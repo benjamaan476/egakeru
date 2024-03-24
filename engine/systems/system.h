@@ -7,6 +7,7 @@ namespace egkr
 	enum class system_type
 	{
 		console,
+		evar,
 		event,
 		input,
 		platform,

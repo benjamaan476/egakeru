@@ -204,7 +204,20 @@ namespace egkr
 				}
 				else
 				{
-
+					switch (key)
+					{
+					case key::space:
+						char_code = (char)key;
+						break;
+					case key::minus:
+						char_code = shift_held ? '_' : '-';
+						break;
+					case key::equal:
+						char_code = shift_held ? '+' : '=';
+						break;
+					default:
+						char_code = 0;
+					}
 				}
 
 				if (char_code != 0)

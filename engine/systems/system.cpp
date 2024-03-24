@@ -12,6 +12,7 @@
 #include <systems/light_system.h>
 #include <systems/font_system.h>
 #include <systems/console_system.h>
+#include <systems/evar_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -94,9 +95,11 @@ namespace egkr
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
-			resource_system_configuration resource_system_configuration{};
-			resource_system_configuration.max_loader_count = 10;
-			resource_system_configuration.base_path = "../../../../assets/";
+			const resource_system_configuration resource_system_configuration
+			{
+			    .max_loader_count = 10,
+			    .base_path = "../../../../assets/",
+			};
 
 			registered_systems_.emplace(system_type::resource, resource_system::create(resource_system_configuration));
 		}
@@ -137,7 +140,7 @@ namespace egkr
 			registered_systems_.emplace(system_type::job, job_system::create(configuration));
 		}
 		{
-			shader_system::configuration configuration
+			const shader_system::configuration configuration
 			{
 			.max_shader_count = 1024,
 			.max_uniform_count = 128,
@@ -148,7 +151,7 @@ namespace egkr
 			registered_systems_.emplace(system_type::shader, shader_system::create(configuration));
 		}
 		{
-			camera_system::configuration configuration
+			const camera_system::configuration configuration
 			{
 				.max_registered_cameras = 31
 			};
@@ -166,6 +169,9 @@ namespace egkr
 		}
 		{
 			registered_systems_.emplace(system_type::console, console::create());
+		}
+		{
+			registered_systems_.emplace(system_type::evar, evar_system::create());
 		}
 	}
 
@@ -192,6 +198,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::evar]->shutdown();
 		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();
 		system_manager_state->registered_systems_[system_type::light]->shutdown();

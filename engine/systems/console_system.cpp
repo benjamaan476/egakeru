@@ -1,4 +1,5 @@
 #include "console_system.h"
+#include "evar_system.h"
 
 namespace egkr
 {
@@ -13,6 +14,8 @@ namespace egkr
 
 	bool console::init()
 	{
+		register_command("evar_create_int", 2, evar_system::create_int_command);
+		register_command("evar_print_int", 1, evar_system::print_int_command);
 		return true;
 	}
 
