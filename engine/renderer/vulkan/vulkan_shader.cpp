@@ -4,7 +4,7 @@
 #include "systems/resource_system.h"
 #include "systems/texture_system.h"
 
-namespace egkr::shader
+namespace egkr
 {
     shader::shared_ptr vulkan_shader::create(const vulkan_context* context, const properties& properties)
     {
@@ -422,25 +422,25 @@ namespace egkr::shader
 					{
 						auto& texture_map = instance_states[get_bound_instance_id()].instance_textures[i];
 
-						auto vulkan_map = (egkr::texture::vulkan::texture_map::texture_map*)texture_map.get();
+						auto vulkan_map = (vulkan_texture_map*)texture_map.get();
 
-						auto texture_data = (image::vulkan_texture*)texture_map->texture;
+						auto texture_data = (vulkan_texture*)texture_map->texture;
 
 						if (texture_data->get_generation() == invalid_32_id)
 						{
 							switch (vulkan_map->use)
 							{
 							case texture_map::use::map_diffuse:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_diffuse_texture();
+								texture_data = (vulkan_texture*)texture_system::get_default_diffuse_texture();
 								break;
 							case texture_map::use::map_specular:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_specular_texture();
+								texture_data = (vulkan_texture*)texture_system::get_default_specular_texture();
 								break;
 							case texture_map::use::map_normal:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_normal_texture();
+								texture_data = (vulkan_texture*)texture_system::get_default_normal_texture();
 								break;
 							default:
-								texture_data = (image::vulkan_texture*)texture_system::get_default_texture();
+								texture_data = (vulkan_texture*)texture_system::get_default_texture();
 								break;
 							}
 						}
@@ -511,7 +511,7 @@ namespace egkr::shader
 		return true;
 	}
 
-	uint32_t vulkan_shader::acquire_instance_resources(const egkr::vector<texture_map::texture_map::shared_ptr>& texture_maps)
+	uint32_t vulkan_shader::acquire_instance_resources(const egkr::vector<texture_map::shared_ptr>& texture_maps)
 	{
 		auto instance_id = instance_states.size();
 
@@ -539,11 +539,11 @@ namespace egkr::shader
 		{
 			if (uniform.scope == scope::global)
 			{
-				set_global_texture(uniform.location, ((texture_map::texture_map::shared_ptr*)(value))->get());
+				set_global_texture(uniform.location, ((texture_map::shared_ptr*)(value))->get());
 			}
 			else
 			{
-				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(texture_map::texture_map::shared_ptr*)value;
+				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(texture_map::shared_ptr*)value;
 			}
 		}
 		else
@@ -571,7 +571,7 @@ namespace egkr::shader
 
 	vulkan_stage vulkan_shader::create_module(const vulkan_stage_configuration& configuration)
 	{
-		auto resource = resource_system::load(configuration.filename, resource_type::binary, nullptr);
+		auto resource = resource_system::load(configuration.filename, resource::type::binary, nullptr);
 		auto* code = (binary_resource_properties*)resource->data;
 
 		vulkan_stage shader_stage{};

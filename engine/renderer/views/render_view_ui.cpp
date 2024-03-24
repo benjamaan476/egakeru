@@ -7,7 +7,7 @@
 #include <resources/ui_text.h>
 #include <resources/font.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	render_view_ui::render_view_ui(const configuration& configuration)
 		:render_view(configuration)
@@ -16,7 +16,7 @@ namespace egkr::render_view
 
 	bool render_view_ui::on_create()
 	{
-		auto ui_resource = resource_system::load("Shader.Builtin.UI", resource_type::shader, nullptr);
+		auto ui_resource = resource_system::load("Shader.Builtin.UI", resource::type::shader, nullptr);
 		auto ui_shader = (shader::properties*)ui_resource->data;
 
 		shader_system::create_shader(*ui_shader, renderpasses_[0].get());
@@ -33,13 +33,13 @@ namespace egkr::render_view
 		projection_ = glm::ortho(0.F, (float)width_, (float)height_, 0.F, near_clip_, far_clip_);
 		view_ = float4x4{ 1.F };
 
-		event::register_event(event_code::render_target_refresh_required, this, on_event);
+		event::register_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 
 	bool render_view_ui::on_destroy()
 	{
-		event::unregister_event(event_code::render_target_refresh_required, this, on_event);
+		event::unregister_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 

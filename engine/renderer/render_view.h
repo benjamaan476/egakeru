@@ -14,8 +14,11 @@ namespace egkr
 		class ui_text;
 	}
 
-	namespace render_view
+	struct render_view_packet;
+
+	class render_view
 	{
+	public:
 		enum class type
 		{
 			skybox,
@@ -48,73 +51,66 @@ namespace egkr
 			std::vector<renderpass::configuration> passes{};
 		};
 
-		struct render_view_packet;
+		using shared_ptr = std::shared_ptr<render_view>;
+		static shared_ptr create(const configuration& configuration);
 
-		class render_view
-		{
-		public:
-			using shared_ptr = std::shared_ptr<render_view>;
-			static shared_ptr create(const configuration& configuration);
+		explicit render_view(const configuration& configuration);
+		virtual ~render_view() = default;
 
-			explicit render_view(const configuration& configuration);
-			virtual ~render_view() = default;
+		virtual bool on_create() = 0;
+		virtual bool on_destroy() = 0;
+		virtual void on_resize(uint32_t width, uint32_t height) = 0;
+		virtual render_view_packet on_build_packet(void* data) = 0;
+		virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
 
-			virtual bool on_create() = 0;
-			virtual bool on_destroy() = 0;
-			virtual void on_resize(uint32_t width, uint32_t height) = 0;
-			virtual render_view_packet on_build_packet(void* data) = 0;
-			virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
+		virtual bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) = 0;
 
-			virtual bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) = 0;
+		void regenerate_render_targets();
+		static bool on_event(egkr::event::code code, void* sender, void* listener, const event::context& context);
 
-			void regenerate_render_targets();
-			static bool on_event(egkr::event_code code, void* sender, void* listener, const event_context& context);
+	protected:
+		uint32_t id_{ invalid_32_id };
+		std::string name_{};
+		uint32_t width_{};
+		uint32_t height_{};
+		type type_{};
+		uint32_t mode_{};
+		std::vector<renderpass::renderpass::shared_ptr> renderpasses_{};
+		std::string custom_shader_name_{};
+		camera::shared_ptr camera_{};
+	};
 
-		protected:
-			uint32_t id_{ invalid_32_id };
-			std::string name_{};
-			uint32_t width_{};
-			uint32_t height_{};
-			type type_{};
-			uint32_t mode_{};
-			std::vector<renderpass::renderpass::shared_ptr> renderpasses_{};
-			std::string custom_shader_name_{};
-			camera::shared_ptr camera_{};
-		};
+	struct render_view_packet
+	{
+		const render_view* render_view{};
+		float4x4 view_matrix{ 1.F };
+		float4x4 projection_matrix{ 1.F };
 
-		struct render_view_packet
-		{
-			const render_view* render_view{};
-			float4x4 view_matrix{1.F};
-			float4x4 projection_matrix{1.F};
+		float3 view_position{};
+		float4 ambient_colour{ 1.F };
 
-			float3 view_position{};
-			float4 ambient_colour{ 1.F };
+		egkr::vector<render_data> debug_render_data{};
+		egkr::vector<render_data> render_data{};
 
-			egkr::vector<geometry::render_data> render_data{};
-			egkr::vector<geometry::render_data> debug_render_data{};
+		std::optional<std::string> custom_shader_name{};
 
-			std::optional<std::string> custom_shader_name{};
+		void* extended_data{};
+	};
 
-			void* extended_data{};
-		};
+	struct skybox_packet_data
+	{
+		skybox::skybox::shared_ptr skybox{};
+	};
 
-		struct skybox_packet_data
-		{
-			skybox::skybox::shared_ptr skybox{};
-		};
+	struct mesh_packet_data
+	{
+		egkr::vector<mesh::shared_ptr> meshes{};
+		egkr::vector<render_data> debug_meshes{};
+	};
 
-		struct mesh_packet_data
-		{
-			egkr::vector<mesh::shared_ptr> meshes{};
-			egkr::vector<geometry::render_data> debug_meshes{};
-		};
-
-		struct ui_packet_data
-		{
-			mesh_packet_data mesh_data;
-			egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
-		};
-
-	}
+	struct ui_packet_data
+	{
+		mesh_packet_data mesh_data;
+		egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
+	};
 }

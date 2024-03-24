@@ -52,7 +52,7 @@ namespace egkr
 			load_operation load_operation;
 			store_operation store_operation;
 			bool present_after;
-			texture::texture* texture;
+			texture* texture;
 		};
 
 		struct configuration

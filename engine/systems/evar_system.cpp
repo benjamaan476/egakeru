@@ -53,9 +53,9 @@ namespace egkr
 		if (state->registered_ints_.contains(name))
 		{
 			state->registered_ints_[name] = value;
-			event_context context{};
+			event::context context{};
 			context.set(0, value);
-			event::fire_event(event_code::evar_changed, nullptr, context);
+			event::fire_event(event::code::evar_changed, nullptr, context);
 			return;
 		}
 		LOG_ERROR("Evar {} is not registered", name);

@@ -38,7 +38,7 @@ namespace egkr::render_target
 		attachments_ = attachments;
 		for (const auto& attachment : attachments_)
 		{
-			attachment_views.push_back(((image::vulkan_texture*)(attachment.texture))->get_view());
+			attachment_views.push_back(((vulkan_texture*)(attachment.texture))->get_view());
 		}
 		vk::FramebufferCreateInfo create_info{};
 		create_info

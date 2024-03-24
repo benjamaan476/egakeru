@@ -4,7 +4,7 @@
 #include <renderer/render_view.h>
 #include <resources/shader.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	class render_view_skybox : public render_view
 	{

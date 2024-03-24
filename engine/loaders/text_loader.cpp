@@ -9,7 +9,7 @@ namespace egkr
 		return std::make_unique<text_loader>(properties);
 	}
 	text_loader::text_loader(const loader_properties& properties)
-		: resource_loader{ resource_type::text, properties }
+		: resource_loader{ resource::type::text, properties }
 	{}
 	resource::shared_ptr text_loader::load(std::string_view name, void* /*params*/)
 	{
@@ -29,7 +29,7 @@ namespace egkr
 
 		auto line = filesystem::read_all(handle);
 
-		resource_properties properties{};
+		resource::properties properties{};
 		properties.type = get_loader_type();
 		properties.name = name;
 		properties.full_path = name;
@@ -38,10 +38,9 @@ namespace egkr
 		binary_resource_properties binary_properties{ line };
 		*(binary_resource_properties*)properties.data = binary_properties;
 
-		return std::make_shared<resource>(properties);
-
-		return resource::shared_ptr();
+		return resource::create(properties);
 	}
+
 	bool text_loader::unload(const resource::shared_ptr& resource)
 	{
 		auto* data = (binary_resource_properties*)resource->data;

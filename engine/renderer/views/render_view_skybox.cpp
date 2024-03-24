@@ -6,7 +6,7 @@
 #include <systems/material_system.h>
 #include <systems/resource_system.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	render_view_skybox::render_view_skybox(const configuration& configuration)
 		: render_view(configuration)
@@ -15,7 +15,7 @@ namespace egkr::render_view
 
 	bool render_view_skybox::on_create()
 	{
-		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource_type::shader, nullptr);
+		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource::type::shader, nullptr);
 		shader_system::create_shader(*(shader::properties*)skybox_shader_resource->data, renderpasses_[0].get());
 		resource_system::unload(skybox_shader_resource);
 
@@ -27,13 +27,13 @@ namespace egkr::render_view
 		view_location_ = shader_->get_uniform_index("view");
 		cube_map_location_ = shader_->get_uniform_index("cube_texture");
 
-		event::register_event(event_code::render_target_refresh_required, this, on_event);
+		event::register_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 
 	bool render_view_skybox::on_destroy()
 	{
-		event::unregister_event(event_code::render_target_refresh_required, this, on_event);
+		event::unregister_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 

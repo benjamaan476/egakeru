@@ -94,17 +94,17 @@ namespace egkr
 		return backend_->free_material(texture);
 	}
 
-	texture::texture* renderer_frontend::create_texture() const
+	texture* renderer_frontend::create_texture() const
 	{
 		return backend_->create_texture();
 	}
 
-	texture::texture* renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data) const
+	texture* renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data) const
 	{
 		return backend_->create_texture(properties, data);
 	}
 
-	void renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
+	void renderer_frontend::create_texture(const texture::properties& properties, const uint8_t* data, texture* out_texture) const
 	{
 		backend_->create_texture(properties, data, out_texture);
 	}
@@ -134,7 +134,7 @@ namespace egkr
 		return backend_->create_renderpass(configuration);
 	}
 
-	texture_map::texture_map::shared_ptr renderer_frontend::create_texture_map(const texture_map::properties& properties) const
+	texture_map::shared_ptr renderer_frontend::create_texture_map(const texture_map::properties& properties) const
 	{
 		return backend_->create_texture_map(properties);
 	}

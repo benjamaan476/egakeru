@@ -69,7 +69,7 @@ namespace egkr
 
 		bitmap_font_internal_data font;
 
-		auto resource = resource_system::load(configuration.resource_name, resource_type::bitmap_font, nullptr);
+		auto resource = resource_system::load(configuration.resource_name, resource::type::bitmap_font, nullptr);
 		font.loaded_resource = resource;
 		font.resource_data = (font::bitmap_font_resource_data*)(font.loaded_resource->data);
 		bool result = setup_font_data(font.resource_data->data);

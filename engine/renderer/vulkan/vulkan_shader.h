@@ -9,9 +9,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace egkr::shader
+namespace egkr
 {
-
 	constexpr static uint32_t max_material_count{1024};
 	constexpr static uint32_t material_shader_descriptor_count{ 2 };
 	constexpr static uint32_t material_shader_sampler_count{ 1 };
@@ -70,21 +69,21 @@ namespace egkr::shader
 		uint64_t offset{};
 		vulkan_descriptor_set_state descriptor_set_state{};
 
-		egkr::vector<texture_map::texture_map::shared_ptr> instance_textures{};
+		egkr::vector<texture_map::shared_ptr> instance_textures{};
 	};
 
-	static std::unordered_map<attribute_type, vk::Format> vulkan_attribute_types
+	static std::unordered_map<shader::attribute_type, vk::Format> vulkan_attribute_types
 	{
-		{attribute_type::float32_1, vk::Format::eR32Sfloat},
-		{attribute_type::float32_2, vk::Format::eR32G32Sfloat},
-		{attribute_type::float32_3, vk::Format::eR32G32B32Sfloat},
-		{attribute_type::float32_4, vk::Format::eR32G32B32A32Sfloat},
-		{attribute_type::int8, vk::Format::eR8Sint},
-		{attribute_type::uint8, vk::Format::eR8Uint},
-		{attribute_type::int16, vk::Format::eR16Sint},
-		{attribute_type::uint16, vk::Format::eR16Uint},
-		{attribute_type::int32, vk::Format::eR32Sint},
-		{attribute_type::uint32, vk::Format::eR32Uint},
+		{ shader::attribute_type::float32_1, vk::Format::eR32Sfloat},
+		{ shader::attribute_type::float32_2, vk::Format::eR32G32Sfloat},
+		{ shader::attribute_type::float32_3, vk::Format::eR32G32B32Sfloat},
+		{ shader::attribute_type::float32_4, vk::Format::eR32G32B32A32Sfloat},
+		{ shader::attribute_type::int8, vk::Format::eR8Sint},
+		{ shader::attribute_type::uint8, vk::Format::eR8Uint},
+		{ shader::attribute_type::int16, vk::Format::eR16Sint},
+		{ shader::attribute_type::uint16, vk::Format::eR16Uint},
+		{ shader::attribute_type::int32, vk::Format::eR32Sint},
+		{ shader::attribute_type::uint32, vk::Format::eR32Uint},
 	};
 
 	enum class topology_class
@@ -112,7 +111,7 @@ namespace egkr::shader
 		bool bind_globals() override;
 
 		bool apply_globals() override;
-		uint32_t acquire_instance_resources(const egkr::vector<texture_map::texture_map::shared_ptr>& texture_maps) override;
+		uint32_t acquire_instance_resources(const egkr::vector<texture_map::shared_ptr>& texture_maps) override;
 		bool set_uniform(const uniform& uniform, const void* value) override;
 
 	private:

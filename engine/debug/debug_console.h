@@ -19,7 +19,7 @@ namespace egkr
 		static void update();
 		static void shutdown();
 
-		static bool on_key(event_code code, void* sender, void* listener, const event_context& context);
+		static bool on_key(event::code code, void* sender, void* listener, const event::context& context);
 
 		static void move_up();
 		static void move_down();

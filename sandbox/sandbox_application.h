@@ -23,8 +23,8 @@ public:
 	bool shutdown() final;
 
 private:	
-	bool static on_debug_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
-	bool static on_event(egkr::event_code code, void* sender, void* listener, const egkr::event_context& context);
+	bool static on_debug_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 
 private:
 
@@ -44,7 +44,7 @@ private:
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
-	egkr::geometry::frame_data frame_data{};
+	egkr::frame_data frame_data{};
 
 	egkr::audio::file* test_audio{};
 	egkr::audio::file* test_loop_audio{};

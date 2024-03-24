@@ -43,7 +43,7 @@ namespace egkr
 			int32_t baseline{};
 			int32_t atlas_size_x{};
 			int32_t atlas_size_y{};
-			texture_map::texture_map::shared_ptr atlas;
+			texture_map::shared_ptr atlas;
 			egkr::vector<glyph> glyphs{};
 			egkr::vector<kerning> kernings{};
 			float tab_advance{};

@@ -40,15 +40,15 @@ namespace egkr
 		void set_diffuse_colour(const float4 diffuse);
 		[[nodiscard]] const auto& get_diffuse_colour() const { return diffuse_colour_; }
 
-		void set_diffuse_map(const texture_map::texture_map::shared_ptr map) { diffuse_map_ = map; }
+		void set_diffuse_map(const texture_map::shared_ptr map) { diffuse_map_ = map; }
 		[[nodiscard]] const auto& get_diffuse_map() const { return diffuse_map_; }
 		[[nodiscard]] auto& get_diffuse_map() { return diffuse_map_; }
 
-		void set_specular_map(const texture_map::texture_map::shared_ptr map) { specular_map_ = map; }
+		void set_specular_map(const texture_map::shared_ptr map) { specular_map_ = map; }
 		[[nodiscard]] const auto& get_specular_map() const { return specular_map_; }
 		[[nodiscard]] auto& get_specular_map() { return specular_map_; }
 
-		void set_normal_map(const texture_map::texture_map::shared_ptr map) { normal_map_ = map; }
+		void set_normal_map(const texture_map::shared_ptr map) { normal_map_ = map; }
 		[[nodiscard]] const auto& get_normal_map() const { return normal_map_; }
 		[[nodiscard]] auto& get_normal_map() { return normal_map_; }
 
@@ -66,9 +66,9 @@ namespace egkr
 	private:
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
-		texture_map::texture_map::shared_ptr diffuse_map_{};
-		texture_map::texture_map::shared_ptr specular_map_{};
-		texture_map::texture_map::shared_ptr normal_map_{};
+		texture_map::shared_ptr diffuse_map_{};
+		texture_map::shared_ptr specular_map_{};
+		texture_map::shared_ptr normal_map_{};
 
 		std::string shader_name_{};
 		uint32_t shader_id_{invalid_32_id};

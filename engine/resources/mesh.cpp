@@ -100,7 +100,7 @@ namespace egkr
 	bool load_job_start(void* params, void* result_data)
 	{
 		auto* load_params = (mesh_load_parameters*)params;
-		auto mesh = resource_system::load(load_params->resource_name, resource_type::mesh, nullptr);
+		auto mesh = resource_system::load(load_params->resource_name, resource::type::mesh, nullptr);
 		load_params->mesh_resource = mesh;
 		memcpy(result_data, load_params, sizeof(mesh_load_parameters));
 

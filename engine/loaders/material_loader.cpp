@@ -10,7 +10,7 @@ namespace egkr
 	}
 
 	material_loader::material_loader(const loader_properties& properties)
-		:resource_loader{ resource_type::material, properties }
+		:resource_loader{ resource::type::material, properties }
 	{
 	}
 
@@ -24,7 +24,7 @@ namespace egkr
 
 		const auto properties = load_configuration_file(material_filename);
 
-		resource_properties resource_properties{};
+		resource::properties resource_properties{};
 		resource_properties.type = get_loader_type();
 		resource_properties.name = name;
 		resource_properties.full_path = material_filename;
@@ -32,7 +32,7 @@ namespace egkr
 
 		*(material_properties*)(resource_properties.data) = properties;
 
-		return std::make_shared<resource>(resource_properties);
+		return resource::create(resource_properties);
 	}
 
 	bool material_loader::unload(const resource::shared_ptr& resource)

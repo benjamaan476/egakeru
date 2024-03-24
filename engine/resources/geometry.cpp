@@ -3,14 +3,14 @@
 #include "systems/material_system.h"
 #include "renderer/renderer_frontend.h"
 
-namespace egkr::geometry
+namespace egkr
 {
-	geometry::shared_ptr geometry::create(const properties& properties)
+	geometry::shared_ptr geometry::create(const geometry::properties& properties)
 	{
 		return renderer->create_geometry(properties);
 	}
 
-	geometry::geometry(const properties& properties)
+	geometry::geometry(const geometry::properties& properties)
 		: resource(properties.id, properties.generation, properties.name), properties_{properties}
 	{
 		if (properties.material_name == default_material_name_)

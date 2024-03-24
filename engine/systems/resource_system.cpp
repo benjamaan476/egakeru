@@ -13,13 +13,13 @@ namespace egkr
 {
 	static resource_system::unique_ptr resource_system_{};
 
-	resource_system* resource_system::create(const resource_system_configuration& properties)
+	resource_system* resource_system::create(const configuration& properties)
 	{
 		resource_system_ = std::make_unique<resource_system>(properties);
 		return resource_system_.get();
 	}
 
-	resource_system::resource_system(const resource_system_configuration& properties)
+	resource_system::resource_system(const configuration& properties)
 		: max_loader_count_{ properties.max_loader_count }, base_path_{ properties.base_path }
 	{
 		if (max_loader_count_ == 0)
@@ -117,7 +117,7 @@ namespace egkr
 		registered_loaders_[loader->get_loader_type()] = std::move(loader);
 	}
 
-	resource::shared_ptr resource_system::load(std::string_view name, resource_type type, void* params)
+	resource::shared_ptr resource_system::load(std::string_view name, resource::type type, void* params)
 	{
 		if (resource_system_->registered_loaders_.contains(type))
 		{

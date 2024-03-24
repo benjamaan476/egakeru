@@ -2,7 +2,7 @@
 #include <renderer/render_view.h>
 #include <resources/shader.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	struct debug_colour_shader_locations
 	{

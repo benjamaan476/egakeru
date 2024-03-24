@@ -437,7 +437,7 @@ namespace egkr::audio
             .type = audio::type::sound_effect,
           .chunk_size = internal_data->configuration.chunk_size
         };
-        auto resource = resource_system::load(name, resource_type::audio, &params);
+        auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
         file->plugin_data = new plugin_data();
@@ -477,7 +477,7 @@ namespace egkr::audio
           .chunk_size = internal_data->configuration.chunk_size
         };
 
-        auto resource = resource_system::load(name, resource_type::audio, &params);
+        auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
         file->plugin_data = new plugin_data();

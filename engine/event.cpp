@@ -5,7 +5,7 @@ namespace egkr
 	struct registered_event
 	{
 		void* listener{};
-		event_callback callback{};
+		event::callback callback{};
 
 		bool operator==(const registered_event& other) const
 		{
@@ -20,7 +20,7 @@ namespace egkr
 
 	struct event_system_state
 	{
-		std::array<event_code_entry, (size_t)event_code::event_code_size> events{};
+		std::array<event_code_entry, (size_t)event::code::event_code_size> events{};
 	};
 
 	static bool is_initialsed{ false };
@@ -37,13 +37,13 @@ namespace egkr
 		LOG_WARN("Already created the event system");
 	}
 
-	bool event::register_event(event_code code, void* listener, const event_callback& callback)
+	bool event::register_event(code code, void* listener, const callback& callback)
 	{
 		state.events[(int16_t)code].event.emplace_back(listener, callback);
 
 		return true;
 	}
-	bool event::unregister_event(event_code code, void* listener, const event_callback& callback)
+	bool event::unregister_event(code code, void* listener, const callback& callback)
 	{
 		auto& events = state.events.at((int16_t)code).event;
 
@@ -60,7 +60,7 @@ namespace egkr
 		LOG_ERROR("Attempted to remove event that wasn't registered");
 		return false;
 	}
-	void event::fire_event(event_code code, void* sender, const event_context& context)
+	void event::fire_event(code code, void* sender, const context& context)
 	{
 		const auto& events = state.events.at((int16_t)code).event;
 

@@ -3,7 +3,7 @@
 #include "systems/texture_system.h"
 #include <renderer/renderer_frontend.h>
 
-namespace egkr::shader
+namespace egkr
 {
 	shader::shared_ptr shader::create(const properties& properties, renderpass::renderpass* pass)
 	{
@@ -55,7 +55,7 @@ namespace egkr::shader
 		return invalid_32_id;
 	}
 
-	const uniform& shader::get_uniform(uint32_t index)
+	const shader::uniform& shader::get_uniform(uint32_t index)
 	{
 		return uniforms_[index];
 	}
@@ -226,8 +226,8 @@ namespace egkr::shader
 		return true;
 	}
 
-	void shader::set_global_texture(uint32_t index, texture_map::texture_map* map)
+	void shader::set_global_texture(uint32_t index, texture_map* map)
 	{
-		global_textures_[index] = std::shared_ptr<texture_map::texture_map>(map);
+		global_textures_[index] = std::shared_ptr<texture_map>(map);
 	}
 }

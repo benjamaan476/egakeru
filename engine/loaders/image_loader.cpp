@@ -15,7 +15,7 @@ namespace egkr
 	}
 
 	image_loader::image_loader(const loader_properties& properties)
-		: resource_loader{resource_type::image, properties}
+		: resource_loader{resource::type::image, properties}
 	{
 
 	}
@@ -86,8 +86,8 @@ namespace egkr
 				}
 			}
 
-			resource_properties image_properties{};
-			image_properties.type = resource_type::image;
+			resource::properties image_properties{};
+			image_properties.type = resource::type::image;
 			image_properties.name = name;
 			image_properties.full_path = buff;
 
@@ -95,8 +95,7 @@ namespace egkr
 			image_properties.data = new(texture::properties);
 			*(texture::properties*)(image_properties.data) = properties;
 
-			return std::make_shared<resource>(image_properties);
-			//return resource::create(image_properties);
+			return resource::create(image_properties);
 		}
 		else
 		{

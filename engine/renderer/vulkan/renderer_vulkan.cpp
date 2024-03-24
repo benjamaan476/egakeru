@@ -842,16 +842,16 @@ namespace egkr
 		material->get_normal_map()->release();
 	}
 
-	texture::texture* renderer_vulkan::create_texture() const
+	texture* renderer_vulkan::create_texture() const
 	{
-		return new image::vulkan_texture();
+		return new vulkan_texture();
 	}
 
-	texture::texture* renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
+	texture* renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const
 	{
 		ZoneScoped;
 
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
@@ -859,30 +859,28 @@ namespace egkr
 		return tex;
 	}
 
-	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture::texture* out_texture) const
+	void renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data, texture* out_texture) const
 	{
-		auto tex = image::vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
+		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
 		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
 		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
-		*(image::vulkan_texture*)out_texture = *tex;
+		*(vulkan_texture*)out_texture = *tex;
 	}
 
-	shader::shader::shared_ptr renderer_vulkan::create_shader(const shader::properties& properties) const
+	shader::shared_ptr renderer_vulkan::create_shader(const shader::properties& properties) const
 	{
 		ZoneScoped;
 
-		auto shade = shader::vulkan_shader::create(&context_, properties);
-
-		return shade;
+		return vulkan_shader::create(&context_, properties);
 	}
 
-	geometry::geometry::shared_ptr renderer_vulkan::create_geometry(const geometry::properties& properties) const
+	geometry::shared_ptr renderer_vulkan::create_geometry(const geometry::properties& properties) const
 	{
 		ZoneScoped;
 
-		return geometry::vulkan_geometry::create(&context_, properties);
+		return vulkan_geometry::create(&context_, properties);
 	}
 
 	render_target::render_target::shared_ptr renderer_vulkan::create_render_target(const egkr::vector<render_target::attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height) const
@@ -900,9 +898,9 @@ namespace egkr
 		return renderpass::vulkan_renderpass::create(&context_, configuration);
 	}
 
-	texture_map::texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
+	texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
 	{
-		return texture::vulkan::texture_map::texture_map::create(&context_, properties);
+		return vulkan_texture_map::create(&context_, properties);
 	}
 
 	renderbuffer::renderbuffer::shared_ptr renderer_vulkan::create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const
@@ -946,7 +944,7 @@ namespace egkr
 		set_scissor(context_.scissor_rect);
 	}
 
-	texture::texture* renderer_vulkan::get_window_attachment(uint8_t index) const
+	texture* renderer_vulkan::get_window_attachment(uint8_t index) const
 	{
 		if (index >= context_.swapchain->get_image_count())
 		{
@@ -956,7 +954,7 @@ namespace egkr
 		return context_.swapchain->get_render_texture(index);
 	}
 
-	texture::texture* renderer_vulkan::get_depth_attachment(uint8_t index) const
+	texture* renderer_vulkan::get_depth_attachment(uint8_t index) const
 	{
 		return context_.swapchain->get_depth_attachment(index);
 	}

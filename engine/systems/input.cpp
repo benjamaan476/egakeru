@@ -3,7 +3,6 @@
 
 namespace egkr
 {
-
 	static input::unique_ptr state{};
 
 	system* input::create()
@@ -11,7 +10,6 @@ namespace egkr
 		state = std::make_unique<input>();
 		return state.get();
 	}
-
 
 	bool input::init()
 	{
@@ -154,8 +152,8 @@ namespace egkr
 				}
 			}
 
-			auto code = pressed ? event_code::key_down : event_code::key_up;
-			event_context context{};
+			auto code = pressed ? event::code::key_down : event::code::key_up;
+			event::context context{};
 			context.set(0, std::to_underlying(key));
 
 			event::fire_event(code, nullptr, context);
@@ -190,13 +188,11 @@ namespace egkr
 		{
 			button_state = pressed;
 
-			auto code = pressed ? event_code::mouse_down : event_code::mouse_up;
-			event_context context{};
-			const int array_size{ 8 };
-			context.context_ = std::array<int16_t, array_size>{ (int16_t)button };
+			auto code = pressed ? event::code::mouse_down : event::code::mouse_up;
+			event::context context{};
+			context.set(0, (int16_t)button);
 			event::fire_event(code, nullptr, context);
 		}
-
 	}
 
 	int2 input::get_mouse_position()

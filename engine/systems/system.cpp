@@ -1,6 +1,6 @@
 #include "system.h"
-#include <input.h>
 
+#include <systems/input.h>
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
 #include <systems/material_system.h>
@@ -95,7 +95,7 @@ namespace egkr
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
-			const resource_system_configuration resource_system_configuration
+			const resource_system::configuration resource_system_configuration
 			{
 			    .max_loader_count = 10,
 			    .base_path = "../../../../assets/",

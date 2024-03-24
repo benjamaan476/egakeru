@@ -4,7 +4,7 @@
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	render_view_world::render_view_world(const configuration& configuration)
 		: render_view(configuration)
@@ -13,7 +13,7 @@ namespace egkr::render_view
 
 	bool render_view_world::on_create()
 	{
-		auto resource = resource_system::load("Shader.Builtin.Material", resource_type::shader, nullptr);
+		auto resource = resource_system::load("Shader.Builtin.Material", resource::type::shader, nullptr);
 		auto shader = (shader::properties*)resource->data;
 		shader_system::create_shader(*shader, renderpasses_[0].get());
 		resource_system::unload(resource);
@@ -23,10 +23,10 @@ namespace egkr::render_view
 		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
-		event::register_event(event_code::render_mode, this, on_event);
+		event::register_event(event::code::render_mode, this, on_event);
 
 		std::string colour_3d_shader_name = "Shader.Builtin.Colour3DShader";
-		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource_type::shader, nullptr);
+		auto colour_shader = resource_system::load(colour_3d_shader_name, egkr::resource::type::shader, nullptr);
 		auto properties = (shader::properties*)colour_shader->data;
 		shader_system::create_shader(*properties, renderpasses_[0].get());
 		resource_system::unload(colour_shader);
@@ -35,12 +35,12 @@ namespace egkr::render_view
 		locations_.projection = col_shader->get_uniform_index("projection");
 		locations_.view = col_shader->get_uniform_index("view");
 		locations_.model = col_shader->get_uniform_index("model");
-		event::register_event(event_code::render_target_refresh_required, this, on_event);
+		event::register_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 	bool render_view_world::on_destroy()
 	{
-		event::unregister_event(event_code::render_target_refresh_required, this, on_event);
+		event::unregister_event(event::code::render_target_refresh_required, this, on_event);
 		return true;
 	}
 	void render_view_world::on_resize(uint32_t width, uint32_t height)
@@ -59,7 +59,7 @@ namespace egkr::render_view
 	}
 	render_view_packet render_view_world::on_build_packet(void* data)
 	{
-		geometry::frame_data* mesh_data = (geometry::frame_data*)data;
+		frame_data* mesh_data = (frame_data*)data;
 
 		render_view_packet packet{};
 
@@ -82,7 +82,7 @@ namespace egkr::render_view
 			shader_system::use(shader_->get_id());
 
 			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
-			for (egkr::geometry::render_data render_data : render_view_packet->render_data)
+			for (egkr::render_data render_data : render_view_packet->render_data)
 			{
 				auto m = render_data.geometry->get_material();
 
@@ -103,7 +103,7 @@ namespace egkr::render_view
 				shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
 				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
 				shader_system::apply_global();
-				for (egkr::geometry::render_data data : render_view_packet->debug_render_data)
+				for (render_data data : render_view_packet->debug_render_data)
 				{
 					const auto& model = data.model.get_world();
 					shader_system::set_uniform(locations_.model, &model);

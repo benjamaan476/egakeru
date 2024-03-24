@@ -1,7 +1,7 @@
 #include "sandbox_keybinds.h"
 #include "pch.h"
 
-#include "input.h"
+#include "systems/input.h"
 #include "keymap.h"
 #include "debug/debug_console.h"
 #include "application/application.h"
@@ -13,7 +13,7 @@ using egkr::keymap;
 static void on_escape(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
 {
 	LOG_INFO("Escape callback");
-	event::fire_event(event_code::quit, nullptr, {});
+	event::fire_event(event::code::quit, nullptr, {});
 }
 
 static void on_yaw(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -117,33 +117,33 @@ static void on_console_change_visibility(key /*key*/, keymap::entry_bind_type /*
 static void on_set_render_mode_default(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
 {
 	application* application_instance = (application*)user_data;
-	event_context context{};
+	event::context context{};
 	uint32_t mode{ 0 };
 	context.set(0, mode);
-	event::fire_event(event_code::render_mode, application_instance, context);
+	event::fire_event(event::code::render_mode, application_instance, context);
 }
 
 static void on_set_render_mode_lighting(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
 {
 	application* application_instance = (application*)user_data;
-	event_context context{};
+	event::context context{};
 	uint32_t mode{ 1 };
 	context.set(0, mode);
-	event::fire_event(event_code::render_mode, application_instance, context);
+	event::fire_event(event::code::render_mode, application_instance, context);
 }
 
 static void on_set_render_mode_normals(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
 {
 	application* application_instance = (application*)user_data;
-	event_context context{};
+	event::context context{};
 	uint32_t mode{ 2 };
 	context.set(0, mode);
-	event::fire_event(event_code::render_mode, application_instance, context);
+	event::fire_event(event::code::render_mode, application_instance, context);
 }
 
 static void on_load_scene(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
 {
-	event::fire_event(event_code::debug02, nullptr, {});
+	event::fire_event(event::code::debug02, nullptr, {});
 }
 
 static void on_console_scroll(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
@@ -181,7 +181,7 @@ static void on_console_scroll_hold(key key, keymap::entry_bind_type /*type*/, ke
 
 static void on_change_texture(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
 {
-	event::fire_event(event_code::debug01, nullptr, {});
+	event::fire_event(event::code::debug01, nullptr, {});
 }
 
 void egkr::setup_keymaps(application* application_instance)

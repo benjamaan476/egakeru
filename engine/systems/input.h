@@ -2,9 +2,8 @@
 #include "pch.h"
 #include "keys.h"
 #include "keymap.h"
-#include <stack>
 
-#include <systems/system.h>
+#include "system.h"
 
 namespace egkr
 {

@@ -1,6 +1,6 @@
 #include "engine.h"
-#include "input.h"
 
+#include "systems/input.h"
 #include "systems/view_system.h"
 #include "systems/audio_system.h"
 #include "renderer/renderer_frontend.h"
@@ -79,9 +79,9 @@ namespace egkr
 			LOG_ERROR("FAiled to create application");
 		}
 
-		event::register_event(event_code::key_down, nullptr, engine::on_event);
-		event::register_event(event_code::quit, nullptr, engine::on_event);
-		event::register_event(event_code::resize, nullptr, engine::on_resize);
+		event::register_event(event::code::key_down, nullptr, engine::on_event);
+		event::register_event(event::code::quit, nullptr, engine::on_event);
+		event::register_event(event::code::resize, nullptr, engine::on_resize);
 
 		is_running_ = true;
 		is_initialised_ = true;
@@ -124,23 +124,23 @@ namespace egkr
 	void engine::shutdown()
 	{
 		engine_->application_->shutdown();
-		egkr::event::unregister_event(egkr::event_code::key_down, nullptr, on_event);
-		egkr::event::unregister_event(egkr::event_code::quit, nullptr, on_event);
-		egkr::event::unregister_event(egkr::event_code::resize, nullptr, on_resize);
+		egkr::event::unregister_event(egkr::event::code::key_down, nullptr, on_event);
+		egkr::event::unregister_event(egkr::event::code::quit, nullptr, on_event);
+		egkr::event::unregister_event(egkr::event::code::resize, nullptr, on_resize);
 
 		system_manager::shutdown();
 		renderer->shutdown();
 		engine_->platform_->shutdown();
 	}
 
-	bool engine::on_event(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
+	bool engine::on_event(event::code code, void* /*sender*/, void* /*listener*/, const event::context& context)
 	{
-		if (code == event_code::quit)
+		if (code == event::code::quit)
 		{
 			engine_->is_running_ = false;
 		}
 
-		if (code == event_code::key_down)
+		if (code == event::code::key_down)
 		{
 			uint16_t key_value{};
 			context.get(0, key_value);
@@ -158,9 +158,9 @@ namespace egkr
 		return false;
 	}
 
-	bool engine::on_resize(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
+	bool engine::on_resize(event::code code, void* /*sender*/, void* /*listener*/, const event::context& context)
 	{
-		if (code == event_code::resize)
+		if (code == event::code::resize)
 		{
 			int32_t width{};
 			context.get(0, width);
