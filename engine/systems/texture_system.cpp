@@ -333,7 +333,22 @@ namespace egkr
 			texture->populate_writeable();
 			return texture;
 		}
-		return nullptr;
+
+		texture::properties writeable_properties
+		{
+			.name = name.data(),
+			.width = width,
+			.height = height,
+			.channel_count = channel_count,
+			.flags = texture::flags::is_writable,
+			.texture_type = texture::type::texture_2d
+		};
+		writeable_properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
+
+		auto* writeable = texture::create(writeable_properties, nullptr);
+		writeable->populate_writeable();
+
+		return writeable;
 	}
 
 	void texture_system::release(std::string_view texture_name)

@@ -46,9 +46,9 @@ namespace egkr
 
 		static void resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);
 
-		static texture* acquire(std::string_view texture_name);
-		static texture* acquire_cube(std::string_view texture_name);
-		static texture* acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency);
+		[[nodiscard]] static texture* acquire(std::string_view texture_name);
+		[[nodiscard]] static texture* acquire_cube(std::string_view texture_name);
+		[[nodiscard]] static texture* acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency);
 		void release(std::string_view texture_name);
 
 		static texture* get_default_texture();

@@ -53,11 +53,11 @@ namespace egkr
 			return false;
 		}
 
-		const auto font_size{ 32 };
-		state->text_control_ = text::ui_text::create(text::type::bitmap, "Arial 32", font_size, "");
+		const auto font_size{ 24 };
+		state->text_control_ = text::ui_text::create(text::type::system, "Noto Sans CJK JP", font_size, "");
 		state->text_control_->set_position({ 3, 30, 0 });
 
-		state->entry_control_ = text::ui_text::create(text::type::bitmap, "Arial 32", font_size, "");
+		state->entry_control_ = text::ui_text::create(text::type::system, "Noto Sans CJK JP", font_size, "");
 		state->entry_control_->set_position({ 3, 30 + (font_size * state->line_display_count_), 0 });
 
 		event::register_event(event::code::key_down, nullptr, &on_key);

@@ -6,9 +6,6 @@
 
 namespace egkr
 {
-
-
-
 	class event
 	{
 	public:

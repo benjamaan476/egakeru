@@ -17,7 +17,8 @@ sandbox_application::sandbox_application(const egkr::engine_configuration& confi
 	: application(configuration)
 {
 	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
-	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
+	egkr::system_font_configuration system_font_configuration{ .name = "NotoSansCJK", .default_size = 24, .resource_name = "NotoSansCJK" };
+	font_system_configuration_ = { .system_font_configurations = { system_font_configuration }, .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
 bool sandbox_application::init()

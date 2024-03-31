@@ -62,5 +62,18 @@ namespace egkr
 			data data{};
 			egkr::vector<bitmap_font_page> pages{};
 		};
+
+		struct system_font_face
+		{
+			std::string name{};
+		};
+
+		struct system_font_resource_data
+		{
+			egkr::vector<system_font_face> fonts{};
+			uint64_t binary_size{};
+			void* font_binary{};
+		};
+
 	}
 }
