@@ -3,41 +3,10 @@
 
 namespace egkr
 {
-	enum class resource_type : uint8_t
-	{
-		text,
-		binary,
-		image,
-		material,
-		shader,
-		mesh,
-		bitmap_font,
-		system_font,
-		audio,
-		custom
-	};
-
-constexpr auto RESOURCE_MAGIC = 0xdeadbeef;
-
-	struct resource_header
-	{
-		uint32_t magic_number{ RESOURCE_MAGIC };
-		resource_type type;
-		uint8_t version{ 1 };
-		uint16_t reserved{};
-	};
-
-	struct resource_properties
-	{
-		resource_type type{};
-		std::string name{};
-		std::string full_path{};
-		void* data{};
-	};
 
 	struct binary_resource_properties
 	{
-		egkr::vector<uint8_t> data;
+		egkr::vector<uint8_t> data{};
 	};
 
 	struct image_resource_parameters
@@ -45,18 +14,49 @@ constexpr auto RESOURCE_MAGIC = 0xdeadbeef;
 		bool flip_y{};
 	};
 
+	constexpr auto RESOURCE_MAGIC = 0xdeadbeef;
+
 	class resource
 	{
 	public:
-		using shared_ptr = std::shared_ptr<resource>;
-		static shared_ptr create(const resource_properties& properties);
+		enum class type : uint8_t
+		{
+			text,
+			binary,
+			image,
+			material,
+			shader,
+			mesh,
+			bitmap_font,
+			system_font,
+			audio,
+			custom
+		};
 
-		explicit resource(const resource_properties& properties);
+		struct header
+		{
+			uint32_t magic_number{ RESOURCE_MAGIC };
+			type type;
+			uint8_t version{ 1 };
+			uint16_t reserved{};
+		};
+
+		struct properties
+		{
+			type type{};
+			std::string name{};
+			std::string full_path{};
+			void* data{};
+		};
+
+		using shared_ptr = std::shared_ptr<resource>;
+		static shared_ptr create(const properties& properties);
+
+		explicit resource(const properties& properties);
 		resource(uint32_t id, uint32_t generation, std::string_view name) : id_{ id }, generation_{ generation }, name_{name} {}
 
 		const auto& get_id() const { return id_; }
 		void set_id(uint32_t id) { id_ = id; }
-
 
 		const auto& get_generation() const { return generation_; }
 		void increment_generation()
@@ -85,7 +85,6 @@ constexpr auto RESOURCE_MAGIC = 0xdeadbeef;
 		std::string name_{};
 		std::string full_path_{};
 
-		resource_type resource_type_{};
-		// Renderer specific data
+		type resource_type_{};
 	};
 }

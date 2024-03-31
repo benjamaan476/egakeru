@@ -74,7 +74,7 @@ namespace egkr
 	}
 
 	audio_loader::audio_loader(const loader_properties& properties)
-		: resource_loader{resource_type::audio, properties}
+		: resource_loader{resource::type::audio, properties}
 	{
 		//mp3dec_init(&decoder);
 	}
@@ -146,15 +146,15 @@ namespace egkr
 			return nullptr;
 		}
 
-		resource_properties audio_properties{};
-		audio_properties.type = resource_type::audio;
+		resource::properties audio_properties{};
+		audio_properties.type = resource::type::audio;
 		audio_properties.name = name;
 		audio_properties.full_path = buff;
 
 		audio_properties.data = new(audio::file);
 		*(audio::file*)audio_properties.data = *resource_data;
 
-		return std::make_shared<resource>(audio_properties);
+		return resource::create(audio_properties);
 	}
 
 	bool audio_loader::unload(const resource::shared_ptr& resource)

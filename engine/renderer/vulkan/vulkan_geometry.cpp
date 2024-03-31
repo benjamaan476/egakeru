@@ -2,7 +2,7 @@
 #include "renderer/renderer_types.h"
 #include "vulkan_types.h"
 
-namespace egkr::geometry
+namespace egkr
 {
 	geometry::shared_ptr vulkan_geometry::create(const vulkan_context* context, const properties& properties)
 	{

@@ -8,11 +8,6 @@ constexpr static const uint32_t MAX_AUDIO_CHANNELS = 16u;
 
 namespace egkr
 {
-	namespace geometry
-	{
-		struct frame_data;
-	}
-
 	namespace audio
 	{
 		class plugin;
@@ -43,7 +38,7 @@ namespace egkr
 
 			static void shutdown();
 
-			static bool update(geometry::frame_data* frame_data);
+			static bool update();
 
 			static bool set_listener_orientation(const float3& position, const float3& forward, const float3& up);
 

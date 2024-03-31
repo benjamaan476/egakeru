@@ -48,7 +48,7 @@ namespace egkr::audio
 		state->plugin_->shutdown();
 	}
 
-	bool audio_system::update(geometry::frame_data* /*frame_data*/)
+	bool audio_system::update()
 	{
 		for (uint32_t i{ 0 }; i < state->channels_.size(); ++i)
 		{

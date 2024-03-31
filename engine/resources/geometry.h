@@ -9,8 +9,9 @@
 
 namespace egkr
 {
-	namespace geometry
+	class geometry : public resource
 	{
+	public:
 		struct properties
 		{
 			std::string name{};
@@ -29,7 +30,7 @@ namespace egkr
 			extent3d extents{};
 			void release()
 			{
-				free(vertices);
+				::free(vertices);
 			}
 
 			~properties()
@@ -37,48 +38,49 @@ namespace egkr
 				//Dynamically allocated so needs to be freed
 			}
 		};
+		using shared_ptr = std::shared_ptr<geometry>;
+		static shared_ptr create(const properties& properties);
 
-		class geometry : public resource
+		explicit geometry(const properties& properties);
+		virtual ~geometry() = default;
+
+		virtual bool populate(const properties& properties) = 0;
+		virtual void draw() = 0;
+		virtual void update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices) = 0;
+		virtual void free() = 0;
+		void destroy();
+
+		[[nodiscard]] const auto& get_properties() const
 		{
-		public:
-			using shared_ptr = std::shared_ptr<geometry>;
-			static shared_ptr create(const properties& properties);
-
-			explicit geometry(const properties& properties);
-			virtual ~geometry() = default;
-
-			virtual bool populate(const properties& properties) = 0;
-			virtual void draw() = 0;
-			virtual void update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices) = 0;
-			virtual void free() = 0;
-			void destroy();
-
-			[[nodiscard]] const auto& get_properties() const { return properties_; }
-			[[nodiscard]] const auto& get_material() const { return material_; }
-			void set_material(const material::shared_ptr& material);
-
-		protected:
-			properties properties_{};
-			material::shared_ptr material_{};
-		};
-
-		struct render_data
+			return properties_;
+		}
+		[[nodiscard]] const auto& get_material() const
 		{
-			geometry::shared_ptr geometry{};
-			transform model{};
-			uint64_t unique_id{};
-		};
+			return material_;
+		}
+		void set_material(const material::shared_ptr& material);
 
-		struct frame_data
+	protected:
+		properties properties_{};
+		material::shared_ptr material_{};
+	};
+
+	struct render_data
+	{
+		geometry::shared_ptr geometry{};
+		transform model{};
+		uint64_t unique_id{};
+	};
+
+	struct frame_data
+	{
+		egkr::vector<render_data> world_geometries{};
+		egkr::vector<render_data> debug_geometries{};
+
+		void reset()
 		{
-			egkr::vector<render_data> world_geometries{};
-			egkr::vector<render_data> debug_geometries{};
-
-			void reset()
-			{
-				world_geometries.clear();
-				debug_geometries.clear();
-			}
-		};
-	}
+			world_geometries.clear();
+			debug_geometries.clear();
+		}
+	};
 }

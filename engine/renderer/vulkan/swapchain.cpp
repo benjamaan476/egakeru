@@ -57,7 +57,7 @@ namespace egkr
 		destroy();
 		create();
 
-		event::fire_event(event_code::render_target_refresh_required, nullptr, {});
+		event::fire_event(event::code::render_target_refresh_required, nullptr, {});
 	}
 
 	uint32_t swapchain::acquire_next_image_index(vk::Semaphore semaphore, vk::Fence fence)
@@ -244,20 +244,22 @@ namespace egkr
 
 			for (auto i{ 0U }; i < image_count_; ++i)
 			{
-				void* internal_data = malloc(sizeof(image::vulkan_texture));
+				void* internal_data = malloc(sizeof(vulkan_texture));
 				std::string name{ "__internal_vulkan_swapchain_image_0__" };
 				name[34] = '0' + (char)i;
 
 				render_textures_[i] = texture_system::wrap_internal(name, extent_.width, extent_.height, 4, false, true, false, internal_data);
 
-				image::properties depth_image_properties{};
-				depth_image_properties.image_format = format_.format;
-				depth_image_properties.tiling = vk::ImageTiling::eOptimal;
-				depth_image_properties.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-				depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-				depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eColor;
-				depth_image_properties.texture_type = egkr::texture::type::texture_2d;
-				((image::vulkan_texture*)(render_textures_[i]))->create(depth_image_properties);
+				vulkan_texture::properties depth_image_properties
+				{
+					.image_format = format_.format,
+					.tiling = vk::ImageTiling::eOptimal,
+					.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment,
+					.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+					.aspect_flags = vk::ImageAspectFlagBits::eColor,
+					.texture_type = egkr::texture::type::texture_2d
+				};
+				((vulkan_texture*)(render_textures_[i]))->create(depth_image_properties);
 
 			}
 		}
@@ -271,7 +273,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::vulkan_texture*)render_textures_[i];
+			auto img = (vulkan_texture*)render_textures_[i];
 			img->set_image(swapchain_images[i]);
 			img->set_width(extent_.width);
 			img->set_height(extent_.height);
@@ -279,7 +281,7 @@ namespace egkr
 
 		for (auto i{ 0U }; i < image_count_; ++i)
 		{
-			auto img = (image::vulkan_texture*)render_textures_[i];
+			auto img = (vulkan_texture*)render_textures_[i];
 			vk::ImageSubresourceRange subresource{};
 			subresource
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -304,18 +306,19 @@ namespace egkr
 			LOG_FATAL("No valid depth format found");
 		}
 
-		image::properties depth_image_properties{};
-		depth_image_properties.image_format = context_->device.depth_format;
-		depth_image_properties.tiling = vk::ImageTiling::eOptimal;
-		depth_image_properties.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-		depth_image_properties.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal;
-		depth_image_properties.aspect_flags = vk::ImageAspectFlagBits::eDepth;
+		vulkan_texture::properties depth_image_properties
+		{
+			.image_format = context_->device.depth_format,
+			.tiling = vk::ImageTiling::eOptimal,
+			.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			.aspect_flags = vk::ImageAspectFlagBits::eDepth
+		};
 
-		//auto img = image::vulkan_texture::create_raw(context_, extent_.width, extent_.height, depth_image_properties, true);
 		for (auto& depth : depth_attachments_)
 		{
 			depth = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
-			((image::vulkan_texture*)(depth))->create(depth_image_properties);
+			((vulkan_texture*)(depth))->create(depth_image_properties);
 		}
 		return swapchain_images;
 	}

@@ -157,12 +157,12 @@ namespace egkr
 		}
 	}
 
-	void shader_system::set_sampler(std::string_view sampler_name, const texture::texture*& texture)
+	void shader_system::set_sampler(std::string_view sampler_name, const texture*& texture)
 	{
 		set_uniform(sampler_name, texture);
 	}
 
-	void shader_system::set_sampler(uint32_t sampler_id, const texture::texture*& texture)
+	void shader_system::set_sampler(uint32_t sampler_id, const texture*& texture)
 	{
 		set_uniform(sampler_id, texture);
 	}

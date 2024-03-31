@@ -8,7 +8,7 @@ namespace egkr
 	}
 
 	bitmap_font_loader::bitmap_font_loader(const loader_properties& properties)
-		: resource_loader(resource_type::bitmap_font, properties)
+		: resource_loader(resource::type::bitmap_font, properties)
 	{}
 
 	resource::shared_ptr bitmap_font_loader::load(std::string_view name, void* /*params*/)
@@ -66,10 +66,10 @@ namespace egkr
 		}
 		}
 
-		resource_properties properties{ .type = resource_type::bitmap_font, .name = name.data(), .full_path = buff,};
+		resource::properties properties{ .type = resource::type::bitmap_font, .name = name.data(), .full_path = buff,};
 		properties.data = new font::bitmap_font_resource_data();
 		*((font::bitmap_font_resource_data*)(properties.data)) = resource_data;
-		return std::make_shared<resource>(properties);
+		return resource::create(properties);
 	}
 
 	bool bitmap_font_loader::unload(const resource::shared_ptr& resource)
@@ -157,7 +157,7 @@ namespace egkr
 
 	font::bitmap_font_resource_data bitmap_font_loader::read_ebf_file(file_handle& handle)
 	{
-		resource_header header{ };
+		resource::header header{ };
 		filesystem::read(handle, header);
 
 		font::bitmap_font_resource_data data{};
@@ -224,7 +224,7 @@ namespace egkr
 			return {};
 		}
 
-		resource_header header{ .type = resource_type::bitmap_font };
+		resource::header header{ .type = resource::type::bitmap_font };
 		filesystem::write(handle, header, 1);
 
 		filesystem::write(handle, data.data.type);

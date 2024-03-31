@@ -15,30 +15,33 @@ namespace egkr
 		return texture_system_.get();
 	}
 
-	texture::texture* texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
+	texture* texture_system::wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data)
 	{
 		uint32_t id{ invalid_32_id };
-		texture::properties properties{};
-		properties.name = name;
-		properties.width = width;
-		properties.height = height;
-		properties.channel_count = channel_count;
+		texture::properties properties
+		{
+			.name = name.data(),
+			.width = width,
+			.height = height,
+			.channel_count = channel_count,
+			.texture_type = texture::type::texture_2d,
+			.data = internal_data,
+		};
+
 		properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
 		properties.flags |= is_writeable ? texture::flags::is_writable : (texture::flags)0;
 		properties.flags |= texture::flags::is_wrapped;
-		properties.data = internal_data;
-		properties.texture_type = texture::type::texture_2d;
 
-		auto t = texture::texture::create(properties, nullptr);
+		auto* wrapped_texture = texture::texture::create(properties, nullptr);
 		if (register_texture)
 		{
 			id = texture_system_->registered_textures_.size();
-			texture_system_->registered_textures_.push_back(t);
+			texture_system_->registered_textures_.push_back(wrapped_texture);
 		}
 
-		t->set_id(id);
+		wrapped_texture->set_id(id);
 
-		return t;
+		return wrapped_texture;
 	}
 
 	texture_system::texture_system(const texture_system_configuration& properties)
@@ -178,7 +181,7 @@ namespace egkr
 		return true;
 	}
 
-	void texture_system::resize(texture::texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
+	void texture_system::resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data)
 	{
 		if (texture)
 		{
@@ -201,8 +204,7 @@ namespace egkr
 		}
 	}
 
-
-	texture::texture* texture_system::acquire(std::string_view texture_name)
+	texture* texture_system::acquire(std::string_view texture_name)
 	{
 		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
 		{
@@ -252,7 +254,7 @@ namespace egkr
 		return new_texture;
 	}
 
-	texture::texture* texture_system::acquire_cube(std::string_view texture_name)
+	texture* texture_system::acquire_cube(std::string_view texture_name)
 	{
 		if (strcmp(texture_name.data(), default_texture_name.data()) == 0)
 		{
@@ -313,7 +315,7 @@ namespace egkr
 		return new_texture;
 	}
 
-	texture::texture* texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
+	texture* texture_system::acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency)
 	{
 		if (texture_system_->registered_textures_by_name_.contains(name.data()))
 		{
@@ -331,7 +333,22 @@ namespace egkr
 			texture->populate_writeable();
 			return texture;
 		}
-		return nullptr;
+
+		texture::properties writeable_properties
+		{
+			.name = name.data(),
+			.width = width,
+			.height = height,
+			.channel_count = channel_count,
+			.flags = texture::flags::is_writable,
+			.texture_type = texture::type::texture_2d
+		};
+		writeable_properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
+
+		auto* writeable = texture::create(writeable_properties, nullptr);
+		writeable->populate_writeable();
+
+		return writeable;
 	}
 
 	void texture_system::release(std::string_view texture_name)
@@ -344,30 +361,30 @@ namespace egkr
 		LOG_WARN("Tried to release and unregistered texture.");
 	}
 
-	texture::texture* texture_system::get_default_texture()
+	texture* texture_system::get_default_texture()
 	{
 		return texture_system_->default_texture_;
 	}
 
-	texture::texture* texture_system::get_default_diffuse_texture()
+	texture* texture_system::get_default_diffuse_texture()
 	{
 		return texture_system_->default_diffuse_texture_;
 	}
 
-	texture::texture* texture_system::get_default_specular_texture()
+	texture* texture_system::get_default_specular_texture()
 	{
 		return texture_system_->default_specular_texture_;
 	}
 
-	texture::texture* texture_system::get_default_normal_texture()
+	texture* texture_system::get_default_normal_texture()
 	{
 		return texture_system_->default_normal_texture_;
 	}
 
 
-	texture::texture* texture_system::load_texture(const std::string& filename, uint32_t /*id*/)
+	texture* texture_system::load_texture(const std::string& filename, uint32_t /*id*/)
 	{
-		texture::texture* tex = texture::texture::create();
+		texture* tex = texture::texture::create();
 		load_parameters params{ .out_texture = tex };
 		params.name = (char*)malloc(filename.size());
 		memcpy(params.name, filename.data(), filename.size());
@@ -378,7 +395,7 @@ namespace egkr
 		return tex;
 	}
 
-	texture::texture* texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
+	texture* texture_system::load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id)
 	{
 		image_resource_parameters params{ .flip_y = false };
 
@@ -388,7 +405,7 @@ namespace egkr
 		uint32_t channel_count{};
 		for (auto i{ 0 }; i < 6; ++i)
 		{
-			auto image = resource_system::load(texture_names[i], resource_type::image, &params);
+			auto image = resource_system::load(texture_names[i], resource::type::image, &params);
 
 			if (!image)
 			{
@@ -442,7 +459,7 @@ namespace egkr
 	{
 		auto* load_params = (load_parameters*)params;
 		image_resource_parameters image_params{ .flip_y = true };
-		auto image = resource_system::load(load_params->name, resource_type::image, &image_params);
+		auto image = resource_system::load(load_params->name, resource::type::image, &image_params);
 
 		if (!image)
 		{

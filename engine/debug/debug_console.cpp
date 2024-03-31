@@ -1,6 +1,6 @@
 #include "debug_console.h"
 #include "systems/console_system.h"
-#include "input.h"
+#include "systems/input.h"
 
 namespace egkr
 {
@@ -53,14 +53,14 @@ namespace egkr
 			return false;
 		}
 
-		const auto font_size{ 32 };
-		state->text_control_ = text::ui_text::create(text::type::bitmap, "Arial 32", font_size, "");
+		const auto font_size{ 24 };
+		state->text_control_ = text::ui_text::create(text::type::system, "Noto Sans CJK JP", font_size, "");
 		state->text_control_->set_position({ 3, 30, 0 });
 
-		state->entry_control_ = text::ui_text::create(text::type::bitmap, "Arial 32", font_size, "");
+		state->entry_control_ = text::ui_text::create(text::type::system, "Noto Sans CJK JP", font_size, "");
 		state->entry_control_->set_position({ 3, 30 + (font_size * state->line_display_count_), 0 });
 
-		event::register_event(event_code::key_down, nullptr, &on_key);
+		event::register_event(event::code::key_down, nullptr, &on_key);
 
 		return false;
 	}
@@ -111,7 +111,7 @@ namespace egkr
 		}
 	}
 
-	bool debug_console::on_key(event_code code, void* /*sender*/, void* /*listener*/, const event_context& context)
+	bool debug_console::on_key(event::code code, void* /*sender*/, void* /*listener*/, const event::context& context)
 	{
 		if (!state)
 		{
@@ -124,7 +124,7 @@ namespace egkr
 			return false;
 		}
 
-		if (code == event_code::key_down)
+		if (code == event::code::key_down)
 		{
 			uint16_t key_code{};
 			context.get(0, key_code);

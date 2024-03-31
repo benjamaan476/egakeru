@@ -6,7 +6,7 @@
 #include <renderer/renderer_frontend.h>
 #include <systems/camera_system.h>
 
-namespace egkr::render_view
+namespace egkr
 {
 	render_view::shared_ptr render_view::create(const configuration& configuration)
 	{
@@ -27,8 +27,6 @@ namespace egkr::render_view
 			LOG_ERROR("Unrecognized view type");
 			return nullptr;
 		}
-
-		//return backend->create_render_view(configuration);
 	}
 
 	render_view::render_view(const configuration& configuration)
@@ -43,10 +41,6 @@ namespace egkr::render_view
 		for (const auto& pass : configuration.passes)
 		{
 			auto renderpass = renderpass::renderpass::create(pass);
-			//for (auto& target : renderpass->get_render_targets())
-			{
-				//target = render_target::render_target::create(pass.target.attachments);
-			}
 			renderpasses_.push_back(renderpass);
 		}
 
@@ -94,17 +88,17 @@ namespace egkr::render_view
 		}
 	}
 
-	bool render_view::on_event(event_code code, void* /*sender*/, void* listener, const event_context& context)
+	bool render_view::on_event(event::code code, void* /*sender*/, void* listener, const event::context& context)
 	{
 		render_view* view = (render_view*)listener;
 
 		switch (code)
 		{
-		case event_code::render_mode:
+		case event::code::render_mode:
 		{
 			context.get(0, view->mode_);
 		} break;
-		case event_code::render_target_refresh_required:
+		case event::code::render_target_refresh_required:
 			view->regenerate_render_targets();
 		default:
 			return false;

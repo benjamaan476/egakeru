@@ -6,7 +6,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#include "input.h"
+#include "systems/input.h"
 #include "event.h"
 
 namespace egkr
@@ -105,15 +105,15 @@ namespace egkr
 			return;
 		}
 
-		event::fire_event(event_code::quit, nullptr, {});
+		event::fire_event(event::code::quit, nullptr, {});
 	}
 
 	void platform_windows::on_resize(GLFWwindow* /*window*/, int width, int height)
 	{
-		event_context context{};
-		const int array_size{ 4 };
-		context.context_ = std::array<int32_t, array_size>{ width, height };
-		event::fire_event(event_code::resize, nullptr, context);
+		event::context context{};
+		context.set(0, width);
+		context.set(1, height);
+		event::fire_event(event::code::resize, nullptr, context);
 	}
 
 	egkr::vector<const char*> egkr::platform_windows::get_required_extensions() const

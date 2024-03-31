@@ -15,7 +15,7 @@ namespace egkr
 	public:
 		using unique_ptr = std::unique_ptr<resource_loader>;
 
-		resource_loader(resource_type type, const loader_properties& properties);
+		resource_loader(resource::type type, const loader_properties& properties);
 		virtual ~resource_loader() = default;
 
 		// Params is used to pass loader specific settings to the loader
@@ -27,7 +27,7 @@ namespace egkr
 	protected:
 		std::string_view get_base_path() const { return type_path_; }
 	private:
-		resource_type loader_type_{};
+		resource::type loader_type_{};
 
 		std::string custom_type_name_{};
 		std::string type_path_{};

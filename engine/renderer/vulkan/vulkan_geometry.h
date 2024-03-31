@@ -4,7 +4,7 @@
 #include <renderer/renderbuffer.h>
 #include "vulkan_renderbuffer.h"
 
-namespace egkr::geometry
+namespace egkr
 {
 	class vulkan_geometry : public geometry
 	{

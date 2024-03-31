@@ -43,7 +43,7 @@ namespace egkr
 			int32_t baseline{};
 			int32_t atlas_size_x{};
 			int32_t atlas_size_y{};
-			texture_map::texture_map::shared_ptr atlas;
+			texture_map::shared_ptr atlas;
 			egkr::vector<glyph> glyphs{};
 			egkr::vector<kerning> kernings{};
 			float tab_advance{};
@@ -62,5 +62,18 @@ namespace egkr
 			data data{};
 			egkr::vector<bitmap_font_page> pages{};
 		};
+
+		struct system_font_face
+		{
+			std::string name{};
+		};
+
+		struct system_font_resource_data
+		{
+			egkr::vector<system_font_face> fonts{};
+			uint64_t binary_size{};
+			void* font_binary{};
+		};
+
 	}
 }

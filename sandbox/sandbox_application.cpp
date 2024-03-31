@@ -17,15 +17,16 @@ sandbox_application::sandbox_application(const egkr::engine_configuration& confi
 	: application(configuration)
 {
 	egkr::bitmap_font_configuration bitmap_font_configuration{ .name = "Arial 32", .size = 32, .resource_name = "Arial32" };
-	font_system_configuration_ = { .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
+	egkr::system_font_configuration system_font_configuration{ .name = "NotoSansCJK", .default_size = 24, .resource_name = "NotoSansCJK" };
+	font_system_configuration_ = { .system_font_configurations = { system_font_configuration }, .bitmap_font_configurations = { bitmap_font_configuration } , .max_system_font_count = 1,.max_bitmap_font_count = 1 };
 }
 
 bool sandbox_application::init()
 {
 	LOG_INFO("Sandbox application created");
 
-	egkr::event::register_event(egkr::event_code::debug01, this, sandbox_application::on_debug_event);
-	egkr::event::register_event(egkr::event_code::debug02, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event::code::debug01, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event::code::debug02, this, sandbox_application::on_debug_event);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -208,7 +209,7 @@ void sandbox_application::update(double delta_time)
 
 	}
 
-	egkr::audio::audio_system::update(&frame_data);
+	egkr::audio::audio_system::update();
 	egkr::debug_console::update();
 }
 
@@ -221,9 +222,9 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 	auto& model_2 = meshes_[1]->model();
 	model_2.rotate(q);
 
-	egkr::geometry::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
-	egkr::geometry::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
-	egkr::geometry::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
+	egkr::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
+	egkr::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
+	egkr::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
 	frame_data.debug_geometries.push_back(debug_box);
 	frame_data.debug_geometries.push_back(debug_grid);
 	frame_data.debug_geometries.push_back(debug_frustum_geo);
@@ -233,7 +234,7 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 		frame_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
 	}
 
-	egkr::render_view::skybox_packet_data skybox{ .skybox = skybox_ };
+	egkr::skybox_packet_data skybox{ .skybox = skybox_ };
 	auto skybox_view = egkr::view_system::get("skybox");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
 
@@ -252,7 +253,7 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 		texts.push_back(egkr::debug_console::get_text());
 		texts.push_back(egkr::debug_console::get_entry_text());
 	}
-	egkr::render_view::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
+	egkr::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
 	auto ui_view = egkr::view_system::get("ui");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
@@ -404,10 +405,10 @@ bool sandbox_application::shutdown()
 	return true;
 }
 
-bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& /*context*/)
+bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*/, void* listener, const egkr::event::context& /*context*/)
 {
 	auto* application = (sandbox_application*)listener;
-	if (code == egkr::event_code::debug01)
+	if (code == egkr::event::code::debug01)
 	{
 		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
@@ -420,7 +421,7 @@ bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/
 		//application->update_frustum_ = !application->update_frustum_;
 	}
 
-	if (code == egkr::event_code::debug02)
+	if (code == egkr::event::code::debug02)
 	{
 		if (!application->models_loaded_)
 		{
@@ -442,10 +443,10 @@ bool sandbox_application::on_debug_event(egkr::event_code code, void* /*sender*/
 	return false;
 }
 
-bool sandbox_application::on_event(egkr::event_code code, void* /*sender*/, void* listener, const egkr::event_context& context)
+bool sandbox_application::on_event(egkr::event::code code, void* /*sender*/, void* listener, const egkr::event::context& context)
 {
 	auto* game = (sandbox_application*)listener;
-	if (code == egkr::event_code::hover_id_changed)
+	if (code == egkr::event::code::hover_id_changed)
 	{
 		context.get(0, game->hovered_object_id_);
 	}

@@ -10,50 +10,7 @@ namespace egkr
 {
 	namespace text
 	{
-		bool bytes_to_codepoint(const std::string& bytes, uint32_t offset, int32_t& out_codepoint, uint8_t& out_advance)
-		{
-			auto codepoint = bytes[offset];
-			if (codepoint >= 0 && codepoint < 0x7F)
-			{
-				out_advance = 1;
-				out_codepoint = codepoint;
-				return true;
-			}
-			else if ((codepoint & 0xE8) == 0xC0)
-			{
-				codepoint = ((bytes[offset + 0] & 0b00011111) << 6) +
-					(bytes[offset + 1] & 0b00111111);
 
-				out_advance = 2;
-				out_codepoint = codepoint;
-				return true;
-			}
-			else if ((codepoint & 0xF0) == 0xE0)
-			{ 
-				codepoint = ((bytes[offset + 0] & 0b00001111) << 12) +
-					((bytes[offset + 1] & 0b00111111) << 6) +
-					(bytes[offset + 2] & 0b00111111);
-				out_advance = 3;
-				out_codepoint = codepoint;
-				return true;
-			}
-			else if ((codepoint & 0xF8) == 0xF0)
-			{
-				codepoint = ((bytes[offset + 0] & 0b00000111) << 18) +
-					((bytes[offset + 1] & 0b00111111) << 12) +
-					((bytes[offset + 2] & 0b00111111) << 6) +
-					(bytes[offset + 3] & 0b00111111);
-				out_advance = 4;
-				out_codepoint = codepoint;
-				return true;
-			}
-			else
-			{
-				LOG_ERROR("Not supporting 5 or 6 byte codepoints");
-				return false;
-			}
-
-		}
 		ui_text::shared_ptr ui_text::create(text::type type, const std::string& font_name, uint16_t font_size, const std::string& text)
 		{
 			return std::make_shared<ui_text>(type, font_name, font_size, text);
@@ -101,19 +58,38 @@ namespace egkr
 			identifier::release_id(unique_id_);
 		}
 
-		void ui_text::acquire(const std::string& name, uint16_t /*font_size*/, type type)
+		void ui_text::acquire(const std::string& name, uint16_t font_size, type type)
 		{
 			if (type == type::bitmap)
 			{
-				const auto& font = font_system::get_font(name);
+				const auto& font = font_system::get_bitmap_font(name);
 				data_ = std::make_shared<font::data>();
-				*data_.get() = font.font.resource_data->data;
+				*data_ = font.font.resource_data->data;
 				type_ = type;
 				return;
 			}
 			else if (type == type::system)
 			{
+				auto& font = font_system::get_system_font(name);
+				for (const auto& size : font.size_variants)
+				{
+					if (size.size == font_size)
+					{
+						data_ = std::make_shared<font::data>();
+						*data_ = size;
+						type_ = type;
+						return;
+					}
+				}
 
+				//Size doesn't exist
+				auto variant = font_system::create_system_font_variant(font, font_size, name);
+				font_system::setup_font_data(variant);
+
+				font.size_variants.push_back(variant);
+
+				data_ = std::make_shared<font::data>();
+				*data_ = variant;
 				return;
 			}
 

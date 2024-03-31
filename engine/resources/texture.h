@@ -7,8 +7,9 @@ namespace egkr
 {
 	class renderer_backend;
 
-	namespace texture
+	class texture : public resource
 	{
+	public:
 		enum class flags : uint8_t
 		{
 			has_transparency = 0x01,
@@ -17,14 +18,12 @@ namespace egkr
 			depth = 0x08
 		};
 
-		ENUM_CLASS_OPERATORS(flags)
-
 		enum class type
 		{
 			texture_2d,
 			cube
 		};
-		
+
 		struct properties
 		{
 			std::string name{};
@@ -41,44 +40,69 @@ namespace egkr
 			void* data{};
 		};
 
-		class texture : public resource
+		static texture* create();
+		static texture* create(const properties& properties, const uint8_t* data);
+		static void create(const properties& properties, const uint8_t* data, texture* out_texture);
+		explicit texture(const properties& properties);
+		virtual ~texture();
+
+		virtual bool populate(const properties& properties, const uint8_t* data) = 0;
+		virtual bool populate_writeable() = 0;
+		virtual bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) = 0;
+		virtual void read_data(uint64_t offset, uint32_t size, void* out_memory) = 0;
+		virtual void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) = 0;
+		virtual bool resize(uint32_t width, uint32_t height) = 0;
+		virtual void free() = 0;
+
+		void destroy();
+
+		void set_flags(flags flags)
 		{
-		public:
+			properties_.flags = flags;
+		}
+		void set_width(uint32_t width)
+		{
+			properties_.width = width;
+		}
+		void set_height(uint32_t height)
+		{
+			properties_.height = height;
+		}
+		void set_channel_count(uint32_t channel_count)
+		{
+			properties_.channel_count = channel_count;
+		}
+		void set_type(type type)
+		{
+			properties_.texture_type = type;
+		}
 
-			static texture* create();
-			static texture* create(const properties& properties, const uint8_t* data);
-			static void create(const properties& properties, const uint8_t* data, texture* out_texture);
-			explicit texture(const properties& properties);
-			virtual ~texture();
+		[[nodiscard]] const auto& get_flags() const
+		{
+			return properties_.flags;
+		}
+		[[nodiscard]] const auto& get_width() const
+		{
+			return properties_.width;
+		}
+		[[nodiscard]] const auto& get_height() const
+		{
+			return properties_.height;
+		}
+		[[nodiscard]] const auto& get_channel_count() const
+		{
+			return properties_.channel_count;
+		}
 
-			virtual bool populate(const properties& properties, const uint8_t* data) = 0;
-			virtual bool populate_writeable() = 0;
-			virtual bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) = 0;
-			virtual void read_data(uint64_t offset, uint32_t size, void* out_memory) = 0;
-			virtual void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) = 0;
-			virtual bool resize(uint32_t width, uint32_t height) = 0;
-			virtual void free() = 0;
+	protected:
+		properties properties_{};
+	};
+	ENUM_CLASS_OPERATORS(texture::flags)
 
-			void destroy();
 
-			void set_flags(flags flags) { properties_.flags = flags; }
-			void set_width(uint32_t width) { properties_.width = width; }
-			void set_height(uint32_t height) { properties_.height = height; }
-			void set_channel_count(uint32_t channel_count) { properties_.channel_count = channel_count; }
-			void set_type(type type) { properties_.texture_type = type; }
-
-			[[nodiscard]] const auto& get_flags() const	{ return properties_.flags; }
-			[[nodiscard]] const auto& get_width() const	{ return properties_.width; }
-			[[nodiscard]] const auto& get_height() const { return properties_.height; }
-			[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
-
-		protected:
-			properties properties_{};
-		};
-	}
-
-	namespace texture_map
+	class texture_map
 	{
+	public:
 		enum class filter
 		{
 			nearest,
@@ -104,38 +128,33 @@ namespace egkr
 
 		struct properties
 		{
-			filter minify{filter::linear};
-			filter magnify{filter::linear};
-			repeat repeat_u{repeat::repeat};
-			repeat repeat_v{repeat::repeat};
-			repeat repeat_w{repeat::repeat};
+			filter minify{ filter::linear };
+			filter magnify{ filter::linear };
+			repeat repeat_u{ repeat::repeat };
+			repeat repeat_v{ repeat::repeat };
+			repeat repeat_w{ repeat::repeat };
 
 			use use{};
 		};
+		using shared_ptr = std::shared_ptr<texture_map>;
+		static shared_ptr create(const properties& properties);
 
-		class texture_map
-		{
-		public:
-			using shared_ptr = std::shared_ptr<texture_map>;
-			static shared_ptr create(const properties& properties);
+		explicit texture_map(const properties& properties);
+		virtual ~texture_map();
 
-			explicit texture_map(const properties& properties);
-			virtual ~texture_map();
+		void free();
 
-			void free();
+		virtual void acquire() = 0;
+		virtual void release() = 0;
 
-			virtual void acquire() = 0;
-			virtual void release() = 0;
+		filter minify{};
+		filter magnify{};
 
-			filter minify{};
-			filter magnify{};
+		repeat repeat_u;
+		repeat repeat_v;
+		repeat repeat_w;
 
-			repeat repeat_u;
-			repeat repeat_v;
-			repeat repeat_w;
-
-			use use{};
-			texture::texture* texture{};
-		};
-	}
+		use use{};
+		texture* texture{};
+	};
 }

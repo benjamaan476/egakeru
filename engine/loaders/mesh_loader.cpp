@@ -10,7 +10,7 @@ namespace egkr
 	}
 
 	mesh_loader::mesh_loader(const loader_properties& properties)
-		:resource_loader{ resource_type::mesh, properties } {}
+		:resource_loader{ resource::type::mesh, properties } {}
 
 	resource::shared_ptr mesh_loader::load(std::string_view name, void* /*params*/)
 	{
@@ -59,14 +59,14 @@ namespace egkr
 			return nullptr;
 		}
 
-		resource_properties properties{};
+		resource::properties properties{};
 		properties.name = name;
 		properties.full_path = filename;
-		properties.type = resource_type::mesh;
+		properties.type = resource::type::mesh;
 
 		properties.data = new egkr::vector<geometry::properties>();
 		*(egkr::vector<geometry::properties>*)properties.data = resource_data;
-		return std::make_shared<resource>(properties);
+		return resource::create(properties);
 	}
 
 	bool mesh_loader::unload(const resource::shared_ptr& resource)

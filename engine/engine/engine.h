@@ -20,8 +20,8 @@ namespace egkr
 		void static shutdown();
 
 	private:
-		static bool on_event(event_code code, void* sender, void* listener, const event_context& context);
-		static bool on_resize(event_code code, void* sender, void* listener, const event_context& context);
+		static bool on_event(event::code code, void* sender, void* listener, const event::context& context);
+		static bool on_resize(event::code code, void* sender, void* listener, const event::context& context);
 		bool is_initialised_{false};
 		std::chrono::nanoseconds last_time_{};
 

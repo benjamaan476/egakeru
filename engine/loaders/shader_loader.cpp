@@ -11,7 +11,7 @@ namespace egkr
 	}
 
 	shader_loader::shader_loader(const loader_properties& properties)
-		: resource_loader{ resource_type::shader, properties }
+		: resource_loader{ resource::type::shader, properties }
 	{
 	}
 
@@ -25,7 +25,7 @@ namespace egkr
 
 		const auto properties = load_configuration_file(filename);
 
-		resource_properties resource_properties{};
+		resource::properties resource_properties{};
 		resource_properties.type = get_loader_type();
 		resource_properties.name = name;
 		resource_properties.full_path = filename;
@@ -33,7 +33,7 @@ namespace egkr
 		resource_properties.data = new shader::properties();
 		*(shader::properties*)resource_properties.data = properties;
 
-		return std::make_shared<resource>(resource_properties);
+		return resource::create(resource_properties);
 	}
 
 	bool shader_loader::unload(const resource::shared_ptr& resource)
