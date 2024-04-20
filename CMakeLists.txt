@@ -62,7 +62,9 @@ endif()
 add_definitions(-DENABLE_DEBUG_MACRO)
 
 # Adding the src:
+add_subdirectory(plugins)
 add_subdirectory(engine)
+
 add_subdirectory(sandbox)
 
 # Don't even look at tests if we're not top level

@@ -67,11 +67,11 @@ namespace egkr
 
 			static shared_ptr create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height);
 			static shared_ptr create(const egkr::vector<attachment_configuration>& attachments);
-			render_target();
+			API render_target();
 
 			const auto& get_attachments() const { return attachments_; }
 			auto& get_attachments() { return attachments_; }
-			virtual ~render_target();
+			API virtual ~render_target();
 			virtual bool free(bool free_internal_memory) = 0;
 
 			void destroy()

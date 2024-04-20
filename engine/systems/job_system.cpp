@@ -1,5 +1,5 @@
 #include "job_system.h"
-
+using namespace std::literals;
 namespace egkr
 {
 	static job_system::unique_ptr state_{};

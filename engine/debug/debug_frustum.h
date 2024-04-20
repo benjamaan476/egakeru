@@ -6,6 +6,8 @@
 
 #include <debug/debug_line.h>
 
+#include "frustum.h"
+
 namespace egkr::debug
 {
 	class debug_frustum

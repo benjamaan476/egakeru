@@ -35,7 +35,7 @@ namespace egkr
 		explicit material(const material_properties& properties);
 		~material();
 
-		void free();
+		API void free();
 
 		void set_diffuse_colour(const float4 diffuse);
 		[[nodiscard]] const auto& get_diffuse_colour() const { return diffuse_colour_; }

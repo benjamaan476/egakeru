@@ -36,7 +36,7 @@ namespace egkr
 		using texture_handle = uint32_t;
 
 		static texture_system* create(const texture_system_configuration& properties);
-		static texture* wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data);
+		API static texture* wrap_internal(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency, bool is_writeable, bool register_texture, void* internal_data);
 
 		explicit texture_system(const texture_system_configuration& properties);
 
@@ -44,17 +44,17 @@ namespace egkr
 		bool update(float delta_time) override;
 		bool shutdown() override;
 
-		static void resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);
+		API static void resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);
 
 		[[nodiscard]] static texture* acquire(std::string_view texture_name);
 		[[nodiscard]] static texture* acquire_cube(std::string_view texture_name);
 		[[nodiscard]] static texture* acquire_writable(std::string_view name, uint32_t width, uint32_t height, uint8_t channel_count, bool has_transparency);
 		void release(std::string_view texture_name);
 
-		static texture* get_default_texture();
-		static texture* get_default_diffuse_texture();
-		static texture* get_default_specular_texture();
-		static texture* get_default_normal_texture();
+		API static texture* get_default_texture();
+		API static texture* get_default_diffuse_texture();
+		API static texture* get_default_specular_texture();
+		API static texture* get_default_normal_texture();
 	private:
 		static texture* load_texture(const std::string& filepath, uint32_t id);
 		static texture* load_cube_texture(std::string_view name, const egkr::vector<std::string>& texture_names, uint32_t id);

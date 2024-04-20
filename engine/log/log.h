@@ -4,19 +4,16 @@
 #include <spdlog/spdlog.h>
 #include <string_view>
 
-using namespace std::literals;
 
 namespace egkr
 {
 	class log
 	{
 	public:
-		API static void init();
-        constexpr static std::string_view get_log_name() { return log_name_; }
+		API static void init(const std::string& log_name);
 		static spdlog::logger* get_logger() { return core_logger_.get(); }
 	private:
-        constexpr static std::string_view log_name_{ "engine"sv };
-		inline static std::shared_ptr<spdlog::logger> core_logger_{};
+		std::shared_ptr<spdlog::logger> core_logger_{};
 	};
 }
 

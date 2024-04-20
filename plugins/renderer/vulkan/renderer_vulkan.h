@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "../renderer_types.h"
+#include "renderer/renderer_types.h"
 #include "vulkan_types.h"
 #include "vulkan_shader.h"
 
@@ -12,7 +12,7 @@ namespace egkr
 	class renderer_vulkan : public renderer_backend
 	{
 	public:
-		static renderer_backend::unique_ptr create(const platform::shared_ptr& platform);
+		API static renderer_backend::unique_ptr create(const platform::shared_ptr& platform);
 
 		explicit renderer_vulkan(platform::shared_ptr platform);
 		~renderer_vulkan() override;

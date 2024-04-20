@@ -41,7 +41,7 @@ namespace egkr
 		using shared_ptr = std::shared_ptr<geometry>;
 		static shared_ptr create(const properties& properties);
 
-		explicit geometry(const properties& properties);
+		API explicit geometry(const properties& properties);
 		virtual ~geometry() = default;
 
 		virtual bool populate(const properties& properties) = 0;

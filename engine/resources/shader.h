@@ -168,8 +168,8 @@ namespace egkr
 		using shared_ptr = std::shared_ptr<shader>;
 		static shared_ptr create(const properties& properties, renderpass::renderpass* pass);
 
-		explicit shader(const properties& properties);
-		virtual ~shader();
+		API explicit shader(const properties& properties);
+		API virtual ~shader();
 
 		uint32_t get_uniform_index(std::string_view uniform_name);
 		const uniform& get_uniform(uint32_t index);
@@ -178,7 +178,7 @@ namespace egkr
 		void set_bound_scope(scope scope);
 
 		const auto& get_bound_instance_id() const { return bound_instance_id_; }
-		void set_bound_instance_id(uint32_t instance_id);
+		API void set_bound_instance_id(uint32_t instance_id);
 
 		auto has_instances() const { return properties_.instance_uniform_count > 0 || properties_.instance_uniform_sampler_count > 0; }
 
@@ -198,7 +198,7 @@ namespace egkr
 		void set_bound_ubo_offset(uint64_t offset) { bound_ubo_offset_ = offset; }
 		const auto& get_bound_ubo_offset() const { return bound_ubo_offset_; }
 
-		void set_global_texture(uint32_t index, texture_map* map);
+		API void set_global_texture(uint32_t index, texture_map* map);
 
 		const auto& get_attribute_stride() const { return attribute_stride_; }
 

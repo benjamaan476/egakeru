@@ -2,9 +2,6 @@
 
 #include "systems/view_system.h"
 
-#include "vulkan/renderer_vulkan.h"
-
-
 #ifdef TRACY_MEMORY
 void* operator new(std::size_t count)
 {
@@ -21,13 +18,14 @@ void operator delete(void* ptr) noexcept
 
 namespace egkr
 {
-	bool renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
+	bool renderer_frontend::create(const platform::shared_ptr& platform)
 	{
-		renderer = std::make_unique<renderer_frontend>(type, platform);
+		renderer = std::make_unique<renderer_frontend>(platform);
 		return true;
 	}
 
-	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
+	renderer_frontend::renderer_frontend(const platform::shared_ptr& platform)
+		: platform_{platform}
 	{
 		const auto& size = platform->get_framebuffer_size();
 		framebuffer_width_ = size.x;
@@ -36,18 +34,6 @@ namespace egkr
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });
 		view = glm::inverse(view);
-		switch (type)
-		{
-		case backend_type::vulkan:
-			backend_ = renderer_vulkan::create(platform);
-			break;
-		case backend_type::opengl:
-		case backend_type::directx:
-		default:
-			LOG_ERROR("Unsupported renderer backend chosen");
-			break;
-		}
-
 	}
 
 	bool renderer_frontend::init()

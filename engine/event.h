@@ -80,6 +80,6 @@ namespace egkr
 		static void create();
 		static bool register_event(code code, void* listener, const callback& callback);
 		static bool unregister_event(code code, void* listener, const callback& callback);
-		static void fire_event(code code, void* sender, const context& context);
+		API static void fire_event(code code, void* sender, const context& context);
 	};
 }

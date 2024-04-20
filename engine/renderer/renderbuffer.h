@@ -21,9 +21,9 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<renderbuffer>;
-			static shared_ptr create(type bffer_type, uint64_t size);
+			API static shared_ptr create(type bffer_type, uint64_t size);
 
-			renderbuffer(type buffer_type, uint64_t size);
+			API renderbuffer(type buffer_type, uint64_t size);
 			virtual ~renderbuffer() = default;
 
 			virtual void bind(uint64_t offset) = 0;

@@ -13,9 +13,9 @@ namespace egkr
 	{
 	public:
 		using unique_ptr = std::unique_ptr<renderer_frontend>;
-		API static bool create(backend_type type, const platform::shared_ptr& platform);
+		API static bool create(const platform::shared_ptr& platform);
 
-		renderer_frontend(backend_type type, const platform::shared_ptr& platform);
+		renderer_frontend(const platform::shared_ptr& platform);
 
 		API bool init();
 		API void shutdown();
@@ -41,8 +41,9 @@ namespace egkr
 		void reset_scissor() const;
 
 		const auto& get_backend() const { return backend_; }
-	private:
 		renderer_backend::unique_ptr backend_{};
+		platform::shared_ptr platform_{};
+	private:
 		uint8_t window_attachment_count{};
 
 		uint32_t framebuffer_width_{};

@@ -1,6 +1,5 @@
 #include "engine.h"
 
-#include "systems/input.h"
 #include "systems/view_system.h"
 #include "systems/audio_system.h"
 #include "renderer/renderer_frontend.h"
@@ -10,11 +9,11 @@ using namespace std::chrono_literals;
 namespace egkr
 {
 	static engine::unique_ptr engine_;
-	bool engine::create(application::unique_ptr application)
+	bool engine::create(application::unique_ptr application, const std::function<void(renderer_frontend*)>& backend_init)
 	{
 		if (!engine_)
 		{
-			engine_ = std::make_unique<engine>(std::move(application));
+			engine_ = std::make_unique<engine>(std::move(application), backend_init);
 			return true;
 		}
 
@@ -22,12 +21,12 @@ namespace egkr
 		return false;
 	}
 
-	engine::engine(application::unique_ptr application)
+	engine::engine(application::unique_ptr application, const std::function<void(renderer_frontend*)>& backend_init)
 		: name_{ application->get_engine_configuration().name }
 	{
 		application_ = std::move(application);
 
-		egkr::log::init();
+		egkr::log::init("engine");
 
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
@@ -55,7 +54,8 @@ namespace egkr
 			return;
 		}
 
-		renderer_frontend::create(backend_type::vulkan, platform_);
+		renderer_frontend::create(platform_);
+		backend_init(renderer.get());
 
 		system_manager::create(application_.get());
 

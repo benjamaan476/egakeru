@@ -363,6 +363,7 @@ namespace egkr
 		:platform_{ std::move(platform) }
 	{
 		ZoneScoped;
+		egkr::log::init("renderer");
 
 		const auto size = platform_->get_framebuffer_size();
 		context_.framebuffer_width = size.x;
@@ -559,7 +560,7 @@ namespace egkr
 
 		if (enable_validation_layers_)
 		{
-			LOG_INFO("Adding debug validation");
+			egkr::core_logger_->info("Adding debug validation");
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 

@@ -15,6 +15,7 @@ target_link_libraries(
           egakeru::egakeru_warnings  
           Vulkan::Vulkan
           Vulkan::Headers
+          renderer_vulkan
           engine)
 
 target_link_system_libraries(

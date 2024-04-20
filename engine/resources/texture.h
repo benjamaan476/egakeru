@@ -43,8 +43,8 @@ namespace egkr
 		static texture* create();
 		static texture* create(const properties& properties, const uint8_t* data);
 		static void create(const properties& properties, const uint8_t* data, texture* out_texture);
-		explicit texture(const properties& properties);
-		virtual ~texture();
+		API explicit texture(const properties& properties);
+		API virtual ~texture();
 
 		virtual bool populate(const properties& properties, const uint8_t* data) = 0;
 		virtual bool populate_writeable() = 0;
@@ -54,7 +54,7 @@ namespace egkr
 		virtual bool resize(uint32_t width, uint32_t height) = 0;
 		virtual void free() = 0;
 
-		void destroy();
+		API void destroy();
 
 		void set_flags(flags flags)
 		{
@@ -139,8 +139,8 @@ namespace egkr
 		using shared_ptr = std::shared_ptr<texture_map>;
 		static shared_ptr create(const properties& properties);
 
-		explicit texture_map(const properties& properties);
-		virtual ~texture_map();
+		API explicit texture_map(const properties& properties);
+		API virtual ~texture_map();
 
 		void free();
 

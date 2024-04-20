@@ -5,16 +5,18 @@
 #include "application/application.h"
 #include "event.h"
 
+using namespace std::literals;
 
 namespace egkr
 {
+	class renderer_frontend;
 	class engine
 	{
 	public:
 		using unique_ptr = std::unique_ptr<engine>;
-		static bool create(application::unique_ptr application);
+		static bool create(application::unique_ptr application, const std::function<void(renderer_frontend*)>& backend_init);
 		//Don't call this directly, only here to shutup clang
-		explicit engine(application::unique_ptr application);
+		explicit engine(application::unique_ptr application, const std::function<void(renderer_frontend*)>& backend_init);
 
 		static void run();
 		void static shutdown();
