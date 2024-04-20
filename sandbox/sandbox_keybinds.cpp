@@ -146,6 +146,11 @@ static void on_load_scene(key /*key*/, keymap::entry_bind_type /*type*/, keymap:
 	event::fire_event(event::code::debug02, nullptr, {});
 }
 
+static void on_unload_scene(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
+{
+	event::fire_event(event::code::debug03, nullptr, {});
+}
+
 static void on_console_scroll(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
 {
 	if (key == key::up)
@@ -214,6 +219,7 @@ void egkr::setup_keymaps(application* application_instance)
 	sandbox_keymap.add_binding(key::key_2, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_render_mode_normals);
 
 	sandbox_keymap.add_binding(key::l, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_load_scene);
+	sandbox_keymap.add_binding(key::u, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_unload_scene);
 	sandbox_keymap.add_binding(key::t, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_change_texture);
 
 	input::push_keymap(sandbox_keymap);

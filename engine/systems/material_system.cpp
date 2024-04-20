@@ -162,6 +162,19 @@ namespace egkr
 		return new_material;
 	}
 
+	bool material_system::release(const material::shared_ptr& material)
+	{
+		//TODO ew
+		if (material_system_->registered_materials_by_name_.contains(material->get_name()))
+		{
+			//Can't clear out vector as things access it by index
+			material_system_->registered_materials_[material_system_->registered_materials_by_name_[material->get_name()]]->free();
+			material_system_->registered_materials_by_name_.erase(material->get_name());
+			return true;
+		}
+		return false;
+	}
+
 	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
 	{
 		if (shader_id == material_system_->material_shader_id_)

@@ -560,7 +560,7 @@ namespace egkr
 		if (enable_validation_layers_)
 		{
 			LOG_INFO("Adding debug validation");
-			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+ 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 
 		instance_info.setEnabledExtensionCount(extensions.size());

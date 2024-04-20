@@ -52,6 +52,7 @@ namespace egkr
 		static material::shared_ptr get_default_material();
 		static material::shared_ptr acquire(std::string_view name);
 		static material::shared_ptr acquire(const material_properties& properties);
+		static bool release(const material::shared_ptr& material);
 
 		static void apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode);
 		static void apply_instance(const material::shared_ptr& material, bool needs_update);

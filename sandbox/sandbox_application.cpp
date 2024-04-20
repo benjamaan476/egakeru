@@ -27,6 +27,7 @@ bool sandbox_application::init()
 
 	egkr::event::register_event(egkr::event::code::debug01, this, sandbox_application::on_debug_event);
 	egkr::event::register_event(egkr::event::code::debug02, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event::code::debug03, this, sandbox_application::on_debug_event);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -274,7 +275,6 @@ bool sandbox_application::resize(uint32_t width, uint32_t height)
 
 bool sandbox_application::boot()
 {
-
 	{
 		egkr::renderpass::configuration renderpass_configuration
 		{
@@ -436,6 +436,21 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 
 			application->sponza_->set_model(obj);
 			application->meshes_.push_back(application->sponza_);
+
+			return true;
+		}
+	}
+
+	if (code == egkr::event::code::debug03)
+	{
+		if (application->models_loaded_)
+		{
+			LOG_INFO("Unloading models");
+
+			application->sponza_->unload();
+
+			application->meshes_.pop_back();
+			application->models_loaded_ = false;
 
 			return true;
 		}

@@ -23,6 +23,7 @@ namespace egkr
 
 			debug01,
 			debug02,
+			debug03,
 			render_mode,
 			hover_id_changed,
 			event_code_size

@@ -1,6 +1,7 @@
 #include "vulkan_geometry.h"
 #include "renderer/renderer_types.h"
 #include "vulkan_types.h"
+#include "systems/material_system.h"
 
 namespace egkr
 {
@@ -84,8 +85,7 @@ namespace egkr
 		if (context_)
 		{
 			context_->device.logical_device.waitIdle();
-
-			material_->free();
+			material_system::release(material_);
 
 			if (vertex_buffer_)
 			{
