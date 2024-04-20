@@ -41,7 +41,6 @@ namespace egkr
 		explicit texture_system(const texture_system_configuration& properties);
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static void resize(texture* texture, uint32_t width, uint32_t height, bool regenerate_internal_data);

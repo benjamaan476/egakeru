@@ -28,11 +28,6 @@ namespace egkr
 		return true;
 	}
 
-	bool shader_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool shader_system::shutdown()
 	{
 		for (const auto& shader : shaders_)

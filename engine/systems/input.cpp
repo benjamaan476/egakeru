@@ -18,7 +18,7 @@ namespace egkr
 		return true;
 	}
 
-	bool input::update(float /*delta_time*/)
+	bool input::update(const frame_data& /*frame_data*/)
 	{
 		previous_keyboard = current_keyboard;
 		previous_mouse = current_mouse;

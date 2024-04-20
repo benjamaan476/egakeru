@@ -8,15 +8,14 @@
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
 #include "debug/debug_frustum.h"
-#include "debug/debug_console.h"
 
 class sandbox_application final : public egkr::application
 {
 public:
 	explicit sandbox_application(const egkr::engine_configuration& configuration);
 	bool init() final;
-	void update(double delta_time) final;
-	void render(egkr::render_packet* render_packet, double delta_time) final;
+	void update(const egkr::frame_data& frame_data) final;
+	void render(egkr::render_packet* render_packet, const egkr::frame_data& frame_data) final;
 	bool resize(uint32_t width, uint32_t height) final;
 
 	bool boot() final;
@@ -44,7 +43,7 @@ private:
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
-	egkr::frame_data frame_data{};
+	egkr::frame_geometry_data frame_geometry_data{};
 
 	egkr::audio::file* test_audio{};
 	egkr::audio::file* test_loop_audio{};

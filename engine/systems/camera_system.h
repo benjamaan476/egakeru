@@ -9,7 +9,6 @@ namespace egkr
 
 	constexpr static std::string_view DEFAULT_CAMERA_NAME{ "default" };
 
-	class renderer_frontend;
 	class camera_system : public system
 	{
 	public:
@@ -24,9 +23,7 @@ namespace egkr
 		explicit camera_system(const configuration& configuration);
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
-
 
 		static camera::shared_ptr acquire(std::string_view name);
 		static void release(const camera::shared_ptr camera);

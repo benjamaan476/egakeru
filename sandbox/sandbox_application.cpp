@@ -10,6 +10,7 @@
 #include <systems/material_system.h>
 
 #include <renderer/renderer_types.h>
+#include <debug/debug_console.h>
 
 #include "identifier.h"
 
@@ -157,10 +158,8 @@ bool sandbox_application::init()
 	return true;
 }
 
-void sandbox_application::update(double delta_time)
+void sandbox_application::update(const egkr::frame_data& /*frame_data*/)
 {
-	delta_time_ = delta_time;
-
 	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
 	if (update_frustum_)
@@ -168,7 +167,7 @@ void sandbox_application::update(double delta_time)
 		debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
 	}
 
-	frame_data.reset();
+	frame_geometry_data.reset();
 	for (auto& mesh : meshes_)
 	{
 		if (mesh->get_generation() == invalid_32_id)
@@ -187,7 +186,7 @@ void sandbox_application::update(double delta_time)
 
 			if (camera_frustum_.intersects_aabb(center, half_extents))
 			{
-				frame_data.world_geometries.emplace_back(geo, mesh->get_model());
+				frame_geometry_data.world_geometries.emplace_back(geo, mesh->get_model());
 			}
 		}
 	}
@@ -214,10 +213,10 @@ void sandbox_application::update(double delta_time)
 	egkr::debug_console::update();
 }
 
-void sandbox_application::render(egkr::render_packet* render_packet, double delta_time)
+void sandbox_application::render(egkr::render_packet* render_packet, const egkr::frame_data& frame_data)
 {
 	auto& model = meshes_[0]->model();
-	glm::quat q({ 0, 0, 0.5F * delta_time });
+	glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
 	model.rotate(q);
 
 	auto& model_2 = meshes_[1]->model();
@@ -226,13 +225,13 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 	egkr::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
 	egkr::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
 	egkr::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
-	frame_data.debug_geometries.push_back(debug_box);
-	frame_data.debug_geometries.push_back(debug_grid);
-	frame_data.debug_geometries.push_back(debug_frustum_geo);
+	frame_geometry_data.debug_geometries.push_back(debug_box);
+	frame_geometry_data.debug_geometries.push_back(debug_grid);
+	frame_geometry_data.debug_geometries.push_back(debug_frustum_geo);
 
 	for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
 	{
-		frame_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+		frame_geometry_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
 	}
 
 	egkr::skybox_packet_data skybox{ .skybox = skybox_ };
@@ -240,11 +239,11 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 	render_packet->render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
 
 	auto world_view = egkr::view_system::get("world-opaque");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_data));
+	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_geometry_data));
 
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_data.world_geometries.size());
+	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_geometry_data.world_geometries.size());
 
 	more_test_text_->set_text(text);
 
@@ -258,7 +257,7 @@ void sandbox_application::render(egkr::render_packet* render_packet, double delt
 	auto ui_view = egkr::view_system::get("ui");
 	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
 
-	frame_data.reset();
+	frame_geometry_data.reset();
 }
 
 bool sandbox_application::resize(uint32_t width, uint32_t height)

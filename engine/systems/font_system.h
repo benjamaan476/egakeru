@@ -118,7 +118,6 @@ namespace egkr
 		explicit font_system(const configuration& configuration);
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static bool load_system_font(const system_font_configuration& configuration);

@@ -59,7 +59,7 @@ namespace egkr
 	}
 	render_view_packet render_view_world::on_build_packet(void* data)
 	{
-		frame_data* mesh_data = (frame_data*)data;
+		frame_geometry_data* mesh_data = (frame_geometry_data*)data;
 
 		render_view_packet packet{};
 

@@ -56,7 +56,7 @@ namespace egkr
 		return false;
 	}
 
-	bool job_system::update(float /*delta_time*/)
+	bool job_system::update(const frame_data& /*frame_data*/)
 	{
 		if (!running_)
 		{

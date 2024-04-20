@@ -40,11 +40,6 @@ namespace egkr
 		return true;
 	}
 
-	bool font_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool font_system::shutdown()
 	{
 		for (auto& font : registered_bitmap_fonts_)

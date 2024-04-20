@@ -19,11 +19,6 @@ namespace egkr
 		return true;
 	}
 
-	bool console::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool console::shutdown()
 	{
 		if (state)

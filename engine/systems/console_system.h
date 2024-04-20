@@ -37,7 +37,6 @@ namespace egkr
 		static console* create();
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static void register_consumer(void* instance, consumer_callback callback);

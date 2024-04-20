@@ -25,11 +25,6 @@ namespace egkr
 		return true;
 	}
 
-	bool light_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool light_system::shutdown()
 	{
 		point_lights_.clear();

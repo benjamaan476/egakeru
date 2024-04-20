@@ -27,11 +27,6 @@ namespace egkr
 		return true;
 	}
 
-	bool view_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool view_system::shutdown()
 	{
 		if (view_system_)

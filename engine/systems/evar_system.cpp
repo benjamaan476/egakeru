@@ -16,11 +16,6 @@ namespace egkr
 		return true;
 	}
 
-	bool evar_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool evar_system::shutdown()
 	{
 		return true;

@@ -72,7 +72,7 @@ namespace egkr
 		uint64_t unique_id{};
 	};
 
-	struct frame_data
+	struct frame_geometry_data
 	{
 		egkr::vector<render_data> world_geometries{};
 		egkr::vector<render_data> debug_geometries{};

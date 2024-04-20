@@ -100,11 +100,6 @@ namespace egkr
 		return true;
 	}
 
-	bool resource_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool resource_system::shutdown()
 	{
 		resource_system_->registered_loaders_.clear();

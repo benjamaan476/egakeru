@@ -5,6 +5,7 @@
 #include "keymap.h"
 #include "debug/debug_console.h"
 #include "application/application.h"
+#include <engine/engine.h>
 
 using namespace egkr;
 using egkr::key;
@@ -30,7 +31,7 @@ static void on_yaw(key key, keymap::entry_bind_type /*type*/, keymap::modifier /
 		f = -1.F;
 	}
 
-	application_instance->get_camera()->yaw(f * application_instance->get_delta_time());
+	application_instance->get_camera()->yaw(f * engine::get_frame_data().delta_time);
 }
 
 static void on_pitch(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -47,7 +48,7 @@ static void on_pitch(key key, keymap::entry_bind_type /*type*/, keymap::modifier
 		f = -1.F;
 	}
 
-	application_instance->get_camera()->pitch(f * application_instance->get_delta_time());
+	application_instance->get_camera()->pitch(f * engine::get_frame_data().delta_time);
 }
 
 static void on_move_forward(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -55,7 +56,7 @@ static void on_move_forward(key /*key*/, keymap::entry_bind_type /*type*/, keyma
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_forward(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_forward(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_move_backward(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -63,7 +64,7 @@ static void on_move_backward(key /*key*/, keymap::entry_bind_type /*type*/, keym
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_back(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_back(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_move_left(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -71,7 +72,7 @@ static void on_move_left(key /*key*/, keymap::entry_bind_type /*type*/, keymap::
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_left(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_left(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_move_right(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -79,7 +80,7 @@ static void on_move_right(key /*key*/, keymap::entry_bind_type /*type*/, keymap:
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_right(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_right(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_move_up(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -87,7 +88,7 @@ static void on_move_up(key /*key*/, keymap::entry_bind_type /*type*/, keymap::mo
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_up(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_up(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_move_down(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -95,7 +96,7 @@ static void on_move_down(key /*key*/, keymap::entry_bind_type /*type*/, keymap::
 	application* application_instance = (application*)user_data;
 
 	const float move_speed{ 50.f };
-	application_instance->get_camera()->move_down(move_speed * application_instance->get_delta_time());
+	application_instance->get_camera()->move_down(move_speed * engine::get_frame_data().delta_time);
 }
 
 static void on_console_change_visibility(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
@@ -163,12 +164,10 @@ static void on_console_scroll(key key, keymap::entry_bind_type /*type*/, keymap:
 	}
 }
 
-static void on_console_scroll_hold(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
+static void on_console_scroll_hold(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* /*user_data*/)
 {
-	application* application_instance = (application*)user_data;
-
 	static float accumulated_time{};
-	accumulated_time += (float)application_instance->get_delta_time();
+	accumulated_time += engine::get_frame_data().delta_time;
 
 	if (accumulated_time > 0.1F)
 	{

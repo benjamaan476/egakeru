@@ -93,30 +93,29 @@ namespace egkr
 		{
 			auto time = engine_->platform_->get_time();
 			std::chrono::duration<double, std::ratio<1, 1>> delta = time - engine_->last_time_;
-			auto delta_time = delta.count();
-
-			auto frame_time = time;
+			engine_->frame_data_.delta_time = (float)delta.count();
+			engine_->frame_data_.total_time = time.count();
 			engine_->platform_->pump();
 
 			if (!engine_->is_suspended_)
 			{
-				system_manager::update(delta_time);
-				engine_->application_->update(delta_time);
+				system_manager::update(engine_->frame_data_);
+				engine_->application_->update(engine_->frame_data_);
 
 				render_packet packet{};
 
-				engine_->application_->render(&packet, delta_time);
+				engine_->application_->render(&packet, engine_->frame_data_);
 
 				renderer->draw_frame(packet);
 			}
-			auto frame_duration = engine_->platform_->get_time() - frame_time;
+			auto frame_duration = engine_->platform_->get_time() - time;
 			if (engine_->limit_framerate_ && frame_duration < engine_->frame_time_)
 			{
 				auto time_remaining = engine_->frame_time_ - frame_duration;
 				engine_->platform_->sleep(time_remaining);
 			}
 
-			system_manager::update_input();
+			system_manager::update_input(engine_->frame_data_);
 			engine_->last_time_ = time;
 		}
 	}
@@ -131,6 +130,11 @@ namespace egkr
 		system_manager::shutdown();
 		renderer->shutdown();
 		engine_->platform_->shutdown();
+	}
+
+	const frame_data& engine::get_frame_data()
+	{
+		return engine_->frame_data_;
 	}
 
 	bool engine::on_event(event::code code, void* /*sender*/, void* /*listener*/, const event::context& context)

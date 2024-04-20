@@ -57,7 +57,7 @@ namespace egkr
 		return true;
 	}
 	
-	bool system_manager::update(float delta_time)
+	bool system_manager::update(const frame_data& frame_data)
 	{
 		for (auto& [type, system] : system_manager_state->registered_systems_)
 		{
@@ -66,7 +66,7 @@ namespace egkr
 				continue;
 			}
 
-			if (!system->update(delta_time))
+			if (!system->update(frame_data))
 			{
 				return false;
 			}
@@ -74,9 +74,9 @@ namespace egkr
 		return true;
 	}
 
-	void system_manager::update_input()
+	void system_manager::update_input(const frame_data& frame_data)
 	{
-		system_manager_state->registered_systems_[system_type::input]->update(0.F);
+		system_manager_state->registered_systems_[system_type::input]->update(frame_data);
 	}
 
 	void system_manager::shutdown()

@@ -17,7 +17,6 @@ namespace egkr
 		~view_system();
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static void create_view(const render_view::configuration& configuration);

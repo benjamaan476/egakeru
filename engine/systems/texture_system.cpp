@@ -144,11 +144,6 @@ namespace egkr
 		return true;
 	}
 
-	bool texture_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool texture_system::shutdown()
 	{
 		if (texture_system_->default_texture_)

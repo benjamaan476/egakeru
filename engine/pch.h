@@ -29,7 +29,7 @@ enum log_level
 
 
 #include "log/log.h"
-
+#include "frame_data.h"
 namespace egkr
 {
 	template <typename T>

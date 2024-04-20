@@ -49,11 +49,6 @@ namespace egkr
 		return true;
 	}
 
-	bool material_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool material_system::shutdown()
 	{
 		if (material_system_->default_material_)

@@ -17,8 +17,8 @@ namespace egkr
 		API virtual ~application()  = default;
 
 		virtual bool init() = 0;
-		virtual void update(double delta_time) = 0;
-		virtual void render(render_packet* render_packet, double delta_time) = 0;
+		virtual void update(const frame_data& frame_data) = 0;
+		virtual void render(render_packet* render_packet, const frame_data& frame_data) = 0;
 		virtual bool resize(uint32_t width, uint32_t height) = 0;
 
 		virtual bool boot() = 0;
@@ -28,7 +28,6 @@ namespace egkr
 		[[nodiscard]] const auto& get_font_system_configuration() const { return font_system_configuration_; }
 		[[nodiscard]] const auto& get_render_view_configuration() const { return render_view_configuration_; }
 		[[nodiscard]] const auto& get_camera() const { return camera_; }
-		[[nodiscard]] double get_delta_time() { return delta_time_; }
 
 		[[nodiscard]] const auto& get_console_keymap() const { return console_keymap; }
 		[[nodiscard]] auto& get_console_keymap() { return console_keymap; }
@@ -44,7 +43,6 @@ namespace egkr
 		uint32_t height_{};
 
 		egkr::camera::shared_ptr camera_{};
-		double delta_time_{};
 		keymap console_keymap{};
 
 	private:

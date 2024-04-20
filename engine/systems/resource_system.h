@@ -22,7 +22,6 @@ namespace egkr
 		~resource_system();
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		void register_loader(resource_loader::unique_ptr loader);

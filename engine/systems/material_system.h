@@ -46,7 +46,6 @@ namespace egkr
 		~material_system();
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static material::shared_ptr get_default_material();

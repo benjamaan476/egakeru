@@ -38,11 +38,6 @@ namespace egkr
 		return true;
 	}
 
-	bool geometry_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool geometry_system::shutdown()
 	{
 		if (geometry_system_->default_geometry_)

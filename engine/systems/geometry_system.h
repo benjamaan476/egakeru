@@ -18,7 +18,6 @@ namespace egkr
 		~geometry_system();
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static geometry::geometry::shared_ptr acquire(uint32_t id);

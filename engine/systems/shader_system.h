@@ -24,7 +24,6 @@ namespace egkr
 		explicit shader_system(const configuration& configuration);
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static shader::shared_ptr create_shader(const shader::properties& properties, renderpass::renderpass* pass);
