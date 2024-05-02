@@ -8,9 +8,15 @@ namespace egkr
 	class engine;
 	struct render_packet;
 
+	struct application_data : public frame_geometry_data
+	{
+
+	};
+
 	class application
 	{
 	public:
+
 		using unique_ptr = std::unique_ptr<application>;
 		API explicit application(engine_configuration configuration);
 

@@ -5,6 +5,8 @@
 
 #include "systems/job_system.h"
 
+#include "identifier.h"
+
 namespace egkr
 {
 	struct mesh_load_parameters
@@ -107,29 +109,46 @@ namespace egkr
 		return mesh != nullptr;
 	}
 
-	mesh::shared_ptr mesh::create()
+	mesh::shared_ptr mesh::create(const configuration& configuration)
 	{
-		return std::make_shared<mesh>();
+		return std::make_shared<mesh>(configuration);
 	}
 
-	mesh::shared_ptr mesh::create(const geometry::geometry::shared_ptr& geometry, const transform& model)
-	{
-		auto mesh = create();
-		mesh->add_geometry(geometry);
-		mesh->set_model(model);
+	//mesh::shared_ptr mesh::create(const geometry::geometry::shared_ptr& geometry, const transform& model)
+	//{
+	//	auto mesh = create();
+	//	mesh->add_geometry(geometry);
+	//	mesh->set_model(model);
 
-		return mesh;
-	}
+	//	return mesh;
+	//}
 
-	mesh::mesh()
-		: resource(0, 0, "")
+	mesh::mesh(const configuration& configuration)
+		: resource(0, 0, ""), configuration_{configuration}
 	{
+		unique_id_ = identifier::acquire_unique_id(this);
 
 	}
 
 	mesh::~mesh()
 	{
 		unload();
+	}
+
+	void mesh::load()
+	{
+		if (!configuration_.name.empty())
+		{
+			load_from_resource(configuration_.name);
+		}
+		else
+		{
+			for (const auto& config : configuration_.geometry_configurations)
+			{
+				auto geo = geometry_system::acquire(config);
+				add_geometry(geo);
+			}
+		}
 	}
 
 	void mesh::add_geometry(const geometry::geometry::shared_ptr& geometry)
@@ -180,20 +199,23 @@ namespace egkr
 		{
 			geometry_system::release_geometry(geo);
 		}
-
 		geometries_.clear();
+
+		for (auto& geo_config : configuration_.geometry_configurations)
+		{
+			geo_config.release();
+		}
+		configuration_.geometry_configurations.clear();
+
 		set_generation(invalid_32_id);
 	}
 
-	mesh::shared_ptr mesh::load(std::string_view name)
+	void mesh::load_from_resource(std::string_view name)
 	{
-		auto mesh = mesh::create();
-		mesh_load_parameters parameters{ .resource_name = name.data(), .mesh = mesh, .mesh_resource = {}};
+		mesh_load_parameters parameters{ .resource_name = name.data(), .mesh = shared_from_this(), .mesh_resource = {}};
 
 		auto info = job_system::job_system::create_job(load_job_start, load_job_success, load_job_fail, &parameters, sizeof(mesh_load_parameters), sizeof(mesh_load_parameters));
 		job_system::job_system::submit(info);
-
-		return mesh;
 
 	}
 }

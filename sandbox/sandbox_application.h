@@ -8,6 +8,7 @@
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
 #include "debug/debug_frustum.h"
+#include <scenes/simple_scene.h>
 
 class sandbox_application final : public egkr::application
 {
@@ -27,10 +28,11 @@ private:
 
 private:
 
+	egkr::scene::simple_scene::unique_ptr main_scene_{};
 	egkr::frustum camera_frustum_;
 	bool update_frustum_{true};
 	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
-	egkr::skybox::skybox::shared_ptr skybox_{};
+	egkr::skybox::shared_ptr skybox_{};
 	egkr::vector<egkr::mesh::shared_ptr> meshes_{};
 	egkr::vector<egkr::mesh::shared_ptr> ui_meshes_{};
 	egkr::text::ui_text::shared_ptr test_text_{};
@@ -43,7 +45,7 @@ private:
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
-	egkr::frame_geometry_data frame_geometry_data{};
+	egkr::application_data application_frame_data{};
 
 	egkr::audio::file* test_audio{};
 	egkr::audio::file* test_loop_audio{};

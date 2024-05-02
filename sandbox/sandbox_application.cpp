@@ -36,29 +36,37 @@ bool sandbox_application::init()
 	more_test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "a");
 	more_test_text_->set_position({ 50, 400, 0 });
 
-	skybox_ = egkr::skybox::skybox::create();
+	main_scene_ = egkr::scene::simple_scene::create({});
 
-	auto skybox_geo = egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "skybox_cube", "");
-	skybox_->set_geometry(egkr::geometry_system::acquire(skybox_geo));
+	egkr::skybox::configuration skybox_config{ .name = "skybox" };
+	skybox_ = egkr::skybox::skybox::create(skybox_config);
 
-	auto skybox_shader = egkr::shader_system::get_shader("Shader.Builtin.Skybox");
-	egkr::vector<egkr::texture_map::texture_map::shared_ptr> maps = { skybox_->get_texture_map() };
-	skybox_shader->acquire_instance_resources(maps);
+	main_scene_->add_skybox(skybox_);
 
-	auto cube_1 = egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material");
+	{
+		egkr::mesh::configuration cube_1{};
+		cube_1.geometry_configurations.push_back(egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material"));
 
-	egkr::transform transform_1 = egkr::transform::create();
-	auto mesh_1 = egkr::mesh::create(egkr::geometry_system::acquire(cube_1), transform_1);
-	mesh_1->unique_id() = egkr::identifier::acquire_unique_id(mesh_1.get());
-	meshes_.push_back(mesh_1);
+		auto mesh_1 = egkr::mesh::create(cube_1);
+		mesh_1->set_model(egkr::transform::create());
+		meshes_.push_back(mesh_1);
 
-	auto cube_2 = egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material");
+		main_scene_->add_mesh(mesh_1);
+	}
 
-	egkr::transform model_2 = egkr::transform::create({ 10.F, 0.F, 0.F });
-	model_2.set_parent(&mesh_1->model());
-	auto mesh_2 = egkr::mesh::create(egkr::geometry_system::acquire(cube_2), model_2);
-	mesh_2->unique_id() = egkr::identifier::acquire_unique_id(mesh_2.get());
-	meshes_.push_back(mesh_2);
+	{
+		egkr::mesh::configuration cube_2{};
+		cube_2.geometry_configurations.push_back(egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material"));
+
+		auto mesh_2 = egkr::mesh::create(cube_2);
+		egkr::transform model = egkr::transform::create({ 10.F, 0.F, 0.F });
+		model.set_parent(&meshes_.back()->model());
+		mesh_2->set_model(model);
+		meshes_.push_back(mesh_2);
+
+		main_scene_->add_mesh(mesh_2);
+	}
+
 
 	egkr::light_system::add_point_light({ egkr::float4(-5.5, -5.5, 0.0, 0.F),
 	egkr::float4(0.0, 1.0, 0.0, 1.0),
@@ -83,6 +91,9 @@ bool sandbox_application::init()
 		0.44,  // Quadratic
 		0.0 });
 
+	//TODO temp
+	main_scene_->load();
+
 	std::vector<vertex_2d> vertices{ 4 };
 
 	vertices[0] = { {0.F, 136.F}, {0.F, 1.F} };
@@ -101,9 +112,9 @@ bool sandbox_application::init()
 	std::copy(vertices.data(), vertices.data() + 4, (vertex_2d*)ui_properties.vertices);
 	ui_properties.indices = indices;
 
-	auto ui_geo = egkr::geometry::geometry::create(ui_properties);
-	auto ui_mesh = egkr::mesh::create(ui_geo, {});
-	ui_mesh->unique_id() = egkr::identifier::acquire_unique_id(ui_mesh.get());
+	egkr::mesh::configuration ui_mesh_properties{};
+	ui_mesh_properties.geometry_configurations.push_back(ui_properties);
+	auto ui_mesh = egkr::mesh::create(ui_mesh_properties);
 	ui_meshes_.push_back(ui_mesh);
 
 	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
@@ -167,7 +178,7 @@ void sandbox_application::update(const egkr::frame_data& /*frame_data*/)
 		debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
 	}
 
-	frame_geometry_data.reset();
+	application_frame_data.reset();
 	for (auto& mesh : meshes_)
 	{
 		if (mesh->get_generation() == invalid_32_id)
@@ -186,7 +197,7 @@ void sandbox_application::update(const egkr::frame_data& /*frame_data*/)
 
 			if (camera_frustum_.intersects_aabb(center, half_extents))
 			{
-				frame_geometry_data.world_geometries.emplace_back(geo, mesh->get_model());
+				application_frame_data.world_geometries.emplace_back(geo, mesh->get_model());
 			}
 		}
 	}
@@ -225,25 +236,23 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 	egkr::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
 	egkr::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
 	egkr::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
-	frame_geometry_data.debug_geometries.push_back(debug_box);
-	frame_geometry_data.debug_geometries.push_back(debug_grid);
-	frame_geometry_data.debug_geometries.push_back(debug_frustum_geo);
+	application_frame_data.debug_geometries.push_back(debug_box);
+	application_frame_data.debug_geometries.push_back(debug_grid);
+	application_frame_data.debug_geometries.push_back(debug_frustum_geo);
 
 	for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
 	{
-		frame_geometry_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+		application_frame_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
 	}
 
-	egkr::skybox_packet_data skybox{ .skybox = skybox_ };
-	auto skybox_view = egkr::view_system::get("skybox");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(skybox_view.get(), &skybox));
+	main_scene_->populate_render_packet(render_packet);
 
 	auto world_view = egkr::view_system::get("world-opaque");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(world_view.get(), &frame_geometry_data));
+	render_packet->render_views[egkr::render_view::type::world] = egkr::view_system::build_packet(world_view.get(), &application_frame_data);
 
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, frame_geometry_data.world_geometries.size());
+	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, application_frame_data.world_geometries.size());
 
 	more_test_text_->set_text(text);
 
@@ -255,9 +264,9 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 	}
 	egkr::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
 	auto ui_view = egkr::view_system::get("ui");
-	render_packet->render_views.push_back(egkr::view_system::build_packet(ui_view.get(), &ui));
+	render_packet->render_views[egkr::render_view::type::ui] = egkr::view_system::build_packet(ui_view.get(), &ui);
 
-	frame_geometry_data.reset();
+	application_frame_data.reset();
 }
 
 bool sandbox_application::resize(uint32_t width, uint32_t height)
@@ -389,7 +398,9 @@ bool sandbox_application::shutdown()
 {
 	egkr::debug_console::shutdown();
 	egkr::audio::audio_system::shutdown();
-	skybox_->destroy();
+
+	main_scene_->unload();
+
 	box_->destroy();
 	grid_->unload();
 	std::ranges::for_each(meshes_, [](auto& mesh) { mesh->unload(); });
@@ -427,7 +438,7 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 			LOG_INFO("Loading models");
 			application->models_loaded_ = true;
 
-			application->sponza_ = egkr::mesh::load("sponza2");
+			application->sponza_ = egkr::mesh::create({ "sponza2" });
 
 			egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
 			obj.set_scale({ 0.1F, 0.1F, 0.1F });
@@ -435,6 +446,8 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 
 			application->sponza_->set_model(obj);
 			application->meshes_.push_back(application->sponza_);
+
+			application->main_scene_->add_mesh(application->sponza_);
 
 			return true;
 		}

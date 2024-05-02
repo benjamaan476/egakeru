@@ -39,7 +39,7 @@ namespace egkr
 
 	struct render_packet
 	{
-		egkr::vector<render_view_packet> render_views{};
+		std::unordered_map<render_view::type, render_view_packet> render_views{};
 	};
 
 	class renderer_backend
