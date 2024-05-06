@@ -21,6 +21,7 @@ namespace egkr
 		material,
 		geometry,
 		light,
+		audio,
 
 		known_max = 255,
 

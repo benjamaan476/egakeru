@@ -10,10 +10,10 @@ namespace egkr::audio
 {
 	static audio_system::unique_ptr state{};
 
-	bool audio_system::create(const system_configuration& configuration)
+	audio_system* audio_system::create(const system_configuration& configuration)
 	{
 		state = std::make_unique<audio_system>(configuration);
-		return true;
+		return state.get();
 	}
 
 	audio_system::audio_system(const system_configuration& configuration)
@@ -43,12 +43,17 @@ namespace egkr::audio
 		plugin_->init(plugin_configuration);
 	}
 
-	void audio_system::shutdown()
+	bool audio_system::shutdown()
 	{
-		state->plugin_->shutdown();
+		return state->plugin_->shutdown();
 	}
 
-	bool audio_system::update()
+	bool audio_system::init()
+	{
+		return true;
+	}
+
+	bool audio_system::update(const frame_data& /*frame_data*/)
 	{
 		for (uint32_t i{ 0 }; i < state->channels_.size(); ++i)
 		{

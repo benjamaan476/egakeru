@@ -2,6 +2,7 @@
 
 #include <pch.h>
 
+#include <systems/system.h>
 #include <resources/audio.h>
 
 constexpr static const uint32_t MAX_AUDIO_CHANNELS = 16u;
@@ -28,17 +29,17 @@ namespace egkr
 			emitter* emitter{};
 		};
 
-		class audio_system
+		class audio_system : public system
 		{
 		public:
 			using unique_ptr = std::unique_ptr<audio_system>;
-			static bool create(const system_configuration& configuration);
+			static audio_system* create(const system_configuration& configuration);
 
 			explicit audio_system(const system_configuration& configuration);
 
-			static void shutdown();
-
-			static bool update();
+			bool init() override;
+			bool update(const frame_data& frame_data) override;
+			bool shutdown() override;
 
 			static bool set_listener_orientation(const float3& position, const float3& forward, const float3& up);
 

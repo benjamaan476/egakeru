@@ -71,27 +71,29 @@ namespace egkr
 		for (auto& pass : renderpasses_)
 		{
 			pass->begin(pass->get_render_target(render_target_index).get());
-			shader_system::use(shader_->get_id());
-			float4x4 view = camera_->get_view();
-			view[3][0] = 0.F;
-			view[3][1] = 0.F;
-			view[3][2] = 0.F;
+			if (skybox_packet_data* skybox_data = (skybox_packet_data*)render_view_packet->extended_data)
+			{
 
-			shader_->bind_globals();
-			shader_system::set_uniform(projection_location_, &projection_);
-			shader_system::set_uniform(view_location_, &view);
-			shader_system::apply_global();
+				shader_system::use(shader_->get_id());
+				float4x4 view = camera_->get_view();
+				view[3][0] = 0.F;
+				view[3][1] = 0.F;
+				view[3][2] = 0.F;
 
-			skybox_packet_data* skybox_data = (skybox_packet_data*)render_view_packet->extended_data;
-			shader_system::bind_instance(skybox_data->skybox->get_instance_id());
-			shader_system::set_uniform(cube_map_location_, &skybox_data->skybox->get_texture_map());
+				shader_->bind_globals();
+				shader_system::set_uniform(projection_location_, &projection_);
+				shader_system::set_uniform(view_location_, &view);
+				shader_system::apply_global();
 
-			bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;
-			shader_system::apply_instance(needs_update);
-			skybox_data->skybox->set_frame_number(frame_number);
+				shader_system::bind_instance(skybox_data->skybox->get_instance_id());
+				shader_system::set_uniform(cube_map_location_, &skybox_data->skybox->get_texture_map());
 
-			render_view_packet->render_data[0].geometry->draw();
+				bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;
+				shader_system::apply_instance(needs_update);
+				skybox_data->skybox->set_frame_number(frame_number);
 
+				render_view_packet->render_data[0].geometry->draw();
+			}
 			pass->end();
 		}
 		return true;

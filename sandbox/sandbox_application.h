@@ -31,7 +31,6 @@ private:
 	egkr::scene::simple_scene::unique_ptr main_scene_{};
 	egkr::frustum camera_frustum_;
 	bool update_frustum_{true};
-	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
 	egkr::skybox::shared_ptr skybox_{};
 	egkr::vector<egkr::mesh::shared_ptr> meshes_{};
 	egkr::vector<egkr::mesh::shared_ptr> ui_meshes_{};
@@ -40,8 +39,10 @@ private:
 
 	egkr::mesh::shared_ptr sponza_{};
 	bool models_loaded_{};
+
 	egkr::debug::debug_box3d::shared_ptr box_{};
 	egkr::debug::debug_grid::shared_ptr grid_{};
+	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 

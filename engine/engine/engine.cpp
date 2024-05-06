@@ -69,8 +69,6 @@ namespace egkr
 
 		system_manager::init();
 
-		audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
-		audio::audio_system::create(audio_configuration);
 
 		application_->set_engine(this);
 

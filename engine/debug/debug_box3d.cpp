@@ -1,4 +1,5 @@
 #include "debug_box3d.h"
+#include "identifier.h"
 
 namespace egkr::debug
 {
@@ -25,6 +26,7 @@ namespace egkr::debug
 		extents_ = egkr::extent3d{ .min = -size_ * 0.5F, .max = size_ * 0.5F };
 		recalculate_extents();
 
+		unique_id_ = identifier::acquire_unique_id(this);
 		return true;
 	}
 	bool debug_box3d::load()
@@ -40,23 +42,30 @@ namespace egkr::debug
 		geometry_->increment_generation();
 		return true;
 	}
+
 	bool debug_box3d::unload()
 	{
 		geometry_->destroy();
-		geometry_.reset();
+
+		identifier::release_id(unique_id_);
+		unique_id_ = invalid_32_id;
+
 		return true;
 	}
+
 	bool debug_box3d::update()
 	{
 		return true;
 	}
+
 	void debug_box3d::destroy()
 	{
 		if (geometry_)
 		{
-			geometry_->destroy();
-			geometry_.reset();
+			unload();
+		geometry_.reset();
 		}
+
 	}
 
 	void debug_box3d::set_parent(egkr::transform* parent)

@@ -4,6 +4,11 @@
 #include "resources/light.h"
 #include "resources/mesh.h"
 #include "resources/skybox.h"
+#include "renderer/camera.h"
+
+#include "debug/debug_box3d.h"
+#include "debug/debug_grid.h"
+#include "debug/debug_frustum.h"
 
 #include <queue>
 
@@ -46,7 +51,7 @@ namespace egkr
 			void load();
 			void unload();
 
-			void update(const frame_data& delta_time);
+			void update(const frame_data& delta_time, const camera::shared_ptr& camera, float aspect);
 			void populate_render_packet(render_packet* packet);
 
 			//Game owns these, scene just references them
@@ -62,6 +67,13 @@ namespace egkr
 			void add_skybox(const skybox::shared_ptr& skybox);
 			void remove_skybox();
 
+			void add_debug(const egkr::debug::debug_box3d::shared_ptr& debug_box);
+			void remove_debug(const egkr::debug::debug_box3d::shared_ptr& debug_box);
+			void add_debug(const egkr::debug::debug_grid::shared_ptr& debug_grid);
+			void remove_debug(const egkr::debug::debug_grid::shared_ptr& debug_grid);
+			void add_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
+			void remove_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
+
 		private:
 			//configuration configuration_{};
 			uint32_t id_{};
@@ -75,6 +87,12 @@ namespace egkr
 
 			std::queue<pending_mesh> pending_meshes_{};
 			std::vector<mesh::shared_ptr> meshes_{};
+
+			std::vector< egkr::debug::debug_box3d::shared_ptr> debug_boxes_{};
+			std::vector< egkr::debug::debug_grid::shared_ptr> debug_grids_{};
+			std::vector< egkr::debug::debug_frustum::shared_ptr> debug_frusta_{};
+
+			frame_geometry_data frame_geometry_{};
 		};
 	}
 }

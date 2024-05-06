@@ -67,29 +67,59 @@ bool sandbox_application::init()
 		main_scene_->add_mesh(mesh_2);
 	}
 
+	egkr::light::point_light light_0
+	{ 
+		.position = { -5.5, -5.5, 0.0, 0.F},
+		.colour = {0.0, 1.0, 0.0, 1.0},
+	    .constant = 1.0, // Constant
+	    .linear = 0.35, // Linear
+	    .quadratic = 0.44,  // Quadratic
+	};
+	main_scene_->add_point_light(light_0);
 
-	egkr::light_system::add_point_light({ egkr::float4(-5.5, -5.5, 0.0, 0.F),
-	egkr::float4(0.0, 1.0, 0.0, 1.0),
-	1.0, // Constant
-	0.35, // Linear
-	0.44,  // Quadratic
-	0.F });
+	egkr::light::point_light light_1
+	{
+		.position = {5.5, -5.5, 0.0, 0.0},
+		.colour = {1.0, 0.0, 0.0, 1.0},
+		.constant = 1.0, // Constant
+		.linear = 0.35, // Linear
+		.quadratic = 0.44,  // Quadratic
+	};
+	main_scene_->add_point_light(light_1);
 
-	egkr::light_system::add_point_light({
-		egkr::float4(5.5, -5.5, 0.0, 0.0),
-			egkr::float4(1.0, 0.0, 0.0, 1.0),
-			1.0, // Constant
-			0.35, // Linear
-			0.44,  // Quadratic
-			0.0 });
+	egkr::light::point_light light_2
+	{
+	.position = {5.5, 5.5, 0.0, 0.0},
+	.colour = {0.0, 0.0, 1.0, 1.0 },
+	.constant = 1.0, // Constant
+	.linear = 0.35, // Linear
+	.quadratic = 0.44,  // Quadratic
+	};
+	main_scene_->add_point_light(light_2);
 
-	egkr::light_system::add_point_light({
-		egkr::float4(5.5, 5.5, 0.0, 0.0),
-		egkr::float4(0.0, 0.0, 1.0, 1.0),
-		1.0, // Constant
-		0.35, // Linear
-		0.44,  // Quadratic
-		0.0 });
+	dir_light_ = std::make_shared<egkr::light::directional_light>(
+		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
+		egkr::float4(0.6F, 0.6F, 0.6F, 1.0F)
+	);
+
+	main_scene_->add_directional_light(dir_light_);
+
+	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
+	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
+	main_scene_->add_debug(box_);
+
+	egkr::debug::configuration grid_configuration
+	{
+		.name = "debug_grid",
+		.orientation = egkr::debug::orientation::xy,
+		.tile_count_dim0 = 100,
+		.tile_count_dim1 = 100,
+		.tile_scale = 1,
+		.use_third_axis = true,
+	};
+	grid_ = egkr::debug::debug_grid::create(grid_configuration);
+
+	main_scene_->add_debug(grid_);
 
 	//TODO temp
 	main_scene_->load();
@@ -115,33 +145,13 @@ bool sandbox_application::init()
 	egkr::mesh::configuration ui_mesh_properties{};
 	ui_mesh_properties.geometry_configurations.push_back(ui_properties);
 	auto ui_mesh = egkr::mesh::create(ui_mesh_properties);
+	ui_mesh->load();
 	ui_meshes_.push_back(ui_mesh);
 
-	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
-	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
-	box_->load();
-	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
-
-	egkr::debug::configuration grid_configuration{};
-	grid_configuration.name = "debug_grid";
-	grid_configuration.orientation = egkr::debug::orientation::xy;
-	grid_configuration.tile_count_dim0 = 100;
-	grid_configuration.tile_count_dim1 = 100;
-	grid_configuration.tile_scale = 1;
-	grid_configuration.use_third_axis = true;
-
-	grid_ = egkr::debug::debug_grid::create(grid_configuration);
-	grid_->load();
 	camera_ = egkr::camera_system::get_default();
 	camera_->set_position({ 0, 0, 0.F });
 
-	dir_light_ = std::make_shared<egkr::light::directional_light>(
-		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
-		egkr::float4(0.6F, 0.6F, 0.6F, 1.0F)
-	);
-
-	egkr::light_system::add_directional_light(dir_light_);
-
+//TODO add to scene
 	test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
 	test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
 	test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
@@ -150,7 +160,7 @@ bool sandbox_application::init()
 	test_emitter.looping = true;
 	test_emitter.falloff = 1.F;
 
-	egkr::audio::audio_system::set_master_volume(0.F);
+	egkr::audio::audio_system::set_master_volume(1.F);
 	egkr::audio::audio_system::set_channel_volume(0, 1.F);
 	egkr::audio::audio_system::set_channel_volume(1, 0.75F);
 	egkr::audio::audio_system::set_channel_volume(2, 0.5F);
@@ -158,7 +168,7 @@ bool sandbox_application::init()
 	egkr::audio::audio_system::set_channel_volume(4, 0.F);
 	egkr::audio::audio_system::set_channel_volume(5, 0.F);
 	egkr::audio::audio_system::set_channel_volume(6, 1.F);
-	egkr::audio::audio_system::set_channel_volume(7, 0.0F);
+	egkr::audio::audio_system::set_channel_volume(7, 1.0F);
 
 	egkr::audio::audio_system::play_emitter(6, &test_emitter);
 	egkr::audio::audio_system::play_channel(7, test_music, true);
@@ -169,58 +179,14 @@ bool sandbox_application::init()
 	return true;
 }
 
-void sandbox_application::update(const egkr::frame_data& /*frame_data*/)
+void sandbox_application::update(const egkr::frame_data& frame_data)
 {
+	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
+
+	main_scene_->update(frame_data, camera_, (float)width_ / height_);
+
 	egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
-	camera_frustum_ = egkr::frustum(camera_->get_position(), camera_->get_forward(), camera_->get_right(), camera_->get_up(), (float)width_ / height_, camera_->get_fov(), camera_->get_near_clip(), camera_->get_far_clip());
-	if (update_frustum_)
-	{
-		debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
-	}
 
-	application_frame_data.reset();
-	for (auto& mesh : meshes_)
-	{
-		if (mesh->get_generation() == invalid_32_id)
-		{
-			continue;
-		}
-
-		auto model_world = mesh->model().get_world();
-		for (const auto& geo : mesh->get_geometries())
-		{
-			auto extents_max = model_world * egkr::float4{ geo->get_properties().extents.max, 1.F };
-			egkr::float3 t{ extents_max };
-			egkr::float3 center = model_world * egkr::float4{ geo->get_properties().center, 1.F };
-
-			const egkr::float3 half_extents{ glm::abs(t - center) };
-
-			if (camera_frustum_.intersects_aabb(center, half_extents))
-			{
-				application_frame_data.world_geometries.emplace_back(geo, mesh->get_model());
-			}
-		}
-	}
-
-	for (auto& mesh : meshes_)
-	{
-		if (mesh->get_generation() == invalid_32_id)
-		{
-			continue;
-		}
-		auto& debug_data = mesh->get_debug_data();
-		if (!debug_data)
-		{
-			debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, &mesh->model());
-			debug_data->load();
-		}
-
-		debug_data->set_colour({ 0, 1,0, 0});
-		debug_data->set_extents(mesh->extents());
-
-	}
-
-	egkr::audio::audio_system::update();
 	egkr::debug_console::update();
 }
 
@@ -233,22 +199,8 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 	auto& model_2 = meshes_[1]->model();
 	model_2.rotate(q);
 
-	egkr::render_data debug_box{ .geometry = box_->get_geometry(), .model = box_->get_transform() };
-	egkr::render_data debug_grid{ .geometry = grid_->get_geometry(), .model = grid_->get_transform() };
-	egkr::render_data debug_frustum_geo{ .geometry = debug_frustum_->get_geometry(), .model = debug_frustum_->get_transform() };
-	application_frame_data.debug_geometries.push_back(debug_box);
-	application_frame_data.debug_geometries.push_back(debug_grid);
-	application_frame_data.debug_geometries.push_back(debug_frustum_geo);
-
-	for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
-	{
-		application_frame_data.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
-	}
 
 	main_scene_->populate_render_packet(render_packet);
-
-	auto world_view = egkr::view_system::get("world-opaque");
-	render_packet->render_views[egkr::render_view::type::world] = egkr::view_system::build_packet(world_view.get(), &application_frame_data);
 
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
@@ -397,20 +349,17 @@ bool sandbox_application::boot()
 bool sandbox_application::shutdown()
 {
 	egkr::debug_console::shutdown();
-	egkr::audio::audio_system::shutdown();
 
-	main_scene_->unload();
+	main_scene_->destroy();
 
-	box_->destroy();
-	grid_->unload();
-	std::ranges::for_each(meshes_, [](auto& mesh) { mesh->unload(); });
 	meshes_.clear();
-
+	box_->unload();
+	box_.reset();
 	ui_meshes_.clear();
 	test_text_.reset();
 	more_test_text_.reset();
 
-	debug_frustum_->destroy();
+	//debug_frustum_->destroy();
 
 	return true;
 }

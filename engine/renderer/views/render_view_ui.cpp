@@ -100,26 +100,26 @@ namespace egkr
 
 				material_system::apply_local(m, render_data.model.get_world());
 				render_data.geometry->draw();
+			}
 
-				auto* texts = (ui_packet_data*)render_view_packet->extended_data;
-				for (const auto& text : texts->texts)
-				{
-					shader_system::bind_instance(text->get_id());
+			auto* texts = (ui_packet_data*)render_view_packet->extended_data;
+			for (const auto& text : texts->texts)
+			{
+				shader_system::bind_instance(text->get_id());
 
-					shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
-					constexpr static const float4 white_colour{ 1, 1, 1, 1 };
-					shader_system::set_uniform(diffuse_colour_location_, &white_colour);
+				shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
+				constexpr static const float4 white_colour{ 1, 1, 1, 1 };
+				shader_system::set_uniform(diffuse_colour_location_, &white_colour);
 
-					bool needs_update = text->get_render_frame() != frame_number;
-					shader_system::apply_instance(needs_update);
-					text->set_render_frame(frame_number);
+				bool needs_update = text->get_render_frame() != frame_number;
+				shader_system::apply_instance(needs_update);
+				text->set_render_frame(frame_number);
 
-					float4x4 model = text->get_transform().get_world();
+				float4x4 model = text->get_transform().get_world();
 
-					shader_system::set_uniform(model_location_, &model);
+				shader_system::set_uniform(model_location_, &model);
 
-					text->draw();
-				}
+				text->draw();
 			}
 
 			pass->end();

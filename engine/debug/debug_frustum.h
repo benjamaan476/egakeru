@@ -15,15 +15,21 @@ namespace egkr::debug
 		static shared_ptr create(const egkr::frustum& frustum);
 		explicit debug_frustum(const egkr::frustum& frustum);
 
+		void load();
+		void unload();
 		void update(const frustum& frustum);
+
 		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
 		[[nodiscard]] const auto& get_transform() const { return transform_; }
+		[[nodiscard]] const auto& get_id() const { return unique_id_; }
 
 		void destroy();
 	private:
 		void recalculate_lines(const frustum& frustum);
 
 	private:
+		uint32_t unique_id_{ invalid_32_id };
+		geometry::properties properties_{};
 		egkr::transform transform_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
 		egkr::geometry::geometry::shared_ptr geometry_{};

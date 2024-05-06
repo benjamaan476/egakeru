@@ -1,5 +1,5 @@
 #include <debug/debug_grid.h>
-
+#include <identifier.h>
 namespace egkr::debug
 {
 	debug_grid::shared_ptr debug_grid::create(const configuration& configuration)
@@ -142,12 +142,14 @@ namespace egkr::debug
 			j++;
 		}
 
+		unique_id_ = identifier::acquire_unique_id(this);
 
 	}
 
 	debug_grid::~debug_grid()
 	{
 	}
+
 	bool debug_grid::load()
 	{
 		geometry::properties properties{};
@@ -165,6 +167,9 @@ namespace egkr::debug
 	{
 		geometry_->destroy();
 		geometry_.reset();
+
+		identifier::release_id(unique_id_);
+		unique_id_ = invalid_32_id;
 		return true;
 	}
 }

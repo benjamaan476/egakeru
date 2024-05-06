@@ -40,9 +40,10 @@ namespace egkr
 		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
 		[[nodiscard]] const auto& get_transform() const { return transform_; }
 		[[nodiscard]] auto& get_transform() { return transform_; }
+		[[nodiscard]] const auto& get_id() const { return unique_id_; }
 
 		private:
-			//uint32_t unique_id_{};
+			uint32_t unique_id_{invalid_32_id};
 			std::string name_{};
 			orientation orientation_{};
 			uint32_t tile_count_dim0_{};

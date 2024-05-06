@@ -13,6 +13,7 @@
 #include <systems/font_system.h>
 #include <systems/console_system.h>
 #include <systems/evar_system.h>
+#include <systems/audio_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -173,6 +174,11 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::evar, evar_system::create());
 		}
+		{
+			audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
+
+			registered_systems_.emplace(system_type::audio, audio::audio_system::create(audio_configuration));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -198,6 +204,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::audio]->shutdown();
 		system_manager_state->registered_systems_[system_type::evar]->shutdown();
 		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();
