@@ -15,7 +15,7 @@ namespace egkr
 
 		static geometry_system* create();
 		geometry_system();
-		~geometry_system();
+		~geometry_system() override;
 
 		bool init() override;
 		bool shutdown() override;

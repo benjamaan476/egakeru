@@ -10,29 +10,29 @@ namespace egkr
 {
 	struct material_shader_uniform_location
 	{
-		uint16_t projection{};
-		uint16_t view{};
-		uint16_t ambient_colour{};
-		uint16_t view_position{};
-		uint16_t diffuse_colour{};
-		uint16_t diffuse_texture{};
-		uint16_t specular_texture{};
-		uint16_t normal_texture{};
-		uint16_t shininess{};
-		uint16_t model{};
-		uint16_t mode{};
-		uint16_t directional_light{};
-		uint16_t point_light{};
-		uint16_t num_point_lights{};
+		uint32_t projection{};
+		uint32_t view{};
+		uint32_t ambient_colour{};
+		uint32_t view_position{};
+		uint32_t diffuse_colour{};
+		uint32_t diffuse_texture{};
+		uint32_t specular_texture{};
+		uint32_t normal_texture{};
+		uint32_t shininess{};
+		uint32_t model{};
+		uint32_t mode{};
+		uint32_t directional_light{};
+		uint32_t point_light{};
+		uint32_t num_point_lights{};
 	};
 
 	struct ui_shader_uniform_location
 	{
-		uint16_t projection{};
-		uint16_t view{};
-		uint16_t diffuse_colour{};
-		uint16_t diffuse_texture{};
-		uint16_t model{};
+		uint32_t projection{};
+		uint32_t view{};
+		uint32_t diffuse_colour{};
+		uint32_t diffuse_texture{};
+		uint32_t model{};
 	};
 
 	class material_system : public system
@@ -43,7 +43,7 @@ namespace egkr
 		static material_system* create();
 
 		material_system();
-		~material_system();
+		~material_system() override;
 
 		bool init() override;
 		bool shutdown() override;

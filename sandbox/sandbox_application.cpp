@@ -3,7 +3,6 @@
 
 #include <systems/view_system.h>
 #include <systems/geometry_system.h>
-#include <systems/shader_system.h>
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
 #include <systems/audio_system.h>
@@ -11,8 +10,6 @@
 
 #include <renderer/renderer_types.h>
 #include <debug/debug_console.h>
-
-#include "identifier.h"
 
 sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
 	: application(configuration)
@@ -37,92 +34,6 @@ bool sandbox_application::init()
 	more_test_text_->set_position({ 50, 400, 0 });
 
 	main_scene_ = egkr::scene::simple_scene::create({});
-
-	egkr::skybox::configuration skybox_config{ .name = "skybox" };
-	skybox_ = egkr::skybox::skybox::create(skybox_config);
-
-	main_scene_->add_skybox(skybox_);
-
-	{
-		egkr::mesh::configuration cube_1{};
-		cube_1.geometry_configurations.push_back(egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material"));
-
-		auto mesh_1 = egkr::mesh::create(cube_1);
-		mesh_1->set_model(egkr::transform::create());
-		meshes_.push_back(mesh_1);
-
-		main_scene_->add_mesh(mesh_1);
-	}
-
-	{
-		egkr::mesh::configuration cube_2{};
-		cube_2.geometry_configurations.push_back(egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material"));
-
-		auto mesh_2 = egkr::mesh::create(cube_2);
-		egkr::transform model = egkr::transform::create({ 10.F, 0.F, 0.F });
-		model.set_parent(&meshes_.back()->model());
-		mesh_2->set_model(model);
-		meshes_.push_back(mesh_2);
-
-		main_scene_->add_mesh(mesh_2);
-	}
-
-	egkr::light::point_light light_0
-	{ 
-		.position = { -5.5, -5.5, 0.0, 0.F},
-		.colour = {0.0, 1.0, 0.0, 1.0},
-	    .constant = 1.0, // Constant
-	    .linear = 0.35, // Linear
-	    .quadratic = 0.44,  // Quadratic
-	};
-	main_scene_->add_point_light(light_0);
-
-	egkr::light::point_light light_1
-	{
-		.position = {5.5, -5.5, 0.0, 0.0},
-		.colour = {1.0, 0.0, 0.0, 1.0},
-		.constant = 1.0, // Constant
-		.linear = 0.35, // Linear
-		.quadratic = 0.44,  // Quadratic
-	};
-	main_scene_->add_point_light(light_1);
-
-	egkr::light::point_light light_2
-	{
-	.position = {5.5, 5.5, 0.0, 0.0},
-	.colour = {0.0, 0.0, 1.0, 1.0 },
-	.constant = 1.0, // Constant
-	.linear = 0.35, // Linear
-	.quadratic = 0.44,  // Quadratic
-	};
-	main_scene_->add_point_light(light_2);
-
-	dir_light_ = std::make_shared<egkr::light::directional_light>(
-		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
-		egkr::float4(0.6F, 0.6F, 0.6F, 1.0F)
-	);
-
-	main_scene_->add_directional_light(dir_light_);
-
-	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
-	box_->get_transform().set_position(egkr::light_system::get_point_lights()[0].position);
-	main_scene_->add_debug(box_);
-
-	egkr::debug::configuration grid_configuration
-	{
-		.name = "debug_grid",
-		.orientation = egkr::debug::orientation::xy,
-		.tile_count_dim0 = 100,
-		.tile_count_dim1 = 100,
-		.tile_scale = 1,
-		.use_third_axis = true,
-	};
-	grid_ = egkr::debug::debug_grid::create(grid_configuration);
-
-	main_scene_->add_debug(grid_);
-
-	//TODO temp
-	main_scene_->load();
 
 	std::vector<vertex_2d> vertices{ 4 };
 
@@ -181,7 +92,7 @@ bool sandbox_application::init()
 
 void sandbox_application::update(const egkr::frame_data& frame_data)
 {
-	box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
+	//box_->set_colour((egkr::light_system::get_point_lights()[0].colour));
 
 	main_scene_->update(frame_data, camera_, (float)width_ / height_);
 
@@ -192,14 +103,16 @@ void sandbox_application::update(const egkr::frame_data& frame_data)
 
 void sandbox_application::render(egkr::render_packet* render_packet, const egkr::frame_data& frame_data)
 {
-	auto& model = meshes_[0]->model();
-	glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
-	model.rotate(q);
+	if (main_scene_->is_loaded())
+	{
+		auto& model = meshes_[0]->model();
+		glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
+		model.rotate(q);
 
-	auto& model_2 = meshes_[1]->model();
-	model_2.rotate(q);
+		auto& model_2 = meshes_[1]->model();
+		model_2.rotate(q);
 
-
+	}
 	main_scene_->populate_render_packet(render_packet);
 
 	auto cam = egkr::camera_system::get_default();
@@ -371,7 +284,7 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 	{
 		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
 
-		static int choice = 0;
+		static uint32_t choice = 0;
 		choice++;
 		choice %= materials.size();
 
@@ -382,36 +295,25 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 
 	if (code == egkr::event::code::debug02)
 	{
-		if (!application->models_loaded_)
+		if (!application->scene_loaded_)
 		{
-			LOG_INFO("Loading models");
-			application->models_loaded_ = true;
+			LOG_INFO("Loading scene");
+			application->scene_loaded_ = true;
 
-			application->sponza_ = egkr::mesh::create({ "sponza2" });
-
-			egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
-			obj.set_scale({ 0.1F, 0.1F, 0.1F });
-			obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
-
-			application->sponza_->set_model(obj);
-			application->meshes_.push_back(application->sponza_);
-
-			application->main_scene_->add_mesh(application->sponza_);
-
+			application->load_scene();
 			return true;
 		}
 	}
 
 	if (code == egkr::event::code::debug03)
 	{
-		if (application->models_loaded_)
+		if (application->scene_loaded_)
 		{
-			LOG_INFO("Unloading models");
+			LOG_INFO("Unloading scene");
 
-			application->sponza_->unload();
-
-			application->meshes_.pop_back();
-			application->models_loaded_ = false;
+			application->main_scene_->unload();
+			application->meshes_.clear();
+			application->scene_loaded_ = false;
 
 			return true;
 		}
@@ -427,4 +329,105 @@ bool sandbox_application::on_event(egkr::event::code code, void* /*sender*/, voi
 		context.get(0, game->hovered_object_id_);
 	}
 	return false;
+}
+
+void sandbox_application::load_scene()
+{
+	egkr::skybox::configuration skybox_config{ .name = "skybox" };
+	skybox_ = egkr::skybox::skybox::create(skybox_config);
+
+	main_scene_->add_skybox(skybox_);
+
+	{
+		egkr::mesh::configuration cube_1{};
+		cube_1.geometry_configurations.push_back(egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material"));
+
+		auto mesh_1 = egkr::mesh::create(cube_1);
+		mesh_1->set_model(egkr::transform::create());
+		meshes_.push_back(mesh_1);
+
+		main_scene_->add_mesh(mesh_1);
+	}
+
+	{
+		egkr::mesh::configuration cube_2{};
+		cube_2.geometry_configurations.push_back(egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material"));
+
+		auto mesh_2 = egkr::mesh::create(cube_2);
+		egkr::transform model = egkr::transform::create({ 10.F, 0.F, 0.F });
+		model.set_parent(&meshes_.back()->model());
+		mesh_2->set_model(model);
+		meshes_.push_back(mesh_2);
+
+		main_scene_->add_mesh(mesh_2);
+	}
+
+	egkr::light::point_light light_0
+	{
+		.position = { -5.5, -5.5, 0.0, 0.F},
+		.colour = {0.0, 1.0, 0.0, 1.0},
+		.constant = 1.0F, // Constant
+		.linear = 0.35F, // Linear
+		.quadratic = 0.44F,  // Quadratic
+	};
+	main_scene_->add_point_light(light_0);
+
+	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
+	box_->get_transform().set_position(light_0.position);
+	main_scene_->add_debug(box_);
+
+	egkr::light::point_light light_1
+	{
+		.position = {5.5, -5.5, 0.0, 0.0},
+		.colour = {1.0, 0.0, 0.0, 1.0},
+		.constant = 1.0F,
+		.linear = 0.35F,
+		.quadratic = 0.44F,
+	};
+	main_scene_->add_point_light(light_1);
+
+	egkr::light::point_light light_2
+	{
+	.position = {5.5, 5.5, 0.0, 0.0},
+	.colour = {0.0, 0.0, 1.0, 1.0 },
+	.constant = 1.0F,
+	.linear = 0.35F,
+	.quadratic = 0.44F,
+	};
+	main_scene_->add_point_light(light_2);
+
+	dir_light_ = std::make_shared<egkr::light::directional_light>(
+		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
+		egkr::float4(0.6F, 0.6F, 0.6F, 1.0F)
+	);
+
+	main_scene_->add_directional_light(dir_light_);
+
+	egkr::debug::configuration grid_configuration
+	{
+		.name = "debug_grid",
+		.orientation = egkr::debug::orientation::xy,
+		.tile_count_dim0 = 100,
+		.tile_count_dim1 = 100,
+		.tile_scale = 1,
+		.use_third_axis = true,
+	};
+	grid_ = egkr::debug::debug_grid::create(grid_configuration);
+
+	main_scene_->add_debug(grid_);
+
+	sponza_ = egkr::mesh::create({ "sponza2" });
+
+	egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
+	obj.set_scale({ 0.1F, 0.1F, 0.1F });
+	obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
+
+	sponza_->set_model(obj);
+	meshes_.push_back(sponza_);
+
+	main_scene_->add_mesh(sponza_);
+
+
+	//TODO temp
+	main_scene_->load();
 }

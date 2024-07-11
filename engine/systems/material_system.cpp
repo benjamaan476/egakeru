@@ -99,7 +99,7 @@ namespace egkr
 			return material_system_->registered_materials_[material_handle];
 		}
 
-		uint32_t material_id = material_system_->registered_materials_.size();
+		uint32_t material_id = (uint32_t)material_system_->registered_materials_.size();
 
 		if (material_id >= material_system_->max_material_count_)
 		{

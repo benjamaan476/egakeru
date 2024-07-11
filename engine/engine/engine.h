@@ -38,5 +38,4 @@ namespace egkr
 		application::unique_ptr application_{};
 		frame_data frame_data_{};
 	};
-
 }

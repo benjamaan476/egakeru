@@ -23,7 +23,7 @@ namespace egkr::renderpass
 
 	void renderpass::set_render_area(uint32_t width, uint32_t height)
 	{
-		if (width != render_area_.z || height != render_area_.w)
+		if (width != (uint32_t)render_area_.z || height != (uint32_t)render_area_.w)
 		{
 			render_area_ = { 0, 0, width, height };
 		}

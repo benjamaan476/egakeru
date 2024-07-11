@@ -59,9 +59,10 @@ namespace egkr
 		{
 			resource_data = read_esf_file(file);
 		} break;
+		case system_font_file_type::not_found:
 		default:
 		{
-			LOG_WARN("Shouldn't have got here");
+			LOG_FATAL("Shouldn't have got here");
 		}
 		}
 
@@ -151,6 +152,4 @@ namespace egkr
 		//TODO
 		return data;
 	}
-
-
 }

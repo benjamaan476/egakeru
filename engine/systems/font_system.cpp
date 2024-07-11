@@ -79,7 +79,7 @@ namespace egkr
 				.binary_size = data->binary_size,
 				.face = face.name,
 				.font_binary = data->font_binary,
-				.offset = stbtt_GetFontOffsetForIndex((unsigned char*)data->font_binary, index)
+				.offset = stbtt_GetFontOffsetForIndex((unsigned char*)data->font_binary, (int32_t)index)
 			};
 
 			int32_t result = stbtt_InitFont(&lookup.info, (unsigned char*)lookup.font_binary, lookup.offset);
@@ -182,7 +182,7 @@ namespace egkr
 		data.atlas->use = texture_map::use::map_diffuse;
 		data.atlas->acquire();
 
-		if (!data.tab_advance)
+		if (data.tab_advance > 0.F)
 		{
 			for (const auto& glyph : data.glyphs)
 			{
@@ -193,7 +193,7 @@ namespace egkr
 				}
 			}
 
-			if (!data.tab_advance)
+			if (data.tab_advance > 0.F)
 			{
 				for (const auto& glyph : data.glyphs)
 				{
@@ -205,9 +205,9 @@ namespace egkr
 				}
 			}
 
-			if (!data.tab_advance)
+			if (data.tab_advance > 0)
 			{
-				data.tab_advance = 4 * data.size;
+				data.tab_advance = 4.F * (float)data.size;
 			}
 		}
 		return true;
@@ -242,7 +242,7 @@ namespace egkr
 		int32_t descent{};
 		int32_t line_gap{};
 		stbtt_GetFontVMetrics(&lookup.info, &ascent, &descent, &line_gap);
-		variant.line_height = (ascent - descent + line_gap) * internal->scale;
+		variant.line_height = (int32_t)((float)(ascent - descent + line_gap) * internal->scale);
 
 		if (!rebuild_system_font_variant_atlas(lookup, variant))
 		{
@@ -258,11 +258,11 @@ namespace egkr
 		system_font_variant_data* internal = (system_font_variant_data*)variant.internal;
 		uint32_t pack_image_size = variant.atlas_size_x * variant.atlas_size_y * sizeof(uint8_t);
 		uint8_t* pixels = (uint8_t*)malloc(pack_image_size);
-		uint32_t codepoint_count = internal->codepoint.size();
+		uint32_t codepoint_count = (uint32_t)internal->codepoint.size();
 		stbtt_packedchar* packed_chars = (stbtt_packedchar*)malloc(sizeof(stbtt_packedchar) * codepoint_count);
 
 		stbtt_pack_context context{};
-		if (!stbtt_PackBegin(&context, pixels, variant.atlas_size_x, variant.atlas_size_y, 0, 1, 0))
+		if (!stbtt_PackBegin(&context, pixels, (int32_t)variant.atlas_size_x, (int32_t)variant.atlas_size_y, 0, 1, nullptr))
 		{
 			LOG_ERROR("stbtt_PackBegin failed");
 			return false;
@@ -327,11 +327,11 @@ namespace egkr
 				variant.kernings.clear();
 			}
 
-			variant.kernings.resize(stbtt_GetKerningTableLength(&lookup.info));
+			variant.kernings.resize((size_t)stbtt_GetKerningTableLength(&lookup.info));
 			if (!variant.kernings.empty())
 			{
 				stbtt_kerningentry* kerning_table = (stbtt_kerningentry*)malloc(sizeof(stbtt_kerningentry) * variant.kernings.size());
-				int32_t entry_count = stbtt_GetKerningTable(&lookup.info, kerning_table, variant.kernings.size());
+				int32_t entry_count = stbtt_GetKerningTable(&lookup.info, kerning_table, (int32_t)variant.kernings.size());
 
 				if (entry_count != (int32_t)variant.kernings.size())
 				{
@@ -339,12 +339,12 @@ namespace egkr
 					return {};
 				}
 
-				for (uint32_t i{}; i < variant.kernings.size(); ++i)
+				for (uint32_t j{0U}; j < variant.kernings.size(); ++j)
 				{
-					auto* k = &variant.kernings[i];
-					k->codepoint_0 = kerning_table[i].glyph1;
-					k->codepoint_1 = kerning_table[i].glyph2;
-					k->amount = kerning_table[i].advance;
+					auto* k = &variant.kernings[j];
+					k->codepoint_0 = kerning_table[j].glyph1;
+					k->codepoint_1 = kerning_table[j].glyph2;
+					k->amount = (int16_t)kerning_table[j].advance;
 				}
 			}
 		}
@@ -373,7 +373,7 @@ namespace egkr
 					continue;
 				}
 
-				uint32_t codepoint_count = internal->codepoint.size();
+				uint32_t codepoint_count = (uint32_t)internal->codepoint.size();
 				bool found{};
 				for (uint32_t j{ 95 }; j < codepoint_count; ++j)
 				{
@@ -398,5 +398,4 @@ namespace egkr
 		}
 		return true;
 	}
-
 }

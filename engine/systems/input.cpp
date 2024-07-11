@@ -73,7 +73,7 @@ namespace egkr
 
 	bool input::is_key_down(key key)
 	{
-		return state->current_keyboard.keys[(int16_t)key];
+		return state->current_keyboard.keys[(size_t)key];
 	}
 
 	bool input::is_key_up(key key)
@@ -83,7 +83,7 @@ namespace egkr
 
 	bool input::was_key_down(key key)
 	{
-		return state->previous_keyboard.keys[(int16_t)key];
+		return state->previous_keyboard.keys[(size_t)key];
 	}
 
 	bool input::was_key_up(key key)
@@ -108,7 +108,7 @@ namespace egkr
 			return;
 		}
 
-		auto& key_state = state->current_keyboard.keys[(int16_t)key];
+		auto& key_state = state->current_keyboard.keys[(size_t)key];
 
 		if (key_state != pressed)
 		{
@@ -167,7 +167,7 @@ namespace egkr
 
 	bool input::is_button_down(mouse_button button)
 	{
-		return state->current_mouse.buttons[(int16_t)button];
+		return state->current_mouse.buttons[(size_t)button];
 	}
 
 	bool input::was_button_up(mouse_button button)
@@ -177,12 +177,12 @@ namespace egkr
 
 	bool input::was_button_down(mouse_button button)
 	{
-		return state->previous_mouse.buttons[(int16_t)button];
+		return state->previous_mouse.buttons[(size_t)button];
 	}
 
 	void input::process_button(mouse_button button, bool pressed)
 	{
-		auto& button_state = state->current_mouse.buttons[(int16_t)button];
+		auto& button_state = state->current_mouse.buttons[(size_t)button];
 
 		if (button_state != pressed)
 		{

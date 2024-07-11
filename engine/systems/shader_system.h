@@ -39,8 +39,8 @@ namespace egkr
 
 		static void set_uniform(std::string_view uniform_name, const void* data);
 		static void set_uniform(uint32_t instance_id, const void* data);
-		static void set_sampler(std::string_view sampler_name, const texture*& texture);
-		static void set_sampler(uint32_t sampler_id, const texture*& texture);
+		static void set_sampler(std::string_view sampler_name, const texture* texture);
+		static void set_sampler(uint32_t sampler_id, const texture* texture);
 
 		static void bind_instance(uint32_t isntance_id);
 
@@ -49,8 +49,8 @@ namespace egkr
 	private:
 		configuration configuration_{};
 
-		std::unordered_map<std::string, uint32_t> shader_id_by_name_{};
-		egkr::vector<shader::shader::shared_ptr> shaders_{};
+		std::unordered_map<std::string, uint32_t> shader_id_by_name_;
+		egkr::vector<shader::shader::shared_ptr> shaders_;
 		uint32_t current_shader_id_{ invalid_32_id };
 	};
 }

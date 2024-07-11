@@ -97,6 +97,4 @@ namespace egkr
 		platform::shared_ptr platform_;
 		uint32_t frame_number_{ invalid_32_id };
 	};
-
-
 }

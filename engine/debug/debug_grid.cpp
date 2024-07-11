@@ -14,10 +14,10 @@ namespace egkr::debug
 		tile_count_dim1_{ configuration.tile_count_dim1 },
 		tile_scale_{ configuration.tile_scale }
 	{
-		auto max0 = tile_count_dim0_ * tile_scale_;
+		auto max0 = (float)tile_count_dim0_ * tile_scale_;
 		auto min0 = -max0;
 
-		auto max1 = tile_count_dim1_ * tile_scale_;
+		auto max1 = (float)tile_count_dim1_ * tile_scale_;
 		auto min1 = -max1;
 
 		switch (orientation_)
@@ -44,19 +44,19 @@ namespace egkr::debug
 			break;
 		}
 
-		uint32_t vertex_count = ((tile_count_dim0_ * 2 + 1) * 2) + ((tile_count_dim1_ * 2 + 1) * 2);
+		uint32_t vertex_count = (uint32_t)(((tile_count_dim0_ * 2 + 1) * 2) + ((tile_count_dim1_ * 2 + 1) * 2));
 		if (configuration.use_third_axis)
 		{
 			vertex_count += 2; // + 2 for the third axis line if used
 		}
 		vertices_.resize(vertex_count);
 
-		int32_t line_lenght0 = tile_count_dim1_ * tile_scale_;
-		int32_t line_length1 = tile_count_dim0_ * tile_scale_;
-		int32_t line_length2 = line_lenght0 > line_length1 ? line_lenght0 : line_length1;
-		uint32_t element_index0{};
-		uint32_t element_index1{};
-		uint32_t element_index2{};
+		const float line_lenght0 = tile_count_dim1_ * tile_scale_;
+		const float line_length1 = tile_count_dim0_ * tile_scale_;
+		const float line_length2 = line_lenght0 > line_length1 ? line_lenght0 : line_length1;
+		int32_t element_index0{};
+		int32_t element_index1{};
+		int32_t element_index2{};
 
 		switch (orientation_)
 		{
@@ -104,7 +104,7 @@ namespace egkr::debug
 
 		const uint32_t start_index = configuration.use_third_axis ? 6 : 4;
 		float4 alt_line_colour = { 1.F, 1.F, 1.F, 0.5F };
-		int32_t j = 1;
+		float j = 1.F;
 		for (uint32_t i{ start_index }; i < vertex_count; i += 8)
 		{
 			vertices_[i + 0].position[element_index0] = j * tile_scale_;
@@ -154,7 +154,7 @@ namespace egkr::debug
 	{
 		geometry::properties properties{};
 		properties.name = "degug_grid";
-		properties.vertex_count = vertices_.size();
+		properties.vertex_count = (uint32_t)vertices_.size();
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 

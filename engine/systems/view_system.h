@@ -14,7 +14,7 @@ namespace egkr
 
 		static view_system* create();
 		view_system();
-		~view_system();
+		~view_system() override;
 
 		bool init() override;
 		bool shutdown() override;

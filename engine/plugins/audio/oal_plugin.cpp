@@ -207,7 +207,7 @@ namespace egkr::audio
                 if (to_be_freed > 0)
                 {
                     alSourceUnqueueBuffers(internal_data->sources[i - 1].id, to_be_freed, &buffers_freed);
-                    clear_buffer(&buffers_freed, to_be_freed);
+                    clear_buffer(&buffers_freed, (uint32_t)to_be_freed);
                     alSourcePlay(internal_data->sources[i - 1].id);
                 }
             }
@@ -235,7 +235,7 @@ namespace egkr::audio
     {
         uint64_t size = file->load_samples(internal_data->configuration.chunk_size, internal_data->configuration.chunk_size);
 
-        if (size == invalid_64_id)
+        if (size == invalid_64u_id)
         {
             LOG_ERROR("Invalid audio file");
             return false;
@@ -249,7 +249,7 @@ namespace egkr::audio
 
         if (streamed_data)
         {
-            alBufferData(buffer, file->format, streamed_data, size * sizeof(ALshort), file->sample_rate);
+            alBufferData(buffer, (ALenum)file->format, streamed_data, (ALsizei)(size * sizeof(ALshort)), (ALsizei)file->sample_rate);
             // check_error();
         }
         else
@@ -319,7 +319,7 @@ namespace egkr::audio
 
         internal_data->buffers.resize(internal_data->configuration.max_buffers);
 
-        internal_data->device = alcOpenDevice(0);
+        internal_data->device = alcOpenDevice(nullptr);
         // check_error();
         if (!internal_data->device)
         {
@@ -341,7 +341,7 @@ namespace egkr::audio
 //            internal_data->sources[i] = source(); 
 //        }
 
-        alGenBuffers(internal_data->buffers.size(), internal_data->buffers.data());
+        alGenBuffers((ALsizei)internal_data->buffers.size(), internal_data->buffers.data());
         check_error();
 
         for (const auto& buffer : internal_data->buffers) { internal_data->free_buffers.push_back(buffer); }
@@ -435,7 +435,7 @@ namespace egkr::audio
         audio_resource_loader_params params
         {
             .type = audio::type::sound_effect,
-          .chunk_size = internal_data->configuration.chunk_size
+            .chunk_size = (uint64_t)internal_data->configuration.chunk_size
         };
         auto resource = resource_system::load(name, resource::type::audio, &params);
 
@@ -459,7 +459,7 @@ namespace egkr::audio
         {
             void* pcm = file->stream_buffer_data();
             check_error();
-            alBufferData(file->plugin_data->buffer, file->format, (int16_t*)pcm, file->total_samples_left, file->sample_rate);
+            alBufferData(file->plugin_data->buffer, (ALenum)file->format, (int16_t*)pcm, (ALsizei)file->total_samples_left, (ALsizei)file->sample_rate);
             check_error();
             return file;
         }
@@ -474,7 +474,7 @@ namespace egkr::audio
         audio_resource_loader_params params
         {
             .type = audio::type::music_stream,
-          .chunk_size = internal_data->configuration.chunk_size
+            .chunk_size = (uint64_t)internal_data->configuration.chunk_size
         };
 
         auto resource = resource_system::load(name, resource::type::audio, &params);
@@ -508,18 +508,18 @@ namespace egkr::audio
         resource_system::unload(file->audio_resource);
     }
 
-    bool oal::play_source(int8_t source_index)
+    bool oal::play_source(uint8_t source_index)
     {
         return internal_data->sources[source_index].play();
     }
 
-    bool oal::play_on_source(audio::file* file, int8_t source_index)
+    bool oal::play_on_source(audio::file* file, uint8_t source_index)
     {
         return internal_data->sources[source_index].play_on_source(file);
     }
 
 
-    void oal::stop_source(int8_t source_index)
+    void oal::stop_source(uint8_t source_index)
     {
         auto& source = internal_data->sources[source_index];
         alSourceStop(source.id);
@@ -530,7 +530,7 @@ namespace egkr::audio
         source.in_use = false;
     }
 
-    void oal::pause_source(int8_t source_index)
+    void oal::pause_source(uint8_t source_index)
     {
         auto& source = internal_data->sources[source_index];
         ALint source_state{};
@@ -538,7 +538,7 @@ namespace egkr::audio
         if (source_state == AL_PLAYING) { alSourcePause(source.id); }
     }
 
-    void oal::resume_source(int8_t source_index)
+    void oal::resume_source(uint8_t source_index)
     {
         auto& source = internal_data->sources[source_index];
         ALint source_state{};

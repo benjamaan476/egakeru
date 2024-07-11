@@ -3,7 +3,7 @@
 
 namespace egkr
 {
-	console::unique_ptr state{};
+	static console::unique_ptr state{};
 
 	console* console::create()
 	{
@@ -65,11 +65,11 @@ namespace egkr
 		ss >> name;
 
 		egkr::vector<std::string> args{};
-		std::string arg{};
+		std::string argument{};
 
-		while(ss >> arg)
+		while(ss >> argument)
 		{
-			args.push_back(arg);
+			args.push_back(argument);
 		}
 
 		write_line(nullptr, log_level::info, command);
@@ -106,5 +106,4 @@ namespace egkr
 		}
 		return !has_error;
 	}
-
 }

@@ -51,7 +51,7 @@ namespace egkr
 			virtual bool end() const = 0;
 			virtual void free() = 0;
 
-			uint32_t get_render_target_count() const { return render_targets_.size(); }
+			uint32_t get_render_target_count() const { return (uint32_t)render_targets_.size(); }
 			[[nodiscard]] auto& get_render_targets() {return render_targets_;}
 			[[nodiscard]] const auto& get_render_target(uint32_t index) const {return render_targets_[index];}
 			[[nodiscard]] auto& get_render_target(uint32_t index) {return render_targets_[index];}

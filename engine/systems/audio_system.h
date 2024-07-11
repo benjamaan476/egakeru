@@ -51,15 +51,15 @@ namespace egkr
 			static bool set_master_volume(float volume);
 			static float get_master_volume();
 
-			static bool set_channel_volume(int8_t channel_id, float volume);
-			static float get_channel_volume(int8_t channel_id);
+			static bool set_channel_volume(uint8_t channel_id, float volume);
+			static float get_channel_volume(uint8_t channel_id);
 
-			static bool play_channel(int8_t channel_id, file* file, bool loop);
-			static bool play_emitter(int8_t channel_id, emitter* emitter);
+			static bool play_channel(uint8_t channel_id, file* file, bool loop);
+			static bool play_emitter(uint8_t channel_id, emitter* emitter);
 
-			void stop(int8_t channel_id);
-			void pause(int8_t channel_id);
-			void resume(int8_t channel_id);
+			void stop(uint8_t channel_id);
+			void pause(uint8_t channel_id);
+			void resume(uint8_t channel_id);
 
 		private:
 			system_configuration configuration_{};

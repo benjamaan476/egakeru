@@ -78,6 +78,7 @@ namespace egkr
 
 			auto value = line_string.substr(split_index + 1);
 			trim(value);
+			value.shrink_to_fit();
 
 			if (variable_name.compare("version") == 0)
 			{

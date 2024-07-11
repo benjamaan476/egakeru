@@ -30,7 +30,7 @@ namespace egkr
 			uint32_t id{};
 			uint32_t width{};
 			uint32_t height{};
-			uint32_t channel_count{};
+			uint8_t channel_count{};
 
 			uint32_t generation{ invalid_32_id };
 			flags flags{};
@@ -48,8 +48,8 @@ namespace egkr
 
 		virtual bool populate(const properties& properties, const uint8_t* data) = 0;
 		virtual bool populate_writeable() = 0;
-		virtual bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) = 0;
-		virtual void read_data(uint64_t offset, uint32_t size, void* out_memory) = 0;
+		virtual bool write_data(uint64_t offset, uint64_t size, const uint8_t* data) = 0;
+		virtual void read_data(uint64_t offset, uint64_t size, void* out_memory) = 0;
 		virtual void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) = 0;
 		virtual bool resize(uint32_t width, uint32_t height) = 0;
 		virtual void free() = 0;
@@ -68,7 +68,7 @@ namespace egkr
 		{
 			properties_.height = height;
 		}
-		void set_channel_count(uint32_t channel_count)
+		void set_channel_count(uint8_t channel_count)
 		{
 			properties_.channel_count = channel_count;
 		}

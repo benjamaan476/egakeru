@@ -45,7 +45,7 @@ namespace egkr::debug
 	{
 		recalculate_lines(frustum);
 
-		geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+		geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 	}
 
 	void debug_frustum::destroy()
@@ -104,6 +104,4 @@ namespace egkr::debug
 
 		std::ranges::for_each(vertices_, [](auto& vertex) { vertex.colour = { 1, 1, 0, 1 }; });
 	}
-
-
 }

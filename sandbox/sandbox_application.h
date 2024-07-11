@@ -26,6 +26,8 @@ private:
 	bool static on_debug_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 	bool static on_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 
+	void load_scene();
+
 private:
 
 	egkr::scene::simple_scene::unique_ptr main_scene_{};
@@ -38,7 +40,7 @@ private:
 	egkr::text::ui_text::shared_ptr more_test_text_{};
 
 	egkr::mesh::shared_ptr sponza_{};
-	bool models_loaded_{};
+	bool scene_loaded_{};
 
 	egkr::debug::debug_box3d::shared_ptr box_{};
 	egkr::debug::debug_grid::shared_ptr grid_{};

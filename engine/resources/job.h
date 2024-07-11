@@ -42,8 +42,6 @@ namespace egkr
 			//information() = default;
 			//information(const information& info) = default;
 
-			~information()
-			{}
 		};
 
 		struct thread
@@ -63,13 +61,10 @@ namespace egkr
 			void* params{};
 		};
 
-		constexpr static int32_t MAX_JOB_RESULTS = 512;
+		constexpr static uint32_t MAX_JOB_RESULTS = 512u;
 
 		class job
 		{
-		public:
-		private:
-
 		};
 	}
 }

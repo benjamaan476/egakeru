@@ -22,7 +22,7 @@ namespace egkr
 		}
 
 		owners.push_back(owner);
-		return owners.size() - 1;
+		return (uint32_t)owners.size() - 1;
 	}
 
 	void identifier::release_id(uint32_t id)

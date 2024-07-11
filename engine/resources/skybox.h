@@ -39,7 +39,7 @@ namespace egkr
 		uint32_t instance_id_{0};
 		texture_map::shared_ptr cubemap_{};
 		geometry::shared_ptr geometry_{};
-		uint64_t render_frame_number_{invalid_64_id};
+		uint64_t render_frame_number_{invalid_64u_id};
 	};
 
 }

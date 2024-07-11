@@ -32,11 +32,6 @@ namespace egkr
 			{
 				::free(vertices);
 			}
-
-			~properties()
-			{
-				//Dynamically allocated so needs to be freed
-			}
 		};
 		using shared_ptr = std::shared_ptr<geometry>;
 		static shared_ptr create(const properties& properties);

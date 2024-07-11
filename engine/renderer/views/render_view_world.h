@@ -6,9 +6,9 @@ namespace egkr
 {
 	struct debug_colour_shader_locations
 	{
-		uint16_t projection{};
-		uint16_t view{};
-		uint16_t model{};
+		uint32_t projection{};
+		uint32_t view{};
+		uint32_t model{};
 	};
 	class render_view_world : public render_view
 	{

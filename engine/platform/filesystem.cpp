@@ -59,7 +59,7 @@ namespace egkr
 		}
 	}
 
-	egkr::vector<uint8_t> filesystem::read_line(file_handle& handle, uint32_t max_size)
+	egkr::vector<uint8_t> filesystem::read_line(file_handle& handle, int32_t max_size)
 	{
 		if (!handle.is_valid)
 		{
@@ -80,8 +80,7 @@ namespace egkr
 		{
 			return { '\0' };
 		}
-		egkr::vector<uint8_t> data(buff, buff + len);
-		return data;
+		return std::vector<uint8_t>(buff, buff + len);
 	}
 
 	uint64_t filesystem::write_line(file_handle& handle, const egkr::vector<uint8_t>& line)
@@ -92,7 +91,7 @@ namespace egkr
 			return {};
 		}
 
-		auto result = fputs((char*)line.data(), handle.handle);
+		auto result = fputs((const char*)line.data(), handle.handle);
 		if (result != EOF)
 		{
 			fputs("\n", handle.handle);
@@ -129,11 +128,11 @@ namespace egkr
 			return {};
 		}
 
-		auto size = std::filesystem::file_size(handle.filepath);
+		auto size = (size_t)std::filesystem::file_size(handle.filepath);
 
 		egkr::vector<uint8_t> data(size);
 		auto count = 0; 
-		auto read = 0;
+		size_t read = 0;
 		while ((read = fread(data.data() + count, 1, size, handle.handle)) > 0)
 		{
 			count += read;

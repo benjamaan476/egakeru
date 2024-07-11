@@ -30,8 +30,8 @@ namespace egkr
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
 		const auto& size = platform->get_framebuffer_size();
-		framebuffer_width_ = size.x;
-		framebuffer_height_ = size.y;
+		framebuffer_width_ = (uint32_t)size.x;
+		framebuffer_height_ = (uint32_t)size.y;
 
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });

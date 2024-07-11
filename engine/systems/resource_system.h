@@ -19,7 +19,7 @@ namespace egkr
 		static resource_system* create(const configuration& properties);
 
 		explicit resource_system(const configuration& properties);
-		~resource_system();
+		~resource_system() override;
 
 		bool init() override;
 		bool shutdown() override;

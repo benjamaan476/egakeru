@@ -111,7 +111,7 @@ namespace egkr::audio
 		return state->master_volume_;
 	}
 
-	bool audio_system::set_channel_volume(int8_t channel_id, float volume)
+	bool audio_system::set_channel_volume(uint8_t channel_id, float volume)
 	{
 		state->channels_[channel_id].volume = volume;
 		float mix = state->master_volume_ * state->channels_[channel_id].volume;
@@ -125,16 +125,16 @@ namespace egkr::audio
 		return true;
 	}
 
-	float audio_system::get_channel_volume(int8_t channel_id)
+	float audio_system::get_channel_volume(uint8_t channel_id)
 	{
 		return state->channels_[channel_id].volume;
 	}
 
-	bool audio_system::play_channel(int8_t channel_id, file* file, bool loop)
+	bool audio_system::play_channel(uint8_t channel_id, file* file, bool loop)
 	{
-		if (channel_id == -1)
+		if (channel_id == invalid_8_id)
 		{
-			for (uint32_t i{}; i < state->channels_.size(); ++i)
+			for (uint8_t i{}; i < state->channels_.size(); ++i)
 			{
 				if (!state->channels_[i].current && !state->channels_[i].emitter)
 				{
@@ -144,7 +144,7 @@ namespace egkr::audio
 			}
 		}
 
-		if (channel_id == -1)
+		if (channel_id == invalid_8_id)
 		{
 			LOG_WARN("Could not find channel to play file on");
 			return false;
@@ -167,11 +167,11 @@ namespace egkr::audio
 		return state->plugin_->play_on_source(file, channel_id);
 	}
 
-	bool audio_system::play_emitter(int8_t channel_id, emitter* emitter)
+	bool audio_system::play_emitter(uint8_t channel_id, emitter* emitter)
 	{
-		if (channel_id == -1)
+		if (channel_id == invalid_8_id)
 		{
-			for (uint32_t i{}; i < state->channels_.size(); ++i)
+			for (uint8_t i{}; i < state->channels_.size(); ++i)
 			{
 				if (!state->channels_[i].current && !state->channels_[i].emitter)
 				{
@@ -181,7 +181,7 @@ namespace egkr::audio
 			}
 		}
 
-		if (channel_id == -1)
+		if (channel_id == invalid_8_id)
 		{
 			LOG_WARN("Could not find channel to play file on");
 			return false;
@@ -193,11 +193,11 @@ namespace egkr::audio
 		return state->plugin_->play_on_source(emitter->audio_file, channel_id);
 	}
 
-	void audio_system::stop(int8_t channel_id)
+	void audio_system::stop(uint8_t channel_id)
 	{
-		if (channel_id < 0)
+		if (channel_id == invalid_8_id)
 		{
-			for (uint32_t i{}; i < channels_.size(); ++i)
+			for (uint8_t i{}; i < channels_.size(); ++i)
 			{
 				plugin_->stop_source(i);
 			}
@@ -208,11 +208,11 @@ namespace egkr::audio
 		}
 	}
 
-	void audio_system::pause(int8_t channel_id)
+	void audio_system::pause(uint8_t channel_id)
 	{
-		if (channel_id < 0)
+		if (channel_id == invalid_8_id)
 		{
-			for (uint32_t i{}; i < channels_.size(); ++i)
+			for (uint8_t i{}; i < channels_.size(); ++i)
 			{
 				plugin_->pause_source(i);
 			}
@@ -224,11 +224,11 @@ namespace egkr::audio
 
 	}
 
-	void audio_system::resume(int8_t channel_id)
+	void audio_system::resume(uint8_t channel_id)
 	{
-		if (channel_id < 0)
+		if (channel_id == invalid_8_id)
 		{
-			for (uint32_t i{}; i < channels_.size(); ++i)
+			for (uint8_t i{}; i < channels_.size(); ++i)
 			{
 				plugin_->resume_source(i);
 			}
@@ -237,6 +237,5 @@ namespace egkr::audio
 		{
 			plugin_->resume_source(channel_id);
 		}
-
 	}
 }

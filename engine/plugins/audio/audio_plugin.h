@@ -19,6 +19,7 @@ namespace egkr
 				uint32_t audio_channel_count{};
 			};
 
+			virtual ~plugin() = default;
 			virtual bool init(const configuration& configuration) = 0;
 			virtual bool shutdown() = 0;
 
@@ -46,12 +47,12 @@ namespace egkr
 			virtual audio::file* load_stream(const std::string& name) = 0;
 
 			virtual void unload_audio(audio::file* file) = 0;
-			virtual bool play_source(int8_t source_index) = 0;
-			virtual bool play_on_source(audio::file* file, int8_t source_index) = 0;
+			virtual bool play_source(uint8_t source_index) = 0;
+			virtual bool play_on_source(audio::file* file, uint8_t source_index) = 0;
 
-			virtual void stop_source(int8_t source_index) = 0;
-			virtual void pause_source(int8_t source_index) = 0;
-			virtual void resume_source(int8_t source_index) = 0;
+			virtual void stop_source(uint8_t source_index) = 0;
+			virtual void pause_source(uint8_t source_index) = 0;
+			virtual void resume_source(uint8_t source_index) = 0;
 		};
 	}
 }

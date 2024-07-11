@@ -1,6 +1,6 @@
 #include "platform_windows.h"
 
-#define VK_USE_PLATFORM_WIN32_KHR
+//#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -111,8 +111,8 @@ namespace egkr
 	void platform_windows::on_resize(GLFWwindow* /*window*/, int width, int height)
 	{
 		event::context context{};
-		context.set(0, width);
-		context.set(1, height);
+		context.set(0, (uint32_t)width);
+		context.set(1, (uint32_t)height);
 		event::fire_event(event::code::resize, nullptr, context);
 	}
 
@@ -131,12 +131,12 @@ namespace egkr
 		return { surface };
 	}
 
-	int2 platform_windows::get_framebuffer_size()
+	uint2 platform_windows::get_framebuffer_size()
 	{
 		int32_t width_{};
 		int32_t height_{};
 		glfwGetFramebufferSize(window_, &width_, &height_);
 
-		return { width_, height_ };
+		return { (uint32_t)width_, (uint32_t)height_ };
 	}
 }

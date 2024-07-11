@@ -92,7 +92,7 @@ namespace egkr
 			auto time = engine_->platform_->get_time();
 			std::chrono::duration<double, std::ratio<1, 1>> delta = time - engine_->last_time_;
 			engine_->frame_data_.delta_time = (float)delta.count();
-			engine_->frame_data_.total_time = time.count();
+			engine_->frame_data_.total_time = (double)time.count();
 			engine_->platform_->pump();
 
 			if (!engine_->is_suspended_)
@@ -164,9 +164,9 @@ namespace egkr
 	{
 		if (code == event::code::resize)
 		{
-			int32_t width{};
+			uint32_t width{};
 			context.get(0, width);
-			int32_t height{};
+			uint32_t height{};
 			context.get(1, height);
 
 			if (engine_->application_->resize(width, height))

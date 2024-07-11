@@ -26,7 +26,7 @@ namespace egkr::scene
 	{
 		if (state_ == state::loaded)
 		{
-			unload();
+			actual_unload();
 		}
 
 		meshes_.clear();
@@ -53,35 +53,16 @@ namespace egkr::scene
 
 	void simple_scene::unload()
 	{
-		remove_skybox();
-
-		for (const auto& mesh : meshes_)
-		{
-			remove_mesh(mesh);
-		}
-		meshes_.clear();
-
-		for (const auto& box : debug_boxes_)
-		{
-			remove_debug(box);
-		}
-		debug_boxes_.clear();
-
-		for (const auto& grid : debug_grids_)
-		{
-			remove_debug(grid);
-		}
-		debug_grids_.clear();
-
-		for (const auto& frustum : debug_frusta_)
-		{
-			remove_debug(frustum);
-		}
-		debug_frusta_.clear();
+		state_ = state::unloading;
 	}
 
 	void simple_scene::update(const frame_data& /*delta_time*/, const camera::shared_ptr& camera, float aspect)
 	{
+		if (state_ == state::unloading)
+		{
+			actual_unload();
+		}
+
 		if (state_ >= state::loaded)
 		{
 			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), aspect, camera->get_fov(), camera->get_near_clip(), camera->get_far_clip());
@@ -149,8 +130,12 @@ namespace egkr::scene
 
 			for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
 			{
-				frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+				if (mesh)
+				{
+					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+				}
 			}
+
 		}
 	}
 
@@ -190,7 +175,9 @@ namespace egkr::scene
 
 	void simple_scene::remove_point_light()
 	{
-		//light_system::remove_point_light(light);
+		LOG_WARN("Cannot currently remove a point light");
+				//light_system::remove_point_light(light);
+
 	}
 
 	void simple_scene::add_mesh(const mesh::shared_ptr& mesh)
@@ -225,7 +212,7 @@ namespace egkr::scene
 
 		if (state_ >= state::loaded)
 		{
-			skybox_->load();
+			skybox->load();
 		}
 
 		skybox_ = skybox;
@@ -233,7 +220,7 @@ namespace egkr::scene
 
 	void simple_scene::remove_skybox()
 	{
-		if (state_ >= state::loaded)
+		if (state_ >= state::loaded || state_ == state::unloading)
 		{
 			if (skybox_)
 			{
@@ -319,4 +306,34 @@ namespace egkr::scene
 		}
 	}
 
+	void simple_scene::actual_unload()
+	{
+		remove_skybox();
+
+		for (const auto& mesh : meshes_)
+		{
+			remove_mesh(mesh);
+		}
+		meshes_.clear();
+
+		for (const auto& box : debug_boxes_)
+		{
+			remove_debug(box);
+		}
+		debug_boxes_.clear();
+
+		for (const auto& grid : debug_grids_)
+		{
+			remove_debug(grid);
+		}
+		debug_grids_.clear();
+
+		for (const auto& frustum : debug_frusta_)
+		{
+			remove_debug(frustum);
+		}
+		debug_frusta_.clear();
+
+		state_ = state::unloaded;
+	}
 }

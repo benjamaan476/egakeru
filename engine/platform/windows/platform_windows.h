@@ -26,7 +26,7 @@ namespace egkr
 		egkr::vector<const char*> get_required_extensions() const final;	
 		vk::SurfaceKHR create_surface(vk::Instance instance) final;
 
-		int2 get_framebuffer_size() final;
+		uint2 get_framebuffer_size() final;
 
 	private:
 

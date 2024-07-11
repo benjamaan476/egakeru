@@ -18,19 +18,19 @@ namespace egkr
 		uint64_t pcm_size{};
 	};
 
-	uint64_t audio::file::load_samples(uint32_t chunk_size, int32_t /*count*/)
+	uint64_t audio::file::load_samples(uint32_t chunk_size, uint32_t /*count*/)
 	{
 		if (internal_data->vorbis)
 		{
-			int64_t samples = stb_vorbis_get_samples_short_interleaved(internal_data->vorbis, channels, internal_data->pcm, chunk_size);
-			return samples * channels;
+			int64_t samples = stb_vorbis_get_samples_short_interleaved(internal_data->vorbis, channels, internal_data->pcm, (int32_t)chunk_size);
+			return (uint64_t)(samples * channels);
 		}
 		//else if (internal_data->mp3_info.buffer)
 		//{
 			//return min(total_samples_left, chunk_size);
 		//}
 
-		return invalid_64_id;
+		return invalid_64u_id;
 	}
 
 	void* audio::file::stream_buffer_data()
@@ -56,7 +56,7 @@ namespace egkr
 		if (internal_data->vorbis)
 		{
 			stb_vorbis_seek_start(internal_data->vorbis);
-			total_samples_left = stb_vorbis_stream_length_in_samples(internal_data->vorbis) * channels;
+			total_samples_left = stb_vorbis_stream_length_in_samples(internal_data->vorbis) * (uint32_t)channels;
 		}
 		//else if (internal_data->mp3_info.buffer)
 		//{
@@ -110,25 +110,25 @@ namespace egkr
 
 			if (resource_data->type == audio::type::music_stream)
 			{
-				uint64_t buffer_lenght = parameters->chunk_size * sizeof(int16_t);
+				const uint64_t buffer_lenght = parameters->chunk_size * sizeof(int16_t);
 				resource_data->internal_data->pcm = (int16_t*)malloc(buffer_lenght);
 				resource_data->internal_data->pcm_size = buffer_lenght;
 			}
 			else
 			{
-				uint64_t lenght_samples = stb_vorbis_stream_length_in_samples(resource_data->internal_data->vorbis) * info.channels;
-				uint64_t buffer_lenght = lenght_samples * sizeof(int16_t);
+				uint64_t length_samples = stb_vorbis_stream_length_in_samples(resource_data->internal_data->vorbis) * (uint32_t)info.channels;
+				const uint64_t buffer_lenght = length_samples * sizeof(int16_t);
 
 				resource_data->internal_data->pcm = (int16_t*)malloc(buffer_lenght);
 				resource_data->internal_data->pcm_size = buffer_lenght;
-				int32_t read_samples = stb_vorbis_get_samples_short_interleaved(resource_data->internal_data->vorbis, info.channels, resource_data->internal_data->pcm, lenght_samples);
-				if ((uint64_t)read_samples != lenght_samples)
+				const int32_t read_samples = stb_vorbis_get_samples_short_interleaved(resource_data->internal_data->vorbis, info.channels, resource_data->internal_data->pcm, (int32_t)length_samples);
+				if ((uint64_t)read_samples != length_samples)
 				{
 					LOG_WARN("Read/length mismatch while reading ogg file.");
 				}
 
-				lenght_samples += (lenght_samples % 4);
-				resource_data->total_samples_left = lenght_samples;
+				length_samples += (length_samples % 4);
+				resource_data->total_samples_left = length_samples;
 			}
 		}
 		else if (name.contains(".mp3"))
@@ -184,5 +184,4 @@ namespace egkr
 		}
 			return true;
 	}
-
 }

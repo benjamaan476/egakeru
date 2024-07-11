@@ -36,7 +36,7 @@ namespace egkr
 		}
 		running_ = true;
 
-		for (auto i{ 0 }; i < thread_count_; ++i)
+		for (uint8_t i{ 0U }; i < thread_count_; ++i)
 		{
 			auto& thread = threads_[i];
 			thread.index = i;
@@ -66,7 +66,7 @@ namespace egkr
 		process_queue(normal_priority_queue_.get(), &normal_priority_queue_mutex_);
 		process_queue(low_priority_queue_.get(), &low_priority_queue_mutex_);
 
-		for (int i{}; i < job::MAX_JOB_RESULTS; ++i)
+		for (uint32_t i{}; i < job::MAX_JOB_RESULTS; ++i)
 		{
 			job::result entry;
 			{
@@ -285,12 +285,12 @@ namespace egkr
 
 		{
 			std::lock_guard lock{ state_->results_mutex_ };
-			for (int i{}; i < job::MAX_JOB_RESULTS; ++i)
+			for (uint32_t i{0U}; i < job::MAX_JOB_RESULTS; ++i)
 			{
 				if (state_->results_[i].index == invalid_16_id)
 				{
 					state_->results_[i] = result;
-					state_->results_[i].index = i;
+					state_->results_[i].index = (uint16_t)i;
 					break;
 				}
 			}

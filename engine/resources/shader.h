@@ -238,7 +238,7 @@ namespace egkr
 		uint8_t instance_texture_count_{};
 		scope bound_scope_{};
 		uint32_t bound_instance_id_{};
-		uint32_t bound_ubo_offset_{};
+		uint64_t bound_ubo_offset_{};
 
 		std::unordered_map<std::string, uint32_t> uniform_id_by_name_{};
 		egkr::vector<uniform> uniforms_{};
@@ -250,10 +250,11 @@ namespace egkr
 		uint16_t attribute_stride_{};
 
 		primitive_topology_type topology_types_{};
-		int16_t bound_pipeline_index_{};
+		uint16_t bound_pipeline_index_{};
 
 		flags flags_{};
 	};
 	ENUM_CLASS_OPERATORS(shader::primitive_topology_type)
 	ENUM_CLASS_OPERATORS(shader::flags)
 }
+

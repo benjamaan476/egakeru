@@ -35,7 +35,7 @@ namespace egkr
 		auto* wrapped_texture = texture::texture::create(properties, nullptr);
 		if (register_texture)
 		{
-			id = texture_system_->registered_textures_.size();
+			id = (uint32_t)texture_system_->registered_textures_.size();
 			texture_system_->registered_textures_.push_back(wrapped_texture);
 		}
 
@@ -126,12 +126,12 @@ namespace egkr
 
 		egkr::vector<uint8_t> normal_data(default_normal_properties.width * default_normal_properties.height * default_normal_properties.channel_count);
 
-		for (auto row = 0; row < 16; ++row)
+		for (uint8_t row{ 0U }; row < 16; ++row)
 		{
-			for (auto col = 0; col < 16; ++col)
+			for (uint8_t col{ 0U }; col < 16; ++col)
 			{
-				auto index = (row * 16) + col;
-				auto index_bpp = index * default_normal_properties.channel_count;
+				uint32_t index = (row * 16) + col;
+				uint32_t index_bpp = index * default_normal_properties.channel_count;
 				// Set blue, z-axis by default and alpha.
 				normal_data[index_bpp + 0] = 128;
 				normal_data[index_bpp + 1] = 128;
@@ -228,7 +228,7 @@ namespace egkr
 			return texture_system_->registered_textures_[texture_handle];
 		}
 
-		uint32_t texture_id = texture_system_->registered_textures_.size();
+		uint32_t texture_id = (uint32_t)texture_system_->registered_textures_.size();
 
 		if (texture_id >= texture_system_->max_texture_count_)
 		{
@@ -278,7 +278,7 @@ namespace egkr
 			return texture_system_->registered_textures_[texture_handle];
 		}
 
-		uint32_t texture_id = texture_system_->registered_textures_.size();
+		uint32_t texture_id = (uint32_t)texture_system_->registered_textures_.size();
 
 		if (texture_id >= texture_system_->max_texture_count_)
 		{
@@ -397,8 +397,8 @@ namespace egkr
 		uint8_t* pixels{};
 		uint32_t width{};
 		uint32_t height{};
-		uint32_t channel_count{};
-		for (auto i{ 0 }; i < 6; ++i)
+		uint8_t channel_count{};
+		for (auto i{ 0U }; i < 6; ++i)
 		{
 			auto image = resource_system::load(texture_names[i], resource::type::image, &params);
 

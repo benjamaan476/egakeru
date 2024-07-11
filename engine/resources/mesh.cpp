@@ -16,7 +16,7 @@ namespace egkr
 		resource::resource::shared_ptr mesh_resource{};
 	};
 
-	void load_job_success(void* params)
+	static void load_job_success(void* params)
 	{
 		auto* mesh_params = (mesh_load_parameters*)params;
 
@@ -91,7 +91,7 @@ namespace egkr
 		resource_system::unload(mesh_params->mesh_resource);
 	}
 
-	void load_job_fail(void* params)
+	static void load_job_fail(void* params)
 	{
 		auto* mesh_params = (mesh_load_parameters*)params;
 		LOG_ERROR("Failed to load mesh '{}'", mesh_params->resource_name);
@@ -99,7 +99,7 @@ namespace egkr
 		resource_system::unload(mesh_params->mesh_resource);
 	}
 
-	bool load_job_start(void* params, void* result_data)
+	static bool load_job_start(void* params, void* result_data)
 	{
 		auto* load_params = (mesh_load_parameters*)params;
 		auto mesh = resource_system::load(load_params->resource_name, resource::type::mesh, nullptr);

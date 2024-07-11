@@ -75,7 +75,7 @@ namespace egkr
 
 		if (state->is_dirty_)
 		{
-			const int32_t line_count = state->lines_.size();
+			const int32_t line_count = (int32_t)state->lines_.size();
 			auto max_lines = std::min(state->line_display_count_, std::max(line_count, state->line_display_count_));
 			auto min_line = std::max(line_count - max_lines - state->line_offset_, 0);
 			auto max_line = min_line + max_lines - 1;
@@ -88,7 +88,7 @@ namespace egkr
 				if (i < line_count)
 				{
 					//TODO colour codes
-					const auto& line = state->lines_[i];
+					const auto& line = state->lines_[(size_t)i];
 					for (const char ch : line)
 					{
 						buffer.push_back(ch);
@@ -240,7 +240,7 @@ namespace egkr
 		}
 
 		state->is_dirty_ = true;
-		const int32_t line_count = state->lines_.size();
+		const int32_t line_count = (int32_t)state->lines_.size();
 
 		if (line_count <= state->line_display_count_)
 		{
@@ -260,7 +260,7 @@ namespace egkr
 			return;
 		}
 		state->is_dirty_ = true;
-		const int32_t line_count = state->lines_.size();
+		const int32_t line_count = (int32_t)state->lines_.size();
 
 		if (line_count <= state->line_display_count_)
 		{
@@ -281,7 +281,7 @@ namespace egkr
 		}
 
 		state->is_dirty_ = true;
-		const int32_t line_count = state->lines_.size();
+		const int32_t line_count = (int32_t)state->lines_.size();
 
 		if (line_count <= state->line_display_count_)
 		{
@@ -301,7 +301,7 @@ namespace egkr
 		}
 
 		state->is_dirty_ = true;
-		const int32_t line_count = state->lines_.size();
+		const int32_t line_count = (int32_t)state->lines_.size();
 
 		if (line_count <= state->line_display_count_)
 		{
@@ -350,5 +350,4 @@ namespace egkr
 	{
 		state->is_visible_ = !state->is_visible_;
 	}
-
 }

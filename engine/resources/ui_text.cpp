@@ -25,7 +25,7 @@ namespace egkr
 
 			constexpr static const uint64_t quad_size = sizeof(vertex_2d) * 4;
 
-			uint32_t text_length = text.size();
+			uint32_t text_length = (uint32_t)text.size();
 			if (text_length < 1)
 			{
 				text_length = 1;
@@ -120,7 +120,7 @@ namespace egkr
 
 		void ui_text::regenerate_geometry()
 		{
-			uint32_t char_length = text_.size();
+			uint32_t char_length = (uint32_t)text_.size();
 			char_length = std::max(char_length, 1u);
 
 			constexpr static const uint64_t verts_per_quad{ 4 };
@@ -151,7 +151,7 @@ namespace egkr
 				if (codepoint == '\n')
 				{
 					x = 0;
-					y += data_->line_height;
+					y += (float)data_->line_height;
 					++uc;
 					continue;
 				}
@@ -206,8 +206,8 @@ namespace egkr
 					float maxx = minx + glyph->width;
 					float maxy = miny + glyph->height;
 
-					float tminx = (float)glyph->x / data_->atlas_size_x;
-					float tminy = (float)glyph->y / data_->atlas_size_y;
+					float tminx = (float)glyph->x / (float)data_->atlas_size_x;
+					float tminy = (float)glyph->y / (float)data_->atlas_size_y;
 					float tmaxx = (float)(glyph->x + glyph->width) / data_->atlas_size_x;
 					float tmaxy = (float)(glyph->y + glyph->height) / data_->atlas_size_y;
 
@@ -293,11 +293,11 @@ namespace egkr
 
 		void ui_text::draw() const
 		{
-			constexpr static const uint64_t quad_vertex_count = 4;
-			vertex_buffer_->draw(0, quad_vertex_count * text_.size(), true);
+			constexpr static const uint32_t quad_vertex_count = 4;
+			vertex_buffer_->draw(0, quad_vertex_count * (uint32_t)text_.size(), true);
 
 			constexpr static const uint8_t quad_index_count = 6;
-			index_buffer_->draw(0, quad_index_count * text_.size(), false);
+			index_buffer_->draw(0, quad_index_count * (uint32_t)text_.size(), false);
 		}
 	}
 }

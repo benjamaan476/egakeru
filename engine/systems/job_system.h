@@ -58,5 +58,4 @@ namespace egkr
 		std::array<job::result, job::MAX_JOB_RESULTS> results_{};
 		std::mutex results_mutex_{};
 	};
-
 }

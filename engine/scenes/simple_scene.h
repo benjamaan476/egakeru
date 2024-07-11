@@ -20,6 +20,7 @@ namespace egkr
 		enum class state
 		{
 			uninitialised,
+			unloading,
 			unloaded,
 			initialised,
 			loading,
@@ -73,6 +74,10 @@ namespace egkr
 			void remove_debug(const egkr::debug::debug_grid::shared_ptr& debug_grid);
 			void add_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
 			void remove_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
+
+			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
+		private:
+			void actual_unload();
 
 		private:
 			//configuration configuration_{};

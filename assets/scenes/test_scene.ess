@@ -1,0 +1,33 @@
+#Simple scene
+
+!version=1
+[Scene]
+name=test_scene
+description=A simple test scene
+[/Scene]
+
+[Skybox]
+name=skybox
+resource_name=skybox
+[/Skybox]
+
+[DirectionalLight]
+name=sun
+colour=0.4 0.4 0.4 1.0
+direction=0.6 0.6 0.6 1.0
+[/DirectionalLight]
+
+[PointLight]
+name=light01
+colour=0.0 1.0 0.0 1.0
+position=-5.5 0.0 5.5 1.0
+constant=1.0
+linear=0.35
+quadratic=0.44
+[/PointLight]
+
+[Mesh]
+name=sponza
+resource_name=sponza
+transform=
+[/Mesh]

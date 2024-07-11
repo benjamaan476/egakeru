@@ -24,11 +24,11 @@ namespace egkr
 			uint32_t format{};
 			int32_t channels{};
 			uint32_t sample_rate{};
-			uint32_t total_samples_left{};
+			uint64_t total_samples_left{};
 			plugin_data* plugin_data{};
 			audio_file_internal* internal_data{};
 			
-			uint64_t load_samples(uint32_t chunk_size, int32_t count);
+			uint64_t load_samples(uint32_t chunk_size, uint32_t count);
 			void* stream_buffer_data();
 			void rewind();
 		};

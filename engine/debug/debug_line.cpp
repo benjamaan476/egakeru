@@ -30,7 +30,7 @@ namespace egkr::debug
 
 		recalculate_points();
 
-		geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+		geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 
 	}
 

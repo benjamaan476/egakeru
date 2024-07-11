@@ -16,12 +16,12 @@ namespace egkr
 	bool render_view_skybox::on_create()
 	{
 		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource::type::shader, nullptr);
-		shader_system::create_shader(*(shader::properties*)skybox_shader_resource->data, renderpasses_[0].get());
+		shader_ = shader_system::create_shader(*(shader::properties*)skybox_shader_resource->data, renderpasses_[0].get());
 		resource_system::unload(skybox_shader_resource);
 
-		shader_ = shader_system::get_shader("Shader.Builtin.Skybox");
+//		shader_ = shader_system::get_shader("Shader.Builtin.Skybox");
 
-		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
+		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / (float)height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 		projection_location_ = shader_->get_uniform_index("projection");
 		view_location_ = shader_->get_uniform_index("view");
@@ -43,7 +43,7 @@ namespace egkr
 		{
 			width_ = width;
 			height_ = height;
-			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
+			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / (float)height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 			for (auto& pass : renderpasses_)
 			{
@@ -61,8 +61,11 @@ namespace egkr
 		packet.projection_matrix = projection_;
 		packet.view_matrix = camera_->get_view();
 		packet.view_position = camera_->get_position();
-		packet.render_data = { { skybox_data->skybox->get_geometry() } };
-		packet.extended_data = new skybox_packet_data(*skybox_data);
+		if (auto skybox = skybox_data->skybox)
+		{
+			packet.render_data = { { skybox_data->skybox->get_geometry() } };
+			packet.extended_data = new skybox_packet_data(*skybox_data);
+		}
 		return packet;
 	}
 

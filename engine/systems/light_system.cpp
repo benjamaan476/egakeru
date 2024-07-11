@@ -59,7 +59,7 @@ namespace egkr
 
 	light_system::light_reference light_system::add_point_light(const light::point_light& light)
 	{
-		int32_t reference = light_system_->point_lights_.size();
+		uint32_t reference = (uint32_t)light_system_->point_lights_.size();
 		if (reference + 1 == light_system_->max_point_light_count_)
 		{
 			LOG_ERROR("Max point light count exceeded. Light not added");

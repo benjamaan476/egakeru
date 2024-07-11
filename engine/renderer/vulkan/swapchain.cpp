@@ -70,7 +70,7 @@ namespace egkr
 		if (result == vk::Result::eErrorOutOfDateKHR)
 		{
 			recreate();
-			return -1;
+			return invalid_32_id;
 		}
 		else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
 		{
@@ -114,14 +114,14 @@ namespace egkr
 		auto present_mode = choose_swapchain_present_mode(swapchain_support.present_modes);
 		extent_ = choose_swapchain_extent(swapchain_support.capabilities);
 
-		image_count_ = swapchain_support.capabilities.minImageCount + 1;
+		image_count_ = (uint8_t)swapchain_support.capabilities.minImageCount + 1;
 		max_frames_in_flight_ = image_count_ - 1;
 		render_targets_.resize(image_count_);
 		depth_attachments_.resize(image_count_);
 
 		if (swapchain_support.capabilities.maxImageCount > 0 && image_count_ > swapchain_support.capabilities.maxImageCount)
 		{
-			image_count_ = swapchain_support.capabilities.maxImageCount;
+			image_count_ = (uint8_t)swapchain_support.capabilities.maxImageCount;
 		}
 
 		vk::SwapchainCreateInfoKHR create_info{};
@@ -232,7 +232,7 @@ namespace egkr
 	{
 		std::vector<vk::Image> swapchain_images;
 		auto images = context_->device.logical_device.getSwapchainImagesKHR(swapchain);
-		image_count_ = images.size();
+		image_count_ = (uint8_t)images.size();
 		for (const auto& image : images)
 		{
 			swapchain_images.emplace_back(image);
@@ -322,5 +322,4 @@ namespace egkr
 		}
 		return swapchain_images;
 	}
-
 }

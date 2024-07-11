@@ -33,7 +33,7 @@ namespace egkr::debug
 	{
 		geometry::properties properties{};
 		properties.name = "debug_box";
-		properties.vertex_count = vertices_.size();
+		properties.vertex_count = (uint32_t)vertices_.size();
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 
@@ -85,7 +85,7 @@ namespace egkr::debug
 		if (geometry_->get_generation() != invalid_32_id && !vertices_.empty())
 		{
 			recalculate_colour();
-			geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+			geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 			geometry_->increment_generation();
 		}
 
@@ -101,7 +101,7 @@ namespace egkr::debug
 		{
 			extents_ = extent;
 			recalculate_extents();
-			geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+			geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 			geometry_->increment_generation();
 		}
 

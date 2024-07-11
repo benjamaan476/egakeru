@@ -43,7 +43,7 @@ namespace egkr
 
 		vertex_buffer_->load_range(0, vertex_buffer_size, properties.vertices);
 
-		index_count_ = properties.indices.size();
+		index_count_ = (uint32_t)properties.indices.size();
 		if (index_count_)
 		{
 			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
@@ -56,6 +56,11 @@ namespace egkr
 
 	void vulkan_geometry::draw()
 	{
+		if (!vertex_buffer_)
+		{
+			LOG_WARN("Tried to render geometry without valid vertex buffer");
+			return;
+		}
 		bool includes_index_data = index_count_ > 0;
 
 		vertex_buffer_->draw(0, vertex_count_, includes_index_data);
