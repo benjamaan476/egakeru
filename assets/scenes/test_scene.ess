@@ -13,8 +13,8 @@ resource_name=skybox
 
 [DirectionalLight]
 name=sun
-colour=0.4 0.4 0.4 1.0
-direction=0.6 0.6 0.6 1.0
+colour=0.6 0.6 0.6 1.0
+direction=-0.57735, -0.57735, -0.57735, 1.0
 [/DirectionalLight]
 
 [PointLight]
@@ -26,8 +26,17 @@ linear=0.35
 quadratic=0.44
 [/PointLight]
 
+[PointLight]
+name=light02
+colour=1.0 0.0 0.0 1.0
+position=-5.5 5.5 0.0 1.0
+constant=1.0
+linear=0.35
+quadratic=0.44
+[/PointLight]
+
 [Mesh]
 name=sponza
-resource_name=sponza
-transform=
+resource_name=sponza2
+transform=0.0 0.0 -5.0 90.0 0.0 0.0 0.1 0.1 0.1
 [/Mesh]

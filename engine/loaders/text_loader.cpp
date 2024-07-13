@@ -19,7 +19,6 @@ namespace egkr
 		char filename[128];
 		sprintf_s(filename, format_string.data(), base_path.data(), name.data());
 
-
 		auto handle = filesystem::open(filename, file_mode::read, false);
 		if (!handle.is_valid)
 		{

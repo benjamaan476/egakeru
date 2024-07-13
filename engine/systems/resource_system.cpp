@@ -8,6 +8,7 @@
 #include "loaders/bitmap_font_loader.h"
 #include "loaders/system_font_loader.h"
 #include "loaders/mesh_loader.h"
+#include "loaders/scene_loader.h"
 #include "plugins/audio/audio_loader.h"
 
 namespace egkr
@@ -86,6 +87,10 @@ namespace egkr
 		{
 			loader_properties audio_loader{ .path = base_path + "sounds", .custom_type = {} };
 			register_loader(audio_loader::create(audio_loader));
+		}
+		{
+			loader_properties scene_loader{ .path = base_path + "scenes", .custom_type = {} };
+			register_loader(scene_loader::create(scene_loader));
 		}
 	}
 

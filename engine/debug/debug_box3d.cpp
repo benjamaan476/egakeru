@@ -40,6 +40,8 @@ namespace egkr::debug
 		geometry_ = geometry::geometry::create(properties);
 
 		geometry_->increment_generation();
+
+		set_colour(colour_);
 		return true;
 	}
 
@@ -82,16 +84,19 @@ namespace egkr::debug
 		}
 		colour_ = col;
 
-		if (geometry_->get_generation() != invalid_32_id && !vertices_.empty())
+		if (geometry_)
 		{
-			recalculate_colour();
-			geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
-			geometry_->increment_generation();
-		}
+			if (geometry_->get_generation() != invalid_32_id && !vertices_.empty())
+			{
+				recalculate_colour();
+				geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
+				geometry_->increment_generation();
+			}
 
-		if (geometry_->get_generation() == invalid_32_id)
-		{
-			geometry_->set_generation(0);
+			if (geometry_->get_generation() == invalid_32_id)
+			{
+				geometry_->set_generation(0);
+			}
 		}
 	}
 

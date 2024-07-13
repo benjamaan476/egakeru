@@ -42,11 +42,11 @@ namespace egkr::scene
 			skybox_->load();
 		}
 
-		std::ranges::for_each(meshes_, [](auto& mesh) { mesh->load(); });
+		std::ranges::for_each(meshes_ | std::views::values, [](auto& mesh) { mesh->load(); });
 
-		std::ranges::for_each(debug_boxes_, [](auto& box) { box->load(); });
-		std::ranges::for_each(debug_grids_, [](auto& grid) { grid->load(); });
-		std::ranges::for_each(debug_frusta_, [](auto& frustum) { frustum->load(); });
+		std::ranges::for_each(debug_boxes_ | std::views::values, [](auto& box) { box->load(); });
+		std::ranges::for_each(debug_grids_ | std::views::values, [](auto& grid) { grid->load(); });
+		std::ranges::for_each(debug_frusta_ | std::views::values, [](auto& frustum) { frustum->load(); });
 
 		state_ = state::loaded;
 	}
@@ -72,7 +72,7 @@ namespace egkr::scene
 			//}
 
 			frame_geometry_.reset();
-			for (auto& mesh : meshes_)
+			for (auto& mesh : meshes_ | std::views::values)
 			{
 				if (mesh->get_generation() == invalid_32_id)
 				{
@@ -95,7 +95,7 @@ namespace egkr::scene
 				}
 			}
 
-			for (auto& mesh : meshes_)
+			for (auto& mesh : meshes_ | std::views::values)
 			{
 				if (mesh->get_generation() == invalid_32_id)
 				{
@@ -113,22 +113,22 @@ namespace egkr::scene
 
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& mesh : meshes_ | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
+			for (const auto& mesh : meshes_ | std::views::values | std::views::transform([](const auto& mesh) { return mesh->get_debug_data(); }))
 			{
 				if (mesh)
 				{
@@ -149,12 +149,13 @@ namespace egkr::scene
 
 	}
 
-	void simple_scene::add_directional_light(std::shared_ptr<light::directional_light>& light)
+	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
 	{
 		if (directional_light_)
 		{
 			LOG_WARN("Directional light is already set, replacing");
 		}
+		directional_light_name_ = name;
 		light_system::add_directional_light(light);
 
 		directional_light_ = light;
@@ -164,46 +165,50 @@ namespace egkr::scene
 	{
 		light_system::remove_directional_light();
 		directional_light_.reset();
+		directional_light_name_ = "";
 	}
 
-	void simple_scene::add_point_light(light::point_light& light)
+	void simple_scene::add_point_light(const std::string& name, light::point_light& light)
 	{
 		light_system::add_point_light(light);
 
-		point_lights_.push_back(light);
+		point_lights_.emplace(name, light);
 	}
 
-	void simple_scene::remove_point_light()
+	void simple_scene::remove_point_light(const std::string& name)
 	{
-		LOG_WARN("Cannot currently remove a point light");
+		//LOG_WARN("Cannot currently remove a point light");
 				//light_system::remove_point_light(light);
+		if (point_lights_.contains(name))
+		{
+			point_lights_.erase(name);
+			return;
+		}
 
+		LOG_WARN("Point light, {}, not added to scene. Cannot remove", name);
 	}
 
-	void simple_scene::add_mesh(const mesh::shared_ptr& mesh)
+	void simple_scene::add_mesh(const std::string& name, const mesh::shared_ptr& mesh)
 	{
 		if (state_ >= state::loaded)
 		{
 			mesh->load();
 		}
 
-		meshes_.push_back(mesh);
+		meshes_.emplace(name, mesh);
 	}
 
-	void simple_scene::remove_mesh(const mesh::shared_ptr& mesh)
+	void simple_scene::remove_mesh(const std::string& name)
 	{
-		for(auto& m : meshes_)
+		if (meshes_.contains(name))
 		{
-			if (m && m->get_id() == mesh->get_id())
-			{
-				m->unload();
-				m.reset();
-				break;
-			}
+			auto& m = meshes_[name];
+			m->unload();
+			m.reset();
 		}
 	}
 
-	void simple_scene::add_skybox(const skybox::shared_ptr& skybox)
+	void simple_scene::add_skybox(const std::string& name, const skybox::shared_ptr& skybox)
 	{
 		if (skybox_)
 		{
@@ -216,9 +221,10 @@ namespace egkr::scene
 		}
 
 		skybox_ = skybox;
+		skybox_name_ = name;
 	}
 
-	void simple_scene::remove_skybox()
+	void simple_scene::remove_skybox(const std::string& /*name*/)
 	{
 		if (state_ >= state::loaded || state_ == state::unloading)
 		{
@@ -228,9 +234,10 @@ namespace egkr::scene
 				skybox_.reset();
 			}
 		}
+		skybox_name_ = "";
 	}
 
-	void simple_scene::add_debug(const egkr::debug::debug_box3d::shared_ptr& debug_box)
+	void simple_scene::add_debug(const std::string& name, const egkr::debug::debug_box3d::shared_ptr& debug_box)
 	{
 		if (state_ >= state::initialised)
 		{
@@ -242,23 +249,45 @@ namespace egkr::scene
 			debug_box->load();
 		}
 
-		debug_boxes_.push_back(debug_box);
+		debug_boxes_.emplace(name, debug_box);
 	}
 
-	void simple_scene::remove_debug(const egkr::debug::debug_box3d::shared_ptr& debug_box)
+	void simple_scene::remove_debug(const std::string& name)
 	{
-		for (auto& m : debug_boxes_)
+		if (debug_boxes_.contains(name))
 		{
-			if (m && m->get_id() == debug_box->get_id())
-			{
-				m->unload();
-				m.reset();
-				break;
-			}
+			auto& m = debug_boxes_[name];
+			m->unload();
+			m.reset();
+			//debug_boxes_.erase(name);
+			LOG_INFO("Removed debug box {}", name);
+			return;
 		}
+
+		if (debug_grids_.contains(name))
+		{
+			auto& m = debug_grids_[name];
+			m->unload();
+			m.reset();
+			//debug_grids_.erase(name);
+			LOG_INFO("Removed debug grid {}", name);
+			return;
+		}
+
+		if (debug_frusta_.contains(name))
+		{
+			auto& m = debug_frusta_[name];
+			m->unload();
+			m.reset();
+			//debug_frusta_.erase(name);
+			LOG_INFO("Removed debug frustum {}", name);
+			return;
+		}
+
+		LOG_WARN("Tried to remove debug item {} that was not in scene", name);
 	}
 
-	void simple_scene::add_debug(const egkr::debug::debug_grid::shared_ptr& debug_grid)
+	void simple_scene::add_debug(const std::string& name, const egkr::debug::debug_grid::shared_ptr& debug_grid)
 	{
 
 		if (state_ >= state::loaded)
@@ -266,69 +295,42 @@ namespace egkr::scene
 			debug_grid->load();
 		}
 
-		debug_grids_.push_back(debug_grid);
+		debug_grids_.emplace(name, debug_grid);
 	}
 
-	void simple_scene::remove_debug(const egkr::debug::debug_grid::shared_ptr& debug_grid)
-	{
-		for (auto& m : debug_grids_)
-		{
-			if (m && m->get_id() == debug_grid->get_id())
-			{
-				m->unload();
-				m.reset();
-				break;
-			}
-		}
-	}
-
-
-	void simple_scene::add_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum)
+	void simple_scene::add_debug(const std::string& name, const egkr::debug::debug_frustum::shared_ptr& debug_frustum)
 	{
 		if (state_ >= state::loaded)
 		{
 			debug_frustum->load();
 		}
 
-		debug_frusta_.push_back(debug_frustum);
-	}
-
-	void simple_scene::remove_debug(const egkr::debug::debug_frustum::shared_ptr& debug_frustum)
-	{
-		for (auto& m : debug_frusta_)
-		{
-			if (m && m->get_id() == debug_frustum->get_id())
-			{
-				m->unload();
-				m.reset();
-				break;
-			}
-		}
+		debug_frusta_.emplace(name, debug_frustum);
 	}
 
 	void simple_scene::actual_unload()
 	{
-		remove_skybox();
+		remove_skybox(skybox_name_);
 
-		for (const auto& mesh : meshes_)
+		for (const auto& mesh : meshes_ | std::views::keys)
 		{
 			remove_mesh(mesh);
 		}
 		meshes_.clear();
 
-		for (const auto& box : debug_boxes_)
+		for (const auto& box : debug_boxes_ | std::views::keys)
 		{
 			remove_debug(box);
 		}
 		debug_boxes_.clear();
 
-		for (const auto& grid : debug_grids_)
+		for (const auto& grid : debug_grids_ | std::views::keys)
 		{
 			remove_debug(grid);
 		}
 		debug_grids_.clear();
 
-		for (const auto& frustum : debug_frusta_)
+		for (const auto& frustum : debug_frusta_ | std::views::keys)
 		{
 			remove_debug(frustum);
 		}

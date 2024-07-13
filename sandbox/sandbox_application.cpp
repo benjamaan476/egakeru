@@ -8,8 +8,11 @@
 #include <systems/audio_system.h>
 #include <systems/material_system.h>
 
+#include <systems/resource_system.h>
+
 #include <renderer/renderer_types.h>
 #include <debug/debug_console.h>
+
 
 sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
 	: application(configuration)
@@ -333,10 +336,14 @@ bool sandbox_application::on_event(egkr::event::code code, void* /*sender*/, voi
 
 void sandbox_application::load_scene()
 {
-	egkr::skybox::configuration skybox_config{ .name = "skybox" };
-	skybox_ = egkr::skybox::skybox::create(skybox_config);
 
-	main_scene_->add_skybox(skybox_);
+	const auto scene = egkr::resource_system::load("test_scene.ess", egkr::resource::type::scene, nullptr);
+	auto scene_configuration = *(egkr::scene::configuration*)scene->data;
+
+
+	egkr::skybox::configuration skybox_config{ .name =  scene_configuration.skybox.name};
+	skybox_ = egkr::skybox::skybox::create(skybox_config);
+	main_scene_->add_skybox(skybox_->get_name(), skybox_);
 
 	{
 		egkr::mesh::configuration cube_1{};
@@ -346,7 +353,7 @@ void sandbox_application::load_scene()
 		mesh_1->set_model(egkr::transform::create());
 		meshes_.push_back(mesh_1);
 
-		main_scene_->add_mesh(mesh_1);
+		main_scene_->add_mesh(mesh_1->get_name(), mesh_1);
 	}
 
 	{
@@ -359,49 +366,54 @@ void sandbox_application::load_scene()
 		mesh_2->set_model(model);
 		meshes_.push_back(mesh_2);
 
-		main_scene_->add_mesh(mesh_2);
+		main_scene_->add_mesh(mesh_2->get_name(), mesh_2);
 	}
 
-	egkr::light::point_light light_0
+	for (const auto& light : scene_configuration.point_lights)
 	{
-		.position = { -5.5, -5.5, 0.0, 0.F},
-		.colour = {0.0, 1.0, 0.0, 1.0},
-		.constant = 1.0F, // Constant
-		.linear = 0.35F, // Linear
-		.quadratic = 0.44F,  // Quadratic
-	};
-	main_scene_->add_point_light(light_0);
+		egkr::light::point_light lght
+		{
+			.position = light.position,
+			.colour = light.colour,
+			.constant = light.constant,
+			.linear = light.linear,
+			.quadratic = light.quadratic
+		};
 
-	box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
-	box_->get_transform().set_position(light_0.position);
-	main_scene_->add_debug(box_);
+		main_scene_->add_point_light(light.name, lght);
 
-	egkr::light::point_light light_1
-	{
-		.position = {5.5, -5.5, 0.0, 0.0},
-		.colour = {1.0, 0.0, 0.0, 1.0},
-		.constant = 1.0F,
-		.linear = 0.35F,
-		.quadratic = 0.44F,
-	};
-	main_scene_->add_point_light(light_1);
+		box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
+		box_->get_transform().set_position(light.position);
+		box_->set_colour(light.colour);
+		main_scene_->add_debug(light.name + "_box", box_);
+	}
 
-	egkr::light::point_light light_2
-	{
-	.position = {5.5, 5.5, 0.0, 0.0},
-	.colour = {0.0, 0.0, 1.0, 1.0 },
-	.constant = 1.0F,
-	.linear = 0.35F,
-	.quadratic = 0.44F,
-	};
-	main_scene_->add_point_light(light_2);
+
+	//egkr::light::point_light light_1
+	//{
+	//	.position = {5.5, -5.5, 0.0, 0.0},
+	//	.colour = {1.0, 0.0, 0.0, 1.0},
+	//	.constant = 1.0F,
+	//	.linear = 0.35F,
+	//	.quadratic = 0.44F,
+	//};
+	//main_scene_->add_point_light("light_1", light_1);
+
+	//egkr::light::point_light light_2
+	//{
+	//.position = {5.5, 5.5, 0.0, 0.0},
+	//.colour = {0.0, 0.0, 1.0, 1.0 },
+	//.constant = 1.0F,
+	//.linear = 0.35F,
+	//.quadratic = 0.44F,
+	//};
+	//main_scene_->add_point_light("light_2", light_2);
 
 	dir_light_ = std::make_shared<egkr::light::directional_light>(
-		egkr::float4(-0.57735F, -0.57735F, -0.57735F, 1.F),
-		egkr::float4(0.6F, 0.6F, 0.6F, 1.0F)
+		scene_configuration.directional_light.direction,
+		scene_configuration.directional_light.colour
 	);
-
-	main_scene_->add_directional_light(dir_light_);
+	main_scene_->add_directional_light(scene_configuration.directional_light.name, dir_light_);
 
 	egkr::debug::configuration grid_configuration
 	{
@@ -414,18 +426,36 @@ void sandbox_application::load_scene()
 	};
 	grid_ = egkr::debug::debug_grid::create(grid_configuration);
 
-	main_scene_->add_debug(grid_);
+	main_scene_->add_debug(grid_configuration.name, grid_);
 
-	sponza_ = egkr::mesh::create({ "sponza2" });
+	for (const auto& mesh : scene_configuration.meshes)
+	{
+		auto msh = egkr::mesh::create({ mesh.resource_name });
+		msh->set_model(mesh.transform);
+		meshes_.push_back(msh);
+		main_scene_->add_mesh(mesh.name, msh);
 
-	egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
-	obj.set_scale({ 0.1F, 0.1F, 0.1F });
-	obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
+		if (mesh.parent_name)
+		{
+			for (const auto& m : meshes_)
+			{
+				if (m->get_name() == mesh.parent_name.value())
+				{
+					msh->model().set_parent(&m->model());
+				}
+			}
+		}
+	}
+	//sponza_ = egkr::mesh::create({ "sponza2" });
 
-	sponza_->set_model(obj);
-	meshes_.push_back(sponza_);
+	//egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
+	//obj.set_scale({ 0.1F, 0.1F, 0.1F });
+	//obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
 
-	main_scene_->add_mesh(sponza_);
+	//sponza_->set_model(obj);
+	//meshes_.push_back(sponza_);
+
+	//main_scene_->add_mesh("sponza2", sponza_);
 
 
 	//TODO temp

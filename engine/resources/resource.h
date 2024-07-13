@@ -30,6 +30,7 @@ namespace egkr
 			bitmap_font,
 			system_font,
 			audio,
+			scene,
 			custom
 		};
 
