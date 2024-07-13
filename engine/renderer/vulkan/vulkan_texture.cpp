@@ -560,6 +560,7 @@ namespace egkr
 	{
 		if (context_)
 		{
+			context_->device.logical_device.waitIdle();
 			if (texture)
 			{
 				texture->destroy();

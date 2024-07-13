@@ -49,8 +49,11 @@ namespace egkr::debug
 	{
 		geometry_->destroy();
 
-		identifier::release_id(unique_id_);
-		unique_id_ = invalid_32_id;
+		if (unique_id_ != invalid_32_id)
+		{
+			identifier::release_id(unique_id_);
+			unique_id_ = invalid_32_id;
+		}
 
 		return true;
 	}

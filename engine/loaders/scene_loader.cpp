@@ -74,7 +74,7 @@ namespace egkr
 
 		int32_t version{};
 		uint32_t line_number{};
-		egkr::vector<uint8_t> line{ 1 };
+		egkr::vector<uint8_t> line{'#'};
 		for (; !line.empty(); line = filesystem::read_line(handle, 511), ++line_number)
 		{
 			std::string line_string{ line.begin(), line.end() };

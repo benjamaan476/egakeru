@@ -90,8 +90,10 @@ namespace egkr
 		if (context_)
 		{
 			context_->device.logical_device.waitIdle();
-			material_system::release(material_);
-
+			if (material_)
+			{
+				material_system::release(material_);
+			}
 			if (vertex_buffer_)
 			{
 				vertex_buffer_.reset();

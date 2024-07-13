@@ -464,6 +464,15 @@ namespace egkr
 		}
 
 	}
+
+	void renderer_vulkan::tidy_up()
+	{
+		if (context_.instance)
+		{
+			context_.device.logical_device.waitIdle();
+		}
+	}
+
 	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
 		ZoneScoped;

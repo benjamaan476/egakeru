@@ -62,6 +62,7 @@ namespace egkr::scene
 		{
 			actual_unload();
 		}
+		frame_geometry_.reset();
 
 		if (state_ >= state::loaded)
 		{
@@ -71,7 +72,6 @@ namespace egkr::scene
 			//	debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
 			//}
 
-			frame_geometry_.reset();
 			for (auto& mesh : meshes_ | std::views::values)
 			{
 				if (mesh->get_generation() == invalid_32_id)
@@ -336,6 +336,9 @@ namespace egkr::scene
 		}
 		debug_frusta_.clear();
 
+		point_lights_.clear();
+		remove_directional_light();
+		
 		state_ = state::unloaded;
 	}
 }

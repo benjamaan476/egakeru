@@ -49,7 +49,7 @@ namespace egkr
 	{
 		if (light_system_->directional_light_)
 		{
-			light_system_.reset();
+			light_system_->directional_light_.reset();
 			return true;
 		}
 

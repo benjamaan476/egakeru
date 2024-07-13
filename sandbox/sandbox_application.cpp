@@ -269,12 +269,20 @@ bool sandbox_application::shutdown()
 	main_scene_->destroy();
 
 	meshes_.clear();
-	box_->unload();
-	box_.reset();
+	if (box_)
+	{
+		box_->unload();
+		box_.reset();
+	}
 	ui_meshes_.clear();
-	test_text_.reset();
-	more_test_text_.reset();
-
+	if (test_text_)
+	{
+		test_text_.reset();
+	}
+	if (more_test_text_)
+	{
+		more_test_text_.reset();
+	}
 	//debug_frustum_->destroy();
 
 	return true;

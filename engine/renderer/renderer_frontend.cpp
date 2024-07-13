@@ -63,6 +63,11 @@ namespace egkr
 		backend_->shutdown();
 	}
 
+	API void renderer_frontend::tidy_up()
+	{
+		return backend_->tidy_up();
+	}
+
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
 		framebuffer_width_ = width;

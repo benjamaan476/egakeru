@@ -19,6 +19,7 @@ namespace egkr
 
 		bool init(const configuration& configuration, uint8_t& out_window_attachment_count) final;
 		void shutdown() final;
+		void tidy_up() final;
 		void resize(uint32_t width_, uint32_t height_) final;
 		bool begin_frame() final;
 		void end_frame() final;

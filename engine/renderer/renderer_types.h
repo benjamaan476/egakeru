@@ -62,6 +62,7 @@ namespace egkr
 		virtual ~renderer_backend() = default;
 		virtual bool init(const configuration& configuration, uint8_t& out_window_attachment_count) = 0;
 		virtual void shutdown() = 0;
+		virtual void tidy_up() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
 		virtual bool begin_frame() = 0;
 		virtual void end_frame() = 0;

@@ -120,6 +120,7 @@ namespace egkr
 
 	void engine::shutdown()
 	{
+		renderer->tidy_up();
 		engine_->application_->shutdown();
 		egkr::event::unregister_event(egkr::event::code::key_down, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event::code::quit, nullptr, on_event);
