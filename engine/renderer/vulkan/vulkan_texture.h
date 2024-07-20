@@ -40,8 +40,8 @@ namespace egkr
 
 		bool populate(const egkr::texture::properties& properties, const uint8_t* data) override;
 		bool populate_writeable() override;
-		bool write_data(uint64_t offset, uint32_t size, const uint8_t* data) override;
-		void read_data(uint64_t offset, uint32_t size, void* out_memory) override;
+		bool write_data(uint64_t offset, uint64_t size, const uint8_t* data) override;
+		void read_data(uint64_t offset, uint64_t size, void* out_memory) override;
 		void read_pixel(uint32_t x, uint32_t y, uint4* out_rgba) override;
 		bool resize(uint32_t width, uint32_t height) override;
 		void free() override;

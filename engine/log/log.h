@@ -4,10 +4,10 @@
 #include <spdlog/spdlog.h>
 #include <string_view>
 
-using namespace std::literals;
-
 namespace egkr
 {
+	using namespace std::literals;
+
 	class log
 	{
 	public:

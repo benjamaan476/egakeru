@@ -10,7 +10,7 @@
 
 namespace egkr
 {
-	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
 		const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
@@ -40,7 +40,7 @@ namespace egkr
 
 	}
 
-	int32_t vulkan_device::find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const
+	uint32_t vulkan_device::find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const
 	{
 		ZoneScoped;
 
@@ -55,14 +55,14 @@ namespace egkr
 		}
 
 		LOG_WARN("Failed to find suitable memory type");
-		return -1;
+		return invalid_32_id;
 	}
 
 	bool vulkan_device::physical_device_meets_requirements(
 		vk::PhysicalDevice device,
 		vk::SurfaceKHR surface,
-		const vk::PhysicalDeviceProperties& properties,
-		const vk::PhysicalDeviceFeatures features,
+		const vk::PhysicalDeviceProperties& device_properties,
+		const vk::PhysicalDeviceFeatures device_features,
 		const physical_device_requirements& requirements,
 		physical_device_queue_family_info& family_info,
 		swapchain_support_details& swapchain_support)
@@ -71,7 +71,7 @@ namespace egkr
 
 		if (requirements.discrete_gpu)
 		{
-			if (properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
+			if (device_properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
 			{
 				LOG_INFO("Device is not a discrete GPU when one is required, skipping");
 				return false;
@@ -118,17 +118,17 @@ namespace egkr
 		}
 
 		LOG_INFO("       {:d}|       {:d}|       {:d}|       {:d}| {}",
-				 family_info.graphics_index != -1,
-				 family_info.present_index != -1,
-				 family_info.compute_index != -1,
-				 family_info.transfer_index != -1,
-				 properties.deviceName.data());
+				 family_info.graphics_index != invalid_32_id,
+				 family_info.present_index != invalid_32_id,
+				 family_info.compute_index != invalid_32_id,
+				 family_info.transfer_index != invalid_32_id,
+				 device_properties.deviceName.data());
 
 		if (
-			(!requirements.graphics || (requirements.graphics && family_info.graphics_index != -1)) &&
-			(!requirements.present || (requirements.present && family_info.present_index != -1)) &&
-			(!requirements.compute || (requirements.compute && family_info.compute_index != -1)) &&
-			(!requirements.transfer || (requirements.transfer && family_info.transfer_index != -1)))
+			(!requirements.graphics || (requirements.graphics && family_info.graphics_index != invalid_32_id)) &&
+			(!requirements.present || (requirements.present && family_info.present_index != invalid_32_id)) &&
+			(!requirements.compute || (requirements.compute && family_info.compute_index != invalid_32_id)) &&
+			(!requirements.transfer || (requirements.transfer && family_info.transfer_index != invalid_32_id)))
 		{
 			LOG_INFO("Device meets requirements");
 
@@ -165,7 +165,7 @@ namespace egkr
 
 		}
 
-		if (requirements.sampler_anisotropy && !features.samplerAnisotropy)
+		if (requirements.sampler_anisotropy && !device_features.samplerAnisotropy)
 		{
 			LOG_INFO("Device does not support samplerAnisotropy, skipping");
 			return false;
@@ -180,11 +180,11 @@ namespace egkr
 
 		auto physical_devices = context->instance.enumeratePhysicalDevices();
 
-		for (auto& physical_device : physical_devices)
+		for (auto& device : physical_devices)
 		{
-			const auto properties = physical_device.getProperties();
-			const auto features = physical_device.getFeatures();
-			const auto memory = physical_device.getMemoryProperties();
+			const auto device_properties = device.getProperties();
+			const auto features = device.getFeatures();
+			const auto memory = device.getMemoryProperties();
 
 			physical_device_requirements requirements{};
 			requirements.graphics = true;
@@ -196,12 +196,12 @@ namespace egkr
 
 			physical_device_queue_family_info queue_info{};
 
-			auto result = physical_device_meets_requirements(physical_device, context->surface, properties, features, requirements, queue_info, context->device.swapchain_supprt);
+			auto result = physical_device_meets_requirements(device, context->surface, device_properties, features, requirements, queue_info, context->device.swapchain_supprt);
 
 			if (result)
 			{
-				LOG_INFO("Selected device: {}", properties.deviceName.data());
-				switch (properties.deviceType)
+				LOG_INFO("Selected device: {}", device_properties.deviceName.data());
+				switch (device_properties.deviceType)
 				{
 					using enum vk::PhysicalDeviceType;
 				case eOther:
@@ -217,15 +217,15 @@ namespace egkr
 					break;
 				}
 
-				LOG_INFO("GPU Driver version: {}.{}.{}", VK_VERSION_MAJOR(properties.driverVersion), VK_VERSION_MINOR(properties.driverVersion), VK_VERSION_PATCH(properties.driverVersion));
-				LOG_INFO("Vulkan API version: {}.{}.{}", VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion));
+				LOG_INFO("GPU Driver version: {}.{}.{}", VK_VERSION_MAJOR(device_properties.driverVersion), VK_VERSION_MINOR(device_properties.driverVersion), VK_VERSION_PATCH(device_properties.driverVersion));
+				LOG_INFO("Vulkan API version: {}.{}.{}", VK_VERSION_MAJOR(device_properties.apiVersion), VK_VERSION_MINOR(device_properties.apiVersion), VK_VERSION_PATCH(device_properties.apiVersion));
 
-				context->device.physical_device = physical_device;
+				context->device.physical_device = device;
 				context->device.graphics_queue_index = queue_info.graphics_index;
 				context->device.present_queue_index = queue_info.present_index;
 				context->device.transfer_queue_index = queue_info.transfer_index;
 
-				context->device.properties = properties;
+				context->device.properties = device_properties;
 				context->device.features = features;
 				context->device.memory = memory;
 				break;
@@ -464,6 +464,15 @@ namespace egkr
 		}
 
 	}
+
+	void renderer_vulkan::tidy_up()
+	{
+		if (context_.instance)
+		{
+			context_.device.logical_device.waitIdle();
+		}
+	}
+
 	void renderer_vulkan::resize(uint32_t width, uint32_t height)
 	{
 		ZoneScoped;
@@ -560,10 +569,10 @@ namespace egkr
 		if (enable_validation_layers_)
 		{
 			LOG_INFO("Adding debug validation");
-			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+ 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 
-		instance_info.setEnabledExtensionCount(extensions.size());
+		instance_info.setEnabledExtensionCount((uint32_t)extensions.size());
 		instance_info.ppEnabledExtensionNames = extensions.data();
 		instance_info.setEnabledLayerCount(0);
 
@@ -854,8 +863,8 @@ namespace egkr
 		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name)
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view")
 		return tex;
 	}
 
@@ -864,8 +873,8 @@ namespace egkr
 		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name);
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view");
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name)
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view")
 		*(vulkan_texture*)out_texture = *tex;
 	}
 
@@ -961,7 +970,7 @@ namespace egkr
 
 	uint8_t renderer_vulkan::get_window_index() const
 	{
-		return context_.image_index;
+		return (uint8_t)context_.image_index;
 	}
 
 #ifdef ENABLE_DEBUG_MACRO

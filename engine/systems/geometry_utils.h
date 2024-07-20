@@ -23,7 +23,7 @@ static void generate_tangents(void* verts, const egkr::vector<uint32_t>& indices
         auto dividend = (deltaU1 * deltaV2 - deltaU2 * deltaV1);
         auto fc = 1.0f / dividend;
 
-        auto tangent = (egkr::float3){
+        egkr::float3 tangent = {
             (fc * (deltaV2 * edge1.x - deltaV1 * edge2.x)),
             (fc * (deltaV2 * edge1.y - deltaV1 * edge2.y)),
             (fc * (deltaV2 * edge1.z - deltaV1 * edge2.z)) };
@@ -87,7 +87,7 @@ inline static egkr::vector<vertex_3d> deduplicate_vertices(uint32_t vertex_count
         {
             if (vertices[v] == new_vertices[u])
             {
-                reassign_index(indices.size(), indices.data(), v - found_count, u);
+                reassign_index((uint32_t)indices.size(), indices.data(), v - found_count, u);
                 found = true;
                 ++found_count;
                 break;

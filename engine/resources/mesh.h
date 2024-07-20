@@ -7,44 +7,43 @@
 
 namespace egkr
 {
-	class mesh : public resource
+	class mesh : public resource, public std::enable_shared_from_this<mesh>
 	{
 	public:
-		using shared_ptr = std::shared_ptr<mesh>;
-		static shared_ptr create();
-		static shared_ptr create(const geometry::geometry::shared_ptr& geometry, const transform& model);
 
-		mesh();
+		struct configuration
+		{
+			std::string name{};
+			egkr::vector<geometry::properties> geometry_configurations{};
+		};
+
+		using shared_ptr = std::shared_ptr<mesh>;
+		using weak_ptr = std::weak_ptr<mesh>;
+		static shared_ptr create(const configuration& configuration);
+		//static shared_ptr create(const geometry::geometry::shared_ptr& geometry, const transform& model);
+
+		explicit mesh(const configuration& configration);
 		~mesh();
 
+		void load();
 		void unload();
 
 		void add_geometry(const geometry::geometry::shared_ptr& geometry);
-		[[nodiscard]] const auto& get_geometries() const
-		{
-			return geometries_;
-		}
+		[[nodiscard]] const auto& get_geometries() const { return geometries_; }
 
 		void set_model(const transform& model);
-		[[nodiscard]] const auto& get_model() const
-		{
-			return model_;
-		}
+		[[nodiscard]] const auto& get_model() const { return model_; }
 
-		[[nodiscard]] auto& extents()
-		{
-			return extents_;
-		}
-		auto& model()
-		{
-			return model_;
-		}
+		[[nodiscard]] auto& extents() {	return extents_; }
+		auto& model() {	return model_; }
 
 		[[nodiscard]] auto& get_debug_data() { return debug_data; }
 		[[nodiscard]] auto& unique_id() { return unique_id_; }
 
-		static shared_ptr load(std::string_view name);
 	private:
+		void load_from_resource(std::string_view name);
+	private:
+		configuration configuration_{};
 		egkr::vector<geometry::geometry::shared_ptr> geometries_{};
 		transform model_;
 		extent3d extents_{};

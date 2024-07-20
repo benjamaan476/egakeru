@@ -59,14 +59,14 @@ namespace egkr
 		int32_t channels{};
 		int32_t required_channels{ 4 };
 
-		auto image_data = (uint8_t*)stbi_load_from_memory(raw.data(), raw.size(), &width, &height, &channels, required_channels);
+		auto image_data = (uint8_t*)stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
 
 		if (image_data)
 		{
 			texture::properties properties{};
-			properties.channel_count = required_channels;
-			properties.width = width;
-			properties.height = height;
+			properties.channel_count = (uint8_t)required_channels;
+			properties.width = (uint32_t)width;
+			properties.height = (uint32_t)height;
 			properties.generation = 0;
 			properties.id = 0;
 			properties.data = image_data;
@@ -102,7 +102,7 @@ namespace egkr
 			if (stbi_failure_reason())
 			{
 				LOG_ERROR("Failed to load image {}, reason: {}", buff, stbi_failure_reason());
-				stbi__err(0, 0);
+				stbi__err(nullptr, 0);
 			}
 			return nullptr;
 		}

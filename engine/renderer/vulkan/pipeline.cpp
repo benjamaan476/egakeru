@@ -145,8 +145,8 @@ namespace egkr
 			vk::PushConstantRange push_range{};
 			push_range
 				.setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
-				.setOffset(range.offset)
-				.setSize(range.size);
+				.setOffset((uint32_t)range.offset)
+				.setSize((uint32_t)range.size);
 
 			push_constant_range.push_back(push_range);
 		}

@@ -30,8 +30,8 @@ namespace egkr
 	renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
 	{
 		const auto& size = platform->get_framebuffer_size();
-		framebuffer_width_ = size.x;
-		framebuffer_height_ = size.y;
+		framebuffer_width_ = (uint32_t)size.x;
+		framebuffer_height_ = (uint32_t)size.y;
 
 		float4x4 view{ 1 };
 		view = glm::translate(view, { 0.F, 0.F, 30.F });
@@ -63,6 +63,11 @@ namespace egkr
 		backend_->shutdown();
 	}
 
+	API void renderer_frontend::tidy_up()
+	{
+		return backend_->tidy_up();
+	}
+
 	void renderer_frontend::on_resize(uint32_t width, uint32_t height)
 	{
 		framebuffer_width_ = width;
@@ -77,7 +82,7 @@ namespace egkr
 		if (backend_->begin_frame())
 		{
 			auto attachment_index = backend_->get_window_index();
-			for (auto& view : packet.render_views)
+			for (auto& [type, view] : packet.render_views)
 			{
 				if (!view_system::on_render(view.render_view, &view, backend_->get_frame_number(), attachment_index))
 				{

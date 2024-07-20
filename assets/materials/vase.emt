@@ -2,7 +2,7 @@
 # auto generated material
 version = 0.1
 name=vase
-diffuse_colour=0.588000 0.588000 0.588000 1.000000
+diffuse_colour=0.588 0.588 0.588 1.000
 diffuse_map_name=vase_dif
 specular_map_name=vase_spec
 normal_map_name=vase_ddn

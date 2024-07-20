@@ -27,3 +27,4 @@ namespace egkr::debug
 		egkr::geometry::geometry::shared_ptr geometry_{};
 	};
 }
+

@@ -27,11 +27,12 @@ namespace egkr::debug
 		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
 		[[nodiscard]] const auto& get_transform() const { return transform_; }
 		[[nodiscard]] auto& get_transform() { return transform_; }
+		[[nodiscard]] const auto& get_id() const { return unique_id_; }
 	private:
 		void recalculate_colour();
 		void recalculate_extents();
 	private:
-		//uint32_t unique_id_{};
+		uint32_t unique_id_{invalid_32_id};
 		std::string name_{};
 		egkr::float3 size_{};
 		egkr::extent3d extents_{};

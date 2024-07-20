@@ -36,7 +36,7 @@ namespace egkr
 		static system* create();
 
 		bool init() override;
-		bool update(float delta_time) override;
+		bool update(const frame_data& frame_data) override;
 		bool shutdown() override;
 
 		~input() override = default;

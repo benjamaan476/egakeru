@@ -38,11 +38,6 @@ namespace egkr
 		return true;
 	}
 
-	bool geometry_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool geometry_system::shutdown()
 	{
 		if (geometry_system_->default_geometry_)
@@ -108,7 +103,7 @@ namespace egkr
 			}
 		}
 
-		plane_properties.vertex_count = vertices.size();
+		plane_properties.vertex_count = (uint32_t)vertices.size();
 		plane_properties.vertex_size = sizeof(vertex_3d);
 
 		auto size = plane_properties.vertex_count * plane_properties.vertex_size;
@@ -246,7 +241,7 @@ namespace egkr
 
 
 		properties.indices = indices;
-		properties.vertex_count = vertices.size();
+		properties.vertex_count = (uint32_t)vertices.size();
 		properties.vertex_size = sizeof(vertex_3d);
 
 		auto size = properties.vertex_count * properties.vertex_size;

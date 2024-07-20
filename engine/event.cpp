@@ -39,13 +39,13 @@ namespace egkr
 
 	bool event::register_event(code code, void* listener, const callback& callback)
 	{
-		state.events[(int16_t)code].event.emplace_back(listener, callback);
+		state.events[(size_t)code].event.emplace_back(listener, callback);
 
 		return true;
 	}
 	bool event::unregister_event(code code, void* listener, const callback& callback)
 	{
-		auto& events = state.events.at((int16_t)code).event;
+		auto& events = state.events.at((size_t)code).event;
 
 		auto event = registered_event{ listener, callback };
 		
@@ -62,7 +62,7 @@ namespace egkr
 	}
 	void event::fire_event(code code, void* sender, const context& context)
 	{
-		const auto& events = state.events.at((int16_t)code).event;
+		const auto& events = state.events.at((size_t)code).event;
 
 		for (const auto& event : events)
 		{

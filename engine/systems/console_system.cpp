@@ -3,7 +3,7 @@
 
 namespace egkr
 {
-	console::unique_ptr state{};
+	static console::unique_ptr state{};
 
 	console* console::create()
 	{
@@ -16,11 +16,6 @@ namespace egkr
 	{
 		register_command("evar_create_int", 2, evar_system::create_int_command);
 		register_command("evar_print_int", 1, evar_system::print_int_command);
-		return true;
-	}
-
-	bool console::update(float /*delta_time*/)
-	{
 		return true;
 	}
 
@@ -70,11 +65,11 @@ namespace egkr
 		ss >> name;
 
 		egkr::vector<std::string> args{};
-		std::string arg{};
+		std::string argument{};
 
-		while(ss >> arg)
+		while(ss >> argument)
 		{
-			args.push_back(arg);
+			args.push_back(argument);
 		}
 
 		write_line(nullptr, log_level::info, command);
@@ -111,5 +106,4 @@ namespace egkr
 		}
 		return !has_error;
 	}
-
 }

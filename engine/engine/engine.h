@@ -4,6 +4,7 @@
 #include "platform/platform.h"
 #include "application/application.h"
 #include "event.h"
+#include "frame_data.h"
 
 
 namespace egkr
@@ -19,6 +20,8 @@ namespace egkr
 		static void run();
 		void static shutdown();
 
+		[[nodiscard]] static const frame_data& get_frame_data();
+
 	private:
 		static bool on_event(event::code code, void* sender, void* listener, const event::context& context);
 		static bool on_resize(event::code code, void* sender, void* listener, const event::context& context);
@@ -33,6 +36,6 @@ namespace egkr
 		platform::shared_ptr platform_{};
 		std::string name_{};
 		application::unique_ptr application_{};
+		frame_data frame_data_{};
 	};
-
 }

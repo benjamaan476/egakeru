@@ -14,10 +14,9 @@ namespace egkr
 
 		static view_system* create();
 		view_system();
-		~view_system();
+		~view_system() override;
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static void create_view(const render_view::configuration& configuration);

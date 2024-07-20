@@ -28,11 +28,6 @@ namespace egkr
 		return true;
 	}
 
-	bool shader_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool shader_system::shutdown()
 	{
 		for (const auto& shader : shaders_)
@@ -59,7 +54,7 @@ namespace egkr
 
 	uint32_t shader_system::get_shader_id(const std::string& shader_name)
 	{
-		if (shader_system_->shader_id_by_name_.contains(shader_name))
+		if (shader_system_->shader_id_by_name_.contains(shader_name.data()))
 		{
 			return shader_system_->shader_id_by_name_[shader_name.data()];
 		}
@@ -157,12 +152,12 @@ namespace egkr
 		}
 	}
 
-	void shader_system::set_sampler(std::string_view sampler_name, const texture*& texture)
+	void shader_system::set_sampler(std::string_view sampler_name, const texture* texture)
 	{
 		set_uniform(sampler_name, texture);
 	}
 
-	void shader_system::set_sampler(uint32_t sampler_id, const texture*& texture)
+	void shader_system::set_sampler(uint32_t sampler_id, const texture* texture)
 	{
 		set_uniform(sampler_id, texture);
 	}
@@ -175,6 +170,6 @@ namespace egkr
 	}
 	uint32_t shader_system::new_shader_id()
 	{
-		return shader_system_->shaders_.size();
+		return (uint32_t)shader_system_->shaders_.size();
 	}
 }

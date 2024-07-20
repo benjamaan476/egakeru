@@ -31,11 +31,6 @@ namespace egkr
 		return true;
 	}
 
-	bool camera_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool camera_system::shutdown()
 	{
 		cameras_.clear();

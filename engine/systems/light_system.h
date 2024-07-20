@@ -18,7 +18,6 @@ namespace egkr
 			~light_system() override;
 
 			bool init() override;
-			bool update(float delta_time) override;
 			bool shutdown() override;
 
 			static bool add_directional_light(const std::shared_ptr<light::directional_light>& light);
@@ -31,7 +30,7 @@ namespace egkr
 			static const std::vector<light::point_light>& get_point_lights();
 
 		private:
-			int32_t max_point_light_count_{};
+			uint32_t max_point_light_count_{};
 			std::vector<light::point_light> point_lights_{};
 			std::shared_ptr<light::directional_light> directional_light_{};
 		};

@@ -53,7 +53,7 @@ namespace egkr
 		vk::BufferUsageFlags usage_{};
 		vk::DeviceMemory memory_{};
 
-		uint32_t memory_index_{};
+		uint32_t memory_index_{invalid_32_id};
 		vk::MemoryRequirements memory_requirements_{};
 		vk::MemoryPropertyFlags memory_property_flags_{};
 

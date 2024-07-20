@@ -28,10 +28,10 @@ namespace egkr
 
 	struct physical_device_queue_family_info
 	{
-		int32_t graphics_index{-1};
-		int32_t present_index{-1};
-		int32_t compute_index{-1};
-		int32_t transfer_index{-1};
+		uint32_t graphics_index{ invalid_32_id };
+		uint32_t present_index{ invalid_32_id };
+		uint32_t compute_index{ invalid_32_id };
+		uint32_t transfer_index{ invalid_32_id };
 	};
 
 	struct swapchain_support_details
@@ -66,10 +66,10 @@ namespace egkr
 
 		swapchain_support_details swapchain_supprt{};
 
-		int32_t find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const;
+		uint32_t find_memory_index(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const;
 
-		bool physical_device_meets_requirements(vk::PhysicalDevice device, vk::SurfaceKHR surface, const vk::PhysicalDeviceProperties& properties, const vk::PhysicalDeviceFeatures features, const physical_device_requirements& requirements, physical_device_queue_family_info& family_info, swapchain_support_details& swapchain_support);
-		bool select_physical_device(vulkan_context* context);
+		static bool physical_device_meets_requirements(vk::PhysicalDevice device, vk::SurfaceKHR surface, const vk::PhysicalDeviceProperties& properties, const vk::PhysicalDeviceFeatures features, const physical_device_requirements& requirements, physical_device_queue_family_info& family_info, swapchain_support_details& swapchain_support);
+		static bool select_physical_device(vulkan_context* context);
 		bool create(vulkan_context* context);
 	};
 
@@ -137,7 +137,7 @@ namespace egkr
 	static inline bool detect_depth_format(vulkan_device& device)
 	{
 		const std::array<vk::Format, 3> depth_formats{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint};
-		const std::array<int, 3> depth_counts{ 4,4,3 };
+		const std::array<uint8_t, 3> depth_counts{ 4,4,3 };
 		auto flags = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
 
 		for (auto i{ 0U }; i < depth_formats.size(); ++i)
@@ -166,7 +166,7 @@ namespace egkr
 	{
 		queue_family_indices queueIndices;
 		auto familyProperties = physical_device.getQueueFamilyProperties();
-		int index = 0;
+		uint32_t index = 0;
 		for (const auto& queueFamily : familyProperties)
 		{
 			if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
@@ -191,7 +191,7 @@ namespace egkr
 	}
 
 	template<class T>
-	consteval static vk::VertexInputBindingDescription get_binding_description() noexcept
+	constexpr static vk::VertexInputBindingDescription get_binding_description() noexcept
 	{
 		vk::VertexInputBindingDescription bindingDescription{};
 		bindingDescription

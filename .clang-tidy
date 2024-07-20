@@ -20,6 +20,7 @@ Checks: "*,
         -hicpp-signed-bitwise,
         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
         -cppcoreguidelines-pro-type-cstyle-cast,
+        -missing-field-initializers,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

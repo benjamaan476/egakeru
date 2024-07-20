@@ -54,6 +54,7 @@ namespace egkr
 		case mesh_file_type::esm:
 			resource_data = load_esm(handle);
 			break;
+		case mesh_file_type::not_found:
 		default:
 			LOG_ERROR("Invalid file type, cannot load {}", name.data());
 			return nullptr;
@@ -147,6 +148,8 @@ namespace egkr
 					tex_coords.push_back(tex);
 				}
 				break;
+				default:
+				LOG_ERROR("Shouldn't have got here");
 				}
 			} break;
 			case 's':
@@ -222,10 +225,12 @@ namespace egkr
 
 			}
 			break;
+			default:
+				LOG_ERROR("Unrecognised first character: {}", first_char);
+				break;
 			}
-
 			previous_first_chars[1] = previous_first_chars[0];
-			previous_first_chars[0] = first_char;
+			previous_first_chars[0] = (char)first_char;
 			
 		}
 
@@ -265,7 +270,7 @@ namespace egkr
 		for (auto& geometry : geometries)
 		{
 			auto unique_verts = deduplicate_vertices(geometry.vertex_count, (vertex_3d*)geometry.vertices, geometry.indices);
-			geometry.vertex_count = unique_verts.size();
+			geometry.vertex_count = (uint32_t)unique_verts.size();
 
 			delete (vertex_3d*)geometry.vertices;
 
@@ -354,7 +359,7 @@ namespace egkr
 			}
 		}
 
-		properties.vertex_count = vertices.size();
+		properties.vertex_count = (uint32_t)vertices.size();
 		properties.vertex_size = sizeof(vertex_3d);
 
 		auto size = properties.vertex_count * properties.vertex_size;
@@ -405,6 +410,8 @@ namespace egkr
 					current_properties.diffuse_colour.a = 1.F;
 				} break;
 				case 's': break;
+				default:
+					LOG_ERROR("Unrecognised second character: {}", second_char);
 				}
 			} break;
 			case 'N':
@@ -420,20 +427,20 @@ namespace egkr
 				std::string format{ "%s %s" };
 				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
 
-				std::filesystem::path filepath{ texture_filename };
-				filepath = filepath.stem();
-				filepath.replace_extension();
+				std::filesystem::path path{ texture_filename };
+				path = path.stem();
+				path.replace_extension();
 				if (strncmp(map_type, "map_Kd", 7) == 0)
 				{
-					current_properties.diffuse_map_name = filepath.string();
+					current_properties.diffuse_map_name = path.string();
 				}
 				else if (strncmp(map_type, "map_Ks", 7) == 0)
 				{
-					current_properties.specular_map_name = filepath.string();
+					current_properties.specular_map_name = path.string();
 				}
 				else if (strncmp(map_type, "map_bump", 9) == 0)
 				{
-					current_properties.normal_map_name = filepath.string();
+					current_properties.normal_map_name = path.string();
 				}
 			} break;
 			case 'b':
@@ -443,10 +450,10 @@ namespace egkr
 				std::string format{ "%s %s" };
 				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
 
-				std::filesystem::path filepath{ texture_filename };
-				filepath = filepath.stem();
-				filepath.replace_extension();
-				current_properties.normal_map_name = filepath.string();
+				std::filesystem::path path{ texture_filename };
+				path = path.stem();
+				path.replace_extension();
+				current_properties.normal_map_name = path.string();
 			} break;
 			case 'n':
 			{
@@ -456,7 +463,7 @@ namespace egkr
 				sscanf_s(line_string.data(), format, waste, sizeof(waste), material_name, sizeof(material_name));
 
 				current_properties.shader_name = "Shader.Builtin.Material";
-				if (current_properties.shininess == 0)
+				if (std::abs(current_properties.shininess) <= 0.001f)
 				{
 					current_properties.shininess = 8.F;
 				}
@@ -471,12 +478,13 @@ namespace egkr
 				hit_name = true;
 				current_properties.name = material_name;
 			} break;
-
+			default:
+				LOG_ERROR("Unrecognised first character: {}", first_char);
 			}
 		}
 
 				current_properties.shader_name = "Shader.Builtin.Material";
-				if (current_properties.shininess == 0)
+				if (std::abs(current_properties.shininess) <= 0.001F)
 				{
 					current_properties.shininess = 8.F;
 				}
@@ -601,7 +609,7 @@ namespace egkr
 			filesystem::write_line(handle, line);
 			line.clear();
 
-			sprintf((char*)line.data(), "diffuse_colour=%.6f %.6f %.6f %.6f", properties.diffuse_colour.r, properties.diffuse_colour.g, properties.diffuse_colour.b, properties.diffuse_colour.a);
+			sprintf((char*)line.data(), "diffuse_colour=%.3f %.3f %.3f %.3f", (double)properties.diffuse_colour.r, (double)properties.diffuse_colour.g, (double)properties.diffuse_colour.b, (double)properties.diffuse_colour.a);
 			filesystem::write_line(handle, line);
 			line.clear();
 
@@ -621,7 +629,7 @@ namespace egkr
 			filesystem::write_line(handle, line);
 			line.clear();
 
-			sprintf((char*)line.data(), "shininess=%.6f", properties.shininess);
+			sprintf((char*)line.data(), "shininess=%.6f", (double)properties.shininess);
 			filesystem::write_line(handle, line);
 			line.clear();
 

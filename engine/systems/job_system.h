@@ -26,7 +26,7 @@ namespace egkr
 		~job_system() override;
 
 		bool init() override;
-		bool update(float delta_time) override;
+		bool update(const frame_data& frame_data) override;
 		bool shutdown() override;
 
 		static void submit(job::information info);
@@ -58,5 +58,4 @@ namespace egkr
 		std::array<job::result, job::MAX_JOB_RESULTS> results_{};
 		std::mutex results_mutex_{};
 	};
-
 }

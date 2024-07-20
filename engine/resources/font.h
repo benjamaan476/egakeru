@@ -41,8 +41,8 @@ namespace egkr
 			uint32_t size{};
 			int32_t line_height{};
 			int32_t baseline{};
-			int32_t atlas_size_x{};
-			int32_t atlas_size_y{};
+			uint32_t atlas_size_x{};
+			uint32_t atlas_size_y{};
 			texture_map::shared_ptr atlas;
 			egkr::vector<glyph> glyphs{};
 			egkr::vector<kerning> kernings{};

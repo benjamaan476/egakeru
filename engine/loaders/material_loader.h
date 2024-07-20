@@ -18,6 +18,5 @@ namespace egkr
 
 	private:
 		static material_properties load_configuration_file(std::string_view path);
-
 	};
 }

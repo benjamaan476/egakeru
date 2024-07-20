@@ -104,13 +104,13 @@ namespace egkr
 
 	struct mesh_packet_data
 	{
-		egkr::vector<mesh::shared_ptr> meshes{};
+		egkr::vector<mesh::weak_ptr> meshes{};
 		egkr::vector<render_data> debug_meshes{};
 	};
 
 	struct ui_packet_data
 	{
 		mesh_packet_data mesh_data;
-		egkr::vector<std::shared_ptr<egkr::text::ui_text>> texts;
+		egkr::vector<std::weak_ptr<egkr::text::ui_text>> texts;
 	};
 }

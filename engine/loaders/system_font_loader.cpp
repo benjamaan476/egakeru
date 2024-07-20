@@ -59,9 +59,10 @@ namespace egkr
 		{
 			resource_data = read_esf_file(file);
 		} break;
+		case system_font_file_type::not_found:
 		default:
 		{
-			LOG_WARN("Shouldn't have got here");
+			LOG_FATAL("Shouldn't have got here");
 		}
 		}
 
@@ -85,7 +86,7 @@ namespace egkr
 	{
 		font::system_font_resource_data data{};
 		uint32_t line_number{};
-		egkr::vector<uint8_t> line{ 1 };
+		egkr::vector<uint8_t> line{ '#' };
 
 		for (; !line.empty(); line = filesystem::read_line(handle, 511), ++line_number)
 		{
@@ -151,6 +152,4 @@ namespace egkr
 		//TODO
 		return data;
 	}
-
-
 }

@@ -21,9 +21,9 @@ namespace egkr
 	private:
 
 		std::shared_ptr<shader> shader_{};
-		uint16_t diffuse_map_location_{};
-		uint16_t diffuse_colour_location_{};
-		uint16_t model_location_{};
+		uint32_t diffuse_map_location_{};
+		uint32_t diffuse_colour_location_{};
+		uint32_t model_location_{};
 
 		float near_clip_{};
 		float far_clip_{};

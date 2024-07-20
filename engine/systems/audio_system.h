@@ -2,6 +2,7 @@
 
 #include <pch.h>
 
+#include <systems/system.h>
 #include <resources/audio.h>
 
 constexpr static const uint32_t MAX_AUDIO_CHANNELS = 16u;
@@ -28,17 +29,17 @@ namespace egkr
 			emitter* emitter{};
 		};
 
-		class audio_system
+		class audio_system : public system
 		{
 		public:
 			using unique_ptr = std::unique_ptr<audio_system>;
-			static bool create(const system_configuration& configuration);
+			static audio_system* create(const system_configuration& configuration);
 
 			explicit audio_system(const system_configuration& configuration);
 
-			static void shutdown();
-
-			static bool update();
+			bool init() override;
+			bool update(const frame_data& frame_data) override;
+			bool shutdown() override;
 
 			static bool set_listener_orientation(const float3& position, const float3& forward, const float3& up);
 
@@ -50,15 +51,15 @@ namespace egkr
 			static bool set_master_volume(float volume);
 			static float get_master_volume();
 
-			static bool set_channel_volume(int8_t channel_id, float volume);
-			static float get_channel_volume(int8_t channel_id);
+			static bool set_channel_volume(uint8_t channel_id, float volume);
+			static float get_channel_volume(uint8_t channel_id);
 
-			static bool play_channel(int8_t channel_id, file* file, bool loop);
-			static bool play_emitter(int8_t channel_id, emitter* emitter);
+			static bool play_channel(uint8_t channel_id, file* file, bool loop);
+			static bool play_emitter(uint8_t channel_id, emitter* emitter);
 
-			void stop(int8_t channel_id);
-			void pause(int8_t channel_id);
-			void resume(int8_t channel_id);
+			void stop(uint8_t channel_id);
+			void pause(uint8_t channel_id);
+			void resume(uint8_t channel_id);
 
 		private:
 			system_configuration configuration_{};

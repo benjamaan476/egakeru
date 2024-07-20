@@ -1,4 +1,5 @@
 #include "debug_box3d.h"
+#include "identifier.h"
 
 namespace egkr::debug
 {
@@ -25,38 +26,51 @@ namespace egkr::debug
 		extents_ = egkr::extent3d{ .min = -size_ * 0.5F, .max = size_ * 0.5F };
 		recalculate_extents();
 
+		unique_id_ = identifier::acquire_unique_id(this);
 		return true;
 	}
 	bool debug_box3d::load()
 	{
 		geometry::properties properties{};
 		properties.name = "debug_box";
-		properties.vertex_count = vertices_.size();
+		properties.vertex_count = (uint32_t)vertices_.size();
 		properties.vertex_size = sizeof(colour_vertex_3d);
 		properties.vertices = vertices_.data();
 
 		geometry_ = geometry::geometry::create(properties);
 
 		geometry_->increment_generation();
+
+		set_colour(colour_);
 		return true;
 	}
+
 	bool debug_box3d::unload()
 	{
 		geometry_->destroy();
-		geometry_.reset();
+
+		if (unique_id_ != invalid_32_id)
+		{
+			identifier::release_id(unique_id_);
+			unique_id_ = invalid_32_id;
+		}
+
 		return true;
 	}
+
 	bool debug_box3d::update()
 	{
 		return true;
 	}
+
 	void debug_box3d::destroy()
 	{
 		if (geometry_)
 		{
-			geometry_->destroy();
-			geometry_.reset();
+			unload();
+		geometry_.reset();
 		}
+
 	}
 
 	void debug_box3d::set_parent(egkr::transform* parent)
@@ -73,16 +87,19 @@ namespace egkr::debug
 		}
 		colour_ = col;
 
-		if (geometry_->get_generation() != invalid_32_id && !vertices_.empty())
+		if (geometry_)
 		{
-			recalculate_colour();
-			geometry_->update_vertices(0, vertices_.size(), vertices_.data());
-			geometry_->increment_generation();
-		}
+			if (geometry_->get_generation() != invalid_32_id && !vertices_.empty())
+			{
+				recalculate_colour();
+				geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
+				geometry_->increment_generation();
+			}
 
-		if (geometry_->get_generation() == invalid_32_id)
-		{
-			geometry_->set_generation(0);
+			if (geometry_->get_generation() == invalid_32_id)
+			{
+				geometry_->set_generation(0);
+			}
 		}
 	}
 
@@ -92,7 +109,7 @@ namespace egkr::debug
 		{
 			extents_ = extent;
 			recalculate_extents();
-			geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+			geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 			geometry_->increment_generation();
 		}
 

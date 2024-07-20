@@ -15,7 +15,6 @@ namespace egkr
 		evar_system() = default;
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static bool create_int(const std::string& name, int32_t value);

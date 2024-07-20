@@ -29,17 +29,17 @@ namespace egkr
 		[[nodiscard]] static file_handle open(std::string_view path, file_mode mode, bool is_binary);
 		static void close(file_handle& handle);
 
-		static egkr::vector<uint8_t> read_line(file_handle& handle, uint32_t max_size);
+		static egkr::vector<uint8_t> read_line(file_handle& handle, int32_t max_size);
 		static uint64_t write_line(file_handle& handle, const egkr::vector<uint8_t>& line);
 
 		// Returns the read data and size of read data
 		static egkr::vector<uint8_t> read(file_handle& handle, uint64_t size);
 
 		template<class T>
-		static void read(file_handle& handle, T* data, uint32_t count);
+		static void read(file_handle& handle, T* data, size_t count);
 
 		template<class T>
-		static void read(file_handle& handle, T* data, uint32_t size, uint32_t count);
+		static void read(file_handle& handle, T* data, uint32_t size, size_t count);
 
 		template<class T>
 		static void read(file_handle& handle, T& data);
@@ -48,9 +48,9 @@ namespace egkr
 		static uint64_t write(file_handle& handle, const egkr::vector<type>& data);
 
 		template<class type>
-		static uint64_t write(file_handle& handle, const type& data, uint32_t count);
+		static uint64_t write(file_handle& handle, const type& data, size_t count);
 		template<class type>
-		static uint64_t write(file_handle& handle, type* data, uint32_t size, uint32_t count);
+		static uint64_t write(file_handle& handle, type* data, uint32_t size, size_t count);
 		template<class type>
 		static uint64_t write(file_handle& handle, const type& data);
 
@@ -58,7 +58,7 @@ namespace egkr
 	};
 
 	template<class T>
-	inline void filesystem::read(file_handle& handle, T* data, uint32_t count)
+	inline void filesystem::read(file_handle& handle, T* data, size_t count)
 	{
 		if (!handle.is_valid)
 		{
@@ -74,7 +74,7 @@ namespace egkr
 	}
 
 	template<class T>
-	inline void filesystem::read(file_handle& handle, T* data, uint32_t size, uint32_t count)
+	inline void filesystem::read(file_handle& handle, T* data, uint32_t size, size_t count)
 	{
 		if (!handle.is_valid)
 		{
@@ -117,7 +117,7 @@ namespace egkr
 	}
 
 	template<class type>
-	inline uint64_t filesystem::write(file_handle& handle, const type& data, uint32_t count)
+	inline uint64_t filesystem::write(file_handle& handle, const type& data, size_t count)
 	{
 		const auto size = sizeof(type);
 		if (!handle.is_valid)
@@ -136,7 +136,7 @@ namespace egkr
 		return wrote_bytes;
 	}
 	template<class type>
-	inline uint64_t filesystem::write(file_handle& handle, type* data, uint32_t size, uint32_t count)
+	inline uint64_t filesystem::write(file_handle& handle, type* data, uint32_t size, size_t count)
 	{
 		if (!handle.is_valid)
 		{

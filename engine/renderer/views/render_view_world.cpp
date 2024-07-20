@@ -13,14 +13,15 @@ namespace egkr
 
 	bool render_view_world::on_create()
 	{
-		auto resource = resource_system::load("Shader.Builtin.Material", resource::type::shader, nullptr);
+		const std::string shader_name = "Shader.Builtin.Material";
+		auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);
 		auto shader = (shader::properties*)resource->data;
 		shader_system::create_shader(*shader, renderpasses_[0].get());
 		resource_system::unload(resource);
 
-		shader_ = shader_system::get_shader("Shader.Builtin.Material");
+		shader_ = shader_system::get_shader(shader_name);
 
-		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
+		projection_ = glm::perspective(camera_->get_fov(), (float)width_ / (float)height_, camera_->get_near_clip(), camera_->get_far_clip());
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
 		event::register_event(event::code::render_mode, this, on_event);
@@ -49,7 +50,7 @@ namespace egkr
 		{
 			width_ = width;
 			height_ = height;
-			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / height_, camera_->get_near_clip(), camera_->get_far_clip());
+			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / (float)height_, camera_->get_near_clip(), camera_->get_far_clip());
 
 			for (auto& pass : renderpasses_)
 			{
@@ -59,7 +60,7 @@ namespace egkr
 	}
 	render_view_packet render_view_world::on_build_packet(void* data)
 	{
-		frame_data* mesh_data = (frame_data*)data;
+		frame_geometry_data* mesh_data = (frame_geometry_data*)data;
 
 		render_view_packet packet{};
 

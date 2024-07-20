@@ -21,8 +21,8 @@ namespace egkr
 		shader::shader::shared_ptr shader_{};
 		float4x4 projection_{};
 
-		uint16_t projection_location_{};
-		uint16_t view_location_{};
-		uint16_t cube_map_location_{};
+		uint32_t projection_location_{};
+		uint32_t view_location_{};
+		uint32_t cube_map_location_{};
 	};
 }

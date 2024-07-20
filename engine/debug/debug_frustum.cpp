@@ -1,4 +1,5 @@
 #include "debug_frustum.h"
+#include "identifier.h"
 
 namespace egkr::debug
 {
@@ -13,22 +14,38 @@ namespace egkr::debug
 
 		recalculate_lines(frustum);
 
-		geometry::properties properties{};
-		properties.name = "debug_frustum";
-		properties.vertex_count = vertices_.size();
-		properties.vertex_size = sizeof(colour_vertex_3d);
-		properties.vertices = vertices_.data();
+		properties_ = geometry::properties
+		{
+		.name = "debug_frustum",
+		.vertex_size = sizeof(colour_vertex_3d),
+		.vertex_count = (uint32_t)vertices_.size(),
+		.vertices = vertices_.data(),
+		};
+		unique_id_ = identifier::acquire_unique_id(this);
 
-		geometry_ = geometry::geometry::create(properties);
+	}
 
+	void debug_frustum::load()
+	{
+		geometry_ = geometry::geometry::create(properties_);
 		geometry_->increment_generation();
+
+	}
+
+	void debug_frustum::unload()
+	{
+		geometry_->destroy();
+		geometry_.reset();
+		identifier::release_id(unique_id_);
+		unique_id_ = invalid_32_id;
+
 	}
 
 	void debug_frustum::update(const frustum& frustum)
 	{
 		recalculate_lines(frustum);
 
-		geometry_->update_vertices(0, vertices_.size(), vertices_.data());
+		geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
 	}
 
 	void debug_frustum::destroy()
@@ -87,6 +104,4 @@ namespace egkr::debug
 
 		std::ranges::for_each(vertices_, [](auto& vertex) { vertex.colour = { 1, 1, 0, 1 }; });
 	}
-
-
 }

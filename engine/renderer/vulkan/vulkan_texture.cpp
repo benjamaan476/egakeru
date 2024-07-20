@@ -4,7 +4,7 @@
 #include <renderer/renderer_frontend.h>
 namespace egkr
 {
-	vk::Format channel_count_to_format(uint8_t channel_count, vk::Format default_format)
+	static vk::Format channel_count_to_format(uint8_t channel_count, vk::Format default_format)
 	{
 		switch (channel_count)
 		{
@@ -111,6 +111,7 @@ namespace egkr
 		case egkr::texture::type::texture_2d:
 		case egkr::texture::type::cube:
 			image_info.setImageType(vk::ImageType::e2D);
+			break;
 		default:
 			break;
 		}
@@ -130,7 +131,7 @@ namespace egkr
 
 		const auto memory_requirements = context_->device.logical_device.getImageMemoryRequirements(image_);
 		auto memory_type = context_->device.find_memory_index(memory_requirements.memoryTypeBits, properties.memory_properties);
-		if (memory_type == -1)
+		if (memory_type == invalid_32_id)
 		{
 			LOG_ERROR("Required memory type not found");
 		}
@@ -149,11 +150,11 @@ namespace egkr
 
 	}
 
-	bool vulkan_texture::populate(const egkr::texture::properties& properties, const uint8_t* data)
+	bool vulkan_texture::populate(const egkr::texture::properties& properties, const uint8_t* texture_data)
 	{
 		ZoneScoped;
 
-		if (data)
+		if (texture_data)
 		{
 			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count * (properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
@@ -170,9 +171,9 @@ namespace egkr
 			};
 			create(image_properties);
 
-			if (data)
+			if (texture_data)
 			{
-				write_data(0, image_size, data);
+				write_data(0, image_size, texture_data);
 			}
 
 
@@ -219,7 +220,6 @@ namespace egkr
 
 			return true;
 		}
-		return false;
 	}
 
 	void vulkan_texture::free()
@@ -243,7 +243,7 @@ namespace egkr
 		view_ = view;
 	}
 
-	bool vulkan_texture::write_data(uint64_t offset, uint32_t size, const uint8_t* data)
+	bool vulkan_texture::write_data(uint64_t offset, uint64_t size, const uint8_t* texture_data)
 	{
 		ZoneScoped;
 
@@ -252,7 +252,7 @@ namespace egkr
 		auto staging_buffer = renderbuffer::renderbuffer::create(renderbuffer::type::staging, size);
 		staging_buffer->bind(0);
 
-		staging_buffer->load_range(offset, size, data);
+		staging_buffer->load_range(offset, size, texture_data);
 
 		command_buffer single_use{};
 		single_use.begin_single_use(context_, context_->device.graphics_command_pool);
@@ -265,7 +265,7 @@ namespace egkr
 		return true;
 	}
 
-	void vulkan_texture::read_data(uint64_t offset, uint32_t size, void* out_memory)
+	void vulkan_texture::read_data(uint64_t offset, uint64_t size, void* out_memory)
 	{
 		auto format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm);
 
@@ -498,7 +498,7 @@ namespace egkr
 
 	}
 
-	vk::SamplerAddressMode convert_repeat_type(std::string_view axis, egkr::texture_map::repeat repeat)
+	static vk::SamplerAddressMode convert_repeat_type(std::string_view axis, egkr::texture_map::repeat repeat)
 	{
 		ZoneScoped;
 		switch (repeat)
@@ -517,7 +517,7 @@ namespace egkr
 		}
 	}
 
-	vk::Filter convert_filter_type(std::string_view op, egkr::texture_map::filter filter)
+	static vk::Filter convert_filter_type(std::string_view op, egkr::texture_map::filter filter)
 	{
 		ZoneScoped;
 
@@ -560,6 +560,7 @@ namespace egkr
 	{
 		if (context_)
 		{
+			context_->device.logical_device.waitIdle();
 			if (texture)
 			{
 				texture->destroy();

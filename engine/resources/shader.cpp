@@ -141,7 +141,7 @@ namespace egkr
 			default_map->texture = texture_system::get_default_texture();
 
 
-			location = global_textures_.size();
+			location = (uint32_t)global_textures_.size();
 			global_textures_.push_back(std::move(default_map));
 		}
 		else
@@ -168,25 +168,25 @@ namespace egkr
 	void shader::add_uniform(std::string_view uniform_name, uint32_t size, uniform_type type, scope scope, uint32_t set_location, bool is_sampler)
 	{
 		uniform uniform{};
-		uniform.index = uniforms_.size();
+		uniform.index = (uint16_t)uniforms_.size();
 		uniform.scope = scope;
 		uniform.type = type;
 		
 		bool is_global = scope == scope::global;
-		uniform.location = is_sampler ? set_location : uniform.index;
+		uniform.location = is_sampler ? (uint16_t)set_location : uniform.index;
 
 		if (scope != scope::local)
 		{
 			uniform.set_index = (uint8_t)scope;
 			uniform.offset = is_sampler ? 0 : is_global ? global_ubo_size_ : ubo_size_;
-			uniform.size = is_sampler ? 0 : size;
+			uniform.size = is_sampler ? 0 : (uint16_t)size;
 		}
 		else
 		{
 			uniform.set_index = invalid_8_id;
 			range r{ get_aligned(push_constant_size_, 4), get_aligned(size, 4) };
 			uniform.offset = r.offset;
-			uniform.size = r.size;
+			uniform.size = (uint16_t)r.size;
 
 			push_const_ranges_.push_back(r);
 		

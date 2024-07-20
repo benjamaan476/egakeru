@@ -19,7 +19,10 @@ namespace egkr
 		}
 		else
 		{
-			material_ = material_system::acquire(properties.material_name);
+			if (properties.material_name != "")
+			{
+				material_ = material_system::acquire(properties.material_name);
+			}
 		}
 	}
 

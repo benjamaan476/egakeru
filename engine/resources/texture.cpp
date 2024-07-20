@@ -10,13 +10,13 @@ namespace egkr
 		return renderer->create_texture();
 	}
 
-	texture* texture::create(const properties& properties, const uint8_t* data)
+	texture* texture::create(const properties& properties, const uint8_t* texture_data)
 	{
-		return renderer->create_texture(properties, data);
+		return renderer->create_texture(properties, texture_data);
 	}
-	void texture::create(const properties& properties, const uint8_t* data, texture* out_texture)
+	void texture::create(const properties& properties, const uint8_t* texture_data, texture* out_texture)
 	{
-		return renderer->create_texture(properties, data, out_texture);
+		return renderer->create_texture(properties, texture_data, out_texture);
 	}
 
 	texture::texture(const properties& properties)
@@ -35,6 +35,7 @@ namespace egkr
 
 	void texture::destroy()
 	{
+		//free();
 		if (properties_.data)
 		{
 			::free(properties_.data);

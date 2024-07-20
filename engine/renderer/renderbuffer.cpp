@@ -14,5 +14,4 @@ namespace egkr::renderbuffer
 	{
 
 	}
-
 }

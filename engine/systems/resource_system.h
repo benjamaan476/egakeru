@@ -19,10 +19,9 @@ namespace egkr
 		static resource_system* create(const configuration& properties);
 
 		explicit resource_system(const configuration& properties);
-		~resource_system();
+		~resource_system() override;
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		void register_loader(resource_loader::unique_ptr loader);

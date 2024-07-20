@@ -13,6 +13,7 @@
 #include <systems/font_system.h>
 #include <systems/console_system.h>
 #include <systems/evar_system.h>
+#include <systems/audio_system.h>
 
 #include <renderer/renderer_frontend.h>
 
@@ -57,7 +58,7 @@ namespace egkr
 		return true;
 	}
 	
-	bool system_manager::update(float delta_time)
+	bool system_manager::update(const frame_data& frame_data)
 	{
 		for (auto& [type, system] : system_manager_state->registered_systems_)
 		{
@@ -66,7 +67,7 @@ namespace egkr
 				continue;
 			}
 
-			if (!system->update(delta_time))
+			if (!system->update(frame_data))
 			{
 				return false;
 			}
@@ -74,9 +75,9 @@ namespace egkr
 		return true;
 	}
 
-	void system_manager::update_input()
+	void system_manager::update_input(const frame_data& frame_data)
 	{
-		system_manager_state->registered_systems_[system_type::input]->update(0.F);
+		system_manager_state->registered_systems_[system_type::input]->update(frame_data);
 	}
 
 	void system_manager::shutdown()
@@ -173,6 +174,11 @@ namespace egkr
 		{
 			registered_systems_.emplace(system_type::evar, evar_system::create());
 		}
+		{
+			audio::system_configuration audio_configuration{ .audio_channel_count = 8 };
+
+			registered_systems_.emplace(system_type::audio, audio::audio_system::create(audio_configuration));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -198,6 +204,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::audio]->shutdown();
 		system_manager_state->registered_systems_[system_type::evar]->shutdown();
 		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();

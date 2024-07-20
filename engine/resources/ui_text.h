@@ -25,6 +25,7 @@ namespace egkr
 		{
 		public:
 			using shared_ptr = std::shared_ptr<ui_text>;
+			using weak_ptr = std::weak_ptr<ui_text>;
 			static shared_ptr create(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 			ui_text(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 			~ui_text();

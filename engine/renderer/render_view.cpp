@@ -51,7 +51,7 @@ namespace egkr
 	{
 		for (const auto& pass : renderpasses_)
 		{
-			for (auto i{ 0U }; i < pass->get_render_target_count(); ++i)
+			for (uint8_t i{ 0U }; i < pass->get_render_target_count(); ++i)
 			{
 				auto& target = pass->get_render_target(i);
 				if (target)
@@ -100,9 +100,10 @@ namespace egkr
 		} break;
 		case event::code::render_target_refresh_required:
 			view->regenerate_render_targets();
+			break;
 		default:
 			return false;
 		}
-		return true;
+		return false;
 	}
 }

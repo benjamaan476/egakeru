@@ -32,11 +32,6 @@ namespace egkr
 			{
 				::free(vertices);
 			}
-
-			~properties()
-			{
-				//Dynamically allocated so needs to be freed
-			}
 		};
 		using shared_ptr = std::shared_ptr<geometry>;
 		static shared_ptr create(const properties& properties);
@@ -72,7 +67,7 @@ namespace egkr
 		uint64_t unique_id{};
 	};
 
-	struct frame_data
+	struct frame_geometry_data
 	{
 		egkr::vector<render_data> world_geometries{};
 		egkr::vector<render_data> debug_geometries{};

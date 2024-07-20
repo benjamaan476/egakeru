@@ -49,11 +49,6 @@ namespace egkr
 		return true;
 	}
 
-	bool material_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool material_system::shutdown()
 	{
 		if (material_system_->default_material_)
@@ -104,7 +99,7 @@ namespace egkr
 			return material_system_->registered_materials_[material_handle];
 		}
 
-		uint32_t material_id = material_system_->registered_materials_.size();
+		uint32_t material_id = (uint32_t)material_system_->registered_materials_.size();
 
 		if (material_id >= material_system_->max_material_count_)
 		{
@@ -160,6 +155,19 @@ namespace egkr
 		material_system_->registered_materials_.push_back(new_material);
 		material_system_->registered_materials_by_name_[properties.name.data()] = material_id;
 		return new_material;
+	}
+
+	bool material_system::release(const material::shared_ptr& material)
+	{
+		//TODO ew
+		if (material_system_->registered_materials_by_name_.contains(material->get_name()))
+		{
+			//Can't clear out vector as things access it by index
+			material_system_->registered_materials_[material_system_->registered_materials_by_name_[material->get_name()]]->free();
+			material_system_->registered_materials_by_name_.erase(material->get_name());
+			return true;
+		}
+		return false;
 	}
 
 	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)

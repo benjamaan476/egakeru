@@ -8,6 +8,7 @@ namespace egkr::audio
 	class oal : public audio::plugin
 	{
 	public:
+		virtual ~oal() override = default;
 		bool init(const configuration& configuration) override;
 		bool shutdown() override;
 
@@ -35,12 +36,12 @@ namespace egkr::audio
 		audio::file* load_stream(const std::string& name) override;
 
 		void unload_audio(audio::file* file) override;
-		bool play_source(int8_t source_index) override;
-		bool play_on_source(audio::file* file, int8_t source_index) override;
+		bool play_source(uint8_t source_index) override;
+		bool play_on_source(audio::file* file, uint8_t source_index) override;
 
-		void stop_source(int8_t source_index) override;
-		void pause_source(int8_t source_index) override;
-		void resume_source(int8_t source_index) override;
+		void stop_source(uint8_t source_index) override;
+		void pause_source(uint8_t source_index) override;
+		void resume_source(uint8_t source_index) override;
 	private:
 		static bool check_error();
 		uint32_t find_free_buffer();

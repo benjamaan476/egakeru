@@ -29,7 +29,7 @@ enum log_level
 
 
 #include "log/log.h"
-
+#include "frame_data.h"
 namespace egkr
 {
 	template <typename T>
@@ -122,7 +122,7 @@ namespace egkr
 			sides[4] = plane::create(position, glm::cross(right, forward_fwd - half_up));
 			sides[5] = plane::create(position, glm::cross(half_up + forward_fwd, right));
 
-		};
+		}
 
 		bool intersects_sphere(const float3& center, float radius) const
 		{
@@ -144,7 +144,8 @@ namespace egkr
 	};
 }
 
-constexpr static const uint64_t invalid_64_id = std::numeric_limits<uint64_t>::max();
+constexpr static const uint64_t invalid_64_id = std::numeric_limits<int64_t>::max();
+constexpr static const uint64_t invalid_64u_id = std::numeric_limits<uint64_t>::max();
 constexpr static const uint32_t invalid_32_id = std::numeric_limits<uint32_t>::max();
 constexpr static const uint16_t invalid_16_id = std::numeric_limits<uint16_t>::max();
 constexpr static const uint8_t invalid_8_id = std::numeric_limits<uint8_t>::max();
@@ -219,6 +220,6 @@ static inline constexpr std::tuple<uint32_t, uint32_t, uint32_t> u32_to_rgb(uint
 
 static inline constexpr egkr::float3 rgbu_to_float3(uint32_t r, uint32_t g, uint32_t b)
 {
-	return { r / 255.0F, g / 255.0F, b / 255.0F };
+	return { (float)r / 255.0F, (float)g / 255.0F, (float)b / 255.0F };
 }
 

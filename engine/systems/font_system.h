@@ -20,8 +20,8 @@ namespace egkr
 		}
 		else if ((codepoint & 0xE8) == 0xC0)
 		{
-			codepoint = ((bytes[offset + 0] & 0b00011111) << 6) +
-				(bytes[offset + 1] & 0b00111111);
+			codepoint = (char)(((bytes[offset + 0] & 0b00011111) << 6) +
+				(bytes[offset + 1] & 0b00111111));
 
 			out_advance = 2;
 			out_codepoint = codepoint;
@@ -29,19 +29,19 @@ namespace egkr
 		}
 		else if ((codepoint & 0xF0) == 0xE0)
 		{
-			codepoint = ((bytes[offset + 0] & 0b00001111) << 12) +
+			codepoint = (char)(((bytes[offset + 0] & 0b00001111) << 12) +
 				((bytes[offset + 1] & 0b00111111) << 6) +
-				(bytes[offset + 2] & 0b00111111);
+				(bytes[offset + 2] & 0b00111111));
 			out_advance = 3;
 			out_codepoint = codepoint;
 			return true;
 		}
 		else if ((codepoint & 0xF8) == 0xF0)
 		{
-			codepoint = ((bytes[offset + 0] & 0b00000111) << 18) +
+			codepoint = (char)(((bytes[offset + 0] & 0b00000111) << 18) +
 				((bytes[offset + 1] & 0b00111111) << 12) +
 				((bytes[offset + 2] & 0b00111111) << 6) +
-				(bytes[offset + 3] & 0b00111111);
+				(bytes[offset + 3] & 0b00111111));
 			out_advance = 4;
 			out_codepoint = codepoint;
 			return true;
@@ -118,7 +118,6 @@ namespace egkr
 		explicit font_system(const configuration& configuration);
 
 		bool init() override;
-		bool update(float delta_time) override;
 		bool shutdown() override;
 
 		static bool load_system_font(const system_font_configuration& configuration);

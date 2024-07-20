@@ -29,8 +29,8 @@ namespace egkr::container
 		std::vector<T> block_{};
 		bool owns_memory_{};
 
-		int32_t head_{};
-		int32_t tail_{ -1 };
+		uint32_t head_{};
+		uint32_t tail_{ invalid_32_id };
 	};
 
 	template<class T>

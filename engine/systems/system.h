@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pch.h>
-
 namespace egkr
 {
 	enum class system_type
@@ -22,6 +21,7 @@ namespace egkr
 		material,
 		geometry,
 		light,
+		audio,
 
 		known_max = 255,
 
@@ -35,7 +35,7 @@ namespace egkr
 		using unique_ptr = std::unique_ptr<system>;
 		virtual bool init() = 0;
 		virtual bool shutdown() = 0;
-		virtual bool update(float delta_time) = 0;
+		virtual bool update(const frame_data& /*frame_data*/) { return true; }
 
 		virtual ~system() = default;
 	};
@@ -48,8 +48,8 @@ namespace egkr
 		explicit system_manager(application* application);
 
 		static bool init();
-		static bool update(float delta_time);
-		static void update_input();
+		static bool update(const frame_data& frame_data);
+		static void update_input(const frame_data& frame_data);
 
 		static void shutdown();
 

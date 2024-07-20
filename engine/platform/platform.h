@@ -26,7 +26,8 @@ namespace egkr
 		case egkr::platform_type::android:
 			return "android";
 		default:
-			return "invalid platform";
+			LOG_ERROR("Unknown platform type");
+			return "";
 		}
 	}
 
@@ -58,6 +59,6 @@ namespace egkr
 		virtual egkr::vector<const char*> get_required_extensions() const = 0;
 		virtual vk::SurfaceKHR create_surface(vk::Instance instance) = 0;
 
-		virtual int2 get_framebuffer_size() = 0;
+		virtual uint2 get_framebuffer_size() = 0;
 	};
 }

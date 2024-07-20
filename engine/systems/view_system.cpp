@@ -27,11 +27,6 @@ namespace egkr
 		return true;
 	}
 
-	bool view_system::update(float /*delta_time*/)
-	{
-		return true;
-	}
-
 	bool view_system::shutdown()
 	{
 		if (view_system_)
@@ -77,7 +72,7 @@ namespace egkr
 		}
 
 		view_system_->registered_views_.push_back(render_view);
-		view_system_->registered_views_by_name_[configuration.name] = view_system_->registered_views_.size() - 1;
+		view_system_->registered_views_by_name_[configuration.name] = (uint32_t)view_system_->registered_views_.size() - 1;
 
 	}
 

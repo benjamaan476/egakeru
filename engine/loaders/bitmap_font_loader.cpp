@@ -60,6 +60,7 @@ namespace egkr
 			resource_data = read_ebf_file(file);
 			resource_data.data.type = font::type::bitmap;
 		} break;
+		case bitmap_font_file_type::not_found:
 		default:
 		{
 			LOG_WARN("Shouldn't have got here");

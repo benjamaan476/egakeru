@@ -161,7 +161,7 @@ namespace egkr
 
 			if (properties_.global_uniform_count)
 			{
-				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
+				auto binding_index = (uint32_t)configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
 				vk::DescriptorSetLayoutBinding ubo{};
 				ubo
 					.setBinding(binding_index)
@@ -174,7 +174,7 @@ namespace egkr
 
 			if (properties_.global_uniform_sampler_count)
 			{
-				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
+				auto binding_index = (uint8_t)configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_GLOBAL].bindings.size();
 				vk::DescriptorSetLayoutBinding ubo{};
 				ubo
 					.setBinding(binding_index)
@@ -206,7 +206,7 @@ namespace egkr
 
 			if (properties_.instance_uniform_sampler_count)
 			{
-				auto binding_index = configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count;
+				auto binding_index = (uint8_t)configuration.descriptor_sets[DESCRIPTOR_SET_INDEX_INSTANCE].binding_count;
 				vk::DescriptorSetLayoutBinding ubo{};
 				ubo
 					.setBinding(binding_index)
@@ -513,7 +513,7 @@ namespace egkr
 
 	uint32_t vulkan_shader::acquire_instance_resources(const egkr::vector<texture_map::shared_ptr>& texture_maps)
 	{
-		auto instance_id = instance_states.size();
+		auto instance_id = (uint32_t)instance_states.size();
 
 		vulkan_instance_state instance_state;
 
@@ -539,11 +539,11 @@ namespace egkr
 		{
 			if (uniform.scope == scope::global)
 			{
-				set_global_texture(uniform.location, ((texture_map::shared_ptr*)(value))->get());
+				set_global_texture(uniform.location, ((const texture_map::shared_ptr*)(value))->get());
 			}
 			else
 			{
-				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(texture_map::shared_ptr*)value;
+				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(const texture_map::shared_ptr*)value;
 			}
 		}
 		else
@@ -552,7 +552,7 @@ namespace egkr
 			{
 				// Is local, using push constants. Do this immediately.
 				auto& command_buffer = context_->graphics_command_buffers[context_->image_index].get_handle();
-				command_buffer.pushConstants(pipelines_[bound_pipeline_index_]->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, uniform.offset, uniform.size, value);
+				command_buffer.pushConstants(pipelines_[bound_pipeline_index_]->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, (uint32_t)uniform.offset, uniform.size, value);
 			}
 			else
 			{
@@ -569,9 +569,9 @@ namespace egkr
 		return true;
 	}
 
-	vulkan_stage vulkan_shader::create_module(const vulkan_stage_configuration& configuration)
+	vulkan_stage vulkan_shader::create_module(const vulkan_stage_configuration& stage_configuration)
 	{
-		auto resource = resource_system::load(configuration.filename, resource::type::binary, nullptr);
+		auto resource = resource_system::load(stage_configuration.filename, resource::type::binary, nullptr);
 		auto* code = (binary_resource_properties*)resource->data;
 
 		vulkan_stage shader_stage{};
@@ -579,7 +579,7 @@ namespace egkr
 		vk::ShaderModuleCreateInfo create_info{};
 		create_info
 			.setCodeSize(code->data.size())
-			.setPCode((const uint32_t*)(code->data.data()));
+			.setPCode((uint32_t*)(code->data.data()));
 		shader_stage.handle = context_->device.logical_device.createShaderModule(create_info, context_->allocator);
 		shader_stage.create_info = create_info;
 
@@ -587,7 +587,7 @@ namespace egkr
 
 		vk::PipelineShaderStageCreateInfo pipeline_create_info{};
 		pipeline_create_info
-			.setStage(configuration.stage)
+			.setStage(stage_configuration.stage)
 			.setModule(shader_stage.handle)
 			.setPName("main");
 
