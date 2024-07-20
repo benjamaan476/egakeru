@@ -35,6 +35,7 @@ namespace egkr
 
 	void texture::destroy()
 	{
+		free();
 		if (properties_.data)
 		{
 			::free(properties_.data);

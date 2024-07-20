@@ -142,6 +142,9 @@ namespace egkr
 		explicit texture_map(const properties& properties);
 		virtual ~texture_map();
 
+		texture_map& operator=(const texture_map&) = delete;
+		texture_map(const texture_map&) = delete;
+
 		void free();
 
 		virtual void acquire() = 0;

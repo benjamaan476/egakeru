@@ -37,6 +37,10 @@ namespace egkr
 			depth->destroy();
 		}
 
+		for (auto* tex : render_textures_)
+		{
+			tex->destroy();
+		}
 		render_textures_.clear();
 
 		image_count_ = 0;

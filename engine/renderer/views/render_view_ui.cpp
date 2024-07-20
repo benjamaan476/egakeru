@@ -68,11 +68,14 @@ namespace egkr
 		packet.view_matrix = view_;
 		packet.extended_data = new ui_packet_data(*ui_data);
 
-		for (const auto& mesh : ui_data->mesh_data.meshes)
+		for (const auto& msh : ui_data->mesh_data.meshes)
 		{
-			for (const auto& geo : mesh->get_geometries())
+			if (auto mesh = msh.lock())
 			{
-				packet.render_data.emplace_back(geo, mesh->get_model());
+				for (const auto& geo : mesh->get_geometries())
+				{
+					packet.render_data.emplace_back(geo, mesh->get_model());
+				}
 			}
 		}
 
@@ -103,28 +106,31 @@ namespace egkr
 			}
 
 			auto* texts = (ui_packet_data*)render_view_packet->extended_data;
-			for (const auto& text : texts->texts)
+			for (const auto& txt : texts->texts)
 			{
-				shader_system::bind_instance(text->get_id());
-
-				auto atlas = text->get_data()->atlas;
-				if (atlas->texture->get_generation() == invalid_32_id)
+				if (auto text = txt.lock())
 				{
-					continue;
+					shader_system::bind_instance(text->get_id());
+
+					auto atlas = text->get_data()->atlas;
+					if (atlas->texture->get_generation() == invalid_32_id)
+					{
+						continue;
+					}
+					shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
+					constexpr static const float4 white_colour{ 1, 1, 1, 1 };
+					shader_system::set_uniform(diffuse_colour_location_, &white_colour);
+
+					bool needs_update = text->get_render_frame() != frame_number;
+					shader_system::apply_instance(needs_update);
+					text->set_render_frame(frame_number);
+
+					float4x4 model = text->get_transform().get_world();
+
+					shader_system::set_uniform(model_location_, &model);
+
+					text->draw();
 				}
-				shader_system::set_uniform(diffuse_map_location_, &text->get_data()->atlas);
-				constexpr static const float4 white_colour{ 1, 1, 1, 1 };
-				shader_system::set_uniform(diffuse_colour_location_, &white_colour);
-
-				bool needs_update = text->get_render_frame() != frame_number;
-				shader_system::apply_instance(needs_update);
-				text->set_render_frame(frame_number);
-
-				float4x4 model = text->get_transform().get_world();
-
-				shader_system::set_uniform(model_location_, &model);
-
-				text->draw();
 			}
 
 			pass->end();

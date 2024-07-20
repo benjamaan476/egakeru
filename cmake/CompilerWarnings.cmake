@@ -73,7 +73,7 @@ function(
         -Wno-c++20-compat
         -Wno-deprecated-copy-with-user-provided-dtor
         -Wno-cast-align
-        -Wno-vla-cxx-extension
+        -Wno-vla-extension
     )
   endif()
 

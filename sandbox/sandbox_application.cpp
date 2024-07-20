@@ -58,9 +58,9 @@ bool sandbox_application::init()
 
 	egkr::mesh::configuration ui_mesh_properties{};
 	ui_mesh_properties.geometry_configurations.push_back(ui_properties);
-	auto ui_mesh = egkr::mesh::create(ui_mesh_properties);
-	ui_mesh->load();
-	ui_meshes_.push_back(ui_mesh);
+	ui_mesh_ = egkr::mesh::create(ui_mesh_properties);
+	ui_mesh_->load();
+	ui_meshes_.push_back(ui_mesh_);
 
 	camera_ = egkr::camera_system::get_default();
 	camera_->set_position({ 0, 0, 0.F });
@@ -124,7 +124,7 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 
 	more_test_text_->set_text(text);
 
-	egkr::vector<egkr::text::ui_text::shared_ptr> texts{ test_text_, more_test_text_ };
+	egkr::vector<egkr::text::ui_text::weak_ptr> texts{ test_text_, more_test_text_ };
 	if (egkr::debug_console::is_visible())
 	{
 		texts.push_back(egkr::debug_console::get_text());
@@ -275,6 +275,10 @@ bool sandbox_application::shutdown()
 		box_.reset();
 	}
 	ui_meshes_.clear();
+	if (ui_mesh_)
+	{
+		ui_mesh_.reset();
+	}
 	if (test_text_)
 	{
 		test_text_.reset();

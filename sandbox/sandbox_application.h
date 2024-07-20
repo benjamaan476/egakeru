@@ -35,7 +35,8 @@ private:
 	bool update_frustum_{true};
 	egkr::skybox::shared_ptr skybox_{};
 	egkr::vector<egkr::mesh::shared_ptr> meshes_{};
-	egkr::vector<egkr::mesh::shared_ptr> ui_meshes_{};
+	egkr::vector<egkr::mesh::weak_ptr> ui_meshes_{};
+	egkr::mesh::shared_ptr ui_mesh_{};
 	egkr::text::ui_text::shared_ptr test_text_{};
 	egkr::text::ui_text::shared_ptr more_test_text_{};
 

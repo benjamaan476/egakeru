@@ -56,6 +56,8 @@ namespace egkr
 		ui_text::~ui_text()
 		{
 			identifier::release_id(unique_id_);
+			vertex_buffer_.reset();
+			index_buffer_.reset();
 		}
 
 		void ui_text::acquire(const std::string& name, uint16_t font_size, type type)

@@ -18,6 +18,7 @@ namespace egkr
 		};
 
 		using shared_ptr = std::shared_ptr<mesh>;
+		using weak_ptr = std::weak_ptr<mesh>;
 		static shared_ptr create(const configuration& configuration);
 		//static shared_ptr create(const geometry::geometry::shared_ptr& geometry, const transform& model);
 

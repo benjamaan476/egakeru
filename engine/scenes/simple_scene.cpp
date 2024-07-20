@@ -108,8 +108,8 @@ namespace egkr::scene
 					debug_data->load();
 				}
 
-				debug_data->set_colour({ 0, 1,0, 0 });
-				debug_data->set_extents(mesh->extents());
+				//debug_data->set_colour({ 0, 1,0, 0 });
+				//debug_data->set_extents(mesh->extents());
 
 			}
 
