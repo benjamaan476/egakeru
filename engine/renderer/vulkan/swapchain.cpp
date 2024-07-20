@@ -58,7 +58,7 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		destroy();
+		//destroy();
 		create();
 
 		event::fire_event(event::code::render_target_refresh_required, nullptr, {});

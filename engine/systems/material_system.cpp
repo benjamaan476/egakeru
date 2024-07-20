@@ -238,7 +238,6 @@ namespace egkr
 		properties.diffuse_colour = float4{ 1.F };
 		properties.shader_name = "Shader.Builtin.Material";
 		material_system_->default_material_ = material::create(properties);
-		load_material(properties, material_system_->default_material_);
 		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
 
 		for (auto map : texture_maps)
@@ -305,7 +304,7 @@ namespace egkr
 		auto id = shader->acquire_instance_resources(maps);
 
 		//material.reset();
-		//material = material::create(properties);
+		material = material::create(properties);
 		if (material->get_generation() == invalid_32_id)
 		{
 			material->set_generation(0);
