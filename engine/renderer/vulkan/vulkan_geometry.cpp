@@ -61,7 +61,7 @@ namespace egkr
 			LOG_WARN("Tried to render geometry without valid vertex buffer");
 			return;
 		}
-		bool includes_index_data = index_count_ > 0;
+		const bool includes_index_data = index_count_ > 0;
 
 		vertex_buffer_->draw(0, vertex_count_, includes_index_data);
 
@@ -79,7 +79,7 @@ namespace egkr
 			return;
 		}
 
-		uint32_t total_size = vertex_count * vertex_size_;
+		const uint32_t total_size = vertex_count * vertex_size_;
 		vertex_buffer_->load_range(offset, total_size, vertices);
 	}
 
