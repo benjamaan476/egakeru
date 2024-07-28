@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "resources/transform.h"
+#include "transformable.h"
 #include "resources/light.h"
 #include "resources/mesh.h"
 #include "resources/skybox.h"
@@ -77,7 +77,7 @@ namespace egkr
 			std::string resource_name;
 		};
 
-		class simple_scene
+		class simple_scene : public transformable
 		{
 		public:
 			using unique_ptr = std::unique_ptr<simple_scene>;
@@ -121,7 +121,6 @@ namespace egkr
 			//configuration configuration_{};
 			uint32_t id_{};
 			state state_{state::uninitialised};
-			transform transform_;
 			//bool is_enabled_{};
 
 			std::string skybox_name_;

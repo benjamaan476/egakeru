@@ -4,11 +4,11 @@
 
 #include "renderer/vertex_types.h"
 #include "resources/geometry.h"
-#include "resources/transform.h"
+#include "transformable.h"
 
 namespace egkr::editor
 {
-	class gizmo
+	class gizmo : public transformable
 	{
 	public:
 		enum class mode
@@ -40,11 +40,6 @@ namespace egkr::editor
 
 		void set_mode(mode mode);
 
-		[[nodiscard]] auto get_transform() const
-		{
-			return transform;
-		}
-
 		void draw() const { mode_data.at(gizmo_mode).geo->draw(); }
 	private:
 		void setup_none();
@@ -52,7 +47,6 @@ namespace egkr::editor
 		void setup_rotate();
 		void setup_scale();
 	private:
-		transform transform{};
 		mode gizmo_mode{ mode::none };
 		std::unordered_map<mode, gizmo_data> mode_data;
 	};

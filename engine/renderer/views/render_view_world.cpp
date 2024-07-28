@@ -92,7 +92,7 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.model.get_world());
+				material_system::apply_local(m, render_data.transform->get_world_transform());
 				render_data.geometry->draw();
 
 			}
@@ -106,7 +106,7 @@ namespace egkr
 				shader_system::apply_global(true);
 				for (render_data data : render_view_packet->debug_render_data)
 				{
-					const auto& model = data.model.get_world();
+					const auto& model = data.transform->get_world_transform();
 					shader_system::set_uniform(locations_.model, &model);
 					data.geometry->draw();
 				}

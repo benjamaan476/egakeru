@@ -2,7 +2,7 @@
 
 #include <pch.h>
 
-#include <resources/transform.h>
+#include <transformable.h>
 #include <renderer/renderbuffer.h>
 
 namespace egkr
@@ -21,7 +21,7 @@ namespace egkr
 			system
 		};
 
-		class ui_text
+		class ui_text : public transformable
 		{
 		public:
 			using shared_ptr = std::shared_ptr<ui_text>;
@@ -39,7 +39,6 @@ namespace egkr
 			[[nodiscard]] uint32_t get_id() const { return instance_id_; }
 			[[nodiscard]] std::shared_ptr<font::data> get_data() const { return data_; }
 			[[nodiscard]] uint64_t get_render_frame() const { return render_frame_number_; }
-			[[nodiscard]] transform get_transform() const { return transform_; }
 			[[nodiscard]] const auto& get_text() const { return text_; }
 			[[nodiscard]] bool has_text() const { return text_.size() != 0; }
 			void set_render_frame(uint64_t frame) { render_frame_number_ = frame;}
@@ -55,7 +54,6 @@ namespace egkr
 			renderbuffer::renderbuffer::shared_ptr index_buffer_{};
 
 			std::string text_{};
-			transform transform_{};
 			uint32_t instance_id_{invalid_32_id};
 			uint64_t render_frame_number_{};
 			uint32_t unique_id_{};

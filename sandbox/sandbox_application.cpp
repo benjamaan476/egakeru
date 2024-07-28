@@ -116,18 +116,18 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 {
 	if (main_scene_->is_loaded())
 	{
-		auto& model = meshes_[0]->model();
+		auto& model = meshes_[0]->get_transform();
 		glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
 		model.rotate(q);
 
-		auto& model_2 = meshes_[1]->model();
+		auto& model_2 = meshes_[1]->get_transform();
 		model_2.rotate(q);
 
 	}
 	main_scene_->populate_render_packet(render_packet);
 	if (test_lines_)
 	{
-		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .model = test_lines_->get_transform() });
+		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .transform = test_lines_.get()});
 	}
 
 	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_);
@@ -481,7 +481,6 @@ void sandbox_application::load_scene()
 		cube_1.geometry_configurations.push_back(egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material"));
 
 		auto mesh_1 = egkr::mesh::create(cube_1);
-		mesh_1->set_model(egkr::transform::create());
 		meshes_.push_back(mesh_1);
 
 		main_scene_->add_mesh(mesh_1->get_name(), mesh_1);
@@ -493,8 +492,8 @@ void sandbox_application::load_scene()
 
 		auto mesh_2 = egkr::mesh::create(cube_2);
 		egkr::transform model = egkr::transform::create({ 10.F, 0.F, 0.F });
-		model.set_parent(&meshes_.back()->model());
-		mesh_2->set_model(model);
+		model.set_parent(&meshes_.back()->get_transform());
+		mesh_2->set_transform(model);
 		meshes_.push_back(mesh_2);
 
 		main_scene_->add_mesh(mesh_2->get_name(), mesh_2);
@@ -514,7 +513,7 @@ void sandbox_application::load_scene()
 		main_scene_->add_point_light(light.name, lght);
 
 		box_ = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, nullptr);
-		box_->get_transform().set_position(light.position);
+		box_->set_position(light.position);
 		box_->set_colour(light.colour);
 		main_scene_->add_debug(light.name + "_box", box_);
 	}
@@ -562,7 +561,7 @@ void sandbox_application::load_scene()
 	for (const auto& mesh : scene_configuration.meshes)
 	{
 		auto msh = egkr::mesh::create({ mesh.resource_name });
-		msh->set_model(mesh.transform);
+		msh->set_transform(mesh.transform);
 		meshes_.push_back(msh);
 		main_scene_->add_mesh(mesh.name, msh);
 
@@ -572,7 +571,7 @@ void sandbox_application::load_scene()
 			{
 				if (m->get_name() == mesh.parent_name.value())
 				{
-					msh->model().set_parent(&m->model());
+					msh->set_parent(m.get());
 				}
 			}
 		}

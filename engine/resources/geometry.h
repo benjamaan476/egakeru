@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "material.h"
-#include "transform.h"
+#include "transformable.h"
 
 #include "renderer/vertex_types.h"
 
@@ -78,7 +78,7 @@ namespace egkr
 	struct render_data
 	{
 		geometry::shared_ptr geometry{};
-		transform model{};
+		transformable* transform{};
 		uint64_t unique_id{};
 	};
 

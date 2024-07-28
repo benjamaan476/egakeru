@@ -77,10 +77,10 @@ namespace egkr
 			shader_system::apply_global(needs_update);
 
 			const auto& camera_position = camera_->get_position();
-			const auto& gizmo_position = gizmo_.get_transform().get_position();
+			const auto& gizmo_position = gizmo_.get_position();
 
 			const auto distance = glm::distance(camera_position, gizmo_position);
-			auto model = gizmo_.get_transform().get_world();
+			auto model = gizmo_.get_world_transform();
 			const float fixed_size{ 0.1F };
 			auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
 			float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });

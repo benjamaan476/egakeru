@@ -1,12 +1,12 @@
 #pragma once
 
 #include <pch.h>
-#include <resources/transform.h>
+#include <transformable.h>
 #include <resources/geometry.h>
 
 namespace egkr::debug
 {
-	class debug_line
+	class debug_line : public transformable
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_line>;
@@ -20,7 +20,6 @@ namespace egkr::debug
 		void set_colour(const float4& colour);
 
 		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
-		[[nodiscard]] const auto& get_transform() const { return transform_; }
 
 	private:
 		void recalculate_points();
@@ -28,7 +27,6 @@ namespace egkr::debug
 	private:
 		float3 point_0_{};
 		float3 point_1_{};
-		transform transform_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
 		egkr::geometry::geometry::shared_ptr geometry_{};
 	};

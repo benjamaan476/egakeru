@@ -22,11 +22,7 @@ namespace egkr
 		eye.z = -1.f;
 		eye.w = 0.f;
 
-
-		auto dir = glm::inverse(view) * eye;
-
-		ray.direction = glm::normalize(dir);
-
+		ray.direction = glm::normalize(glm::inverse(view) * eye);
 		return ray;
 	}
 
