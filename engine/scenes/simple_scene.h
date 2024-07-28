@@ -12,6 +12,8 @@
 
 #include <queue>
 
+#include "ray.h"
+
 namespace egkr
 {
 	struct render_packet;
@@ -110,6 +112,8 @@ namespace egkr
 			void add_debug(const std::string& name, const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
 
 			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
+
+			ray::result raycast(const ray& ray);
 		private:
 			void actual_unload();
 

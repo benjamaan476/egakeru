@@ -17,6 +17,7 @@ namespace egkr
 			mouse_up,
 			mouse_down,
 			mouse_move,
+			mouse_wheel,
 			resize,
 			render_target_refresh_required,
 			evar_changed,

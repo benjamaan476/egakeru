@@ -18,7 +18,11 @@ namespace egkr
 		[[nodiscard]] const auto& get_rotation() const { return rotation_;}
 		void set_rotation(const float3& rot);
 
+		[[nodiscard]] float get_aspect() const { return aspect_ratio_; }
+		void set_aspect(float aspect);
+
 		[[nodiscard]] float4x4 get_view();
+		[[nodiscard]] float4x4 get_projection() const;
 
 		[[nodiscard]] float3 get_forward() const;
 		[[nodiscard]] float3 get_back() const;
@@ -52,5 +56,6 @@ namespace egkr
 		float fov_{glm::radians(45.F)};
 		float near_clip_{0.1F};
 		float far_clip_{ 1000.F };
+		float aspect_ratio_{ 1.333f };
 	};
 }

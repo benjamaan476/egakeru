@@ -12,7 +12,9 @@
 
 #include <renderer/renderer_types.h>
 #include <debug/debug_console.h>
+#include <systems/input.h>
 
+#include "ray.h"
 
 sandbox_application::sandbox_application(const egkr::engine_configuration& configuration)
 	: application(configuration)
@@ -29,6 +31,8 @@ bool sandbox_application::init()
 	egkr::event::register_event(egkr::event::code::debug01, this, sandbox_application::on_debug_event);
 	egkr::event::register_event(egkr::event::code::debug02, this, sandbox_application::on_debug_event);
 	egkr::event::register_event(egkr::event::code::debug03, this, sandbox_application::on_debug_event);
+	egkr::event::register_event(egkr::event::code::mouse_up, this, sandbox_application::on_button_up);
+	egkr::event::register_event(egkr::event::code::mouse_move, this, sandbox_application::on_mouse_move);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
 	test_text_->set_position({ 50, 250, 0 });
@@ -64,8 +68,9 @@ bool sandbox_application::init()
 
 	camera_ = egkr::camera_system::get_default();
 	camera_->set_position({ 0, 0, 0.F });
+	camera_->set_aspect((float)width_ / (float)height_);
 
-//TODO add to scene
+	//TODO add to scene
 	test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
 	test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
 	test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
@@ -120,11 +125,15 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 
 	}
 	main_scene_->populate_render_packet(render_packet);
+	if (test_lines_)
+	{
+		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .model = test_lines_->get_transform() });
+	}
 
 	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_);
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, application_frame_data.world_geometries.size());
+	std::string text = std::format("Camera pos: {} {} {}\n Mouse pos: {} {}", pos.x, pos.y, pos.z, mouse_pos_.x, mouse_pos_.y);
 
 	more_test_text_->set_text(text);
 
@@ -147,6 +156,7 @@ bool sandbox_application::resize(uint32_t width, uint32_t height)
 	{
 		width_ = width;
 		height_ = height;
+		camera_->set_aspect((float)width / (float)height);
 		return true;
 	}
 
@@ -206,7 +216,7 @@ bool sandbox_application::boot()
 			.present_after = false
 		};
 
-	
+
 		egkr::render_target::attachment_configuration depth_attachment_configration
 		{
 			.type = egkr::render_target::attachment_type::depth,
@@ -230,7 +240,7 @@ bool sandbox_application::boot()
 		render_view_configuration_.push_back(opaque_world);
 	}
 	{
-	egkr::renderpass::configuration renderpass_configuration
+		egkr::renderpass::configuration renderpass_configuration
 		{
 			.name = "Renderpass.Builtin.World",
 			.render_area = {0, 0, 800, 600},
@@ -249,7 +259,7 @@ bool sandbox_application::boot()
 			.present_after = false
 		};
 
-	
+
 		egkr::render_target::attachment_configuration depth_attachment_configration
 		{
 			.type = egkr::render_target::attachment_type::depth,
@@ -335,6 +345,10 @@ bool sandbox_application::shutdown()
 	{
 		more_test_text_.reset();
 	}
+	if (test_lines_)
+	{
+		test_lines_.reset();
+	}
 	gizmo_.unload();
 	gizmo_.destroy();
 	//debug_frustum_->destroy();
@@ -396,6 +410,61 @@ bool sandbox_application::on_event(egkr::event::code code, void* /*sender*/, voi
 	return false;
 }
 
+bool sandbox_application::on_button_up(egkr::event::code code, void* /*sender*/, void* listener, const egkr::event::context& context)
+{
+	auto* game = (sandbox_application*)listener;
+
+	if (code == egkr::event::code::mouse_up)
+	{
+		int32_t button;
+		context.get(0, button);
+
+		int32_t xpos{};
+		context.get(1, xpos);
+
+		int32_t ypos{};
+		context.get(2, ypos);
+
+		switch ((egkr::mouse_button)(button))
+		{
+		case egkr::mouse_button::left:
+		{
+			const auto& view = game->camera_->get_view();
+			const auto& origin = game->camera_->get_position();
+			const auto& proj = game->camera_->get_projection();
+			egkr::ray ray = egkr::ray::from_screen({ xpos, ypos }, { game->width_, game->height_ }, origin, view, proj);
+			auto hit = game->main_scene_->raycast(ray);
+			if (hit)
+			{
+				LOG_INFO("Hit! position: {}, distance: {}", glm::to_string(hit.hits.front().position), hit.hits.front().distance);
+				egkr::debug::debug_line::shared_ptr ray_line = egkr::debug::debug_line::create(ray.origin, ray.origin + 100.f * ray.direction);
+				ray_line->set_colour(0, { 1, 0, 1, 1 });
+				ray_line->set_colour(1, { 0, 1, 1, 1 });
+				game->test_lines_ = ray_line;
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	return false;
+}
+
+bool sandbox_application::on_mouse_move(egkr::event::code code, void* /*sender*/, void* listener, const egkr::event::context& context)
+{
+	if (code == egkr::event::code::mouse_move)
+	{
+		auto* game = (sandbox_application*)listener;
+		egkr::int2 pos;
+		context.get(0, pos.x);
+		context.get(1, pos.y);
+		game->mouse_pos_ = pos;
+	}
+	 
+	return false;
+}
+
 void sandbox_application::load_scene()
 {
 
@@ -403,7 +472,7 @@ void sandbox_application::load_scene()
 	auto scene_configuration = *(egkr::scene::configuration*)scene->data;
 
 
-	egkr::skybox::configuration skybox_config{ .name =  scene_configuration.skybox.name};
+	egkr::skybox::configuration skybox_config{ .name = scene_configuration.skybox.name };
 	skybox_ = egkr::skybox::skybox::create(skybox_config);
 	main_scene_->add_skybox(skybox_->get_name(), skybox_);
 

@@ -16,6 +16,12 @@ namespace egkr::debug
 
 		void set_points(const float3& point_0, const float3& point_1);
 
+		void set_colour(uint32_t v, const float4& colour);
+		void set_colour(const float4& colour);
+
+		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
+		[[nodiscard]] const auto& get_transform() const { return transform_; }
+
 	private:
 		void recalculate_points();
 

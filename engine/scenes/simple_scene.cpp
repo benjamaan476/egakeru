@@ -146,7 +146,6 @@ namespace egkr::scene
 
 		auto world_view = view_system::get("world-opaque");
 		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_);
-
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
@@ -340,5 +339,30 @@ namespace egkr::scene
 		remove_directional_light();
 		
 		state_ = state::unloaded;
+	}
+
+	ray::result simple_scene::raycast(const ray& ray)
+	{
+		ray::result result{};
+
+		for (const auto& mesh : meshes_ | std::views::values)
+		{
+			auto& model = mesh->model();
+			auto world = model.get_world();
+			if (ray.oriented_extents(mesh->extents(), world))
+			{
+				const auto distance = ray.oriented_extents(mesh->extents(), world).value();
+				ray::hit hit
+				{
+					.type = ray::hit_type::bounding_box,
+					.unique_id = mesh->unique_id(),
+					.position = ray.origin + ray.direction * distance,
+					.distance = distance,
+				};
+				result.hits.push_back(hit);
+			}
+		}
+
+		return result;
 	}
 }

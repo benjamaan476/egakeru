@@ -23,8 +23,8 @@ namespace egkr
 	
 	struct mouse_state
 	{
-		uint32_t x{};
-		uint32_t y{};
+		int32_t x{};
+		int32_t y{};
 		std::array<bool, (size_t)mouse_button::button_count> buttons{};
 	};
 
@@ -57,8 +57,8 @@ namespace egkr
 
 		static int2 get_mouse_position();
 		static int2 get_previous_mouse_position();
-		static void process_mouse_move();
-		static void process_mouse_wheel();
+		static void process_mouse_move(int32_t xpos, int32_t ypos);
+		static void process_mouse_wheel(double xoffset, double yoffset);
 
 		static void push_keymap(const keymap& keymap);
 		static void pop_keymap();

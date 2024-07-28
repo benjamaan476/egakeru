@@ -191,26 +191,39 @@ namespace egkr
 			auto code = pressed ? event::code::mouse_down : event::code::mouse_up;
 			event::context context{};
 			context.set(0, (int16_t)button);
+			context.set(1, state->current_mouse.x);
+			context.set(2, state->current_mouse.y);
 			event::fire_event(code, nullptr, context);
 		}
 	}
 
 	int2 input::get_mouse_position()
 	{
-		return { 1 ,1 };
+		return { state->current_mouse.x , state->current_mouse.y };
 	}
 
 	int2 input::get_previous_mouse_position()
 	{
-		return { 0, 0 };
+		return { state->previous_mouse.x, state->previous_mouse.y };
 	}
 
-	void input::process_mouse_move()
+	void input::process_mouse_move(int32_t xpos, int32_t ypos)
 	{
+		state->current_mouse.x = xpos;
+		state->current_mouse.y = ypos;
+		event::context context {};
+		context.set(0, state->current_mouse.x);
+		context.set(1, state->current_mouse.y);
+		event::fire_event(event::code::mouse_move, nullptr, context);
 	}
 
-	void input::process_mouse_wheel()
+	void input::process_mouse_wheel(double xoffset, double yoffset)
 	{
+		event::context context {};
+		context.set(0, xoffset);
+		context.set(1, yoffset);
+
+		event::fire_event(event::code::mouse_wheel, nullptr, context);
 	}
 
 	void input::push_keymap(const keymap& keymap)

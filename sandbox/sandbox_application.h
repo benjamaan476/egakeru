@@ -28,6 +28,8 @@ public:
 private:	
 	bool static on_debug_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 	bool static on_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_button_up(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_mouse_move(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 
 	void load_scene();
 
@@ -49,6 +51,8 @@ private:
 	egkr::debug::debug_box3d::shared_ptr box_{};
 	egkr::debug::debug_grid::shared_ptr grid_{};
 	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
+	egkr::debug::debug_line::shared_ptr test_lines_{};
+	egkr::debug::debug_box3d::shared_ptr test_boxes_{};
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
@@ -60,6 +64,7 @@ private:
 	egkr::audio::emitter test_emitter{};
 
 	egkr::editor::gizmo gizmo_{};
+	egkr::int2 mouse_pos_{};
 
 	uint32_t hovered_object_id_{};
 };

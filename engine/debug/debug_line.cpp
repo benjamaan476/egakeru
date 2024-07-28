@@ -21,6 +21,8 @@ namespace egkr::debug
 
 		geometry_ = geometry::geometry::create(properties);
 		geometry_->increment_generation();
+
+		geometry_->upload();
 	}
 
 	void debug_line::set_points(const float3& point_0, const float3& point_1)
@@ -31,7 +33,18 @@ namespace egkr::debug
 		recalculate_points();
 
 		geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
+	}
 
+	void debug_line::set_colour(const float4& colour)
+	{
+		std::ranges::for_each(vertices_, [&](colour_vertex_3d& vert) { vert.colour = colour; });
+		geometry_->update_vertices(0, (uint32_t)vertices_.size(), vertices_.data());
+	}
+
+	void debug_line::set_colour(uint32_t v, const float4& colour)
+	{
+		vertices_[v].colour = colour;
+		geometry_->update_vertices(0, 2, vertices_.data());
 	}
 
 	void debug_line::recalculate_points()
