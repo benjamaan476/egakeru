@@ -1,7 +1,7 @@
 #pragma once
 #include <pch.h>
 #include <renderer/vertex_types.h>
-#include <resources/geometry.h>
+#include <renderable.h>
 #include <transformable.h>
 
 namespace egkr
@@ -25,7 +25,7 @@ namespace egkr
 			egkr::vector<colour_vertex_3d> vertices{};
 		};
 
-		class debug_grid : public transformable
+		class debug_grid : public transformable, public renderable
 		{
 		public:
 			using shared_ptr = std::shared_ptr<debug_grid>;
@@ -37,7 +37,6 @@ namespace egkr
 			bool load();
 			bool unload();
 
-		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
 		[[nodiscard]] const auto& get_id() const { return unique_id_; }
 
 		private:
@@ -49,7 +48,6 @@ namespace egkr
 			float tile_scale_{};
 			egkr::vector<colour_vertex_3d> vertices_{};
 			extent3d extents_{};
-			geometry::geometry::shared_ptr geometry_{};
 		};
 	}
 }

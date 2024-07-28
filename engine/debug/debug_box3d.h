@@ -1,12 +1,12 @@
 #pragma once
 #include <pch.h>
 #include <resources/transform.h>
-#include <resources/geometry.h>
+#include <renderable.h>
 #include <transformable.h>
 
 namespace egkr::debug
 {
-	class debug_box3d : public transformable
+	class debug_box3d : public transformable, public renderable
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_box3d>;
@@ -24,7 +24,6 @@ namespace egkr::debug
 		void set_colour(const egkr::float4 colour);
 		void set_extents(const egkr::extent3d& extent);
 
-		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
 		[[nodiscard]] const auto& get_id() const { return unique_id_; }
 	private:
 		void recalculate_colour();
@@ -36,6 +35,5 @@ namespace egkr::debug
 		egkr::extent3d extents_{};
 		egkr::float4 colour_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
-		egkr::geometry::geometry::shared_ptr geometry_{};
 	};
 }

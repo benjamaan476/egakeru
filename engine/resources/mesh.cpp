@@ -152,7 +152,7 @@ namespace egkr
 
 	void mesh::add_geometry(const geometry::geometry::shared_ptr& geometry)
 	{
-		geometries_.push_back(geometry);
+		geometries_.emplace_back(geometry);
 			auto& global_extents = extents();
 			const auto& geo_extents = geometry->get_properties().extents;
 				if (geo_extents.min.x < global_extents.min.x)
@@ -191,7 +191,7 @@ namespace egkr
 
 		for (auto& geo : geometries_)
 		{
-			geometry_system::release_geometry(geo);
+			geo->free();
 		}
 		geometries_.clear();
 

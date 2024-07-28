@@ -3,11 +3,11 @@
 #include <resources/resource.h>
 
 #include <resources/texture.h>
-#include <resources/geometry.h>
+#include <renderable.h>
 
 namespace egkr
 {
-	class skybox : public resource
+	class skybox : public resource, public renderable
 	{
 	public:
 		struct configuration
@@ -27,7 +27,6 @@ namespace egkr
 
 		void destroy();
 
-		[[nodiscard]] auto get_geometry() const { return geometry_;}
 		[[nodiscard]] auto& get_texture_map() const { return cubemap_;}
 		[[nodiscard]] auto get_frame_number() const { return render_frame_number_;}
 		[[nodiscard]] auto get_instance_id() const { return instance_id_;}
@@ -38,7 +37,6 @@ namespace egkr
 		configuration configuration_{};
 		uint32_t instance_id_{0};
 		texture_map::shared_ptr cubemap_{};
-		geometry::shared_ptr geometry_{};
 		uint64_t render_frame_number_{invalid_64u_id};
 	};
 

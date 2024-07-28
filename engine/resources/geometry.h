@@ -11,6 +11,7 @@
 
 namespace egkr
 {
+	struct renderable;
 	class geometry : public resource
 	{
 	public:

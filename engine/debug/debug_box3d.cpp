@@ -29,6 +29,7 @@ namespace egkr::debug
 		unique_id_ = identifier::acquire_unique_id(this);
 		return true;
 	}
+
 	bool debug_box3d::load()
 	{
 		geometry::properties properties{};
@@ -38,7 +39,6 @@ namespace egkr::debug
 		properties.vertices = vertices_.data();
 
 		geometry_ = geometry::geometry::create(properties);
-
 		geometry_->increment_generation();
 
 		set_colour(colour_);

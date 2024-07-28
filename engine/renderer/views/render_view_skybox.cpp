@@ -63,7 +63,7 @@ namespace egkr
 		packet.view_position = camera_->get_position();
 		if (auto skybox = skybox_data->skybox)
 		{
-			packet.render_data = { { skybox_data->skybox->get_geometry() } };
+			packet.render_data = { { skybox_data->skybox->get_geometry()}};
 			packet.extended_data = new skybox_packet_data(*skybox_data);
 		}
 		return packet;

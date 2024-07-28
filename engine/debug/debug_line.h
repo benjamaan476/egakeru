@@ -2,11 +2,11 @@
 
 #include <pch.h>
 #include <transformable.h>
-#include <resources/geometry.h>
+#include <renderable.h>
 
 namespace egkr::debug
 {
-	class debug_line : public transformable
+	class debug_line : public transformable, public renderable
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_line>;
@@ -19,8 +19,6 @@ namespace egkr::debug
 		void set_colour(uint32_t v, const float4& colour);
 		void set_colour(const float4& colour);
 
-		[[nodiscard]] const auto& get_geometry() const { return geometry_; }
-
 	private:
 		void recalculate_points();
 
@@ -28,7 +26,6 @@ namespace egkr::debug
 		float3 point_0_{};
 		float3 point_1_{};
 		egkr::vector<colour_vertex_3d> vertices_{};
-		egkr::geometry::geometry::shared_ptr geometry_{};
 	};
 }
 

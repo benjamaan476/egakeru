@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "renderer/vertex_types.h"
-#include "resources/geometry.h"
+#include "renderable.h"
 #include "transformable.h"
 
 namespace egkr::editor
@@ -19,11 +19,12 @@ namespace egkr::editor
 			scale
 		};
 
-		struct gizmo_data
+		struct gizmo_data : public renderable
 		{
 			egkr::vector<colour_vertex_3d> vertices;
 			egkr::vector<uint32_t> indices;
-			geometry::shared_ptr geo;
+
+			friend gizmo;
 		};
 
 		[[nodiscard]] static gizmo create();
@@ -40,7 +41,7 @@ namespace egkr::editor
 
 		void set_mode(mode mode);
 
-		void draw() const { mode_data.at(gizmo_mode).geo->draw(); }
+		void draw() const { mode_data.at(gizmo_mode).draw(); }
 	private:
 		void setup_none();
 		void setup_move();

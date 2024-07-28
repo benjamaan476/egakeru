@@ -29,7 +29,7 @@ namespace egkr::editor
 	{
 		for (const auto& data : mode_data | std::views::values)
 		{
-			data.geo->destroy();
+			data.geometry_->destroy();
 		}
 		mode_data.clear();
 	}
@@ -46,8 +46,8 @@ namespace egkr::editor
 
 				.indices = data.indices
 			};
-			data.geo = geometry::create(properties);
-			data.geo->upload();
+			data.geometry_ = geometry::create(properties);
+			data.geometry_->upload();
 		}
 	}
 
