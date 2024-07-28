@@ -9,6 +9,7 @@
 #include "debug/debug_grid.h"
 #include "debug/debug_frustum.h"
 #include <scenes/simple_scene.h>
+#include <editor_gizmo.h>
 
 class sandbox_application final : public egkr::application
 {
@@ -21,6 +22,8 @@ public:
 
 	bool boot() final;
 	bool shutdown() final;
+
+	[[nodiscard]] auto& get_gizmo() { return gizmo_; }
 
 private:	
 	bool static on_debug_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
@@ -55,6 +58,8 @@ private:
 	egkr::audio::file* test_loop_audio{};
 	egkr::audio::file* test_music{};
 	egkr::audio::emitter test_emitter{};
+
+	egkr::editor::gizmo gizmo_{};
 
 	uint32_t hovered_object_id_{};
 };

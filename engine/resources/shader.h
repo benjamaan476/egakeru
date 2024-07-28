@@ -202,13 +202,16 @@ namespace egkr
 
 		const auto& get_attribute_stride() const { return attribute_stride_; }
 
+		[[nodiscard]] uint32_t get_frame_number() const { return frame_number_; }
+		void set_frame_number(uint32_t frame) { frame_number_ = frame; }
+
 		virtual bool use() = 0;
 		virtual bool populate(renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages) = 0;
 		virtual void free() = 0;
 		virtual bool bind_instances(uint32_t instance_id) = 0;
 		virtual bool apply_instances(bool needs_update) = 0;
 		virtual bool bind_globals() = 0;
-		virtual bool apply_globals() = 0;
+		virtual bool apply_globals(bool needs_update) = 0;
 		virtual uint32_t acquire_instance_resources(const egkr::vector<texture_map::shared_ptr>& texture_maps) = 0;
 		virtual bool set_uniform(const uniform& uniform, const void* value) = 0;
 	private:
@@ -253,6 +256,7 @@ namespace egkr
 		uint16_t bound_pipeline_index_{};
 
 		flags flags_{};
+		uint32_t frame_number_{};
 	};
 	ENUM_CLASS_OPERATORS(shader::primitive_topology_type)
 	ENUM_CLASS_OPERATORS(shader::flags)

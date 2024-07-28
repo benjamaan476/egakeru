@@ -9,6 +9,13 @@
 
 namespace egkr
 {
+	struct debug_colour_shader_locations
+	{
+		uint32_t projection{};
+		uint32_t view{};
+		uint32_t model{};
+	};
+
 	namespace text
 	{
 		class ui_text;
@@ -23,6 +30,7 @@ namespace egkr
 		{
 			skybox,
 			world,
+			editor,
 			ui
 		};
 

@@ -6,10 +6,8 @@
 
 namespace egkr
 {
-	render_view_editor::render_view_world(const configuration& configuration)
-		: render_view(configuration)
-	{
-	}
+	render_view_editor::render_view_editor(const configuration& configuration) : render_view(configuration)
+	{}
 
 	bool render_view_editor::on_create()
 	{
@@ -49,8 +47,6 @@ namespace egkr
 	}
 	render_view_packet render_view_editor::on_build_packet(void* data)
 	{
-		frame_geometry_data* mesh_data = (frame_geometry_data*)data;
-
 		render_view_packet packet{};
 
 		packet.render_view = this;
@@ -58,13 +54,12 @@ namespace egkr
 		packet.view_matrix = camera_->get_view();
 		packet.view_position = camera_->get_position();
 		packet.ambient_colour = ambient_colour_;
-		packet.render_data = mesh_data->world_geometries;
-		packet.debug_render_data = mesh_data->debug_geometries;
+		gizmo_ = *(editor::gizmo*)data;
 
 		return packet;
 	}
 
-	bool render_view_editor::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const
+	bool render_view_editor::on_render(const render_view_packet* render_view_packet, uint32_t  frame_number , uint32_t render_target_index) const
 	{
 		for (auto& pass : renderpasses_)
 		{
@@ -72,22 +67,33 @@ namespace egkr
 
 			auto colour_shader = shader_system::get_shader("Shader.Builtin.Colour3DShader");
 			shader_system::use(colour_shader->get_id());
-			shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
-			shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
-			shader_system::apply_global();
-			for (render_data data : render_view_packet->debug_render_data)
+			colour_shader->bind_globals();
+			bool needs_update = frame_number != colour_shader->get_frame_number();
+			if (needs_update)
 			{
-				const auto& model = data.model.get_world();
-				shader_system::set_uniform(locations_.model, &model);
-				data.geometry->draw();
+				shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
+				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
 			}
+			shader_system::apply_global(needs_update);
 
+			const auto& camera_position = camera_->get_position();
+			const auto& gizmo_position = gizmo_.get_transform().get_position();
+
+			const auto distance = glm::distance(camera_position, gizmo_position);
+			auto model = gizmo_.get_transform().get_world();
+			const float fixed_size{ 0.1F };
+			auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
+			float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
+
+			model = scale * model;
+			shader_system::set_uniform(locations_.model, &model);
+			gizmo_.draw();
 			pass->end();
 		}
 		return true;
 	}
 
-	bool render_view_world::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
+	bool render_view_editor::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
 	{
 		return true;
 	}

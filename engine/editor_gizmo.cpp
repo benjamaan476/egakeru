@@ -27,10 +27,28 @@ namespace egkr::editor
 
 	void gizmo::destroy()
 	{
+		for (const auto& data : mode_data | std::views::values)
+		{
+			data.geo->destroy();
+		}
+		mode_data.clear();
 	}
 
 	void gizmo::load()
 	{
+		for (auto& data : mode_data | std::views::values)
+		{
+			geometry::properties properties
+			{
+				.vertex_size = sizeof(colour_vertex_3d),
+				.vertex_count = (uint32_t)data.vertices.size(),
+				.vertices = (void*)data.vertices.data(),
+
+				.indices = data.indices
+			};
+			data.geo = geometry::create(properties);
+			data.geo->upload();
+		}
 	}
 
 	void gizmo::unload()
@@ -49,7 +67,7 @@ namespace egkr::editor
 	void gizmo::setup_none()
 	{
 		constexpr float4 gray{ 0.6f, 0.6f, 0.6f, 1.f };
-		constexpr float axis_length{ 5.f };
+		constexpr float axis_length{ 1.f };
 		egkr::vector<colour_vertex_3d> vertices(6);
 		vertices[0] = { .position = {0.F, 0.F, 0.F, 1.F}, .colour = gray };
 		vertices[1] = { .position = {axis_length, 0.F, 0.F, 1.F}, .colour = gray };
@@ -64,17 +82,20 @@ namespace egkr::editor
 	void gizmo::setup_move()
 	{
 		egkr::vector<colour_vertex_3d> vertices(18);
-		constexpr float axis_length{ 5.f };
+		float axis_length{ 1.f };
 
 		for (uint32_t i{ 0u }; i < 6; i += 2)
 		{
 			float4 position{ 0.f, 0.f, 0.f, 1.f };
 			float4 colour{0.f, 0.f, 0.f, 1.f};
+			position[i / 2] = 0.2f;
+			colour[i / 2] = 1.f;
 			vertices[i] = { .position = position, .colour = colour };
 			position[i / 2] = axis_length;
 			colour[i / 2] = 1.f;
 			vertices[i + 1] = { .position = position, .colour = colour };
 		}
+		axis_length = 0.8f;
 		float4 colour{ 1.f, 0.f, 0.f, 1.f };
 		vertices[6] = { .position = {axis_length / 2, 0.f, 0.f, 1.f}, .colour = colour };
 		vertices[7] = { .position = {axis_length / 2, axis_length / 2, 0.f, 1.f}, .colour = colour };
@@ -95,6 +116,8 @@ namespace egkr::editor
 
 		vertices[16] = { .position = {0.f, 0.f, axis_length / 2, 1.f}, .colour = colour };
 		vertices[17] = { .position = {0.f, axis_length / 2, axis_length / 2, 1.f}, .colour = colour };
+
+		mode_data[gizmo::mode::move] = { .vertices = vertices };
 	}
 
 	void gizmo::setup_scale()

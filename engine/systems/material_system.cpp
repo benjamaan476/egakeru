@@ -170,7 +170,7 @@ namespace egkr
 		return false;
 	}
 
-	void material_system::apply_global(uint32_t shader_id, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
+	void material_system::apply_global(uint32_t shader_id, uint32_t frame_number, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
 	{
 		if (shader_id == material_system_->material_shader_id_)
 		{
@@ -185,7 +185,9 @@ namespace egkr
 			shader_system::set_uniform(material_system_->ui_locations_.projection, &projection);
 			shader_system::set_uniform(material_system_->ui_locations_.view, &view);
 		}
-		shader_system::apply_global();
+		shader_system::apply_global(true);
+		auto shader = shader_system::get_shader(shader_id);
+		shader->set_frame_number(frame_number);
 	}
 
 	void material_system::apply_instance(const material::shared_ptr& material, bool needs_update)

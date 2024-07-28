@@ -22,7 +22,7 @@ namespace egkr::editor
 		struct gizmo_data
 		{
 			egkr::vector<colour_vertex_3d> vertices;
-			egkr::vector<int32_t> indices;
+			egkr::vector<uint32_t> indices;
 			geometry::shared_ptr geo;
 		};
 
@@ -39,6 +39,13 @@ namespace egkr::editor
 		void update();
 
 		void set_mode(mode mode);
+
+		[[nodiscard]] auto get_transform() const
+		{
+			return transform;
+		}
+
+		void draw() const { mode_data.at(gizmo_mode).geo->draw(); }
 	private:
 		void setup_none();
 		void setup_move();

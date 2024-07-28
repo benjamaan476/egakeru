@@ -12,6 +12,7 @@ namespace egkr
 		if (properties.vertex_count)
 		{
 			geom->populate(properties);
+			geom->upload();
 		}
 		else
 		{
@@ -37,19 +38,33 @@ namespace egkr
 
 		vertex_count_ = properties.vertex_count;
 		vertex_size_ = properties.vertex_size;
+		vertices_ = malloc(vertex_buffer_size);
+		std::memcpy(vertices_, properties.vertices, vertex_buffer_size);
 
 		vertex_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::vertex, vertex_buffer_size);
 		vertex_buffer_->bind(0);
 
-		vertex_buffer_->load_range(0, vertex_buffer_size, properties.vertices);
 
 		index_count_ = (uint32_t)properties.indices.size();
 		if (index_count_)
 		{
 			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
+			indices_ = properties.indices;
 			index_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::index, index_buffer_size);
 			index_buffer_->bind(0);
-			index_buffer_->load_range(0, index_buffer_size, properties.indices.data());
+		}
+		return true;
+	}
+
+	bool vulkan_geometry::upload()
+	{
+		const auto vertex_buffer_size = vertex_size_ * vertex_count_;
+		vertex_buffer_->load_range(0, vertex_buffer_size, vertices_);
+
+		if (index_count_)
+		{
+			const auto index_buffer_size = sizeof(uint32_t) * indices_.size();
+			index_buffer_->load_range(0, index_buffer_size, indices_.data());
 		}
 		return true;
 	}

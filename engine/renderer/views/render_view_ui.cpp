@@ -90,7 +90,7 @@ namespace egkr
 
 			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
+			material_system::apply_global(shader_->get_id(), frame_number, render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
 
 			for (auto render_data : render_view_packet->render_data)
 			{

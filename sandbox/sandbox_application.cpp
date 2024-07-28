@@ -90,6 +90,9 @@ bool sandbox_application::init()
 	egkr::debug_console::create();
 	egkr::debug_console::load();
 
+	gizmo_ = egkr::editor::gizmo::create();
+	gizmo_.init();
+	gizmo_.load();
 	return true;
 }
 
@@ -118,6 +121,7 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 	}
 	main_scene_->populate_render_packet(render_packet);
 
+	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_);
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
 	std::string text = std::format("Camera pos: {} {} {}\n {} meshes drawn", pos.x, pos.y, pos.z, application_frame_data.world_geometries.size());
@@ -226,6 +230,50 @@ bool sandbox_application::boot()
 		render_view_configuration_.push_back(opaque_world);
 	}
 	{
+	egkr::renderpass::configuration renderpass_configuration
+		{
+			.name = "Renderpass.Builtin.World",
+			.render_area = {0, 0, 800, 600},
+			.clear_colour = {0, 0, 0.2F, 1.F},
+			.clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
+			.depth = 1.F,
+			.stencil = 0
+		};
+
+		egkr::render_target::attachment_configuration colour_attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::colour,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::load,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+	
+		egkr::render_target::attachment_configuration depth_attachment_configration
+		{
+			.type = egkr::render_target::attachment_type::depth,
+			.source = egkr::render_target::attachment_source::default_source,
+			.load_operation = egkr::render_target::load_operation::dont_care,
+			.store_operation = egkr::render_target::store_operation::store,
+			.present_after = false
+		};
+
+		renderpass_configuration.target.attachments.push_back(colour_attachment_configration);
+		renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
+
+		egkr::render_view::configuration opaque_world{};
+		opaque_world.type = egkr::render_view::type::editor;
+		opaque_world.width = width_;
+		opaque_world.height = height_;
+		opaque_world.name = "editor";
+		opaque_world.passes.push_back(renderpass_configuration);
+		opaque_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
+
+		render_view_configuration_.push_back(opaque_world);
+
+	}
+	{
 		egkr::renderpass::configuration renderpass_configuration
 		{
 			.name = "Renderpass.Builtin.UI",
@@ -287,6 +335,8 @@ bool sandbox_application::shutdown()
 	{
 		more_test_text_.reset();
 	}
+	gizmo_.unload();
+	gizmo_.destroy();
 	//debug_frustum_->destroy();
 
 	return true;

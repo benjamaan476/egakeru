@@ -110,7 +110,7 @@ namespace egkr
 		bool apply_instances(bool needs_update) override;
 		bool bind_globals() override;
 
-		bool apply_globals() override;
+		bool apply_globals(bool needs_update) override;
 		uint32_t acquire_instance_resources(const egkr::vector<texture_map::shared_ptr>& texture_maps) override;
 		bool set_uniform(const uniform& uniform, const void* value) override;
 

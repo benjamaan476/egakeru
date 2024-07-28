@@ -482,30 +482,33 @@ namespace egkr
 		return true;
 	}
 
-	bool vulkan_shader::apply_globals()
+	bool vulkan_shader::apply_globals(bool needs_update)
 	{
 		const auto image_index = context_->image_index;
-		auto& command_buffer = context_->graphics_command_buffers[image_index].get_handle();
 		auto& global_descriptor = global_descriptor_sets[image_index];
+		if (needs_update)
+		{
 
-		vk::DescriptorBufferInfo buffer_info{};
-		buffer_info
-			.setBuffer(*(vk::Buffer*)(uniform_buffer->get_buffer()))
-			.setOffset(get_global_ubo_offset())
-			.setRange(get_global_ubo_stride());
+			vk::DescriptorBufferInfo buffer_info{};
+			buffer_info
+				.setBuffer(*(vk::Buffer*)(uniform_buffer->get_buffer()))
+				.setOffset(get_global_ubo_offset())
+				.setRange(get_global_ubo_stride());
 
-		vk::WriteDescriptorSet ubo_write{};
-		ubo_write
-			.setDstSet(global_descriptor)
-			.setDstBinding(0)
-			.setDstArrayElement(0)
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDescriptorCount(1)
-			.setBufferInfo(buffer_info);
+			vk::WriteDescriptorSet ubo_write{};
+			ubo_write
+				.setDstSet(global_descriptor)
+				.setDstBinding(0)
+				.setDstArrayElement(0)
+				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+				.setDescriptorCount(1)
+				.setBufferInfo(buffer_info);
 
-		egkr::vector<vk::WriteDescriptorSet> writes{ ubo_write };
+			egkr::vector<vk::WriteDescriptorSet> writes{ ubo_write };
 
-		context_->device.logical_device.updateDescriptorSets(writes, nullptr);
+			context_->device.logical_device.updateDescriptorSets(writes, nullptr);
+		}
+		auto& command_buffer = context_->graphics_command_buffers[image_index].get_handle();
 		command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelines_[bound_pipeline_index_]->get_layout(), 0, 1, &global_descriptor, 0, nullptr);
 
 		return true;

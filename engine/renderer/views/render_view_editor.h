@@ -1,18 +1,10 @@
 #pragma once
-
-#pragma once
 #include <renderer/render_view.h>
 #include <resources/shader.h>
 #include <editor_gizmo.h>
 
 namespace egkr
 {
-	struct debug_colour_shader_locations
-	{
-		uint32_t projection{};
-		uint32_t view{};
-		uint32_t model{};
-	};
 
 	class render_view_editor : public render_view
 	{
