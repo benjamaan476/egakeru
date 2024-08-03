@@ -105,16 +105,14 @@ namespace egkr
 
 	std::optional<float> ray::oriented_extents(const extent3d& bb, const float4x4& model) const
 	{
-		auto inv = glm::inverse(model);
-		ray ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f)};
+		const auto inv = glm::inverse(model);
+		const ray ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f)};
 
-		auto result =
-			ray.aabb(bb)
+		return ray.aabb(bb)
 			.transform([&](float3 out)
 					   {
 						   float3 out_point = model * glm::vec4(out, 1.f);
 						   return glm::distance(origin, out_point);
 					   });
-		return result;
 	}
 }

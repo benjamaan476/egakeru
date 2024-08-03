@@ -156,6 +156,12 @@ static void on_set_gizmo_mode(key key, keymap::entry_bind_type /*type*/, keymap:
 	case key::key_1:
 		app->get_gizmo().set_mode(egkr::editor::gizmo::mode::move);
 		break;
+	case key::key_2:
+		app->get_gizmo().set_mode(egkr::editor::gizmo::mode::rotate);
+		break;
+	case key::key_3:
+		app->get_gizmo().set_mode(egkr::editor::gizmo::mode::scale);
+		break;
 	default:
 		break;
 	}
@@ -239,6 +245,7 @@ void egkr::setup_keymaps(application* application_instance)
 	sandbox_keymap.add_binding(key::key_0, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);
 	sandbox_keymap.add_binding(key::key_1, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);
 	sandbox_keymap.add_binding(key::key_2, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);
+	sandbox_keymap.add_binding(key::key_3, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);
 
 	sandbox_keymap.add_binding(key::l, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_load_scene);
 	sandbox_keymap.add_binding(key::u, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_unload_scene);

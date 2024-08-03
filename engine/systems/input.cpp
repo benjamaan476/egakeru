@@ -262,6 +262,14 @@ namespace egkr
 			}
 		}
 
+		if (modifier == keymap::modifier::none)
+		{
+			if (is_key_down(key::left_shift) || is_key_down(key::right_shift) || is_key_down(key::left_control) || is_key_down(key::right_control) || is_key_down(key::left_alt) || is_key_down(key::right_alt))
+			{
+				return false;
+			}
+		}
+
 		return true;
 	}
 }
