@@ -2,7 +2,7 @@
 
 #include <pch.h>
 
-#include <transformable.h>
+#include <interfaces/transformable.h>
 #include <renderer/renderbuffer.h>
 
 namespace egkr

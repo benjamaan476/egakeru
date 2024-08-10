@@ -16,6 +16,12 @@ namespace egkr
 			return xform.get_world(); 
 		}
 
+		[[nodiscard]] auto get_local_transform() const
+		{
+			transform xform = transform_;
+			return xform.get_local(); 
+		}
+
 		void set_position(const float3& position)
 		{
 			transform_.set_position(position);

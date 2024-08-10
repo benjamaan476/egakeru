@@ -1,8 +1,8 @@
 #pragma once
 #include <pch.h>
 #include <renderer/vertex_types.h>
-#include <renderable.h>
-#include <transformable.h>
+#include <interfaces/renderable.h>
+#include <interfaces/transformable.h>
 
 namespace egkr
 {

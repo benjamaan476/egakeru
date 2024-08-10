@@ -83,6 +83,7 @@ namespace egkr
 			auto model = gizmo_.get_world_transform();
 			const float fixed_size{ 0.1F };
 			auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
+			editor::gizmo::set_scale(scale_factor);
 			float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
 
 			model = scale * model;

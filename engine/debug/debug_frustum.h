@@ -2,10 +2,10 @@
 
 #include <pch.h>
 #include <resources/transform.h>
-#include <renderable.h>
+#include <interfaces/renderable.h>
 
 #include <debug/debug_line.h>
-#include <transformable.h>
+#include <interfaces/transformable.h>
 
 namespace egkr::debug
 {

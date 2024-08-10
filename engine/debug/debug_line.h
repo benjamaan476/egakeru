@@ -1,8 +1,8 @@
 #pragma once
 
 #include <pch.h>
-#include <transformable.h>
-#include <renderable.h>
+#include <interfaces/transformable.h>
+#include <interfaces/renderable.h>
 
 namespace egkr::debug
 {

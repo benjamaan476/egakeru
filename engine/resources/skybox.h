@@ -3,7 +3,7 @@
 #include <resources/resource.h>
 
 #include <resources/texture.h>
-#include <renderable.h>
+#include <interfaces/renderable.h>
 
 namespace egkr
 {

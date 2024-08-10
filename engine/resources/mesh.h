@@ -2,7 +2,7 @@
 #include "pch.h"
 
 #include "geometry.h"
-#include "transformable.h"
+#include "interfaces/transformable.h"
 #include "debug/debug_box3d.h"
 
 namespace egkr

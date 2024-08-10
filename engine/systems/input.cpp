@@ -56,7 +56,6 @@ namespace egkr
 				}
 			}
 		}
-
 		return true;
 	}
 
@@ -170,6 +169,11 @@ namespace egkr
 		return state->current_mouse.buttons[(size_t)button];
 	}
 
+	bool input::is_button_dragging(mouse_button button)
+	{
+		return state->current_mouse.dragging[(size_t)button];
+	}
+
 	bool input::was_button_up(mouse_button button)
 	{
 		return !was_button_down(button);
@@ -184,16 +188,23 @@ namespace egkr
 	{
 		auto& button_state = state->current_mouse.buttons[(size_t)button];
 
+		event::context context {};
+		context.set(0, (int16_t)button);
+		context.set(1, state->current_mouse.x);
+		context.set(2, state->current_mouse.y);
+
 		if (button_state != pressed)
 		{
 			button_state = pressed;
 
 			auto code = pressed ? event::code::mouse_down : event::code::mouse_up;
-			event::context context{};
-			context.set(0, (int16_t)button);
-			context.set(1, state->current_mouse.x);
-			context.set(2, state->current_mouse.y);
 			event::fire_event(code, nullptr, context);
+		}
+
+		if (!pressed && state->current_mouse.dragging[std::to_underlying(button)])
+		{
+			state->current_mouse.dragging[std::to_underlying(button)] = false;
+			event::fire_event(event::code::mouse_drag_end, nullptr, context);
 		}
 	}
 
@@ -215,6 +226,24 @@ namespace egkr
 		context.set(0, state->current_mouse.x);
 		context.set(1, state->current_mouse.y);
 		event::fire_event(event::code::mouse_move, nullptr, context);
+
+		for (uint32_t i{ 0u }; i < std::to_underlying(mouse_button::button_count); ++i)
+		{
+			event::context drag_context {};
+			drag_context.set(0, (int32_t)i);
+			drag_context.set(1, state->current_mouse.x);
+			drag_context.set(2, state->current_mouse.y);
+
+			if (state->current_mouse.buttons[i] && !state->previous_mouse.dragging[i])
+			{
+				state->current_mouse.dragging[i] = true;
+				event::fire_event(event::code::mouse_drag_begin, nullptr, drag_context);
+			}
+			else
+			{
+				event::fire_event(event::code::mouse_drag, nullptr, drag_context);
+			}
+		}
 	}
 
 	void input::process_mouse_wheel(double xoffset, double yoffset)

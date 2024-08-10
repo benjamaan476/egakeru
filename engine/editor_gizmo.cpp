@@ -2,6 +2,9 @@
 
 namespace egkr::editor
 {
+	static float scale_factor;
+	constexpr uint8_t segment_count{ 32 };
+
 	gizmo gizmo::create()
 	{
 		return gizmo();
@@ -64,6 +67,234 @@ namespace egkr::editor
 		gizmo_mode = mode;
 	}
 
+	ray::result gizmo::raycast(const ray& ray) const
+	{
+		ray::result result;
+		const auto& gizmo_data = mode_data.at(gizmo_mode);
+
+		for (const auto& extents : gizmo_data.extents)
+		{
+			ray.oriented_extents(extents, get_local_transform())
+				.transform([&](float distance)
+						  {
+							  ray::hit hit
+							  {
+								  .type = ray::hit_type::bounding_box,
+								  .unique_id = 159,
+								  .position = ray.origin + ray.direction * distance,
+								  .distance = distance,
+							  };
+							  result.hits.push_back(hit);
+							  return distance;
+						  });
+		}
+		return result;
+	}
+
+	void gizmo::handle_interaction(interaction_type interaction_type, const ray& ray)
+	{
+		if (gizmo_mode == mode::move)
+		{
+			auto& data = mode_data.at(mode::move);
+			if (interaction_type == interaction_type::mouse_hover)
+			{
+				auto model = get_world_transform();
+				uint8_t hit_axis{ invalid_8_id };
+
+				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
+				model *= scale;
+
+				for (auto i : std::ranges::iota_view( 0ull, data.extents.size() ) | std::views::reverse)
+				{
+					if (ray.oriented_extents(data.extents[(uint8_t)i], model))
+					{
+						hit_axis = (uint8_t)i;
+						break;
+					}
+				}
+
+				if (data.current_axis_index != hit_axis)
+				{
+					const float4 yellow{ 1.f, 1.f, 0.f, 1.f };
+					data.current_axis_index = (uint8_t)hit_axis;
+
+					for (uint8_t j{ 0u }; j < 3; j++)
+					{
+						if (j == hit_axis)
+						{
+							data.vertices[2 * j + 0].colour = yellow;
+							data.vertices[2 * j + 1].colour = yellow;
+						}
+						else
+						{
+							data.vertices[2 * j + 0].colour = float4(0.f, 0.f, 0.f, 1.f);
+							data.vertices[2 * j + 0].colour[j] = 1.f;
+							data.vertices[2 * j + 1].colour = float4(0.f, 0.f, 0.f, 1.f);
+							data.vertices[2 * j + 1].colour[j] = 1.f;
+						}
+					}
+					if (hit_axis == 3)
+					{
+						data.vertices[6].colour = yellow;
+						data.vertices[7].colour = yellow;
+						data.vertices[10].colour = yellow;
+						data.vertices[11].colour = yellow;
+					}
+					else
+					{
+						data.vertices[6].colour = float4{ 1.f, 0.f, 0.f, 1.f };
+						data.vertices[7].colour = float4{ 1.f, 0.f, 0.f, 1.f };
+						data.vertices[10].colour = float4{ 0.f, 1.f, 0.f, 1.f };
+						data.vertices[11].colour = float4{ 0.f, 1.f, 0.f, 1.f };
+					}
+
+					if (hit_axis == 4)
+					{
+						data.vertices[12].colour = yellow;
+						data.vertices[13].colour = yellow;
+						data.vertices[16].colour = yellow;
+						data.vertices[17].colour = yellow;
+					}
+					else
+					{
+						data.vertices[12].colour = float4{ 0.f, 1.f, 0.f, 1.f };
+						data.vertices[13].colour = float4{ 0.f, 1.f, 0.f, 1.f };
+						data.vertices[16].colour = float4{ 0.f, 0.f, 1.f, 1.f };
+						data.vertices[17].colour = float4{ 0.f, 0.f, 1.f, 1.f };
+					}
+
+					if (hit_axis == 5)
+					{
+						data.vertices[14].colour = yellow;
+						data.vertices[15].colour = yellow;
+						data.vertices[8].colour = yellow;
+						data.vertices[9].colour = yellow;
+					}
+					else
+					{
+						data.vertices[14].colour = float4{ 0.f, 0.f, 1.f, 1.f };
+						data.vertices[15].colour = float4{ 0.f, 0.f, 1.f, 1.f };
+						data.vertices[8].colour = float4{ 1.f, 0.f, 0.f, 1.f };
+						data.vertices[9].colour = float4{ 1.f, 0.f, 0.f, 1.f };
+					}
+
+					if (hit_axis == 6)
+					{
+						std::ranges::for_each(data.vertices, [&](colour_vertex_3d& vert) { vert.colour = yellow; });
+					}
+					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
+				}
+			}
+		}
+		else if (gizmo_mode == mode::scale)
+		{
+			auto& data = mode_data.at(mode::scale);
+			if (interaction_type == interaction_type::mouse_hover)
+			{
+				auto model = get_world_transform();
+				uint8_t hit_axis{ invalid_8_id };
+
+				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
+				model *= scale;
+
+				for (auto i : std::ranges::iota_view(0ull, data.extents.size()) | std::views::reverse)
+				{
+					if (ray.oriented_extents(data.extents[(uint8_t)i], model))
+					{
+						hit_axis = (uint8_t)i;
+						break;
+					}
+				}
+
+				if (data.current_axis_index != hit_axis)
+				{
+					const float4 yellow{ 1.f, 1.f, 0.f, 1.f };
+					data.current_axis_index = (uint8_t)hit_axis;
+					{
+						for (uint8_t j{ 0u }; j < 3; j++)
+						{
+							if (j == hit_axis)
+							{
+								data.vertices[2 * j + 0].colour = yellow;
+								data.vertices[2 * j + 1].colour = yellow;
+							}
+							else
+							{
+								data.vertices[2 * j + 0].colour = float4(0.f, 0.f, 0.f, 1.f);
+								data.vertices[2 * j + 0].colour[j] = 1.f;
+								data.vertices[2 * j + 1].colour = float4(0.f, 0.f, 0.f, 1.f);
+								data.vertices[2 * j + 1].colour[j] = 1.f;
+							}
+						}
+					}
+					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
+
+				}
+			}
+		}
+		else if (gizmo_mode == mode::rotate)
+		{
+			auto& data = mode_data.at(mode::rotate);
+			if (interaction_type == interaction_type::mouse_hover)
+			{
+				auto model = get_world_transform();
+				uint8_t hit_axis{ invalid_8_id };
+
+				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
+				model *= scale;
+
+				for (uint32_t i : std::ranges::iota_view{ 0u, 3u })
+				{
+					float4 normal{ 0.f, 0.f, 0.f, 1.f };
+					normal[(int32_t)i] = 1.f;
+					plane p = plane::create(get_position(), model * normal);
+					if (ray.disk(p, get_position(), scale_factor - 0.1f, scale_factor + 0.1f))
+					{
+						hit_axis = (uint8_t)i;
+						break;
+					}
+
+					//Might be on the back side of the plane
+					p = plane::create(get_position(), model * -normal);
+					if (ray.disk(p, get_position(), scale_factor - 0.1f, scale_factor + 0.1f))
+					{
+						hit_axis = (uint8_t)i;
+						break;
+					}
+
+				}
+
+				if (data.current_axis_index != hit_axis)
+				{
+					data.current_axis_index = (uint8_t)hit_axis;
+
+					for (uint32_t i : std::ranges::iota_view{ 0u, 2u * 3u * segment_count })
+					{
+						float4 col{ 0.f, 0.f, 0.f, 1.f };
+						col[i / (2 * segment_count)] = 1.f;
+						data.vertices[i].colour = col;
+					}
+
+					if (hit_axis != invalid_8_id)
+					{
+						const float4 yellow{ 1.f, 1.f, 0.f, 1.f };
+
+						for (uint32_t i : std::ranges::iota_view{ 2u * hit_axis * segment_count, 2u * (hit_axis + 1) * segment_count })
+						{
+							data.vertices[i].colour = yellow;
+						}
+					}
+					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
+				}
+			}
+		}
+	}
+
+	void gizmo::set_scale(float scale)
+	{
+		scale_factor = scale;
+	}
+
 	void gizmo::setup_none()
 	{
 		constexpr float4 gray{ 0.6f, 0.6f, 0.6f, 1.f };
@@ -82,7 +313,7 @@ namespace egkr::editor
 	void gizmo::setup_move()
 	{
 		egkr::vector<colour_vertex_3d> vertices(18);
-		float axis_length{ 1.f };
+		float axis_length{ 2.f };
 
 		for (uint32_t i{ 0u }; i < 6; i += 2)
 		{
@@ -95,35 +326,44 @@ namespace egkr::editor
 			colour[i / 2] = 1.f;
 			vertices[i + 1] = { .position = position, .colour = colour };
 		}
-		axis_length = 0.8f;
+		axis_length = 0.4f;
 		float4 colour{ 1.f, 0.f, 0.f, 1.f };
-		vertices[6] = { .position = {axis_length / 2, 0.f, 0.f, 1.f}, .colour = colour };
-		vertices[7] = { .position = {axis_length / 2, axis_length / 2, 0.f, 1.f}, .colour = colour };
+		vertices[6] = { .position = {axis_length, 0.f, 0.f, 1.f}, .colour = colour };
+		vertices[7] = { .position = {axis_length, axis_length, 0.f, 1.f}, .colour = colour };
 
-		vertices[8] = { .position = {axis_length / 2, 0.f, 0.f, 1.f}, .colour = colour };
-		vertices[9] = { .position = {axis_length / 2, 0.f, axis_length / 2, 1.f}, .colour = colour };
+		vertices[8] = { .position = {axis_length, 0.f, 0.f, 1.f}, .colour = colour };
+		vertices[9] = { .position = {axis_length, 0.f, axis_length, 1.f}, .colour = colour };
 		
 		colour = { 0.f, 1.f, 0.f, 1.f };
-		vertices[10] = { .position = {0.f, axis_length / 2, 0.f, 1.f}, .colour = colour  };
-		vertices[11] = { .position = {axis_length / 2, axis_length / 2, 0.f, 1.f}, .colour = colour };
+		vertices[10] = { .position = {0.f, axis_length, 0.f, 1.f}, .colour = colour  };
+		vertices[11] = { .position = {axis_length, axis_length, 0.f, 1.f}, .colour = colour };
 
-		vertices[12] = { .position = {0.f, axis_length / 2, 0.f, 1.f}, .colour = colour };
-		vertices[13] = { .position = {0.f, axis_length / 2, axis_length / 2, 1.f}, .colour = colour };
+		vertices[12] = { .position = {0.f, axis_length, 0.f, 1.f}, .colour = colour };
+		vertices[13] = { .position = {0.f, axis_length, axis_length, 1.f}, .colour = colour };
 		
 		colour = { 0.f, 0.f, 1.f, 1.f };
-		vertices[14] = { .position = {0.f, 0.f, axis_length / 2, 1.f}, .colour = colour  };
-		vertices[15] = { .position = {axis_length / 2, 0.f, axis_length / 2, 1.f}, .colour = colour };
+		vertices[14] = { .position = {0.f, 0.f, axis_length, 1.f}, .colour = colour  };
+		vertices[15] = { .position = {axis_length, 0.f, axis_length, 1.f}, .colour = colour };
 
-		vertices[16] = { .position = {0.f, 0.f, axis_length / 2, 1.f}, .colour = colour };
-		vertices[17] = { .position = {0.f, axis_length / 2, axis_length / 2, 1.f}, .colour = colour };
+		vertices[16] = { .position = {0.f, 0.f, axis_length, 1.f}, .colour = colour };
+		vertices[17] = { .position = {0.f, axis_length, axis_length, 1.f}, .colour = colour };
 
-		mode_data[gizmo::mode::move] = { .vertices = vertices };
+		const float small_box{ 0.1f };
+		extent3d x_box{ .min = {axis_length, -small_box, -small_box}, .max = {2.1f, small_box, small_box} };
+		extent3d y_box{ .min = {-small_box, axis_length, -small_box}, .max = {small_box, 2.1f, small_box} };
+		extent3d z_box{ .min = {-small_box, -small_box, axis_length}, .max = {small_box, small_box, 2.1f} };
+		extent3d xy_box{ .min = {0.f, 0.f, 0.f}, .max = {axis_length, axis_length, 0.1} };
+		extent3d yz_box{ .min = {0.f, 0.f, 0.f}, .max = {0.1f, axis_length, axis_length} };
+		extent3d zx_box{ .min = {0.f, 0.f, 0.f}, .max = {axis_length, 0.1f, axis_length} };
+		extent3d xyz_box{ .min = {-0.1f, -0.1, -0.1f}, .max = {0.1f, 0.1f, 0.1f} };
+		egkr::vector<extent3d> extents{ x_box, y_box, z_box, xy_box, yz_box, zx_box, xyz_box };
+		mode_data[gizmo::mode::move] = { .vertices = vertices,  .extents = extents};
 	}
 
 	void gizmo::setup_scale()
 	{
 		egkr::vector<colour_vertex_3d> vertices(12);
-		float axis_length{ 1.f };
+		float axis_length{ 2.f };
 
 		for (uint32_t i{ 0u }; i < 6; i += 2)
 		{
@@ -136,26 +376,30 @@ namespace egkr::editor
 			colour[i / 2] = 1.f;
 			vertices[i + 1] = { .position = position, .colour = colour };
 		}
-		axis_length = 0.8f;
+		axis_length = 0.4f;
 		const float4 red{ 1.f, 0.f, 0.f, 1.f };
 		const float4 green{ 0.f, 1.f, 0.f, 1.f };
 		const float4 blue{ 0.f, 0.f, 1.f, 1.f };
 
-		vertices[6] = { .position = {axis_length / 2, 0.f, 0.f, 1.f}, .colour = red };
-		vertices[7] = { .position = {0, axis_length / 2, 0.f, 1.f}, .colour = green };
+		vertices[6] = { .position = {axis_length, 0.f, 0.f, 1.f}, .colour = red };
+		vertices[7] = { .position = {0, axis_length, 0.f, 1.f}, .colour = green };
 
-		vertices[8] = { .position = {0.f, axis_length / 2, 0.f, 1.f}, .colour = green };
-		vertices[9] = { .position = {0.f, 0.f, axis_length / 2, 1.f}, .colour = blue };
+		vertices[8] = { .position = {0.f, axis_length, 0.f, 1.f}, .colour = green };
+		vertices[9] = { .position = {0.f, 0.f, axis_length, 1.f}, .colour = blue };
 
-		vertices[10] = { .position = {0.f, 0.f, axis_length / 2, 1.f}, .colour = blue };
-		vertices[11] = { .position = {axis_length / 2, 0.f, 0.f, 1.f}, .colour = red };
+		vertices[10] = { .position = {0.f, 0.f, axis_length, 1.f}, .colour = blue };
+		vertices[11] = { .position = {axis_length, 0.f, 0.f, 1.f}, .colour = red };
 
-		mode_data[gizmo::mode::scale] = { .vertices = vertices };
+		const float small_box{ 0.1f };
+		extent3d x_box{ .min = {axis_length, -small_box, -small_box}, .max = {2.1f, small_box, small_box} };
+		extent3d y_box{ .min = {-small_box, axis_length, -small_box}, .max = {small_box, 2.1f, small_box} };
+		extent3d z_box{ .min = {-small_box, -small_box, axis_length}, .max = {small_box, small_box, 2.1f} };
+		egkr::vector<extent3d> extents{ x_box, y_box, z_box };
+		mode_data[gizmo::mode::scale] = { .vertices = vertices,  .extents = extents };
 	}
 
 	void gizmo::setup_rotate()
 	{
-		constexpr int8_t segment_count{ 32 };
 		constexpr int16_t vertex_count{ 3 * 2 * segment_count };
 		egkr::vector<colour_vertex_3d> vertices;
 		vertices.reserve(vertex_count);

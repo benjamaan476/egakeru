@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "transformable.h"
+#include "interfaces/transformable.h"
 #include "resources/light.h"
 #include "resources/mesh.h"
 #include "resources/skybox.h"

@@ -30,8 +30,8 @@ namespace egkr
 	{
 		bool inside = true;
 		std::array<int8_t, 3> quadrant{};
-		float3 max_t{};
-		float3 candidate_plane{};
+		float3 max_t{ 0.f };
+		float3 candidate_plane{ 0.f };
 
 		for (int32_t i{ 0 }; i < 3; ++i)
 		{
@@ -106,7 +106,7 @@ namespace egkr
 	std::optional<float> ray::oriented_extents(const extent3d& bb, const float4x4& model) const
 	{
 		const auto inv = glm::inverse(model);
-		const ray ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f)};
+		const ray ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f) };
 
 		return ray.aabb(bb)
 			.transform([&](float3 out)
@@ -114,5 +114,41 @@ namespace egkr
 						   float3 out_point = model * glm::vec4(out, 1.f);
 						   return glm::distance(origin, out_point);
 					   });
+	}
+
+	std::optional<std::tuple<float3, float>> ray::plane(const egkr::plane& plane) const
+	{
+		const float normal_direction = glm::dot(direction, plane.normal);
+		const float point_normal = glm::dot(origin, plane.normal);
+
+		if (normal_direction >= 0.f)
+		{
+			return {};
+		}
+
+		float t = (plane.distance - point_normal) / normal_direction;
+
+		if (t >= 0)
+		{
+			return std::make_tuple(origin + t * direction, t);
+		}
+		else return {};
+	}
+
+	std::optional<std::tuple<float3, float>> ray::disk(const egkr::plane& plane, const float3& center, float inner_radius, float outer_radius) const
+	{
+		return this->plane(plane)
+			.and_then([&](const std::tuple<float3, float>& result) -> std::optional<std::tuple<float3, float>>
+					  {
+						  const auto& [point, distance] = result;
+						  auto to_point = point - center;
+						  float dist_sqr = glm::dot(to_point, to_point);
+
+						  if (dist_sqr < inner_radius || dist_sqr > outer_radius)
+						  {
+							  return std::nullopt;
+						  }
+						  else return result;
+					  });
 	}
 }

@@ -67,7 +67,8 @@ bool sandbox_application::init()
 	ui_meshes_.push_back(ui_mesh_);
 
 	camera_ = egkr::camera_system::get_default();
-	camera_->set_position({ 0, 0, 0.F });
+	camera_->set_position({ 10, 6, 8 });
+	camera_->set_rotation({ 0, 45, 45 });
 	camera_->set_aspect((float)width_ / (float)height_);
 
 	//TODO add to scene
@@ -433,10 +434,15 @@ bool sandbox_application::on_button_up(egkr::event::code code, void* /*sender*/,
 			const auto& origin = game->camera_->get_position();
 			const auto& proj = game->camera_->get_projection();
 			egkr::ray ray = egkr::ray::from_screen({ xpos, ypos }, { game->width_, game->height_ }, origin, view, proj);
-			auto hit = game->main_scene_->raycast(ray);
+
+			auto hit = game->gizmo_.raycast(ray);
+			if (!hit)
+			{
+				hit = game->main_scene_->raycast(ray);
+			}
 			if (hit)
 			{
-				LOG_INFO("Hit! position: {}, distance: {}", glm::to_string(hit.hits.front().position), hit.hits.front().distance);
+				LOG_INFO("Hit! position: {}, distance: {} id: {}", glm::to_string(hit.hits.front().position), hit.hits.front().distance, hit.hits.front().unique_id);
 				egkr::debug::debug_line::shared_ptr ray_line = egkr::debug::debug_line::create(ray.origin, ray.origin + 100.f * ray.direction);
 				ray_line->set_colour(0, { 1, 0, 1, 1 });
 				ray_line->set_colour(1, { 0, 1, 1, 1 });
@@ -460,6 +466,18 @@ bool sandbox_application::on_mouse_move(egkr::event::code code, void* /*sender*/
 		context.get(0, pos.x);
 		context.get(1, pos.y);
 		game->mouse_pos_ = pos;
+
+		if (egkr::input::is_button_dragging(egkr::mouse_button::left))
+		{
+			auto& camera = game->camera_;
+			const auto& view = camera->get_view();
+			const auto& proj = camera->get_projection();
+			const auto& origin = camera->get_position();
+
+			egkr::ray ray = egkr::ray::from_screen(pos, { game->width_, game->height_ }, origin, view, proj);
+
+			game->gizmo_.handle_interaction(egkr::editor::gizmo::interaction_type::mouse_hover, ray);
+		}
 	}
 	 
 	return false;

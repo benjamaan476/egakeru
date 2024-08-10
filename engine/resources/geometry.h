@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "material.h"
-#include "transformable.h"
+#include "interfaces/transformable.h"
 
 #include "renderer/vertex_types.h"
 
