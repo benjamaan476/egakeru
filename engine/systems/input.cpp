@@ -239,7 +239,7 @@ namespace egkr
 				state->current_mouse.dragging[i] = true;
 				event::fire_event(event::code::mouse_drag_begin, nullptr, drag_context);
 			}
-			else
+			else if(state->current_mouse.buttons[i])
 			{
 				event::fire_event(event::code::mouse_drag, nullptr, drag_context);
 			}

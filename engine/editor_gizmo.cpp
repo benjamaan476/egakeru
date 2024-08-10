@@ -1,5 +1,5 @@
 #include "editor_gizmo.h"
-
+#include "identifier.h"
 namespace egkr::editor
 {
 	static float scale_factor;
@@ -22,6 +22,7 @@ namespace egkr::editor
 
 	void gizmo::init()
 	{
+		unique_id = identifier::acquire_unique_id(this);
 		setup_none();
 		setup_move();
 		setup_rotate();
@@ -35,6 +36,8 @@ namespace egkr::editor
 			data.geometry_->destroy();
 		}
 		mode_data.clear();
+		identifier::release_id(unique_id);
+		unique_id = invalid_32_id;
 	}
 
 	void gizmo::load()
@@ -80,7 +83,7 @@ namespace egkr::editor
 							  ray::hit hit
 							  {
 								  .type = ray::hit_type::bounding_box,
-								  .unique_id = 159,
+								  .unique_id = unique_id,
 								  .position = ray.origin + ray.direction * distance,
 								  .distance = distance,
 							  };
@@ -89,6 +92,39 @@ namespace egkr::editor
 						  });
 		}
 		return result;
+	}
+
+	void gizmo::begin_interaction(interaction_type type, const ray& ray)
+	{
+		type_ = type;
+		if (gizmo_mode == mode::move)
+		{
+			if (type == interaction_type::mouse_drag)
+			{
+				auto& data = mode_data[gizmo_mode];
+				auto model = get_local_transform();
+
+				switch (data.current_axis_index)
+				{
+				case 0:
+					const float3 origin{ get_position() };
+					data.interaction_plane = plane::create(origin, model * float4{ 0.f, 1.f, 0.f, 0.f });
+					ray.plane(data.interaction_plane)
+						.and_then([&](auto hit) ->std::optional<std::tuple<float3, float>>
+								  {
+									  auto& [point, dist] = hit;
+									  data.interaction_start = data.last_interaction_point = point;
+									  return hit;
+								  });
+
+				}
+			}
+		}
+	}
+
+	void gizmo::end_interaction(interaction_type /*type*/, const ray& /*ray*/)
+	{
+		type_ = interaction_type::none;
 	}
 
 	void gizmo::handle_interaction(interaction_type interaction_type, const ray& ray)
@@ -183,6 +219,23 @@ namespace egkr::editor
 						std::ranges::for_each(data.vertices, [&](colour_vertex_3d& vert) { vert.colour = yellow; });
 					}
 					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
+				}
+			}
+			else if (interaction_type == interaction_type::mouse_drag)
+			{
+				if (data.current_axis_index == 0)
+				{
+					ray.plane(data.interaction_plane)
+						.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
+								  {
+									  auto& [point, dist] = hit;
+									  auto dir = get_local_transform() * float4{ 1.f, 0.f, 0.f, 0.f };
+									  float3 diff = point - data.last_interaction_point;
+									  diff = glm::dot(diff, float3(dir)) * dir;
+									  get_transform().translate({ -diff.x, 0, 0 });
+									  data.last_interaction_point = point;
+									  return hit;
+								  });
 				}
 			}
 		}

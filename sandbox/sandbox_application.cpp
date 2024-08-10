@@ -32,6 +32,9 @@ bool sandbox_application::init()
 	egkr::event::register_event(egkr::event::code::debug02, this, sandbox_application::on_debug_event);
 	egkr::event::register_event(egkr::event::code::debug03, this, sandbox_application::on_debug_event);
 	egkr::event::register_event(egkr::event::code::mouse_up, this, sandbox_application::on_button_up);
+	egkr::event::register_event(egkr::event::code::mouse_drag, this, sandbox_application::on_mouse_drag);
+	egkr::event::register_event(egkr::event::code::mouse_drag_begin, this, sandbox_application::on_mouse_drag);
+	egkr::event::register_event(egkr::event::code::mouse_drag_end, this, sandbox_application::on_mouse_drag);
 	egkr::event::register_event(egkr::event::code::mouse_move, this, sandbox_application::on_mouse_move);
 
 	test_text_ = egkr::text::ui_text::create(egkr::text::type::bitmap, "Arial 32", 32, "some test text! \n\t mah~`?^");
@@ -467,7 +470,7 @@ bool sandbox_application::on_mouse_move(egkr::event::code code, void* /*sender*/
 		context.get(1, pos.y);
 		game->mouse_pos_ = pos;
 
-		if (egkr::input::is_button_dragging(egkr::mouse_button::left))
+		if (!egkr::input::is_button_dragging(egkr::mouse_button::left))
 		{
 			auto& camera = game->camera_;
 			const auto& view = camera->get_view();
@@ -480,6 +483,37 @@ bool sandbox_application::on_mouse_move(egkr::event::code code, void* /*sender*/
 		}
 	}
 	 
+	return false;
+}
+
+bool sandbox_application::on_mouse_drag(egkr::event::code code, void* /*sender*/, void* listener, const egkr::event::context& context)
+{
+	auto* game = (sandbox_application*)listener;
+
+	egkr::int2 pos;
+	context.get(0, pos.x);
+	context.get(1, pos.y);
+	game->mouse_pos_ = pos;
+
+	auto& camera = game->camera_;
+	const auto& view = camera->get_view();
+	const auto& proj = camera->get_projection();
+	const auto& origin = camera->get_position();
+
+	egkr::ray ray = egkr::ray::from_screen(pos, { game->width_, game->height_ }, origin, view, proj);
+
+	if (code == egkr::event::code::mouse_drag_begin)
+	{
+		game->gizmo_.begin_interaction(egkr::editor::gizmo::interaction_type::mouse_drag, ray);
+	}
+	else if (code == egkr::event::code::mouse_drag)
+	{
+		game->gizmo_.handle_interaction(egkr::editor::gizmo::interaction_type::mouse_drag, ray);
+	}
+	else if (code == egkr::event::code::mouse_drag_end)
+	{
+		game->gizmo_.end_interaction(egkr::editor::gizmo::interaction_type::mouse_drag, ray);
+	}
 	return false;
 }
 

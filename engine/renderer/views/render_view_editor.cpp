@@ -86,7 +86,7 @@ namespace egkr
 			editor::gizmo::set_scale(scale_factor);
 			float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
 
-			model = scale * model;
+			model = model * scale;
 			shader_system::set_uniform(locations_.model, &model);
 			gizmo_.draw();
 			pass->end();

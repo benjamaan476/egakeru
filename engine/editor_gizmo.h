@@ -39,6 +39,7 @@ namespace egkr::editor
 			uint8_t current_axis_index{ 255 };
 			plane interaction_plane;
 			float3 interaction_start;
+			float3 last_interaction_point;
 			friend gizmo;
 		};
 
@@ -73,6 +74,7 @@ namespace egkr::editor
 	private:
 		mode gizmo_mode{ mode::none };
 		std::unordered_map<mode, gizmo_data> mode_data;
-		interaction_type type{ interaction_type::none };
+		interaction_type type_{ interaction_type::none };
+		uint32_t unique_id{ invalid_32_id };
 	};
 }

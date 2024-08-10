@@ -30,6 +30,7 @@ private:
 	bool static on_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 	bool static on_button_up(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 	bool static on_mouse_move(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_mouse_drag(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 
 	void load_scene();
 
