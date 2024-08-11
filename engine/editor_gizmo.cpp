@@ -104,20 +104,32 @@ namespace egkr::editor
 				auto& data = mode_data[gizmo_mode];
 				auto model = get_local_transform();
 
+				const float3 origin{ get_position() };
+
 				switch (data.current_axis_index)
 				{
 				case 0:
-					const float3 origin{ get_position() };
+				case 5:
 					data.interaction_plane = plane::create(origin, model * float4{ 0.f, 1.f, 0.f, 0.f });
-					ray.plane(data.interaction_plane)
-						.and_then([&](auto hit) ->std::optional<std::tuple<float3, float>>
-								  {
-									  auto& [point, dist] = hit;
-									  data.interaction_start = data.last_interaction_point = point;
-									  return hit;
-								  });
-
+					break;
+				case 1:
+				case 3:
+					data.interaction_plane = plane::create(origin, model * float4{ 0.f, 0.f, 1.f, 0.f });
+					break;
+				case 2:
+				case 4:
+					data.interaction_plane = plane::create(origin, model * float4{ 1.f, 0.f, 0.f, 0.f });
+					break;
+				default:
+					break;
 				}
+				ray.plane(data.interaction_plane)
+					.and_then([&](auto hit) ->std::optional<std::tuple<float3, float>>
+							  {
+								  auto& [point, dist] = hit;
+								  data.interaction_start = data.last_interaction_point = point;
+								  return hit;
+							  });
 			}
 		}
 	}
@@ -223,20 +235,43 @@ namespace egkr::editor
 			}
 			else if (interaction_type == interaction_type::mouse_drag)
 			{
-				if (data.current_axis_index == 0)
-				{
-					ray.plane(data.interaction_plane)
-						.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
-								  {
-									  auto& [point, dist] = hit;
-									  auto dir = get_local_transform() * float4{ 1.f, 0.f, 0.f, 0.f };
-									  float3 diff = point - data.last_interaction_point;
-									  diff = glm::dot(diff, float3(dir)) * dir;
-									  get_transform().translate({ -diff.x, 0, 0 });
-									  data.last_interaction_point = point;
-									  return hit;
-								  });
-				}
+
+				ray.plane(data.interaction_plane)
+					.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
+								{
+									auto& [point, dist] = hit;
+									float3 diff = point - data.last_interaction_point;
+									float3 translation;
+									float3 direction{ 0.f };
+									switch (data.current_axis_index)
+									{
+									case 0:
+										direction = float3{ 1.f, 0.f, 0.f };
+										translation = glm::dot(diff, direction) * direction;
+										break;
+									case 1:
+										direction = float3{ 0.f, 1.f, 0.f };
+										translation = glm::dot(diff, direction) * direction;
+										break;
+									case 2:
+										direction = float3{ 0.f, 0.f, 1.f };
+										translation = glm::dot(diff, direction) * direction;
+										break;
+									case 3:
+									case 4:
+									case 5:
+									case 6:
+										translation = diff;
+										break;
+									default:
+										break;
+									}
+									get_transform().translate(translation);
+									data.last_interaction_point = point;
+									LOG_INFO("Last point: {}\n", glm::to_string(point));
+									return hit;
+								});
+				
 			}
 		}
 		else if (gizmo_mode == mode::scale)

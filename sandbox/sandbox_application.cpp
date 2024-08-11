@@ -70,8 +70,8 @@ bool sandbox_application::init()
 	ui_meshes_.push_back(ui_mesh_);
 
 	camera_ = egkr::camera_system::get_default();
-	camera_->set_position({ 10, 6, 8 });
-	camera_->set_rotation({ 0, 45, 45 });
+	camera_->set_position({ 10, 10, 10 });
+	camera_->set_rotation({ 0.f, glm::radians(45.f), glm::radians(45.f) });
 	camera_->set_aspect((float)width_ / (float)height_);
 
 	//TODO add to scene

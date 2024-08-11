@@ -230,9 +230,9 @@ namespace egkr
 		for (uint32_t i{ 0u }; i < std::to_underlying(mouse_button::button_count); ++i)
 		{
 			event::context drag_context {};
-			drag_context.set(0, (int32_t)i);
-			drag_context.set(1, state->current_mouse.x);
-			drag_context.set(2, state->current_mouse.y);
+			drag_context.set(0, state->current_mouse.x);
+			drag_context.set(1, state->current_mouse.y);
+			drag_context.set(2, (int32_t)i);
 
 			if (state->current_mouse.buttons[i] && !state->previous_mouse.dragging[i])
 			{
