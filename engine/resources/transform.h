@@ -18,6 +18,8 @@ namespace egkr
 		void set_scale(const float3& scale);
 		void scale(const float3& scale);
 
+		[[nodiscard]] float get_determinant() const { return determinant_; }
+
 		void set_parent(const std::shared_ptr<transformable>& parent);
 
 		[[nodiscard]] float4x4 get_local();
@@ -26,6 +28,8 @@ namespace egkr
 		float3 position_{0.F};
 		glm::quat rotation_{{ 0, 0, 0 }};
 		float3 scale_{1.F};
+
+		float determinant_{ 0.f };
 
 		bool is_dirty_{ true };
 		

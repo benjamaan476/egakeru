@@ -3,6 +3,7 @@
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
+#include <renderer/renderer_frontend.h>
 
 namespace egkr
 {
@@ -92,8 +93,22 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.transform->get_world());
+				if (auto transform = render_data.transform.lock())
+				{
+					material_system::apply_local(m, transform->get_world());
+				}
+
+				if (render_data.is_winding_reversed)
+				{
+					renderer->set_winding(winding::clockwise);
+				}
 				render_data.geometry->draw();
+
+				if (render_data.is_winding_reversed)
+				{
+					renderer->set_winding(winding::counter_clockwise);
+				}
+
 
 			}
 
@@ -106,8 +121,11 @@ namespace egkr
 				shader_system::apply_global(true);
 				for (render_data data : render_view_packet->debug_render_data)
 				{
-					const auto& model = data.transform->get_world();
-					shader_system::set_uniform(locations_.model, &model);
+					if (auto transform = data.transform.lock())
+					{
+						const auto& model = transform->get_world();
+						shader_system::set_uniform(locations_.model, &model);
+					}
 					data.geometry->draw();
 				}
 				colour_shader->set_frame_number(frame_number);

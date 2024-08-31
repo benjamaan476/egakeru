@@ -953,6 +953,12 @@ namespace egkr
 		set_scissor(context_.scissor_rect);
 	}
 
+	void renderer_vulkan::set_winding(winding winding) const
+	{
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		command_buffer.get_handle().setFrontFace(winding == winding::counter_clockwise ? vk::FrontFace::eCounterClockwise : vk::FrontFace::eClockwise);
+	}
+
 	texture* renderer_vulkan::get_window_attachment(uint8_t index) const
 	{
 		if (index >= context_.swapchain->get_image_count())

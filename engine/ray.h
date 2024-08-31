@@ -35,7 +35,7 @@ namespace egkr
 
 		std::optional<float3> aabb(const extent3d& extents) const;
 		std::optional<float> oriented_extents(const extent3d& bb, const float4x4& model) const;
-		std::optional<std::tuple<float3, float>> plane(const plane& plane) const;
-		std::optional<std::tuple<float3, float>> disk(const egkr::plane& plane, const float3& center, float min_radius, float max_radius) const;
+		std::optional<std::tuple<float3, float>> plane(const std::optional<egkr::plane>& plane) const;
+		std::optional<std::tuple<float3, float>> disk(const std::optional<egkr::plane>& plane, const float3& center, float min_radius, float max_radius) const;
 	};
 }

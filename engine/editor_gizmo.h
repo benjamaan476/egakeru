@@ -37,7 +37,7 @@ namespace egkr::editor
 
 			egkr::vector<extent3d> extents;
 			uint8_t current_axis_index{ 255 };
-			plane interaction_plane;
+			std::optional<plane> interaction_plane;
 			float3 interaction_start;
 			float3 last_interaction_point;
 			friend gizmo;

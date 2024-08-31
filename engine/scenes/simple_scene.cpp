@@ -90,7 +90,8 @@ namespace egkr::scene
 
 					if (frustum.intersects_aabb(center, half_extents))
 					{
-						frame_geometry_.world_geometries.emplace_back(geo, mesh.get());
+						egkr::render_data data{ .geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
+						frame_geometry_.world_geometries.emplace_back(data);
 					}
 				}
 			}
@@ -113,17 +114,17 @@ namespace egkr::scene
 
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box.get()}; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box.get()}; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box.get()}; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
@@ -132,7 +133,7 @@ namespace egkr::scene
 			{
 				if (mesh)
 				{
-					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh.get());
+					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh);
 				}
 			}
 

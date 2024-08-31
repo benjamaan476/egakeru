@@ -168,4 +168,9 @@ namespace egkr
 	{
 		backend_->reset_scissor();
 	}
+
+	void renderer_frontend::set_winding(winding winding) const
+	{
+		backend_->set_winding(winding);
+	}
 }

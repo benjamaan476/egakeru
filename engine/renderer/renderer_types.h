@@ -37,6 +37,12 @@ namespace egkr
 		float4 pad2{};
 	};
 
+	enum class winding
+	{
+		counter_clockwise,
+		clockwise
+	};
+
 	struct render_packet
 	{
 		std::unordered_map<render_view::type, render_view_packet> render_views{};
@@ -84,6 +90,7 @@ namespace egkr
 		virtual void reset_viewport() const = 0;
 		virtual void set_scissor(const float4& rect) const = 0;
 		virtual void reset_scissor() const = 0;
+		virtual void set_winding(winding winding) const = 0;
 
 		virtual texture* get_window_attachment(uint8_t index) const = 0;
 		virtual texture* get_depth_attachment(uint8_t index) const = 0;

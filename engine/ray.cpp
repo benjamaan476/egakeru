@@ -116,17 +116,21 @@ namespace egkr
 					   });
 	}
 
-	std::optional<std::tuple<float3, float>> ray::plane(const egkr::plane& plane) const
+	std::optional<std::tuple<float3, float>> ray::plane(const std::optional<egkr::plane>& plane) const
 	{
-		const float normal_direction = glm::dot(direction, plane.normal);
-		const float point_normal = glm::dot(origin, plane.normal);
+		if (!plane)
+		{
+			return {};
+		}
+		const float normal_direction = glm::dot(direction, plane->normal);
+		const float point_normal = glm::dot(origin, plane->normal);
 
 		if (normal_direction >= 0.f)
 		{
 			return {};
 		}
 
-		float t = (plane.distance - point_normal) / normal_direction;
+		float t = (plane->distance - point_normal) / normal_direction;
 
 		if (t >= 0)
 		{
@@ -135,7 +139,7 @@ namespace egkr
 		else return {};
 	}
 
-	std::optional<std::tuple<float3, float>> ray::disk(const egkr::plane& plane, const float3& center, float inner_radius, float outer_radius) const
+	std::optional<std::tuple<float3, float>> ray::disk(const std::optional<egkr::plane>& plane, const float3& center, float inner_radius, float outer_radius) const
 	{
 		return this->plane(plane)
 			.and_then([&](const std::tuple<float3, float>& result) -> std::optional<std::tuple<float3, float>>

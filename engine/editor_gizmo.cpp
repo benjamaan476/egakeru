@@ -97,7 +97,7 @@ namespace egkr::editor
 	void gizmo::begin_interaction(interaction_type type, const ray& ray)
 	{
 		type_ = type;
-		if (gizmo_mode == mode::move)
+		if (gizmo_mode == mode::move || gizmo_mode == mode::scale)
 		{
 			if (type == interaction_type::mouse_drag)
 			{
@@ -137,6 +137,8 @@ namespace egkr::editor
 	void gizmo::end_interaction(interaction_type /*type*/, const ray& /*ray*/)
 	{
 		type_ = interaction_type::none;
+		auto& data = mode_data.at(gizmo_mode);
+		data.interaction_plane = {};
 	}
 
 	void gizmo::handle_interaction(interaction_type interaction_type, const ray& ray)
@@ -239,7 +241,6 @@ namespace egkr::editor
 			}
 			else if (interaction_type == interaction_type::mouse_drag)
 			{
-
 				ray.plane(data.interaction_plane)
 					.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
 								{
@@ -326,6 +327,21 @@ namespace egkr::editor
 								data.vertices[2 * j + 1].colour[j] = 1.f;
 							}
 						}
+
+						if (hit_axis == 3)
+						{
+							std::ranges::for_each(data.vertices, [&](colour_vertex_3d& vert) { vert.colour = yellow; });
+						}
+						else
+						{
+							data.vertices[6].colour = { 1.f, 0.f, 0.f, 1.f };
+							data.vertices[7].colour = { 1.f, 0.f, 0.f, 1.f };
+							data.vertices[8].colour = { 0.f, 1.f, 0.f, 1.f };
+							data.vertices[9].colour = { 0.f, 1.f, 0.f, 1.f };
+							data.vertices[10].colour = { 0.f, 0.f, 1.f, 1.f };
+							data.vertices[11].colour = { 0.f, 0.f, 1.f, 1.f };
+						}
+
 					}
 					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
 
@@ -363,9 +379,13 @@ namespace egkr::editor
 								  default:
 									  break;
 								  }
-								  scale(translation);
-								  data.last_interaction_point = point;
-								  LOG_INFO("Last point: {}\n", glm::to_string(point));
+								  if (auto t = selected_transform.lock())
+								  {
+									  t->set_scale(t->get_scale() + translation);
+									  data.last_interaction_point = point;
+									  LOG_INFO("Last point: {}\n", glm::to_string(point));
+
+								  }
 								  return hit;
 							  });
 

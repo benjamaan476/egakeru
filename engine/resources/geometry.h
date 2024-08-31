@@ -79,8 +79,9 @@ namespace egkr
 	struct render_data
 	{
 		geometry::shared_ptr geometry{};
-		transformable* transform{};
+		std::weak_ptr<transformable> transform;
 		uint64_t unique_id{};
+		bool is_winding_reversed;
 	};
 
 	struct frame_geometry_data

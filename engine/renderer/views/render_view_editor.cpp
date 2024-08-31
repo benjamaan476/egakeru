@@ -4,6 +4,9 @@
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
 
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace egkr
 {
 	render_view_editor::render_view_editor(const configuration& configuration) : render_view(configuration)
@@ -84,22 +87,25 @@ namespace egkr
 			gizmo_.get_selected_model()
 				.and_then([&](float4x4 model) -> std::optional<float4x4>
 						  {
+							  float3 model_scale, translation, skew;
+							  float4 perspective;
+							  glm::quat rotation;
+							  glm::decompose(model, model_scale, rotation, translation, skew, perspective);
 							  const float fixed_size{ 0.1F };
 							  auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
 							  editor::gizmo::set_scale(scale_factor);
 							  float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
 
-							  model = model * scale;
+							  float4x4 local{ 1.F };
+							  auto trans = glm::translate(local, translation);
+							  auto rot = glm::toMat4(rotation);
+
+							  model = trans * rot * scale;
 							  shader_system::set_uniform(locations_.model, &model);
 							  gizmo_.draw();
 
 							  return model;
-						  })
-				.or_else([] -> std::optional<float4x4>
-						 {
-							 LOG_INFO("Gizmo has no selected model"); 
-							 return std::nullopt;
-						 });
+						  });
 
 			pass->end();
 		}

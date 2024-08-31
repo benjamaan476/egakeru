@@ -41,6 +41,7 @@ namespace egkr
 		void reset_viewport() const override;
 		void set_scissor(const float4& rect) const override;
 		void reset_scissor() const override;
+		void set_winding(winding winding) const override;
 
 		texture* get_window_attachment(uint8_t index) const override;
 		texture* get_depth_attachment(uint8_t index) const override;

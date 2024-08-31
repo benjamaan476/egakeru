@@ -86,7 +86,7 @@ namespace egkr
 			.setLogicOp(vk::LogicOp::eCopy)
 			.setAttachments(colour_blend_attachment);
 
-		auto dynamic_states = { vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::ePrimitiveTopology };
+		auto dynamic_states = { vk::DynamicState::eViewport, vk::DynamicState::eScissor, vk::DynamicState::ePrimitiveTopology, vk::DynamicState::eFrontFace };
 
 		vk::PipelineDynamicStateCreateInfo dynamic_state_create_info{};
 		dynamic_state_create_info

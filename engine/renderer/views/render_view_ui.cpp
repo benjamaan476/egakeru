@@ -74,7 +74,7 @@ namespace egkr
 			{
 				for (const auto& geo : mesh->get_geometries())
 				{
-					packet.render_data.emplace_back(geo, mesh.get());
+					packet.render_data.emplace_back(geo, mesh);
 				}
 			}
 		}
@@ -101,7 +101,10 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.transform->get_world());
+				if (auto transform = render_data.transform.lock())
+				{
+					material_system::apply_local(m, transform->get_world());
+				}
 				render_data.geometry->draw();
 			}
 

@@ -116,20 +116,20 @@ void sandbox_application::update(const egkr::frame_data& frame_data)
 	egkr::debug_console::update();
 }
 
-void sandbox_application::render(egkr::render_packet* render_packet, const egkr::frame_data& frame_data)
+void sandbox_application::render(egkr::render_packet* render_packet, const egkr::frame_data& /*frame_data*/)
 {
 	if (main_scene_->is_loaded())
 	{
-		glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
+		/*glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
 		meshes_[0]->rotate(q);
 
-		meshes_[1]->rotate(q);
+		meshes_[1]->rotate(q);*/
 
 	}
 	main_scene_->populate_render_packet(render_packet);
 	if (test_lines_)
 	{
-		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .transform = test_lines_.get()});
+		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .transform = test_lines_});
 	}
 
 	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_);

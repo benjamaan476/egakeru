@@ -52,6 +52,7 @@ namespace egkr
 			auto rot = glm::toMat4(rotation_);
 			auto scale = glm::scale(local, scale_);
 			local_ = trans * rot * scale;
+
 			is_dirty_ = false;
 		}
 
@@ -67,6 +68,7 @@ namespace egkr
 			auto parent_world = parent->get_world();
 			local = parent_world * local;
 		}
+		determinant_ = glm::determinant(local_);
 
 		return local;
 	}
