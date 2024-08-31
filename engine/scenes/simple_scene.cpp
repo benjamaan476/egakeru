@@ -363,6 +363,8 @@ namespace egkr::scene
 			}
 		}
 
+		//TODO: raycast other scene objects?
+
 		return result;
 	}
 

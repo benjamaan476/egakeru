@@ -140,9 +140,4 @@ namespace egkr
 		}
 		return true;
 	}
-
-	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
-	{
-		return true;
-	}
 }

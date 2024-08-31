@@ -106,14 +106,8 @@ namespace egkr
 
 							  return model;
 						  });
-
 			pass->end();
 		}
-		return true;
-	}
-
-	bool render_view_editor::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
-	{
 		return true;
 	}
 }
