@@ -2,7 +2,7 @@
 #include <pch.h>
 #include <renderer/vertex_types.h>
 #include <interfaces/renderable.h>
-#include <interfaces/transformable.h>
+#include <resources/transform.h>
 
 namespace egkr
 {

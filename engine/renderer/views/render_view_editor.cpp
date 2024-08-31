@@ -80,15 +80,27 @@ namespace egkr
 			const auto& gizmo_position = gizmo_.get_position();
 
 			const auto distance = glm::distance(camera_position, gizmo_position);
-			auto model = gizmo_.get_world_transform();
-			const float fixed_size{ 0.1F };
-			auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
-			editor::gizmo::set_scale(scale_factor);
-			float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
 
-			model = model * scale;
-			shader_system::set_uniform(locations_.model, &model);
-			gizmo_.draw();
+			gizmo_.get_selected_model()
+				.and_then([&](float4x4 model) -> std::optional<float4x4>
+						  {
+							  const float fixed_size{ 0.1F };
+							  auto scale_factor = (2 * std::tan(camera_->get_fov() / 2) * distance) * fixed_size;
+							  editor::gizmo::set_scale(scale_factor);
+							  float4x4 scale = glm::scale(glm::mat4x4(1.f), { scale_factor, scale_factor, scale_factor });
+
+							  model = model * scale;
+							  shader_system::set_uniform(locations_.model, &model);
+							  gizmo_.draw();
+
+							  return model;
+						  })
+				.or_else([] -> std::optional<float4x4>
+						 {
+							 LOG_INFO("Gizmo has no selected model"); 
+							 return std::nullopt;
+						 });
+
 			pass->end();
 		}
 		return true;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <pch.h>
-#include <interfaces/transformable.h>
+#include <resources/transform.h>
 #include <interfaces/renderable.h>
 
 namespace egkr::debug

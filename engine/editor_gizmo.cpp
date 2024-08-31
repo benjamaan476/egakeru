@@ -70,14 +70,14 @@ namespace egkr::editor
 		gizmo_mode = mode;
 	}
 
-	ray::result gizmo::raycast(const ray& ray) const
+	ray::result gizmo::raycast(const ray& ray)
 	{
 		ray::result result;
 		const auto& gizmo_data = mode_data.at(gizmo_mode);
 
 		for (const auto& extents : gizmo_data.extents)
 		{
-			ray.oriented_extents(extents, get_local_transform())
+			ray.oriented_extents(extents, get_local())
 				.transform([&](float distance)
 						  {
 							  ray::hit hit
@@ -102,7 +102,7 @@ namespace egkr::editor
 			if (type == interaction_type::mouse_drag)
 			{
 				auto& data = mode_data[gizmo_mode];
-				auto model = get_local_transform();
+				auto model = get_local();
 
 				const float3 origin{ get_position() };
 
@@ -146,7 +146,11 @@ namespace egkr::editor
 			auto& data = mode_data.at(mode::move);
 			if (interaction_type == interaction_type::mouse_hover)
 			{
-				auto model = get_world_transform();
+				float4x4 model;
+				if (auto selected = selected_transform.lock())
+				{
+					model = selected->get_world();
+				}
 				uint8_t hit_axis{ invalid_8_id };
 
 				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
@@ -266,9 +270,13 @@ namespace egkr::editor
 									default:
 										break;
 									}
-									get_transform().translate(translation);
-									data.last_interaction_point = point;
-									LOG_INFO("Last point: {}\n", glm::to_string(point));
+									if (auto t = selected_transform.lock())
+									{
+										t->translate(translation);
+										data.last_interaction_point = point;
+										LOG_INFO("Last point: {}\n", glm::to_string(point));
+
+									}
 									return hit;
 								});
 				
@@ -279,7 +287,11 @@ namespace egkr::editor
 			auto& data = mode_data.at(mode::scale);
 			if (interaction_type == interaction_type::mouse_hover)
 			{
-				auto model = get_world_transform();
+				float4x4 model;
+				if (auto selected = selected_transform.lock())
+				{
+					model = selected->get_world();
+				}
 				uint8_t hit_axis{ invalid_8_id };
 
 				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
@@ -319,13 +331,56 @@ namespace egkr::editor
 
 				}
 			}
+			else if (interaction_type == interaction_type::mouse_drag)
+			{
+				ray.plane(data.interaction_plane)
+					.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
+							  {
+								  auto& [point, dist] = hit;
+								  float3 diff = point - data.last_interaction_point;
+								  float3 translation;
+								  float3 direction{ 0.f };
+								  switch (data.current_axis_index)
+								  {
+								  case 0:
+									  direction = float3{ 1.f, 0.f, 0.f };
+									  translation = glm::dot(diff, direction) * direction;
+									  break;
+								  case 1:
+									  direction = float3{ 0.f, 1.f, 0.f };
+									  translation = glm::dot(diff, direction) * direction;
+									  break;
+								  case 2:
+									  direction = float3{ 0.f, 0.f, 1.f };
+									  translation = glm::dot(diff, direction) * direction;
+									  break;
+								  case 3:
+								  case 4:
+								  case 5:
+								  case 6:
+									  translation = diff;
+									  break;
+								  default:
+									  break;
+								  }
+								  scale(translation);
+								  data.last_interaction_point = point;
+								  LOG_INFO("Last point: {}\n", glm::to_string(point));
+								  return hit;
+							  });
+
+			}
 		}
 		else if (gizmo_mode == mode::rotate)
 		{
 			auto& data = mode_data.at(mode::rotate);
 			if (interaction_type == interaction_type::mouse_hover)
 			{
-				auto model = get_world_transform();
+				float4x4 model;
+				if (auto selected = selected_transform.lock())
+				{
+					model = selected->get_world();
+				}
 				uint8_t hit_axis{ invalid_8_id };
 
 				float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3(scale_factor));
@@ -376,6 +431,21 @@ namespace egkr::editor
 				}
 			}
 		}
+	}
+	
+	void gizmo::set_selected(const std::weak_ptr<transformable>& transform)
+	{
+		selected_transform = transform;
+	}
+
+	std::optional<float4x4> gizmo::get_selected_model() const
+	{
+		if (auto selected = selected_transform.lock())
+		{
+			return selected->get_world();
+		}
+
+		return {};
 	}
 
 	void gizmo::set_scale(float scale)
@@ -482,7 +552,8 @@ namespace egkr::editor
 		extent3d x_box{ .min = {axis_length, -small_box, -small_box}, .max = {2.1f, small_box, small_box} };
 		extent3d y_box{ .min = {-small_box, axis_length, -small_box}, .max = {small_box, 2.1f, small_box} };
 		extent3d z_box{ .min = {-small_box, -small_box, axis_length}, .max = {small_box, small_box, 2.1f} };
-		egkr::vector<extent3d> extents{ x_box, y_box, z_box };
+		extent3d xyz_box{ .min = {-0.1f, -0.1, -0.1f}, .max = {0.1f, 0.1f, 0.1f} };
+		egkr::vector<extent3d> extents{ x_box, y_box, z_box, xyz_box };
 		mode_data[gizmo::mode::scale] = { .vertices = vertices,  .extents = extents };
 	}
 

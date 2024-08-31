@@ -3,12 +3,12 @@
 
 namespace egkr::debug
 {
-	debug_box3d::shared_ptr debug_box3d::create(const egkr::float3& size, egkr::transformable* parent)
+	debug_box3d::shared_ptr debug_box3d::create(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent)
 	{
 		return std::make_shared<debug_box3d>(size, parent);
 	}
 
-	debug_box3d::debug_box3d(const egkr::float3& size, egkr::transformable* parent)
+	debug_box3d::debug_box3d(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent)
 		: size_{size}
 	{
 		set_parent(parent);

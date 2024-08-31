@@ -4,7 +4,7 @@
 
 #include "renderer/vertex_types.h"
 #include "interfaces/renderable.h"
-#include "interfaces/transformable.h"
+#include "resources/transform.h"
 #include "ray.h"
 
 namespace egkr::editor
@@ -58,11 +58,14 @@ namespace egkr::editor
 		void set_mode(mode mode);
 
 		void draw() const { mode_data.at(gizmo_mode).draw(); }
-		ray::result raycast(const ray& ray) const;
+		ray::result raycast(const ray& ray);
 
 		void begin_interaction(interaction_type type, const ray& ray);
 		void end_interaction(interaction_type type, const ray& ray);
 		void handle_interaction(interaction_type type, const ray& ray);
+
+		void set_selected(const std::weak_ptr<transformable>& transform);
+		std::optional<float4x4> get_selected_model() const;
 
 		static void set_scale(float scale_factor);
 
@@ -76,5 +79,6 @@ namespace egkr::editor
 		std::unordered_map<mode, gizmo_data> mode_data;
 		interaction_type type_{ interaction_type::none };
 		uint32_t unique_id{ invalid_32_id };
+		std::weak_ptr<transformable> selected_transform;
 	};
 }

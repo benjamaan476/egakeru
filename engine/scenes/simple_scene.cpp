@@ -79,7 +79,7 @@ namespace egkr::scene
 					continue;
 				}
 
-				auto model_world = mesh->get_world_transform();
+				auto model_world = mesh->get_world();
 				for (const auto& geo : mesh->get_geometries())
 				{
 					auto extents_max = model_world * egkr::float4{ geo->get_properties().extents.max, 1.F };
@@ -104,7 +104,7 @@ namespace egkr::scene
 				auto& debug_data = mesh->get_debug_data();
 				if (!debug_data)
 				{
-					debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, mesh.get());
+					debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, mesh);
 					debug_data->load();
 				}
 
@@ -347,7 +347,7 @@ namespace egkr::scene
 
 		for (const auto& mesh : meshes_ | std::views::values)
 		{
-			const auto world = mesh->get_world_transform();
+			const auto world = mesh->get_world();
 			if (ray.oriented_extents(mesh->extents(), world))
 			{
 				const auto distance = ray.oriented_extents(mesh->extents(), world).value();
@@ -363,5 +363,19 @@ namespace egkr::scene
 		}
 
 		return result;
+	}
+
+	std::shared_ptr<transformable> simple_scene::get_transform(uint32_t unique_id) const
+	{
+		for (const auto& mesh : meshes_ | std::views::values)
+		{
+			if (mesh->unique_id() == unique_id)
+			{
+				return mesh;
+			}
+		}
+
+		//TODO: support selecting other scene objects?
+		return nullptr;
 	}
 }

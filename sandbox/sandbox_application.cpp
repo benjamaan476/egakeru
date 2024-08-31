@@ -120,12 +120,10 @@ void sandbox_application::render(egkr::render_packet* render_packet, const egkr:
 {
 	if (main_scene_->is_loaded())
 	{
-		auto& model = meshes_[0]->get_transform();
 		glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
-		model.rotate(q);
+		meshes_[0]->rotate(q);
 
-		auto& model_2 = meshes_[1]->get_transform();
-		model_2.rotate(q);
+		meshes_[1]->rotate(q);
 
 	}
 	main_scene_->populate_render_packet(render_packet);
@@ -450,6 +448,11 @@ bool sandbox_application::on_button_up(egkr::event::code code, void* /*sender*/,
 				ray_line->set_colour(0, { 1, 0, 1, 1 });
 				ray_line->set_colour(1, { 0, 1, 1, 1 });
 				game->test_lines_ = ray_line;
+
+				if (const auto& selected = game->main_scene_->get_transform(hit.hits.front().unique_id))
+				{
+					game->gizmo_.set_selected(selected);
+				}
 			}
 			break;
 		}
@@ -533,6 +536,7 @@ void sandbox_application::load_scene()
 		cube_1.geometry_configurations.push_back(egkr::geometry_system::generate_cube(10, 10, 10, 1, 1, "cube_1", "test_material"));
 
 		auto mesh_1 = egkr::mesh::create(cube_1);
+		mesh_1->set_name("test_cube_1");
 		meshes_.push_back(mesh_1);
 
 		main_scene_->add_mesh(mesh_1->get_name(), mesh_1);
@@ -543,9 +547,9 @@ void sandbox_application::load_scene()
 		cube_2.geometry_configurations.push_back(egkr::geometry_system::generate_cube(5, 5, 5, 1, 1, "cube_2", "test_material"));
 
 		auto mesh_2 = egkr::mesh::create(cube_2);
-		egkr::transform model = egkr::transform::create({ 10.F, 0.F, 0.F });
-		model.set_parent(&meshes_.back()->get_transform());
-		mesh_2->set_transform(model);
+		mesh_2->set_name("test_cube_12");
+		mesh_2->set_position({ 10.f, 0.f, 0.f });
+		mesh_2->set_parent(meshes_.back());
 		meshes_.push_back(mesh_2);
 
 		main_scene_->add_mesh(mesh_2->get_name(), mesh_2);
@@ -613,7 +617,9 @@ void sandbox_application::load_scene()
 	for (const auto& mesh : scene_configuration.meshes)
 	{
 		auto msh = egkr::mesh::create({ mesh.resource_name });
-		msh->set_transform(mesh.transform);
+		msh->set_position(mesh.pos);
+		msh->set_rotation({ mesh.euler_angles });
+		msh->set_scale(mesh.scale);
 		meshes_.push_back(msh);
 		main_scene_->add_mesh(mesh.name, msh);
 
@@ -623,7 +629,7 @@ void sandbox_application::load_scene()
 			{
 				if (m->get_name() == mesh.parent_name.value())
 				{
-					msh->set_parent(m.get());
+					msh->set_parent(m);
 				}
 			}
 		}

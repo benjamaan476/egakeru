@@ -2,7 +2,7 @@
 
 #include <pch.h>
 
-#include <interfaces/transformable.h>
+#include <resources/transform.h>
 #include <renderer/renderbuffer.h>
 
 namespace egkr
@@ -30,7 +30,6 @@ namespace egkr
 			ui_text(type type, const std::string& font_name, uint16_t font_size, const std::string& text);
 			~ui_text();
 
-			void set_position(const float3& position);
 			void set_text(const std::string& text);
 			void draw() const;
 

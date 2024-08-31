@@ -10,9 +10,9 @@ namespace egkr::debug
 	{
 	public:
 		using shared_ptr = std::shared_ptr<debug_box3d>;
-		static shared_ptr create(const egkr::float3& size, egkr::transformable* parent);
+		static shared_ptr create(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent);
 
-		debug_box3d(const egkr::float3& size, egkr::transformable* parent);
+		debug_box3d(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent);
 		~debug_box3d();
 
 		bool init();

@@ -75,6 +75,7 @@ namespace egkr
 
 		const auto& get_type() const { return resource_type_; }
 
+		void set_name(const std::string& name) { name_ = name; }
 		const auto& get_name() const { return name_; }
 
 		void* data{};

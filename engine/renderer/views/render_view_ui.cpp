@@ -101,7 +101,7 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.transform->get_world_transform());
+				material_system::apply_local(m, render_data.transform->get_world());
 				render_data.geometry->draw();
 			}
 
@@ -125,7 +125,7 @@ namespace egkr
 					shader_system::apply_instance(needs_update);
 					text->set_render_frame(frame_number);
 
-					float4x4 model = text->get_world_transform();
+					float4x4 model = text->get_world();
 
 					shader_system::set_uniform(model_location_, &model);
 

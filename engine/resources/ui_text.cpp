@@ -21,8 +21,6 @@ namespace egkr
 		{
 			acquire(font_name, font_size, type);
 
-			transform_ = transform::create();
-
 			constexpr static const uint64_t quad_size = sizeof(vertex_2d) * 4;
 
 			uint32_t text_length = (uint32_t)text.size();
@@ -269,11 +267,6 @@ namespace egkr
 			}
 			vertex_buffer_->load_range(0, vertex_buffer_size, vertex_buffer_data.data());
 			index_buffer_->load_range(0, index_buffer_size, index_buffer_data.data());
-		}
-
-		void ui_text::set_position(const float3& position)
-		{
-			transform_.set_position(position);
 		}
 
 		void ui_text::set_text(const std::string& text)

@@ -46,7 +46,9 @@ namespace egkr
 		{
 			std::string name;
 			std::string resource_name;
-			transform transform;
+			float3 pos;
+			float3 euler_angles;
+			float3 scale;
 			std::optional<std::string> parent_name;
 		};
 
@@ -114,6 +116,8 @@ namespace egkr
 			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
 
 			ray::result raycast(const ray& ray);
+
+			std::shared_ptr<transformable> get_transform(uint32_t unique_id) const;
 		private:
 			void actual_unload();
 
