@@ -79,7 +79,7 @@ namespace egkr::scene
 					continue;
 				}
 
-				auto model_world = mesh->model().get_world();
+				auto model_world = mesh->get_world();
 				for (const auto& geo : mesh->get_geometries())
 				{
 					auto extents_max = model_world * egkr::float4{ geo->get_properties().extents.max, 1.F };
@@ -90,7 +90,8 @@ namespace egkr::scene
 
 					if (frustum.intersects_aabb(center, half_extents))
 					{
-						frame_geometry_.world_geometries.emplace_back(geo, mesh->get_model());
+						egkr::render_data data{ .geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
+						frame_geometry_.world_geometries.emplace_back(data);
 					}
 				}
 			}
@@ -104,7 +105,7 @@ namespace egkr::scene
 				auto& debug_data = mesh->get_debug_data();
 				if (!debug_data)
 				{
-					debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, &mesh->model());
+					debug_data = egkr::debug::debug_box3d::create({ 0.2, 0.2, 0.2 }, mesh);
 					debug_data->load();
 				}
 
@@ -113,17 +114,17 @@ namespace egkr::scene
 
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .model = box->get_transform() }; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
@@ -132,7 +133,7 @@ namespace egkr::scene
 			{
 				if (mesh)
 				{
-					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh->get_transform());
+					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh);
 				}
 			}
 
@@ -146,7 +147,6 @@ namespace egkr::scene
 
 		auto world_view = view_system::get("world-opaque");
 		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_);
-
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
@@ -340,5 +340,45 @@ namespace egkr::scene
 		remove_directional_light();
 		
 		state_ = state::unloaded;
+	}
+
+	ray::result simple_scene::raycast(const ray& ray)
+	{
+		ray::result result{};
+
+		for (const auto& mesh : meshes_ | std::views::values)
+		{
+			const auto world = mesh->get_world();
+			if (ray.oriented_extents(mesh->extents(), world))
+			{
+				const auto distance = ray.oriented_extents(mesh->extents(), world).value();
+				ray::hit hit
+				{
+					.type = ray::hit_type::bounding_box,
+					.unique_id = mesh->unique_id(),
+					.position = ray.origin + ray.direction * distance,
+					.distance = distance,
+				};
+				result.hits.push_back(hit);
+			}
+		}
+
+		//TODO: raycast other scene objects?
+
+		return result;
+	}
+
+	std::shared_ptr<transformable> simple_scene::get_transform(uint32_t unique_id) const
+	{
+		for (const auto& mesh : meshes_ | std::views::values)
+		{
+			if (mesh->unique_id() == unique_id)
+			{
+				return mesh;
+			}
+		}
+
+		//TODO: support selecting other scene objects?
+		return nullptr;
 	}
 }

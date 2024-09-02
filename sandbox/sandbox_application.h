@@ -9,6 +9,7 @@
 #include "debug/debug_grid.h"
 #include "debug/debug_frustum.h"
 #include <scenes/simple_scene.h>
+#include <editor_gizmo.h>
 
 class sandbox_application final : public egkr::application
 {
@@ -22,9 +23,14 @@ public:
 	bool boot() final;
 	bool shutdown() final;
 
+	[[nodiscard]] auto& get_gizmo() { return gizmo_; }
+
 private:	
 	bool static on_debug_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 	bool static on_event(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_button_up(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_mouse_move(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
+	bool static on_mouse_drag(egkr::event::code code, void* sender, void* listener, const egkr::event::context& context);
 
 	void load_scene();
 
@@ -46,6 +52,8 @@ private:
 	egkr::debug::debug_box3d::shared_ptr box_{};
 	egkr::debug::debug_grid::shared_ptr grid_{};
 	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
+	egkr::debug::debug_line::shared_ptr test_lines_{};
+	egkr::debug::debug_box3d::shared_ptr test_boxes_{};
 
 	std::shared_ptr<egkr::light::directional_light> dir_light_{};
 
@@ -55,6 +63,9 @@ private:
 	egkr::audio::file* test_loop_audio{};
 	egkr::audio::file* test_music{};
 	egkr::audio::emitter test_emitter{};
+
+	egkr::editor::gizmo gizmo_{};
+	egkr::int2 mouse_pos_{};
 
 	uint32_t hovered_object_id_{};
 };

@@ -74,7 +74,7 @@ namespace egkr
 			{
 				for (const auto& geo : mesh->get_geometries())
 				{
-					packet.render_data.emplace_back(geo, mesh->get_model());
+					packet.render_data.emplace_back(geo, mesh);
 				}
 			}
 		}
@@ -90,7 +90,7 @@ namespace egkr
 
 			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
+			material_system::apply_global(shader_->get_id(), frame_number, render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
 
 			for (auto render_data : render_view_packet->render_data)
 			{
@@ -101,7 +101,10 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.model.get_world());
+				if (auto transform = render_data.transform.lock())
+				{
+					material_system::apply_local(m, transform->get_world());
+				}
 				render_data.geometry->draw();
 			}
 
@@ -125,7 +128,7 @@ namespace egkr
 					shader_system::apply_instance(needs_update);
 					text->set_render_frame(frame_number);
 
-					float4x4 model = text->get_transform().get_world();
+					float4x4 model = text->get_world();
 
 					shader_system::set_uniform(model_location_, &model);
 
@@ -135,11 +138,6 @@ namespace egkr
 
 			pass->end();
 		}
-		return true;
-	}
-
-	bool render_view_ui::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
-	{
 		return true;
 	}
 }

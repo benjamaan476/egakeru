@@ -9,6 +9,13 @@
 
 namespace egkr
 {
+	struct debug_colour_shader_locations
+	{
+		uint32_t projection{};
+		uint32_t view{};
+		uint32_t model{};
+	};
+
 	namespace text
 	{
 		class ui_text;
@@ -23,6 +30,7 @@ namespace egkr
 		{
 			skybox,
 			world,
+			editor,
 			ui
 		};
 
@@ -63,7 +71,7 @@ namespace egkr
 		virtual render_view_packet on_build_packet(void* data) = 0;
 		virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
 
-		virtual bool regenerate_attachment_target(uint32_t pass_index, const render_target::attachment& attachment) = 0;
+		virtual bool regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/) { return true; }
 
 		void regenerate_render_targets();
 		static bool on_event(egkr::event::code code, void* sender, void* listener, const event::context& context);

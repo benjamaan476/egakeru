@@ -3,15 +3,15 @@
 
 namespace egkr::debug
 {
-	debug_box3d::shared_ptr debug_box3d::create(const egkr::float3& size, egkr::transform* parent)
+	debug_box3d::shared_ptr debug_box3d::create(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent)
 	{
 		return std::make_shared<debug_box3d>(size, parent);
 	}
 
-	debug_box3d::debug_box3d(const egkr::float3& size, egkr::transform* parent)
+	debug_box3d::debug_box3d(const egkr::float3& size, const std::shared_ptr<egkr::transformable>& parent)
 		: size_{size}
 	{
-		transform_.set_parent(parent);
+		set_parent(parent);
 		init();
 	}
 
@@ -29,6 +29,7 @@ namespace egkr::debug
 		unique_id_ = identifier::acquire_unique_id(this);
 		return true;
 	}
+
 	bool debug_box3d::load()
 	{
 		geometry::properties properties{};
@@ -38,7 +39,6 @@ namespace egkr::debug
 		properties.vertices = vertices_.data();
 
 		geometry_ = geometry::geometry::create(properties);
-
 		geometry_->increment_generation();
 
 		set_colour(colour_);
@@ -71,11 +71,6 @@ namespace egkr::debug
 		geometry_.reset();
 		}
 
-	}
-
-	void debug_box3d::set_parent(egkr::transform* parent)
-	{
-		transform_.set_parent(parent);
 	}
 
 	void debug_box3d::set_colour(const egkr::float4 colour)

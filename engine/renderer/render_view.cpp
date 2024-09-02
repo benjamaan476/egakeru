@@ -1,6 +1,7 @@
 #include "render_view.h"
 #include "renderer/views/render_view_ui.h"
 #include "renderer/views/render_view_world.h"
+#include "renderer/views/render_view_editor.h"
 #include "renderer/views/render_view_skybox.h"
 
 #include <renderer/renderer_frontend.h>
@@ -21,6 +22,10 @@ namespace egkr
 		else if (configuration.type == type::skybox)
 		{
 			return std::make_shared<render_view_skybox>(configuration);
+		}
+		else if (configuration.type == type::editor)
+		{
+			return std::make_shared<render_view_editor>(configuration);
 		}
 		else
 		{

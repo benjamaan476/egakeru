@@ -41,6 +41,8 @@ namespace egkr
 		void set_scissor(const float4& rect) const;
 		void reset_scissor() const;
 
+		void set_winding(winding winding) const;
+
 		const auto& get_backend() const { return backend_; }
 	private:
 		renderer_backend::unique_ptr backend_{};

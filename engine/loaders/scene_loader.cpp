@@ -301,18 +301,12 @@ namespace egkr
 			else if (variable_name == "transform")
 			{
 				std::istringstream ss{ value };
-				egkr::float3 pos{};
-				ss >> pos.x >> pos.y >> pos.z;
+				ss >> current_mesh.pos.x >> current_mesh.pos.y >> current_mesh.pos.z;
 
-				egkr::float3 euler_angles{};
-				ss >> euler_angles.x >> euler_angles.y >> euler_angles.z;
+				ss >> current_mesh.euler_angles.x >> current_mesh.euler_angles.y >> current_mesh.euler_angles.z;
 
-				euler_angles = glm::radians(euler_angles);
-				egkr::float3 scale{};
-				ss >> scale.x >> scale.y >> scale.z;
-
-				transform transform(pos, glm::quat({ euler_angles }), scale);
-				current_mesh.transform = transform;
+				current_mesh.euler_angles = glm::radians(current_mesh.euler_angles);
+				ss >> current_mesh.scale.x >> current_mesh.scale.y >> current_mesh.scale.z;
 			}
 			else if (variable_name == "direction")
 			{

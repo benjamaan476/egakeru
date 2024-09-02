@@ -7,7 +7,7 @@
 
 namespace egkr
 {
-	enum class mouse_button : int16_t
+	enum class mouse_button : uint16_t
 	{
 		left,
 		middle,
@@ -23,9 +23,10 @@ namespace egkr
 	
 	struct mouse_state
 	{
-		uint32_t x{};
-		uint32_t y{};
+		int32_t x{};
+		int32_t y{};
 		std::array<bool, (size_t)mouse_button::button_count> buttons{};
+		std::array<bool, (size_t)mouse_button::button_count> dragging{};
 	};
 
 	class input : public system
@@ -51,14 +52,15 @@ namespace egkr
 
 		static bool is_button_up(mouse_button button);
 		static bool is_button_down(mouse_button button);
+		static bool is_button_dragging(mouse_button button);
 		static bool was_button_up(mouse_button button);
 		static bool was_button_down(mouse_button button);
 		static void process_button(mouse_button button, bool pressed);
 
 		static int2 get_mouse_position();
 		static int2 get_previous_mouse_position();
-		static void process_mouse_move();
-		static void process_mouse_wheel();
+		static void process_mouse_move(int32_t xpos, int32_t ypos);
+		static void process_mouse_wheel(double xoffset, double yoffset);
 
 		static void push_keymap(const keymap& keymap);
 		static void pop_keymap();

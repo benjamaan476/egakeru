@@ -2,12 +2,12 @@
 #include "pch.h"
 
 #include "geometry.h"
-#include "transform.h"
+#include "interfaces/transformable.h"
 #include "debug/debug_box3d.h"
 
 namespace egkr
 {
-	class mesh : public resource, public std::enable_shared_from_this<mesh>
+	class mesh : public resource, public transformable, public std::enable_shared_from_this<mesh>
 	{
 	public:
 
@@ -31,11 +31,7 @@ namespace egkr
 		void add_geometry(const geometry::geometry::shared_ptr& geometry);
 		[[nodiscard]] const auto& get_geometries() const { return geometries_; }
 
-		void set_model(const transform& model);
-		[[nodiscard]] const auto& get_model() const { return model_; }
-
 		[[nodiscard]] auto& extents() {	return extents_; }
-		auto& model() {	return model_; }
 
 		[[nodiscard]] auto& get_debug_data() { return debug_data; }
 		[[nodiscard]] auto& unique_id() { return unique_id_; }
@@ -45,7 +41,6 @@ namespace egkr
 	private:
 		configuration configuration_{};
 		egkr::vector<geometry::geometry::shared_ptr> geometries_{};
-		transform model_;
 		extent3d extents_{};
 		//TODO how to do this properly?
 		debug::debug_box3d::shared_ptr debug_data{};

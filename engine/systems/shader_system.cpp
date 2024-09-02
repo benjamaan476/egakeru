@@ -109,10 +109,10 @@ namespace egkr
 		return true;
 	}
 
-	void shader_system::apply_global()
+	void shader_system::apply_global(bool needs_update)
 	{
 		auto shader = shader_system_->get_shader(shader_system_->current_shader_id_);
-		shader->apply_globals();
+		shader->apply_globals(needs_update);
 	}
 
 	void shader_system::apply_instance(bool needs_update)

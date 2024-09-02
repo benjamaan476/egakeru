@@ -127,7 +127,6 @@ namespace egkr
 		: resource(0, 0, ""), configuration_{configuration}
 	{
 		unique_id_ = identifier::acquire_unique_id(this);
-
 	}
 
 	mesh::~mesh()
@@ -153,7 +152,7 @@ namespace egkr
 
 	void mesh::add_geometry(const geometry::geometry::shared_ptr& geometry)
 	{
-		geometries_.push_back(geometry);
+		geometries_.emplace_back(geometry);
 			auto& global_extents = extents();
 			const auto& geo_extents = geometry->get_properties().extents;
 				if (geo_extents.min.x < global_extents.min.x)
@@ -182,11 +181,6 @@ namespace egkr
 				}
 	}
 
-	void mesh::set_model(const transform& model)
-	{
-		model_ = model;
-	}
-
 	void mesh::unload()
 	{
 		if (debug_data)
@@ -197,7 +191,7 @@ namespace egkr
 
 		for (auto& geo : geometries_)
 		{
-			geometry_system::release_geometry(geo);
+			geo->free();
 		}
 		geometries_.clear();
 

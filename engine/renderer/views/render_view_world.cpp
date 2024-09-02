@@ -3,6 +3,7 @@
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
+#include <renderer/renderer_frontend.h>
 
 namespace egkr
 {
@@ -82,7 +83,7 @@ namespace egkr
 
 			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_->get_id(), render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
+			material_system::apply_global(shader_->get_id(), frame_number, render_view_packet->projection_matrix, render_view_packet->view_matrix, render_view_packet->ambient_colour, render_view_packet->view_position, mode_);
 			for (egkr::render_data render_data : render_view_packet->render_data)
 			{
 				auto m = render_data.geometry->get_material();
@@ -92,8 +93,22 @@ namespace egkr
 				material_system::apply_instance(m, needs_update);
 				m->set_render_frame(frame_number);
 
-				material_system::apply_local(m, render_data.model.get_world());
+				if (auto transform = render_data.transform.lock())
+				{
+					material_system::apply_local(m, transform->get_world());
+				}
+
+				if (render_data.is_winding_reversed)
+				{
+					renderer->set_winding(winding::clockwise);
+				}
 				render_data.geometry->draw();
+
+				if (render_data.is_winding_reversed)
+				{
+					renderer->set_winding(winding::counter_clockwise);
+				}
+
 
 			}
 
@@ -103,22 +118,20 @@ namespace egkr
 				shader_system::use(colour_shader->get_id());
 				shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
 				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
-				shader_system::apply_global();
+				shader_system::apply_global(true);
 				for (render_data data : render_view_packet->debug_render_data)
 				{
-					const auto& model = data.model.get_world();
-					shader_system::set_uniform(locations_.model, &model);
+					if (auto transform = data.transform.lock())
+					{
+						const auto& model = transform->get_world();
+						shader_system::set_uniform(locations_.model, &model);
+					}
 					data.geometry->draw();
 				}
-
+				colour_shader->set_frame_number(frame_number);
 			}
 			pass->end();
 		}
-		return true;
-	}
-
-	bool render_view_world::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
-	{
 		return true;
 	}
 }

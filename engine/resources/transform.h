@@ -3,18 +3,9 @@
 
 namespace egkr
 {
-	class transform
+	class transformable
 	{
 	public:
-		static transform create();
-		static transform create(const float3& position);
-		static transform create(const glm::quat& rotation);
-		static transform create(const float3& position, const glm::quat& rotation);
-		static transform create(const float3& position, const glm::quat& rotation, const float3& scale);
-
-		transform() = default;
-		transform(const float3& position, const glm::quat& rotation, const float3& scale);
-
 		[[nodiscard]] const auto& get_position() const { return position_; }
 		void set_position(const float3& position);
 		void translate(const float3& position);
@@ -27,7 +18,9 @@ namespace egkr
 		void set_scale(const float3& scale);
 		void scale(const float3& scale);
 
-		void set_parent(transform* parent);
+		[[nodiscard]] float get_determinant() const { return determinant_; }
+
+		void set_parent(const std::shared_ptr<transformable>& parent);
 
 		[[nodiscard]] float4x4 get_local();
 		[[nodiscard]] float4x4 get_world();
@@ -36,9 +29,11 @@ namespace egkr
 		glm::quat rotation_{{ 0, 0, 0 }};
 		float3 scale_{1.F};
 
+		float determinant_{ 0.f };
+
 		bool is_dirty_{ true };
 		
 		float4x4 local_{1.F};
-		transform* parent_{nullptr};
+		std::weak_ptr<transformable> parent_;
 	};
 }

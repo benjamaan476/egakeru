@@ -63,7 +63,7 @@ namespace egkr
 		packet.view_position = camera_->get_position();
 		if (auto skybox = skybox_data->skybox)
 		{
-			packet.render_data = { { skybox_data->skybox->get_geometry() } };
+			packet.render_data = { { skybox_data->skybox->get_geometry()}};
 			packet.extended_data = new skybox_packet_data(*skybox_data);
 		}
 		return packet;
@@ -86,12 +86,12 @@ namespace egkr
 				shader_->bind_globals();
 				shader_system::set_uniform(projection_location_, &projection_);
 				shader_system::set_uniform(view_location_, &view);
-				shader_system::apply_global();
+				bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;
+				shader_system::apply_global(needs_update);
 
 				shader_system::bind_instance(skybox_data->skybox->get_instance_id());
 				shader_system::set_uniform(cube_map_location_, &skybox_data->skybox->get_texture_map());
 
-				bool needs_update = skybox_data->skybox->get_frame_number() != frame_number;
 				shader_system::apply_instance(needs_update);
 				skybox_data->skybox->set_frame_number(frame_number);
 
@@ -99,11 +99,6 @@ namespace egkr
 			}
 			pass->end();
 		}
-		return true;
-	}
-
-	bool render_view_skybox::regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/)
-	{
 		return true;
 	}
 }

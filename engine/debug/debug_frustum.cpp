@@ -29,7 +29,6 @@ namespace egkr::debug
 	{
 		geometry_ = geometry::geometry::create(properties_);
 		geometry_->increment_generation();
-
 	}
 
 	void debug_frustum::unload()

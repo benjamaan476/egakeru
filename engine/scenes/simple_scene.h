@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "resources/transform.h"
+#include "interfaces/transformable.h"
 #include "resources/light.h"
 #include "resources/mesh.h"
 #include "resources/skybox.h"
@@ -11,6 +11,8 @@
 #include "debug/debug_frustum.h"
 
 #include <queue>
+
+#include "ray.h"
 
 namespace egkr
 {
@@ -44,7 +46,9 @@ namespace egkr
 		{
 			std::string name;
 			std::string resource_name;
-			transform transform;
+			float3 pos;
+			float3 euler_angles;
+			float3 scale;
 			std::optional<std::string> parent_name;
 		};
 
@@ -75,7 +79,7 @@ namespace egkr
 			std::string resource_name;
 		};
 
-		class simple_scene
+		class simple_scene : public transformable
 		{
 		public:
 			using unique_ptr = std::unique_ptr<simple_scene>;
@@ -110,6 +114,10 @@ namespace egkr
 			void add_debug(const std::string& name, const egkr::debug::debug_frustum::shared_ptr& debug_frustum);
 
 			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
+
+			ray::result raycast(const ray& ray);
+
+			std::shared_ptr<transformable> get_transform(uint32_t unique_id) const;
 		private:
 			void actual_unload();
 
@@ -117,7 +125,6 @@ namespace egkr
 			//configuration configuration_{};
 			uint32_t id_{};
 			state state_{state::uninitialised};
-			transform transform_;
 			//bool is_enabled_{};
 
 			std::string skybox_name_;

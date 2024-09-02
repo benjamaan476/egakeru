@@ -34,6 +34,11 @@ namespace egkr
 		is_dirty_ = true;
 	}
 
+	void camera::set_aspect(float aspect)
+	{
+		aspect_ratio_ = aspect;
+	}
+
 	float4x4 camera::get_view()
 	{
 		if (is_dirty_)
@@ -44,6 +49,11 @@ namespace egkr
 		}
 
 		return view_;
+	}
+
+	float4x4 camera::get_projection() const
+	{
+		return glm::perspective(fov_, aspect_ratio_, near_clip_, far_clip_);
 	}
 
 	float3 camera::get_forward() const

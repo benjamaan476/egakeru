@@ -2,71 +2,48 @@
 #include <glm/gtx/quaternion.hpp>
 namespace egkr
 {
-	transform transform::create()
-	{
-		return { float3{0.F}, glm::quat{{0, 0, 0}}, float3{1.F} };
-	}
-	transform transform::create(const float3& position)
-	{
-		return { position, glm::quat{{0, 0, 0}}, float3{ 1.F } };
-	}
-	transform transform::create(const glm::quat& rotation)
-	{
-		return { float3{ 0.F }, rotation, float3{ 1.F } };
-	}
-	transform transform::create(const float3& position, const glm::quat& rotation)
-	{
-		return { position, rotation, float3{ 1.F } };
-	}
-	transform transform::create(const float3& position, const glm::quat& rotation, const float3& scale)
-	{
-		return { position, rotation, scale };
-	}
-
-	transform::transform(const float3& position, const glm::quat& rotation, const float3& scale) : position_{ position }, rotation_{ rotation }, scale_{ scale } {}
-
-	void transform::set_position(const float3& position)
+	void transformable::set_position(const float3& position)
 	{
 		position_ = position;
 		is_dirty_ = true;
 	}
 
-	void transform::translate(const float3& position)
+	void transformable::translate(const float3& position)
 	{
 		position_ += position;
 		is_dirty_ = true;
 	}
 
-	void transform::set_rotation(const glm::quat& rotation)
+	void transformable::set_rotation(const glm::quat& rotation)
 	{
 		rotation_ = rotation;
 		is_dirty_ = true;
 	}
 
-	void transform::rotate(const glm::quat& rotation)
+	void transformable::rotate(const glm::quat& rotation)
 	{
 		rotation_ *= rotation;
 		is_dirty_ = true;
 	}
 
-	void transform::set_scale(const float3& scale)
+	void transformable::set_scale(const float3& scale)
 	{
 		scale_ = scale;
 		is_dirty_ = true;
 	}
 
-	void transform::scale(const float3& scale)
+	void transformable::scale(const float3& scale)
 	{
 		scale_ *= scale;
 		is_dirty_ = true;
 	}
 
-	void transform::set_parent(transform* parent)
+	void transformable::set_parent(const std::shared_ptr<transformable>& parent)
 	{
 		parent_ = parent;
 	}
 
-	float4x4 transform::get_local()
+	float4x4 transformable::get_local()
 	{
 		if (is_dirty_)
 		{
@@ -75,21 +52,23 @@ namespace egkr
 			auto rot = glm::toMat4(rotation_);
 			auto scale = glm::scale(local, scale_);
 			local_ = trans * rot * scale;
+
 			is_dirty_ = false;
 		}
 
 		return local_;
 	}
 
-	float4x4 transform::get_world()
+	float4x4 transformable::get_world()
 	{
 		auto local = get_local();
 
-		if (parent_)
+		if (auto parent = parent_.lock())
 		{
-			auto parent_world = parent_->get_world();
+			auto parent_world = parent->get_world();
 			local = parent_world * local;
 		}
+		determinant_ = glm::determinant(local_);
 
 		return local;
 	}

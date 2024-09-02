@@ -3,12 +3,15 @@
 #include "pch.h"
 #include "resource.h"
 #include "material.h"
-#include "transform.h"
+#include "resources/transform.h"
 
 #include "renderer/vertex_types.h"
 
+#include <renderer/renderbuffer.h>
+
 namespace egkr
 {
+	struct renderable;
 	class geometry : public resource
 	{
 	public:
@@ -40,6 +43,7 @@ namespace egkr
 		virtual ~geometry() = default;
 
 		virtual bool populate(const properties& properties) = 0;
+		virtual bool upload() = 0;
 		virtual void draw() = 0;
 		virtual void update_vertices(uint32_t offset, uint32_t vertex_count, void* vertices) = 0;
 		virtual void free() = 0;
@@ -58,13 +62,26 @@ namespace egkr
 	protected:
 		properties properties_{};
 		material::shared_ptr material_{};
+
+		renderbuffer::renderbuffer::shared_ptr vertex_buffer_{};
+		void* vertices_{};
+		uint32_t vertex_count_{};
+		uint32_t vertex_size_{};
+		uint32_t vertex_offset_{};
+
+		renderbuffer::renderbuffer::shared_ptr index_buffer_{};
+		egkr::vector<uint32_t> indices_{};
+		uint32_t index_count_{};
+		uint32_t index_size_{};
+		uint32_t index_offset_{};
 	};
 
 	struct render_data
 	{
 		geometry::shared_ptr geometry{};
-		transform model{};
+		std::weak_ptr<transformable> transform;
 		uint64_t unique_id{};
+		bool is_winding_reversed;
 	};
 
 	struct frame_geometry_data

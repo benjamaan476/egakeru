@@ -44,6 +44,9 @@ namespace egkr
 		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
+		glfwSetMouseButtonCallback(window_, &platform_windows::mouse_callback);
+		glfwSetScrollCallback(window_, &platform_windows::mouse_wheel_callback);
+		glfwSetCursorPosCallback(window_, &platform_windows::mouse_move_callback);
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
 		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
 
@@ -95,6 +98,40 @@ namespace egkr
 		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
 
 		input::process_key((egkr::key)key, pressed);
+	}
+
+	void platform_windows::mouse_callback(GLFWwindow* window, int button, int action, int /*mods*/)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Mouse event from wrongg window");
+			return;
+		}
+
+		bool pressed = action == GLFW_PRESS;
+		input::process_button((egkr::mouse_button)button, pressed);
+	}
+
+	void platform_windows::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Mouse event from wrongg window");
+			return;
+		}
+
+		input::process_mouse_move((int)xpos, (int)ypos);
+	}
+
+	void platform_windows::mouse_wheel_callback(GLFWwindow* window, double xoffset, double yoffset)
+	{
+		if (window == nullptr)
+		{
+			LOG_WARN("Mouse event from wrongg window");
+			return;
+		}
+
+		input::process_mouse_wheel(xoffset, yoffset);
 	}
 
 	void platform_windows::on_close(GLFWwindow* window)

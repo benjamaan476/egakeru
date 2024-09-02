@@ -27,6 +27,11 @@ namespace egkr
 
 	void identifier::release_id(uint32_t id)
 	{
+		if (id == invalid_32_id)
+		{
+			return;
+		}
+
 		if (owners.empty())
 		{
 			LOG_ERROR("Cannot release identifier Identifier system has not been used");

@@ -64,11 +64,6 @@ namespace egkr
 		return geometry::geometry::create(properties);
 	}
 
-	void geometry_system::release_geometry(const geometry::geometry::shared_ptr& geometry)
-	{
-		geometry->free();
-	}
-
 	geometry::geometry::shared_ptr geometry_system::get_default()
 	{
 		return geometry_system_->default_geometry_;
