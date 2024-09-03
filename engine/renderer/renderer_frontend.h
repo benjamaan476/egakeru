@@ -36,10 +36,20 @@ namespace egkr
 		texture_map::shared_ptr create_texture_map(const texture_map::properties& properties) const;
 		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const;
 
-		void set_viewport(const float4& rect) const;
-		void reset_viewport() const;
 		void set_scissor(const float4& rect) const;
 		void reset_scissor() const;
+
+		viewport* get_active_viewport() const
+		{
+			return active_viewport_;
+		}
+
+		void set_active_viewport(viewport* viewport);
+
+		bool prepare_frame(frame_data& frame_data) const;
+		bool begin(const frame_data& frame_data) const;
+		void end(frame_data& frame_data) const;
+		void present(const frame_data& frame_data) const;
 
 		void set_winding(winding winding) const;
 
@@ -50,6 +60,8 @@ namespace egkr
 
 		uint32_t framebuffer_width_{};
 		uint32_t framebuffer_height_{};
+		viewport* active_viewport_;
+
 	};
 
 	inline renderer_frontend::unique_ptr renderer{};

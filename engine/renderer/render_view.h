@@ -6,6 +6,7 @@
 #include <resources/mesh.h>
 #include <resources/skybox.h>
 #include <event.h>
+#include <renderer/viewport.h>
 
 namespace egkr
 {
@@ -68,8 +69,8 @@ namespace egkr
 		virtual bool on_create() = 0;
 		virtual bool on_destroy() = 0;
 		virtual void on_resize(uint32_t width, uint32_t height) = 0;
-		virtual render_view_packet on_build_packet(void* data) = 0;
-		virtual bool on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const = 0;
+		virtual render_view_packet on_build_packet(void* data, viewport* viewport) = 0;
+		virtual bool on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const = 0;
 
 		virtual bool regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/) { return true; }
 
@@ -88,11 +89,15 @@ namespace egkr
 		camera::shared_ptr camera_{};
 	};
 
+	struct skybox_packet_data
+	{
+		skybox::skybox::shared_ptr skybox{};
+	};
+
 	struct render_view_packet
 	{
 		const render_view* render_view{};
 		float4x4 view_matrix{ 1.F };
-		float4x4 projection_matrix{ 1.F };
 
 		float3 view_position{};
 		float4 ambient_colour{ 1.F };
@@ -102,13 +107,12 @@ namespace egkr
 
 		std::optional<std::string> custom_shader_name{};
 
+		viewport* viewport;
+		skybox_packet_data skybox_data{};
+
 		void* extended_data{};
 	};
 
-	struct skybox_packet_data
-	{
-		skybox::skybox::shared_ptr skybox{};
-	};
 
 	struct mesh_packet_data
 	{

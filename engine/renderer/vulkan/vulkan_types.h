@@ -109,7 +109,6 @@ namespace egkr
 		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
 #endif
 
-		float4 viewport_rect{};
 		float4 scissor_rect{};
 	};
 

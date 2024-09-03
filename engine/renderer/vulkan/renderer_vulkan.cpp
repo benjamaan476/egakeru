@@ -360,7 +360,7 @@ namespace egkr
 	}
 
 	renderer_vulkan::renderer_vulkan(platform::shared_ptr platform)
-		:platform_{ std::move(platform) }
+		: platform_{ std::move(platform) }
 	{
 		ZoneScoped;
 
@@ -489,37 +489,38 @@ namespace egkr
 		}
 	}
 
-	bool renderer_vulkan::begin_frame()
+	bool renderer_vulkan::prepare_frame(frame_data& frame_data)
 	{
-		ZoneScoped;
-
-		new_frame();
+		frame_number_++;
+		draw_index_ = 0;
 		if (context_.recreating_swapchain)
 		{
 			context_.device.logical_device.waitIdle();
 			return false;
 		}
-
-
 		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
 		context_.image_index = context_.swapchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
 
-		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
-		command_buffer.reset();
-		command_buffer.begin(false, false, false);
-
-		context_.viewport_rect = { 0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height };
-
-		set_viewport(context_.viewport_rect);
-
-		context_.scissor_rect = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
-		set_scissor(context_.scissor_rect);
-
+		frame_data.frame_number = frame_number_;
+		frame_data.draw_index = draw_index_;
+		frame_data.render_target_index = get_window_index();
 
 		return true;
 	}
 
-	void renderer_vulkan::end_frame()
+	bool renderer_vulkan::begin(const frame_data& /*frame_data*/)
+	{
+		ZoneScoped;
+
+		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
+		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
+		command_buffer.reset();
+		command_buffer.begin(false, false, false);
+
+		return true;
+	}
+
+	void renderer_vulkan::end(frame_data& frame_data)
 	{
 		ZoneScoped;
 
@@ -538,15 +539,31 @@ namespace egkr
 		vk::SubmitInfo submit_info{};
 		submit_info
 			.setCommandBuffers(command_buffer.get_handle())
-			.setSignalSemaphores(context_.queue_complete_semaphore[context_.current_frame])
-			.setWaitSemaphores(context_.image_available_semaphore[context_.current_frame])
 			.setWaitDstStageMask(stage_mask);
+		if (draw_index_ == 0)
+		{
+			submit_info
+				.setSignalSemaphores(context_.queue_complete_semaphore[context_.current_frame])
+				.setWaitSemaphores(context_.image_available_semaphore[context_.current_frame]);
+		}
+		else
+		{
+			submit_info
+				.setSignalSemaphoreCount(0)
+				.setWaitSemaphoreCount(0);
+		}
 
 		context_.device.graphics_queue.submit(submit_info, context_.in_flight_fences[context_.current_frame]->get_handle());
 		command_buffer.update_submitted();
+		draw_index_++;
+		frame_data.draw_index++;
 
-		context_.swapchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
 		FrameMark;
+	}
+
+	void renderer_vulkan::present(const frame_data& /*frame_data*/)
+	{
+		context_.swapchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
 	}
 
 	bool renderer_vulkan::init_instance()
@@ -930,11 +947,6 @@ namespace egkr
 
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.get_handle().setViewport(0, viewport);
-	}
-
-	void renderer_vulkan::reset_viewport() const
-	{
-		set_viewport(context_.viewport_rect);
 	}
 
 	void renderer_vulkan::set_scissor(const float4& rect) const

@@ -5,6 +5,7 @@
 #include "resources/mesh.h"
 #include "resources/skybox.h"
 #include "renderer/camera.h"
+#include "renderer/viewport.h"
 
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
@@ -92,8 +93,8 @@ namespace egkr
 			void load();
 			void unload();
 
-			void update(const frame_data& delta_time, const camera::shared_ptr& camera, float aspect);
-			void populate_render_packet(render_packet* packet);
+			void update(const frame_data& delta_time, const camera::shared_ptr& camera, viewport* viewport);
+			void populate_render_packet(render_packet* packet, viewport* viewport);
 
 			//Game owns these, scene just references them
 			void add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light);

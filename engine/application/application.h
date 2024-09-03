@@ -16,7 +16,6 @@ namespace egkr
 	class application
 	{
 	public:
-
 		using unique_ptr = std::unique_ptr<application>;
 		API explicit application(engine_configuration configuration);
 
@@ -24,7 +23,8 @@ namespace egkr
 
 		virtual bool init() = 0;
 		virtual void update(const frame_data& frame_data) = 0;
-		virtual void render(render_packet* render_packet, const frame_data& frame_data) = 0;
+		virtual void prepare_render_packet(render_packet* render_packet, const frame_data& frame_data) = 0;
+		virtual void render(egkr::render_packet* render_packet, egkr::frame_data& frame_data) = 0;
 		virtual bool resize(uint32_t width, uint32_t height) = 0;
 
 		virtual bool boot() = 0;

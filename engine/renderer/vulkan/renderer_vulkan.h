@@ -21,8 +21,11 @@ namespace egkr
 		void shutdown() final;
 		void tidy_up() final;
 		void resize(uint32_t width_, uint32_t height_) final;
-		bool begin_frame() final;
-		void end_frame() final;
+
+		bool prepare_frame(frame_data& frame_data) final;
+		bool begin(const frame_data& frame_data) final;
+		void end(frame_data& frame_data) final;
+		void present(const frame_data& frame_data) final;
 
 		void free_material(material* texture) const override;
 
@@ -38,7 +41,6 @@ namespace egkr
 		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const override;
 
 		void set_viewport(const float4& rect) const override;
-		void reset_viewport() const override;
 		void set_scissor(const float4& rect) const override;
 		void reset_scissor() const override;
 		void set_winding(winding winding) const override;
@@ -73,8 +75,7 @@ namespace egkr
 
 	private:
 		vulkan_context context_{};
-
-		platform::shared_ptr platform_{};
+		platform::shared_ptr platform_;
 
 #ifdef NDEBUG
 		const bool enable_validation_layers_ = true;

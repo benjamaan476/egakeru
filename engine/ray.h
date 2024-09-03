@@ -31,7 +31,7 @@ namespace egkr
 		};
 
 		static ray create(const float3& origin, const float3& direction);
-		static ray from_screen(const int2& screen_position, const int2& viewport_size, const float3& origin, const float4x4& view, const float4x4& projection);
+		static ray from_screen(const int2& screen_position, const float4& viewport_rect, const float3& origin, const float4x4& view, const float4x4& projection);
 
 		std::optional<float3> aabb(const extent3d& extents) const;
 		std::optional<float> oriented_extents(const extent3d& bb, const float4x4& model) const;

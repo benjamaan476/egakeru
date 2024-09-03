@@ -10,6 +10,7 @@
 #include "debug/debug_frustum.h"
 #include <scenes/simple_scene.h>
 #include <editor_gizmo.h>
+#include <renderer/viewport.h>
 
 class sandbox_application final : public egkr::application
 {
@@ -17,7 +18,8 @@ public:
 	explicit sandbox_application(const egkr::engine_configuration& configuration);
 	bool init() final;
 	void update(const egkr::frame_data& frame_data) final;
-	void render(egkr::render_packet* render_packet, const egkr::frame_data& frame_data) final;
+	void prepare_render_packet(egkr::render_packet* render_packet, const egkr::frame_data& frame_data) final;
+	void render(egkr::render_packet* render_packet, egkr::frame_data& frame_data) final;
 	bool resize(uint32_t width, uint32_t height) final;
 
 	bool boot() final;
@@ -68,4 +70,8 @@ private:
 	egkr::int2 mouse_pos_{};
 
 	uint32_t hovered_object_id_{};
+
+	egkr::viewport world_view;
+	egkr::viewport world_view2;
+	egkr::viewport ui_view;
 };

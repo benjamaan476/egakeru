@@ -202,8 +202,10 @@ namespace egkr
 
 		const auto& get_attribute_stride() const { return attribute_stride_; }
 
-		[[nodiscard]] uint32_t get_frame_number() const { return frame_number_; }
-		void set_frame_number(uint32_t frame) { frame_number_ = frame; }
+		[[nodiscard]] uint64_t get_frame_number() const { return frame_number_; }
+		void set_frame_number(uint64_t frame) { frame_number_ = frame; }
+		[[nodiscard]] uint64_t get_draw_index() const { return draw_index_; }
+		void set_draw_index(uint64_t frame) { draw_index_ = frame; }
 
 		virtual bool use() = 0;
 		virtual bool populate(renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages) = 0;
@@ -256,7 +258,8 @@ namespace egkr
 		uint16_t bound_pipeline_index_{};
 
 		flags flags_{};
-		uint32_t frame_number_{};
+		uint64_t frame_number_{};
+		uint64_t draw_index_{};
 	};
 	ENUM_CLASS_OPERATORS(shader::primitive_topology_type)
 	ENUM_CLASS_OPERATORS(shader::flags)

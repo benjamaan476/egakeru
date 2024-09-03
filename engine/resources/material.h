@@ -62,7 +62,12 @@ namespace egkr
 		void set_internal_id(uint32_t id) { internal_id_ = id; }
 
 		[[nodiscard]] auto get_render_frame() const { return render_frame_number_; }
-		void set_render_frame(uint32_t frame) { render_frame_number_ = frame; }
+		void set_render_frame(uint64_t frame) { render_frame_number_ = frame; }
+
+		[[nodiscard]] auto get_draw_index() const { return draw_index_; }
+		void set_draw_index(uint64_t frame) { draw_index_ = frame; }
+
+		
 	private:
 		float shininess_{32.F};
 		float4 diffuse_colour_{1.F};
@@ -73,6 +78,7 @@ namespace egkr
 		std::string shader_name_{};
 		uint32_t shader_id_{invalid_32_id};
 		uint32_t internal_id_{ invalid_32_id };
-		uint32_t render_frame_number_{ invalid_32_id };
+		uint64_t render_frame_number_{ invalid_64u_id };
+		uint64_t draw_index_{ invalid_64u_id };
 	};
 }

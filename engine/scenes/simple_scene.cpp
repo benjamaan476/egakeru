@@ -56,7 +56,7 @@ namespace egkr::scene
 		state_ = state::unloading;
 	}
 
-	void simple_scene::update(const frame_data& /*delta_time*/, const camera::shared_ptr& camera, float aspect)
+	void simple_scene::update(const frame_data& /*delta_time*/, const camera::shared_ptr& camera, viewport* viewport)
 	{
 		if (state_ == state::unloading)
 		{
@@ -66,7 +66,7 @@ namespace egkr::scene
 
 		if (state_ >= state::loaded)
 		{
-			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), aspect, camera->get_fov(), camera->get_near_clip(), camera->get_far_clip());
+			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), viewport->viewport_rect.w / viewport->viewport_rect.z, camera->get_fov(), camera->get_near_clip(), camera->get_far_clip());
 			//if (update_frustum_)
 			//{
 			//	debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
@@ -140,13 +140,11 @@ namespace egkr::scene
 		}
 	}
 
-	void simple_scene::populate_render_packet(render_packet* packet)
+	void simple_scene::populate_render_packet(render_packet* packet, viewport* viewport)
 	{
-		skybox_packet_data skybox{ .skybox = skybox_ };
-		packet->render_views[render_view::type::skybox] = view_system::build_packet(view_system::get("skybox").get(), &skybox);
-
 		auto world_view = view_system::get("world-opaque");
-		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_);
+		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_, viewport);
+		packet->render_views[render_view::type::world].skybox_data.skybox = skybox_;
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)

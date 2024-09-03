@@ -29,15 +29,18 @@ namespace egkr
 
 		[[nodiscard]] auto& get_texture_map() const { return cubemap_;}
 		[[nodiscard]] auto get_frame_number() const { return render_frame_number_;}
+		[[nodiscard]] auto get_draw_index() const { return draw_index_;}
 		[[nodiscard]] auto get_instance_id() const { return instance_id_;}
 
 		void set_frame_number(uint64_t frame_number);
+		void set_draw_index(uint64_t draw_index);
 
 	private:
 		configuration configuration_{};
 		uint32_t instance_id_{0};
 		texture_map::shared_ptr cubemap_{};
 		uint64_t render_frame_number_{invalid_64u_id};
+		uint64_t draw_index_{invalid_64u_id};
 	};
 
 }

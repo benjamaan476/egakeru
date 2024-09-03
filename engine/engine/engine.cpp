@@ -102,9 +102,8 @@ namespace egkr
 
 				render_packet packet{};
 
+				engine_->application_->prepare_render_packet(&packet, engine_->frame_data_);
 				engine_->application_->render(&packet, engine_->frame_data_);
-
-				renderer->draw_frame(packet);
 			}
 			auto frame_duration = engine_->platform_->get_time() - time;
 			if (engine_->limit_framerate_ && frame_duration < engine_->frame_time_)

@@ -67,4 +67,9 @@ namespace egkr
 	{
 		render_frame_number_ = frame_number;
 	}
+
+	void skybox::set_draw_index(uint64_t draw_index)
+	{
+		draw_index_ = draw_index;
+	}
 }

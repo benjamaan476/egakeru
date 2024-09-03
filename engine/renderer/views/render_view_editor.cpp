@@ -3,6 +3,7 @@
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
 #include <renderer/renderer_types.h>
+#include <renderer/renderer_frontend.h>
 
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -40,41 +41,37 @@ namespace egkr
 		{
 			width_ = width;
 			height_ = height;
-			projection_ = glm::perspective(camera_->get_fov(), (float)width_ / (float)height_, camera_->get_near_clip(), camera_->get_far_clip());
-
-			for (auto& pass : renderpasses_)
-			{
-				pass->set_render_area(width_, height_);
-			}
 		}
 	}
-	render_view_packet render_view_editor::on_build_packet(void* data)
+	render_view_packet render_view_editor::on_build_packet(void* data, viewport* viewport)
 	{
 		render_view_packet packet{};
 
 		packet.render_view = this;
-		packet.projection_matrix = projection_;
 		packet.view_matrix = camera_->get_view();
 		packet.view_position = camera_->get_position();
 		packet.ambient_colour = ambient_colour_;
+		packet.viewport = viewport;
 		gizmo_ = *(editor::gizmo*)data;
 
 		return packet;
 	}
 
-	bool render_view_editor::on_render(const render_view_packet* render_view_packet, uint32_t  frame_number , uint32_t render_target_index) const
+	bool render_view_editor::on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const
 	{
+		renderer->set_active_viewport(render_view_packet->viewport);
+
 		for (auto& pass : renderpasses_)
 		{
-			pass->begin(pass->get_render_targets()[render_target_index].get());
+			pass->begin(pass->get_render_targets()[frame_data.render_target_index].get());
 
 			auto colour_shader = shader_system::get_shader("Shader.Builtin.Colour3DShader");
 			shader_system::use(colour_shader->get_id());
 			colour_shader->bind_globals();
-			bool needs_update = frame_number != colour_shader->get_frame_number();
+			bool needs_update = (frame_data.frame_number != colour_shader->get_frame_number()) || (frame_data.draw_index != colour_shader->get_draw_index());
 			if (needs_update)
 			{
-				shader_system::set_uniform(locations_.projection, &render_view_packet->projection_matrix);
+				shader_system::set_uniform(locations_.projection, &render_view_packet->viewport->projection);
 				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
 			}
 			shader_system::apply_global(needs_update);

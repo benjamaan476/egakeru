@@ -21,7 +21,6 @@ namespace egkr
 		struct configuration
 		{
 			std::string name{};
-			float4 render_area{};
 			float4 clear_colour{};
 			clear_flags clear_flags{};
 			float depth{};
@@ -59,11 +58,8 @@ namespace egkr
 			{
 				render_targets_ = targets;
 			}
-			auto& get_render_area() { return render_area_; }
-			void set_render_area(uint32_t width, uint32_t height);
 
 		protected:
-			float4 render_area_{};
 			float4 clear_colour_{};
 			clear_flags clear_flags_{};
 			float_t depth_{};

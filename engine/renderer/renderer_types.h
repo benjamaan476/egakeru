@@ -70,8 +70,11 @@ namespace egkr
 		virtual void shutdown() = 0;
 		virtual void tidy_up() = 0;
 		virtual void resize(uint32_t width_, uint32_t height_) = 0;
-		virtual bool begin_frame() = 0;
-		virtual void end_frame() = 0;
+
+		virtual bool prepare_frame(frame_data& frame_data) = 0;
+		virtual bool begin(const frame_data& frame_data) = 0;
+		virtual void end(frame_data& frame_data) = 0;
+		virtual void present(const frame_data& frame_data) = 0;
 
 		virtual void free_material(material* texture) const = 0;
 
@@ -87,22 +90,21 @@ namespace egkr
 		virtual renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const = 0;
 
 		virtual void set_viewport(const float4& rect) const = 0;
-		virtual void reset_viewport() const = 0;
 		virtual void set_scissor(const float4& rect) const = 0;
 		virtual void reset_scissor() const = 0;
 		virtual void set_winding(winding winding) const = 0;
+
 
 		virtual texture* get_window_attachment(uint8_t index) const = 0;
 		virtual texture* get_depth_attachment(uint8_t index) const = 0;
 		virtual uint8_t get_window_index() const = 0;
 
-		uint32_t get_frame_number() const { return frame_number_; }
+		uint64_t get_frame_number() const { return frame_number_; }
 
 		virtual bool is_multithreaded() const = 0;
 	protected:
 		void new_frame() { ++frame_number_; }
-	private:
-		platform::shared_ptr platform_;
-		uint32_t frame_number_{ invalid_32_id };
+		uint64_t frame_number_{ 0 };
+		uint64_t draw_index_{ invalid_64_id };
 	};
 }

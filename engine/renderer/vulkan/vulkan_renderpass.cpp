@@ -3,6 +3,8 @@
 #include "command_buffer.h"
 #include "vulkan_types.h"
 
+#include "renderer/renderer_frontend.h"
+
 namespace egkr::renderpass
 {
 	vulkan_renderpass::shared_ptr vulkan_renderpass::create(const vulkan_context* context, const egkr::renderpass::configuration& configuration)
@@ -219,10 +221,12 @@ namespace egkr::renderpass
 		auto vulkan_render_target = (render_target::vulkan_render_target*)render_target;
 		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 
+		auto viewport = renderer->get_active_viewport();
+
 		vk::Rect2D render_area{};
 		render_area
-			.setOffset({ (int32_t)render_area_.x, (int32_t)render_area_.y })
-			.setExtent({ (uint32_t)render_area_.z, (uint32_t)render_area_.w });
+			.setOffset({ (int32_t)viewport->viewport_rect.x, (int32_t)viewport->viewport_rect.y })
+			.setExtent({ (uint32_t)viewport->viewport_rect.z, (uint32_t)viewport->viewport_rect.w });
 		vk::RenderPassBeginInfo begin_info{};
 		begin_info
 			.setRenderPass(renderpass_)
@@ -259,6 +263,8 @@ namespace egkr::renderpass
 		}
 
 		begin_info.setClearValues(clear_colours);
+
+		command_buffer.get_handle().setFrontFace(vk::FrontFace::eCounterClockwise);
 
 		command_buffer.begin_render_pass(begin_info);
 		return true;
