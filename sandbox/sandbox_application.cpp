@@ -384,6 +384,8 @@ bool sandbox_application::shutdown()
 	}
 	gizmo_.unload();
 	gizmo_.destroy();
+
+	//skybox_->destroy();
 	//debug_frustum_->destroy();
 
 	return true;

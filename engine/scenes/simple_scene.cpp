@@ -228,7 +228,7 @@ namespace egkr::scene
 		{
 			if (skybox_)
 			{
-				skybox_->unload();
+				skybox_->destroy();
 				skybox_.reset();
 			}
 		}

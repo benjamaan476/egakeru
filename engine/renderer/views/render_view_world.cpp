@@ -14,21 +14,28 @@ namespace egkr
 
 	bool render_view_world::on_create()
 	{
-		auto skybox_shader_resource = resource_system::load("Shader.Builtin.Skybox", resource::type::shader, nullptr);
-		auto skybox_shader = (shader::properties*)skybox_shader_resource->data;
-		shader_system::create_shader(*skybox_shader, renderpasses_[0].get());
-		resource_system::unload(skybox_shader_resource);
+		{
+			const std::string shader_name = "Shader.Builtin.Skybox";
+			auto skybox_shader_resource = resource_system::load(shader_name, resource::type::shader, nullptr);
+			auto skybox_shader = (shader::properties*)skybox_shader_resource->data;
+			shader_system::create_shader(*skybox_shader, renderpasses_[0].get());
+			resource_system::unload(skybox_shader_resource);
 
-		skybox_shader_ = shader_system::get_shader("Shader.Builtin.Skybox");
+			skybox_shader_ = shader_system::get_shader("Shader.Builtin.Skybox");
 
-		const std::string shader_name = "Shader.Builtin.Material";
-		auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);
-		auto shader = (shader::properties*)resource->data;
-		shader_system::create_shader(*shader, renderpasses_[1].get());
-		resource_system::unload(resource);
+			skybox_locations_.projection = skybox_shader_->get_uniform_index("projection");
+			skybox_locations_.view = skybox_shader_->get_uniform_index("view");
+			skybox_locations_.cubemap = skybox_shader_->get_uniform_index("cube_texture");
+		}
+		{
+			const std::string shader_name = "Shader.Builtin.Material";
+			auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);
+			auto shader = (shader::properties*)resource->data;
+			shader_system::create_shader(*shader, renderpasses_[1].get());
+			resource_system::unload(resource);
 
-		shader_ = shader_system::get_shader(shader_name);
-
+			shader_ = shader_system::get_shader(shader_name);
+		}
 		ambient_colour_ = { 0.25F, 0.25F, 0.25F, 1.F };
 
 		event::register_event(event::code::render_mode, this, on_event);
@@ -83,7 +90,7 @@ namespace egkr
 			auto& pass = renderpasses_[0];
 			pass->begin(pass->get_render_targets()[frame_data.render_target_index].get());
 
-			if (auto skybox = render_view_packet->skybox_data.skybox)
+			if (auto& skybox = render_view_packet->skybox_data.skybox)
 			{
 
 				shader_system::use(skybox_shader_->get_id());
@@ -105,7 +112,7 @@ namespace egkr
 				skybox->set_frame_number(frame_data.frame_number);
 				skybox->set_draw_index(frame_data.draw_index);
 
-				render_view_packet->skybox_data.skybox->draw();
+				skybox->draw();
 			}
 
 	
