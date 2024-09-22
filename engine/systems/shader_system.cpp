@@ -10,8 +10,8 @@ namespace egkr
 		return shader_system_.get();
 	}
 
-	shader_system::shader_system(const configuration& configuration)
-		: configuration_{ configuration }
+	shader_system::shader_system(const configuration& shader_configuration)
+		: configuration_{ shader_configuration }
 	{
 	}
 
@@ -54,7 +54,7 @@ namespace egkr
 
 	uint32_t shader_system::get_shader_id(const std::string& shader_name)
 	{
-		if (shader_system_->shader_id_by_name_.contains(shader_name.data()))
+		if (shader_system_->shader_id_by_name_.contains(shader_name))
 		{
 			return shader_system_->shader_id_by_name_[shader_name.data()];
 		}
@@ -135,19 +135,19 @@ namespace egkr
 			auto shader = get_shader(shader_system_->current_shader_id_);
 			auto uniform = shader->get_uniform(instance_id);
 
-			if (uniform.scope != shader->get_bound_scope())
+			if (uniform.uniform_scope != shader->get_bound_scope())
 			{
-				if (uniform.scope == shader::scope::global)
+				if (uniform.uniform_scope == shader::scope::global)
 				{
 					shader->bind_globals();
 				}
-				else if (uniform.scope == shader::scope::instance)
+				else if (uniform.uniform_scope == shader::scope::instance)
 				{
 					shader->bind_instances(shader->get_bound_instance_id());
 				}
 			}
 
-			shader->set_bound_scope(uniform.scope);
+			shader->set_bound_scope(uniform.uniform_scope);
 			shader->set_uniform(uniform, data);
 		}
 	}

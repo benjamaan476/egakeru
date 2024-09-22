@@ -17,7 +17,7 @@ namespace egkr
 	public:
 		struct properties
 		{
-			std::string name{};
+			std::string name;
 			uint32_t id{};
 			uint32_t generation{};
 
@@ -25,13 +25,13 @@ namespace egkr
 			uint32_t vertex_count{};
 			void* vertices{};
 
-			egkr::vector<uint32_t> indices{};
+			egkr::vector<uint32_t> indices;
 
 			std::string material_name{ default_material_name_ };
 
 			float3 center{};
 			extent3d extents{};
-			void release()
+			void release() const
 			{
 				::free(vertices);
 			}
@@ -61,16 +61,16 @@ namespace egkr
 
 	protected:
 		properties properties_{};
-		material::shared_ptr material_{};
+		material::shared_ptr material_;
 
-		renderbuffer::renderbuffer::shared_ptr vertex_buffer_{};
+		renderbuffer::renderbuffer::shared_ptr vertex_buffer_;
 		void* vertices_{};
 		uint32_t vertex_count_{};
 		uint32_t vertex_size_{};
 		uint32_t vertex_offset_{};
 
-		renderbuffer::renderbuffer::shared_ptr index_buffer_{};
-		egkr::vector<uint32_t> indices_{};
+		renderbuffer::renderbuffer::shared_ptr index_buffer_;
+		egkr::vector<uint32_t> indices_;
 		uint32_t index_count_{};
 		uint32_t index_size_{};
 		uint32_t index_offset_{};
@@ -78,7 +78,7 @@ namespace egkr
 
 	struct render_data
 	{
-		geometry::shared_ptr geometry{};
+		geometry::shared_ptr render_geometry;
 		std::weak_ptr<transformable> transform;
 		uint64_t unique_id{};
 		bool is_winding_reversed;
@@ -86,8 +86,8 @@ namespace egkr
 
 	struct frame_geometry_data
 	{
-		egkr::vector<render_data> world_geometries{};
-		egkr::vector<render_data> debug_geometries{};
+		egkr::vector<render_data> world_geometries;
+		egkr::vector<render_data> debug_geometries;
 
 		void reset()
 		{

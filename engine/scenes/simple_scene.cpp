@@ -90,7 +90,7 @@ namespace egkr::scene
 
 					if (frustum.intersects_aabb(center, half_extents))
 					{
-						egkr::render_data data{ .geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
+						egkr::render_data data{ .render_geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
 						frame_geometry_.world_geometries.emplace_back(data);
 					}
 				}
@@ -114,17 +114,17 @@ namespace egkr::scene
 
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
@@ -144,7 +144,7 @@ namespace egkr::scene
 	{
 		auto world_view = view_system::get("world-opaque");
 		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_, viewport);
-		packet->render_views[render_view::type::world].skybox_data.skybox = skybox_;
+		packet->render_views[render_view::type::world].skybox_data.skybox_data = skybox_;
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
@@ -340,9 +340,9 @@ namespace egkr::scene
 		state_ = state::unloaded;
 	}
 
-	ray::result simple_scene::raycast(const ray& ray)
+	ray::hit_result simple_scene::raycast(const ray& ray)
 	{
-		ray::result result{};
+		ray::hit_result result{};
 
 		for (const auto& mesh : meshes_ | std::views::values)
 		{

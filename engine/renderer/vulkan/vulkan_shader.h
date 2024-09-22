@@ -20,7 +20,7 @@ namespace egkr
 
 	struct vulkan_descriptor_set_configuration
 	{
-		egkr::vector<vk::DescriptorSetLayoutBinding> bindings{};
+		egkr::vector<vk::DescriptorSetLayoutBinding> bindings;
 		uint32_t binding_count{};
 		uint8_t sampler_binding_index{};
 	};
@@ -28,19 +28,19 @@ namespace egkr
 	struct vulkan_stage_configuration
 	{
 		vk::ShaderStageFlagBits stage{};
-		std::string filename{};
+		std::string filename;
 	};
 
 	struct vulkan_configuration
 	{
 		uint8_t stage_count{};
-		egkr::vector<vulkan_stage_configuration> stages{};
-		egkr::vector<vk::DescriptorPoolSize> pool_sizes{};
+		egkr::vector<vulkan_stage_configuration> stages;
+		egkr::vector<vk::DescriptorPoolSize> pool_sizes;
 
 		uint16_t max_descriptor_set_count{};
 		//0 = global, 1 = instance
 		std::array<vulkan_descriptor_set_configuration, 2> descriptor_sets{};
-		egkr::vector<vk::VertexInputAttributeDescription> attributes{};
+		egkr::vector<vk::VertexInputAttributeDescription> attributes;
 	};
 	
 	struct vulkan_descriptor_state
@@ -52,9 +52,9 @@ namespace egkr
 
 	struct vulkan_stage
 	{
-		vk::ShaderModuleCreateInfo create_info{};
-		vk::ShaderModule handle{};
-		vk::PipelineShaderStageCreateInfo shader_stage_create_info{};
+		vk::ShaderModuleCreateInfo create_info;
+		vk::ShaderModule handle;
+		vk::PipelineShaderStageCreateInfo shader_stage_create_info;
 	};
 
 	struct vulkan_descriptor_set_state
@@ -69,7 +69,7 @@ namespace egkr
 		uint64_t offset{};
 		vulkan_descriptor_set_state descriptor_set_state{};
 
-		egkr::vector<texture_map::shared_ptr> instance_textures{};
+		egkr::vector<texture_map::shared_ptr> instance_textures;
 	};
 
 	static std::unordered_map<shader::attribute_type, vk::Format> vulkan_attribute_types
@@ -118,12 +118,11 @@ namespace egkr
 		vulkan_stage create_module(const vulkan_stage_configuration& configuration);
 	private:
 		const vulkan_context* context_{};
-		uint32_t id{ invalid_32_id };
 		vulkan_configuration configuration{};
 		renderpass::vulkan_renderpass* renderpass{};
 		egkr::vector<vulkan_stage> vulkan_stages;
 
-		vk::DescriptorPool descriptor_pool{};
+		vk::DescriptorPool descriptor_pool;
 
 		//0 = global, 1 = instance
 		egkr::vector<vk::DescriptorSetLayout> descriptor_set_layout{2};
@@ -131,13 +130,13 @@ namespace egkr
 		// one poer frame
 		egkr::vector<vk::DescriptorSet> global_descriptor_sets{ 3 };
 
-		renderbuffer::renderbuffer::shared_ptr uniform_buffer{};
+		renderbuffer::renderbuffer::shared_ptr uniform_buffer;
 
 		// One for each class; point, line, tri
 		egkr::vector<pipeline::shared_ptr> pipelines_{3};
 		vk::PrimitiveTopology current_topology_{};
 
-		egkr::vector<vulkan_instance_state> instance_states{};
+		egkr::vector<vulkan_instance_state> instance_states;
 
 		void* mapped_uniform_buffer_memory{};
 	};

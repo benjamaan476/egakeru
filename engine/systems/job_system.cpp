@@ -10,8 +10,8 @@ namespace egkr
 		return state_.get();
 	}
 
-	job_system::job_system(const configuration& configuration)
-		: max_thread_count_{ 15 }, type_masks_{ configuration.type_masks }, thread_count_{ configuration.thread_count }
+	job_system::job_system(const configuration& job_configuration)
+		: max_thread_count_{ 15 }, type_masks_{ job_configuration.type_masks }, thread_count_{ job_configuration.thread_count }
 	{
 		low_priority_queue_ = container::ring_queue<job::information>::create(1024, nullptr);
 		normal_priority_queue_ = container::ring_queue<job::information>::create(1024, nullptr);
@@ -99,7 +99,7 @@ namespace egkr
 		container::ring_queue<job::information>* queue = state_->normal_priority_queue_.get();
 		std::mutex* mutex = &state_->normal_priority_queue_mutex_;
 
-		if (info.priority == job::priority::high)
+		if (info.job_priority == job::priority::high)
 		{
 			queue = state_->high_priority_queue_.get();
 			mutex = &state_->high_priority_queue_mutex_;
@@ -108,7 +108,7 @@ namespace egkr
 			for (auto i{ 0U }; i < thread_count; ++i)
 			{
 				auto& thread = state_->threads_[i];
-				if ((uint32_t)(thread.mask & info.type) != 0)
+				if ((uint32_t)(thread.mask & info.job_type) != 0)
 				{
 					bool found{};
 					std::lock_guard lock{ thread.mutex };
@@ -126,7 +126,7 @@ namespace egkr
 			}
 		}
 
-		if (info.priority == job::priority::low)
+		if (info.job_priority == job::priority::low)
 		{
 			queue = state_->low_priority_queue_.get();
 			mutex = &state_->low_priority_queue_mutex_;
@@ -214,7 +214,7 @@ namespace egkr
 			for (auto i{ 0U }; i < thread_count; ++i)
 			{
 				job::thread& thread = state_->threads_[i];
-				if ((uint32_t)(thread.mask & info.type) == 0)
+				if ((uint32_t)(thread.mask & info.job_type) == 0)
 				{
 					continue;
 				}
@@ -257,7 +257,7 @@ namespace egkr
 
 	job::information job_system::create_job(job::start_job entry_point, job::complete_job on_success, job::complete_job on_fail, job::type type, job::priority priority, void* params, uint32_t param_size, uint32_t result_size)
 	{
-		job::information info{ .entry_point = entry_point, .on_success = on_success, .on_fail = on_fail, .type = type, .priority = priority, .param_data_size = param_size };
+		job::information info{ .entry_point = entry_point, .on_success = on_success, .on_fail = on_fail, .job_type = type, .job_priority = priority, .param_data_size = param_size };
 
 		if (param_size)
 		{

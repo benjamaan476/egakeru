@@ -13,8 +13,8 @@ namespace egkr
 		ray.origin = origin;
 
 		float2 ndc{};
-		ndc.x = 2.f * (float)(screen_position.x - viewport_rect.x) / viewport_rect.z - 1;
-		ndc.y = 1.f - 2.f * (float)(screen_position.y - viewport_rect.y) / viewport_rect.w;
+		ndc.x = 2.f * ((float)screen_position.x - viewport_rect.x) / viewport_rect.z - 1;
+		ndc.y = 1.f - 2.f * ((float)screen_position.y - viewport_rect.y) / viewport_rect.w;
 
 		const float4 clip{ ndc.x, ndc.y, -1.f, 1.f };
 		float4 eye = glm::inverse(projection) * clip;
@@ -106,9 +106,9 @@ namespace egkr
 	std::optional<float> ray::oriented_extents(const extent3d& bb, const float4x4& model) const
 	{
 		const auto inv = glm::inverse(model);
-		const ray ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f) };
+		const ray oriented_ray{ .origin = inv * glm::vec4(origin, 1.f), .direction = inv * glm::vec4(direction, 0.f) };
 
-		return ray.aabb(bb)
+		return oriented_ray.aabb(bb)
 			.transform([&](float3 out)
 					   {
 						   float3 out_point = model * glm::vec4(out, 1.f);
@@ -152,7 +152,10 @@ namespace egkr
 						  {
 							  return std::nullopt;
 						  }
-						  else return result;
-					  });
+						  else 
+						  {
+							return result;
+						  }
+					});
 	}
 }

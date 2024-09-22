@@ -26,7 +26,7 @@ namespace egkr
 		texture* temp;
 		uint32_t current_generation{invalid_32_id};
 
-		resource::shared_ptr resource;
+		resource::shared_ptr loaded_resource;
 	};
 
 	class texture_system : public system
@@ -69,8 +69,8 @@ namespace egkr
 		texture* default_specular_texture_{};
 		texture* default_normal_texture_{};
 
-		egkr::vector<texture*> registered_textures_{};
-		std::unordered_map<std::string, texture_handle> registered_textures_by_name_{};
+		egkr::vector<texture*> registered_textures_;
+		std::unordered_map<std::string, texture_handle> registered_textures_by_name_;
 
 		uint32_t max_texture_count_{};
 	};

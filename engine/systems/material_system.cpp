@@ -268,43 +268,43 @@ namespace egkr
 			.repeat_u = texture_map::repeat::repeat,
 			.repeat_v = texture_map::repeat::repeat,
 			.repeat_w = texture_map::repeat::repeat,
-			.use = texture_map::use::map_diffuse
+			.map_use = texture_map::use::map_diffuse
 		};
 
 		auto diffuse_map = texture_map::texture_map::create(diffuse_properties);
 		diffuse_map->acquire();
 
 		//Get diffuse map
-		diffuse_map->texture = texture_system::acquire(properties.diffuse_map_name);
-		if (diffuse_map->texture == nullptr)
+		diffuse_map->map_texture = texture_system::acquire(properties.diffuse_map_name);
+		if (diffuse_map->map_texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.diffuse_map_name.data(), properties.name.data());
-			diffuse_map->texture = texture_system::get_default_texture();
+			diffuse_map->map_texture = texture_system::get_default_texture();
 		}
 
 		texture_map::properties specular_properties = diffuse_properties;
-		specular_properties.use = texture_map::use::map_specular;
+		specular_properties.map_use = texture_map::use::map_specular;
 
 		auto specular_map = texture_map::texture_map::create(specular_properties);
 		specular_map->acquire();
 
-		specular_map->texture = texture_system::acquire(properties.specular_map_name);
-		if (specular_map->texture == nullptr)
+		specular_map->map_texture = texture_system::acquire(properties.specular_map_name);
+		if (specular_map->map_texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.specular_map_name.data(), properties.name.data());
-			specular_map->texture = texture_system::get_default_specular_texture();
+			specular_map->map_texture = texture_system::get_default_specular_texture();
 		}
 
 		texture_map::properties normal_properties = diffuse_properties;
-		normal_properties.use = texture_map::use::map_normal;
+		normal_properties.map_use = texture_map::use::map_normal;
 
 		auto normal_map = texture_map::texture_map::create(normal_properties);
 		normal_map->acquire();
-		normal_map->texture = texture_system::acquire(properties.normal_map_name);
-		if (normal_map->texture == nullptr)
+		normal_map->map_texture = texture_system::acquire(properties.normal_map_name);
+		if (normal_map->map_texture == nullptr)
 		{
 			LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.normal_map_name.data(), properties.name.data());
-			normal_map->texture = texture_system::get_default_normal_texture();
+			normal_map->map_texture = texture_system::get_default_normal_texture();
 		}
 
 		egkr::vector<texture_map::texture_map::shared_ptr> maps{diffuse_map, specular_map, normal_map};

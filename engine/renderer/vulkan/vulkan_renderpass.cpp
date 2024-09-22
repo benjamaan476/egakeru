@@ -30,7 +30,7 @@ namespace egkr::renderpass
 					bool do_clear_colour = clear_flags_ & clear_flags::colour;
 					if (attachment_config.source == render_target::attachment_source::default_source)
 					{
-						attach.setFormat(context_->swapchain->get_format().format);
+						attach.setFormat(context_->swpchain->get_format().format);
 					}
 					else
 					{
@@ -39,13 +39,13 @@ namespace egkr::renderpass
 
 					attach.setSamples(vk::SampleCountFlagBits::e1);
 
-					if (attachment_config.load_operation == render_target::load_operation::dont_care)
+					if (attachment_config.load_op == render_target::load_operation::dont_care)
 					{
 						attach.setLoadOp(do_clear_colour ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare);
 					}
 					else
 					{
-						if (attachment_config.load_operation == render_target::load_operation::load)
+						if (attachment_config.load_op == render_target::load_operation::load)
 						{
 							if (do_clear_colour)
 							{
@@ -63,11 +63,11 @@ namespace egkr::renderpass
 						}
 					}
 
-					if (attachment_config.store_operation == render_target::store_operation::dont_care)
+					if (attachment_config.store_op == render_target::store_operation::dont_care)
 					{
 						attach.setStoreOp(vk::AttachmentStoreOp::eDontCare);
 					}
-					else if (attachment_config.store_operation == render_target::store_operation::store)
+					else if (attachment_config.store_op == render_target::store_operation::store)
 					{
 						attach.setStoreOp(vk::AttachmentStoreOp::eStore);
 					}
@@ -79,7 +79,7 @@ namespace egkr::renderpass
 
 					attach.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare);
 					attach.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare);
-					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined);
+					attach.setInitialLayout(attachment_config.load_op == render_target::load_operation::load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined);
 					attach.setFinalLayout(attachment_config.present_after ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eColorAttachmentOptimal);
 
 					colour_attachments.push_back(attach);
@@ -99,13 +99,13 @@ namespace egkr::renderpass
 
 					attach.setSamples(vk::SampleCountFlagBits::e1);
 
-					if (attachment_config.load_operation == render_target::load_operation::dont_care)
+					if (attachment_config.load_op == render_target::load_operation::dont_care)
 					{
 						attach.setLoadOp(do_clear_depth ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare);
 					}
 					else
 					{
-						if (attachment_config.load_operation == render_target::load_operation::load)
+						if (attachment_config.load_op == render_target::load_operation::load)
 						{
 							if (do_clear_depth)
 							{
@@ -123,11 +123,11 @@ namespace egkr::renderpass
 						}
 					}
 
-					if (attachment_config.store_operation == render_target::store_operation::dont_care)
+					if (attachment_config.store_op == render_target::store_operation::dont_care)
 					{
 						attach.setStoreOp(vk::AttachmentStoreOp::eDontCare);
 					}
-					else if (attachment_config.store_operation == render_target::store_operation::store)
+					else if (attachment_config.store_op == render_target::store_operation::store)
 					{
 						attach.setStoreOp(vk::AttachmentStoreOp::eStore);
 					}
@@ -140,7 +140,7 @@ namespace egkr::renderpass
 					attach.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare);
 					attach.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare);
 
-					attach.setInitialLayout(attachment_config.load_operation == render_target::load_operation::load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined);
+					attach.setInitialLayout(attachment_config.load_op == render_target::load_operation::load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined);
 					attach.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 					depth_attachments.push_back(attach);
 				}

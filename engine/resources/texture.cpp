@@ -10,24 +10,24 @@ namespace egkr
 		return renderer->create_texture();
 	}
 
-	texture* texture::create(const properties& properties, const uint8_t* texture_data)
+	texture* texture::create(const properties& texture_properties, const uint8_t* texture_data)
 	{
-		return renderer->create_texture(properties, texture_data);
+		return renderer->create_texture(texture_properties, texture_data);
 	}
-	void texture::create(const properties& properties, const uint8_t* texture_data, texture* out_texture)
+	void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture)
 	{
-		return renderer->create_texture(properties, texture_data, out_texture);
+		return renderer->create_texture(texture_properties, texture_data, out_texture);
 	}
 
-	texture::texture(const properties& properties)
-		: resource(properties.id, properties.generation, properties.name), properties_{ properties }
+	texture::texture(const properties& texture_properties)
+		: resource(texture_properties.id, texture_properties.generation, texture_properties.name), properties_{ texture_properties }
 	{
-		data = (void*)properties.data;
+		data = (void*)texture_properties.data;
 	}
 
 	texture::~texture()
 	{
-		if ((int)(properties_.flags & egkr::texture::flags::is_wrapped) == 0)
+		if ((int)(properties_.texture_flags & egkr::texture::flags::is_wrapped) == 0)
 		{
 			destroy();
 		}
@@ -50,15 +50,13 @@ namespace egkr
 		}
 	}
 
-	texture_map::texture_map(const properties& properties)
-		: minify{ properties.minify }, magnify{ properties.magnify }, repeat_u{ properties.repeat_u }, repeat_v{ properties.repeat_v }, repeat_w{ properties.repeat_w }, use{ properties.use }
+	texture_map::texture_map(const properties& map_properties)
+		: minify{ map_properties.minify }, magnify{ map_properties.magnify }, repeat_u{ map_properties.repeat_u }, repeat_v{ map_properties.repeat_v }, repeat_w{ map_properties.repeat_w }, use{ map_properties.map_use }
 	{
 
 	}
 
-	texture_map::texture_map::~texture_map()
-	{
-	}
+	texture_map::texture_map::~texture_map() = default;
 
 	void texture_map::texture_map::free()
 	{

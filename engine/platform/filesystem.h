@@ -1,14 +1,12 @@
 #pragma once
 #include "pch.h"
 
-#include <fstream>
-
 namespace egkr
 {
 	struct file_handle
 	{
 		FILE* handle{};
-		std::string filepath{};
+		std::string filepath;
 		bool is_valid{};
 
 		~file_handle()
@@ -29,7 +27,7 @@ namespace egkr
 		[[nodiscard]] static file_handle open(std::string_view path, file_mode mode, bool is_binary);
 		static void close(file_handle& handle);
 
-		static egkr::vector<uint8_t> read_line(file_handle& handle, int32_t max_size);
+		static egkr::vector<uint8_t> read_line(file_handle& handle, size_t max_size);
 		static uint64_t write_line(file_handle& handle, const egkr::vector<uint8_t>& line);
 
 		// Returns the read data and size of read data

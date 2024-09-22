@@ -27,18 +27,17 @@ namespace egkr
 		auto base_path = get_base_path();
 
 		// Base path/{name}{extension}
-		constexpr std::string_view format_string{ "%s/%s%s" };
 		stbi_set_flip_vertically_on_load(parameters->flip_y);
 
-		char buff[128];
+		std::string filename;
 		egkr::vector<std::string_view> extensions{".tga", ".png", ".jpg", ".bmp"};
 
 		auto found{ false };
 		for (const auto& extension : extensions)
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), extension.data());
+			filename = std::format("{}/{}{}", base_path.data(), name.data(), extension.data());
 
-			if (filesystem::does_path_exist(buff))
+			if (filesystem::does_path_exist(filename))
 			{
 				found = true;
 				break;
@@ -47,11 +46,11 @@ namespace egkr
 
 		if (!found)
 		{
-			LOG_ERROR("File not found: {}", buff);
+			LOG_ERROR("File not found: {}", filename);
 			return {};
 		}
 
-		auto file = filesystem::open(buff, file_mode::read, true);
+		auto file = filesystem::open(filename, file_mode::read, true);
 		auto raw = filesystem::read_all(file);
 
 		int32_t width{};
@@ -59,7 +58,7 @@ namespace egkr
 		int32_t channels{};
 		int32_t required_channels{ 4 };
 
-		auto image_data = (uint8_t*)stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
+		auto image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
 
 		if (image_data)
 		{
@@ -80,16 +79,16 @@ namespace egkr
 
 					if (image_data[index + 3] < 255)
 					{
-						properties.flags |= texture::flags::has_transparency;
+						properties.texture_flags |= texture::flags::has_transparency;
 						break;
 					}
 				}
 			}
 
 			resource::properties image_properties{};
-			image_properties.type = resource::type::image;
+			image_properties.resource_type = resource::type::image;
 			image_properties.name = name;
-			image_properties.full_path = buff;
+			image_properties.full_path = filename;
 
 			// Deleted by unload
 			image_properties.data = new(texture::properties);
@@ -101,7 +100,7 @@ namespace egkr
 		{
 			if (stbi_failure_reason())
 			{
-				LOG_ERROR("Failed to load image {}, reason: {}", buff, stbi_failure_reason());
+				LOG_ERROR("Failed to load image {}, reason: {}", filename, stbi_failure_reason());
 				stbi__err(nullptr, 0);
 			}
 			return nullptr;

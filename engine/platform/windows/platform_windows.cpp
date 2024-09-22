@@ -3,8 +3,8 @@
 //#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+// #define GLFW_EXPOSE_NATIVE_WIN32
+// #include <GLFW/glfw3native.h>
 
 #include "systems/input.h"
 #include "event.h"
@@ -28,12 +28,12 @@ namespace egkr
 		return nullptr;
 	}
 
-	bool platform_windows::startup(const platform::configuration& configuration)
+	bool platform_windows::startup(const platform::configuration& platform_configuration)
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
@@ -41,7 +41,7 @@ namespace egkr
 			return false;
 		}
 		glfwMakeContextCurrent(window_);
-		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
+		glfwSetWindowPos(window_, (int)platform_configuration.start_x, (int)platform_configuration.start_y);
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
 		glfwSetMouseButtonCallback(window_, &platform_windows::mouse_callback);
@@ -95,7 +95,7 @@ namespace egkr
 			LOG_WARN("Key event from wrong window");
 			return;
 		}
-		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
+		auto pressed = action == GLFW_PRESS || action == GLFW_REPEAT;
 
 		input::process_key((egkr::key)key, pressed);
 	}

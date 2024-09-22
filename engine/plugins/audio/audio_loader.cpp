@@ -85,19 +85,17 @@ namespace egkr
 
 		auto base_path = get_base_path();
 
-		constexpr std::string_view format_string{ "%s/%s" };
-		char buff[512]{};
-		sprintf_s(buff, format_string.data(), base_path.data(), name.data());
+		std::string filename = std::format("{}/{}", base_path, name);
 
 		audio::file* resource_data = new audio::file();
 		resource_data->internal_data = new audio_file_internal();
-		resource_data->type = parameters->type;
+		resource_data->audio_type = parameters->type;
 		if (name.contains(".ogg"))
 		{
 			LOG_TRACE("Processing OGG file");
 			int32_t ogg_error{};
 
-			resource_data->internal_data->vorbis = stb_vorbis_open_filename(buff, &ogg_error, nullptr);
+			resource_data->internal_data->vorbis = stb_vorbis_open_filename(filename.c_str(), &ogg_error, nullptr);
 			if (!resource_data->internal_data->vorbis)
 			{
 				LOG_ERROR("Failed to load vorbis file: {}", ogg_error);
@@ -108,7 +106,7 @@ namespace egkr
 			resource_data->sample_rate = info.sample_rate;
 			resource_data->total_samples_left = stb_vorbis_stream_length_in_samples(resource_data->internal_data->vorbis);
 
-			if (resource_data->type == audio::type::music_stream)
+			if (resource_data->audio_type == audio::type::music_stream)
 			{
 				const uint64_t buffer_lenght = parameters->chunk_size * sizeof(int16_t);
 				resource_data->internal_data->pcm = (int16_t*)malloc(buffer_lenght);
@@ -147,9 +145,9 @@ namespace egkr
 		}
 
 		resource::properties audio_properties{};
-		audio_properties.type = resource::type::audio;
+		audio_properties.resource_type = resource::type::audio;
 		audio_properties.name = name;
-		audio_properties.full_path = buff;
+		audio_properties.full_path = filename;
 
 		audio_properties.data = new(audio::file);
 		*(audio::file*)audio_properties.data = *resource_data;

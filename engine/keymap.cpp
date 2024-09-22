@@ -11,15 +11,15 @@ namespace egkr
 	{
 		for (auto i{0U}; i < std::to_underlying(key::key_count); ++i)
 		{
-			entries.push_back({ .key = (key)i });
+			entries.push_back({ .keymap_key = (key)i });
 		}
 	}
 
-	void keymap::add_binding(key key, entry_bind_type type, modifier modifier, void* user_data, keybind_callback callback)
+	void keymap::add_binding(key key, entry_bind_type type, modifier key_modifier, void* user_data, keybind_callback callback)
 	{
-		auto& entry = entries[std::to_underlying(key)];
-		auto* node = entry.bindings;
-		auto* previous = entry.bindings;
+		auto& binding_entry = entries[std::to_underlying(key)];
+		auto* node = binding_entry.bindings;
+		auto* previous = binding_entry.bindings;
 
 		while (node)
 		{
@@ -27,27 +27,27 @@ namespace egkr
 			node = node->next;
 		}
 
-		binding* new_binding = new binding{ .type = type, .modifier = modifier, .callback = callback, .user_data = user_data };
+		binding* new_binding = new binding{ .type = type, .keymap_modifier = key_modifier, .callback = callback, .user_data = user_data };
 		if (previous)
 		{
 			previous->next = new_binding;
 		}
 		else
 		{
-			entry.bindings = new_binding;
+			binding_entry.bindings = new_binding;
 		}
 	}
 
-	void keymap::remove_binding(key key, entry_bind_type type, modifier modifier, keybind_callback callback)
+	void keymap::remove_binding(key key, entry_bind_type type, modifier keymap_modifier, keybind_callback callback)
 	{
-		auto& entry = entries[std::to_underlying(key)];
+		auto& binding_entry = entries[std::to_underlying(key)];
 
-		auto* node = entry.bindings;
-		auto* previous = entry.bindings;
+		auto* node = binding_entry.bindings;
+		auto* previous = binding_entry.bindings;
 
 		while (node)
 		{
-			if (node->callback.target_type() == callback.target_type() && node->modifier == modifier && node->type == type)
+			if (node->callback.target_type() == callback.target_type() && node->keymap_modifier == keymap_modifier && node->type == type)
 			{
 				previous->next = node->next;
 				delete node;

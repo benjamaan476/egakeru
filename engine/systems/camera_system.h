@@ -34,10 +34,10 @@ namespace egkr
 	private:
 		configuration configuration_{};
 
-		std::unordered_map<std::string, uint32_t> camera_id_by_name_{};
-		egkr::vector<camera::shared_ptr> cameras_{};
+		std::unordered_map<std::string, uint32_t> camera_id_by_name_;
+		egkr::vector<camera::shared_ptr> cameras_;
 
-		camera::shared_ptr default_camera_{};
+		camera::shared_ptr default_camera_;
 	};
 
 }

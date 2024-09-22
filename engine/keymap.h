@@ -29,15 +29,15 @@ namespace egkr
 		struct binding
 		{
 			entry_bind_type type{};
-			modifier modifier{};
-			keybind_callback callback{};
+			modifier keymap_modifier{};
+			keybind_callback callback;
 			void* user_data{};
 			binding* next{};
 		};
 
 		struct entry
 		{
-			key key{};
+			key keymap_key{};
 			binding* bindings{};
 		};
 
@@ -48,6 +48,6 @@ namespace egkr
 		void remove_binding(key key, entry_bind_type type, modifier modifier, keybind_callback callback);
 
 		bool overrides_all{};
-		egkr::vector<entry> entries{};
+		egkr::vector<entry> entries;
 	};
 }

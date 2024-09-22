@@ -7,30 +7,28 @@
 
 constexpr static const uint32_t MAX_AUDIO_CHANNELS = 16u;
 
-namespace egkr
+
+namespace egkr::audio
 {
-	namespace audio
+	class plugin;
+
+	struct system_configuration
 	{
-		class plugin;
+		uint32_t frequency{};
+		uint32_t channel_count{};
+		uint32_t chunk_size{};
+		uint32_t audio_channel_count{};
+	};
 
-		struct system_configuration
-		{
-			plugin* plugin{};
-			uint32_t frequency{};
-			uint32_t channel_count{};
-			uint32_t chunk_size{};
-			uint32_t audio_channel_count{};
-		};
+	struct channel
+	{
+		float volume{ 1.F };
+		file* current{};
+		emitter* audio_emitter{};
+	};
 
-		struct channel
-		{
-			float volume{ 1.F };
-			file* current{};
-			emitter* emitter{};
-		};
-
-		class audio_system : public system
-		{
+	class audio_system : public system
+	{
 		public:
 			using unique_ptr = std::unique_ptr<audio_system>;
 			static audio_system* create(const system_configuration& configuration);
@@ -66,6 +64,6 @@ namespace egkr
 			plugin* plugin_{};
 			float master_volume_{1.F};
 			std::array<channel, MAX_AUDIO_CHANNELS> channels_{};
-		};
-	}
+	};
 }
+

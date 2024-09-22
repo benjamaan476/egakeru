@@ -21,8 +21,8 @@ namespace egkr
 		return geom;
 	}
 
-	vulkan_geometry::vulkan_geometry(const vulkan_context* context, const properties& properties)
-		: geometry(properties), context_{context}
+	vulkan_geometry::vulkan_geometry(const vulkan_context* context, const properties& geometry_properties)
+		: geometry(geometry_properties), context_{context}
 	{}
 
 	vulkan_geometry::~vulkan_geometry()
@@ -30,26 +30,26 @@ namespace egkr
 		free();
 	}
 
-	bool vulkan_geometry::populate(const properties & properties)
+	bool vulkan_geometry::populate(const properties& geometry_properties)
 	{
 		ZoneScoped;
 
-		const auto vertex_buffer_size = properties.vertex_size * properties.vertex_count;
+		const auto vertex_buffer_size = geometry_properties.vertex_size * geometry_properties.vertex_count;
 
-		vertex_count_ = properties.vertex_count;
-		vertex_size_ = properties.vertex_size;
+		vertex_count_ = geometry_properties.vertex_count;
+		vertex_size_ = geometry_properties.vertex_size;
 		vertices_ = malloc(vertex_buffer_size);
-		std::memcpy(vertices_, properties.vertices, vertex_buffer_size);
+		std::memcpy(vertices_, geometry_properties.vertices, vertex_buffer_size);
 
 		vertex_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::vertex, vertex_buffer_size);
 		vertex_buffer_->bind(0);
 
 
-		index_count_ = (uint32_t)properties.indices.size();
+		index_count_ = (uint32_t)geometry_properties.indices.size();
 		if (index_count_)
 		{
-			const auto index_buffer_size = sizeof(uint32_t) * properties.indices.size();
-			indices_ = properties.indices;
+			const auto index_buffer_size = sizeof(uint32_t) * geometry_properties.indices.size();
+			indices_ = geometry_properties.indices;
 			index_buffer_ = renderbuffer::renderbuffer::create(renderbuffer::type::index, index_buffer_size);
 			index_buffer_->bind(0);
 		}

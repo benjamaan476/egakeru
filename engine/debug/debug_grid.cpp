@@ -9,7 +9,7 @@ namespace egkr::debug
 
 	debug_grid::debug_grid(const configuration& configuration)
 		: name_{ configuration.name },
-		orientation_{ configuration.orientation },
+		orientation_{ configuration.grid_orientation },
 		tile_count_dim0_{ configuration.tile_count_dim0 },
 		tile_count_dim1_{ configuration.tile_count_dim1 },
 		tile_scale_{ configuration.tile_scale }
@@ -146,11 +146,8 @@ namespace egkr::debug
 
 	}
 
-	debug_grid::~debug_grid()
-	{
-	}
 
-	bool debug_grid::load()
+        bool debug_grid::load()
 	{
 		geometry::properties properties{};
 		properties.name = "degug_grid";

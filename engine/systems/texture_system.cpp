@@ -28,9 +28,9 @@ namespace egkr
 			.data = internal_data,
 		};
 
-		properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
-		properties.flags |= is_writeable ? texture::flags::is_writable : (texture::flags)0;
-		properties.flags |= texture::flags::is_wrapped;
+		properties.texture_flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
+		properties.texture_flags |= is_writeable ? texture::flags::is_writable : (texture::flags)0;
+		properties.texture_flags |= texture::flags::is_wrapped;
 
 		auto* wrapped_texture = texture::texture::create(properties, nullptr);
 		if (register_texture)
@@ -64,7 +64,7 @@ namespace egkr
 		default_texture_properties.width = 32;
 		default_texture_properties.height = 32;
 		default_texture_properties.channel_count = 4;
-		default_texture_properties.flags = {};
+		default_texture_properties.texture_flags = {};
 		default_texture_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint32_t> data(default_texture_properties.width * default_texture_properties.height, 0xFFFFFFFF);
@@ -98,7 +98,7 @@ namespace egkr
 			default_diffuse_properties.width = 16;
 			default_diffuse_properties.height = 16;
 			default_diffuse_properties.channel_count = 4;
-			default_diffuse_properties.flags = {};
+			default_diffuse_properties.texture_flags = {};
 			default_diffuse_properties.texture_type = texture::type::texture_2d;
 
 			egkr::vector<uint32_t> diffuse_data(default_diffuse_properties.width * default_diffuse_properties.height, 0xFFFFFFFF);
@@ -110,7 +110,7 @@ namespace egkr
 		default_specular_properties.width = 16;
 		default_specular_properties.height = 16;
 		default_specular_properties.channel_count = 4;
-		default_specular_properties.flags = {};
+		default_specular_properties.texture_flags = {};
 		default_specular_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint32_t> spec_data(default_specular_properties.width * default_specular_properties.height, 0xFF000000);
@@ -121,7 +121,7 @@ namespace egkr
 		default_normal_properties.width = 16;
 		default_normal_properties.height = 16;
 		default_normal_properties.channel_count = 4;
-		default_normal_properties.flags = {};
+		default_normal_properties.texture_flags = {};
 		default_normal_properties.texture_type = texture::type::texture_2d;
 
 		egkr::vector<uint8_t> normal_data(default_normal_properties.width * default_normal_properties.height * default_normal_properties.channel_count);
@@ -130,7 +130,7 @@ namespace egkr
 		{
 			for (uint8_t col{ 0U }; col < 16; ++col)
 			{
-				uint32_t index = (row * 16) + col;
+				uint32_t index = (row * 16u) + col;
 				uint32_t index_bpp = index * default_normal_properties.channel_count;
 				// Set blue, z-axis by default and alpha.
 				normal_data[index_bpp + 0] = 128;
@@ -139,7 +139,7 @@ namespace egkr
 				normal_data[index_bpp + 3] = 255;
 			}
 		}
-		texture_system_->default_normal_texture_ = texture::texture::create(default_normal_properties, (uint8_t*)normal_data.data());
+		texture_system_->default_normal_texture_ = texture::texture::create(default_normal_properties, normal_data.data());
 		
 		return true;
 	}
@@ -335,10 +335,10 @@ namespace egkr
 			.width = width,
 			.height = height,
 			.channel_count = channel_count,
-			.flags = texture::flags::is_writable,
+			.texture_flags = texture::flags::is_writable,
 			.texture_type = texture::type::texture_2d
 		};
-		writeable_properties.flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
+		writeable_properties.texture_flags |= has_transparency ? texture::flags::has_transparency : (texture::flags)0;
 
 		auto* writeable = texture::create(writeable_properties, nullptr);
 		writeable->populate_writeable();
@@ -439,7 +439,7 @@ namespace egkr
 	void texture_system::load_job_success(void* params)
 	{
 		load_parameters* load_params = (load_parameters*)params;
-		auto& resource = load_params->resource;
+		auto& resource = load_params->loaded_resource;
 
 		auto properties = (texture::properties*)resource->data;
 
@@ -447,7 +447,7 @@ namespace egkr
 		texture::texture::create(*properties, (const uint8_t*)properties->data, load_params->out_texture);
 
 		load_params->out_texture->increment_generation();
-		resource_system::unload(load_params->resource);
+		resource_system::unload(load_params->loaded_resource);
 	}
 
 	bool texture_system::job_start(void* params, void* result_data)
@@ -461,7 +461,7 @@ namespace egkr
 			return false;
 		}
 
-		load_params->resource = image;
+		load_params->loaded_resource = image;
 
 		memcpy(result_data, load_params, sizeof(load_parameters));
 
@@ -474,6 +474,6 @@ namespace egkr
 		auto* load_params = (load_parameters*)params;
 		LOG_ERROR("Failed to load texture");
 
-		resource_system::unload(load_params->resource);
+		resource_system::unload(load_params->loaded_resource);
 	}
 }

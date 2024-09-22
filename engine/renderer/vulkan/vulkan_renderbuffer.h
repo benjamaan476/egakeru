@@ -49,14 +49,12 @@ namespace egkr
 	private:
 		const vulkan_context* context_{};
 
-		vk::Buffer handle_{};
-		vk::BufferUsageFlags usage_{};
-		vk::DeviceMemory memory_{};
+		vk::Buffer handle_;
+		vk::BufferUsageFlags usage_;
+		vk::DeviceMemory memory_;
 
 		uint32_t memory_index_{invalid_32_id};
-		vk::MemoryRequirements memory_requirements_{};
-		vk::MemoryPropertyFlags memory_property_flags_{};
-
-		bool is_locked_{};
+		vk::MemoryRequirements memory_requirements_;
+		vk::MemoryPropertyFlags memory_property_flags_;
 	};
 }

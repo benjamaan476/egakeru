@@ -9,15 +9,15 @@ namespace egkr
 {
 	render_view::shared_ptr render_view::create(const configuration& configuration)
 	{
-		if (configuration.type == type::world)
+		if (configuration.view_type == type::world)
 		{
 			return std::make_shared<render_view_world>(configuration);
 		}
-		else if (configuration.type == type::ui)
+		else if (configuration.view_type == type::ui)
 		{
 			return std::make_shared<render_view_ui>(configuration);
 		}
-		else if (configuration.type == type::editor)
+		else if (configuration.view_type == type::editor)
 		{
 			return std::make_shared<render_view_editor>(configuration);
 		}
@@ -28,16 +28,16 @@ namespace egkr
 		}
 	}
 
-	render_view::render_view(const configuration& configuration)
-		: name_{ configuration.name },
-		width_{ configuration.width },
-		height_{ configuration.height },
-		type_{ configuration.type },
-		custom_shader_name_{ configuration.custom_shader_name }
+	render_view::render_view(const configuration& view_configuration)
+		: name_{ view_configuration.name },
+		width_{ view_configuration.width },
+		height_{ view_configuration.height },
+		type_{ view_configuration.view_type },
+		custom_shader_name_{ view_configuration.custom_shader_name }
 	{
 		camera_ = camera_system::get_default();
 
-		for (const auto& pass : configuration.passes)
+		for (const auto& pass : view_configuration.passes)
 		{
 			auto renderpass = renderpass::renderpass::create(pass);
 			renderpasses_.push_back(renderpass);
@@ -64,11 +64,11 @@ namespace egkr
 					{
 						if (attachment.type == render_target::attachment_type::colour)
 						{
-							attachment.texture = renderer->get_backend()->get_window_attachment(i);
+							attachment.texture_attachment = renderer->get_backend()->get_window_attachment(i);
 						}
 						else if (attachment.type == render_target::attachment_type::depth)
 						{
-							attachment.texture = renderer->get_backend()->get_depth_attachment(i);
+							attachment.texture_attachment = renderer->get_backend()->get_depth_attachment(i);
 						}
 						else
 						{
@@ -82,7 +82,7 @@ namespace egkr
 					}
 				}
 
-				target = render_target::render_target::create(target->get_attachments(), pass.get(), target->get_attachments()[0].texture->get_width(), target->get_attachments()[0].texture->get_height());
+				target = render_target::render_target::create(target->get_attachments(), pass.get(), target->get_attachments()[0].texture_attachment->get_width(), target->get_attachments()[0].texture_attachment->get_height());
 			}
 		}
 	}

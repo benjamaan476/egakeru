@@ -15,9 +15,7 @@ namespace egkr
 	resource::shared_ptr system_font_loader::load(std::string_view name, void* /*params*/)
 	{
 		auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
-
-		char buff[128]{};
+		std::string buff;
 
 		std::array<supported_system_font_file_type, 2> filetypes{ supported_system_font_file_type{".esf", system_font_file_type::esf, true},  supported_system_font_file_type{".fontcfg", system_font_file_type::font_config, false} };
 
@@ -25,7 +23,7 @@ namespace egkr
 		supported_system_font_file_type filetype{};
 		for (const auto& extension : filetypes)
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), extension.extension.data());
+			buff = std::format("{}/{}{}", base_path, name, extension.extension);
 
 			if (filesystem::does_path_exist(buff))
 			{
@@ -50,7 +48,7 @@ namespace egkr
 		{
 		case system_font_file_type::font_config:
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".ebf");
+			buff = std::format("{}/{}{}", base_path, name, ".ebf");
 
 			std::string ebf_file_name = buff;
 			resource_data = import_fontcfg_file(file, ebf_file_name);
@@ -66,7 +64,7 @@ namespace egkr
 		}
 		}
 
-		resource::properties properties{ .type = resource::type::system_font, .name = name.data(), .full_path = buff, };
+		resource::properties properties{ .resource_type = resource::type::system_font, .name = name.data(), .full_path = buff, };
 		properties.data = new font::system_font_resource_data();
 		*((font::system_font_resource_data*)(properties.data)) = resource_data;
 		return resource::create(properties);

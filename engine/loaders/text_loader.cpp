@@ -2,6 +2,8 @@
 
 #include "platform/filesystem.h"
 
+#include <format>
+
 namespace egkr
 {
 	text_loader::unique_ptr text_loader::create(const loader_properties& properties)
@@ -14,10 +16,8 @@ namespace egkr
 	resource::shared_ptr text_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s" };
 
-		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data());
+		const auto filename = std::format("{}/{}", base_path.data(), name.data());
 
 		auto handle = filesystem::open(filename, file_mode::read, false);
 		if (!handle.is_valid)
@@ -29,7 +29,7 @@ namespace egkr
 		auto line = filesystem::read_all(handle);
 
 		resource::properties properties{};
-		properties.type = get_loader_type();
+		properties.resource_type = get_loader_type();
 		properties.name = name;
 		properties.full_path = name;
 		properties.data = new(binary_resource_properties);

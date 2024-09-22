@@ -139,7 +139,7 @@
         },
         {
             "name": "unixlike-gcc-debug",
-            "displayName": "gcc Debug",
+            "displayName": "unix gcc Debug",
             "description": "Target Unix-like OS with the gcc compiler, debug build type",
             "inherits": "conf-unixlike-common",
             "cacheVariables": {
@@ -150,7 +150,7 @@
         },
         {
             "name": "unixlike-gcc-release",
-            "displayName": "gcc Release",
+            "displayName": "unix gcc Release",
             "description": "Target Unix-like OS with the gcc compiler, release build type",
             "inherits": "conf-unixlike-common",
             "cacheVariables": {
@@ -161,7 +161,7 @@
         },
         {
             "name": "unixlike-clang-debug",
-            "displayName": "clang Debug",
+            "displayName": "unix clang Debug",
             "description": "Target Unix-like OS with the clang compiler, debug build type",
             "inherits": "conf-unixlike-common",
             "cacheVariables": {
@@ -172,7 +172,7 @@
         },
         {
             "name": "unixlike-clang-release",
-            "displayName": "clang Release",
+            "displayName": "unix clang Release",
             "description": "Target Unix-like OS with the clang compiler, release build type",
             "inherits": "conf-unixlike-common",
             "cacheVariables": {

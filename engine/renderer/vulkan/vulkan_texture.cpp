@@ -43,23 +43,23 @@ namespace egkr
 		return img;
 	}
 
-	void vulkan_texture::create_view(const properties& properties)
+	void vulkan_texture::create_view(const properties& view_properties)
 	{
 		vk::ImageSubresourceRange subresource{};
 		subresource
 			.setBaseMipLevel(0)
 			.setBaseArrayLayer(0)
 			.setLevelCount(1)
-			.setAspectMask(properties.aspect_flags);
+			.setAspectMask(view_properties.aspect_flags);
 
-		subresource.setLayerCount(properties.texture_type == egkr::texture::type::cube ? 6 : 1);
+		subresource.setLayerCount(view_properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 		vk::ImageViewCreateInfo image_view_info{};
 		image_view_info
 			.setImage(image_)
-			.setFormat(properties.image_format)
+			.setFormat(view_properties.image_format)
 			.setSubresourceRange(subresource);
 
-		switch (properties.texture_type)
+		switch (view_properties.texture_type)
 		{
 		case egkr::texture::type::texture_2d:
 			image_view_info.setViewType(vk::ImageViewType::e2D);
@@ -79,8 +79,8 @@ namespace egkr
 	{
 	}
 
-	vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
-		: texture(properties), context_{ context }, width_{ width_ }, height_{ height_ }
+	vulkan_texture::vulkan_texture(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& texture_properties)
+		: texture(texture_properties), context_{ context }, width_{ width }, height_{ height }
 	{
 
 	}
@@ -90,23 +90,23 @@ namespace egkr
 		free();
 	}
 
-	void vulkan_texture::create(const properties& properties)
+	void vulkan_texture::create(const properties& texture_properties)
 	{
 		ZoneScoped;
 
 		vk::ImageCreateInfo image_info{};
 
 		image_info
-			.setExtent({ width_, height_, properties.depth })
-			.setFormat(properties.image_format)
-			.setMipLevels(properties.mip_levels)
-			.setTiling(properties.tiling)
+			.setExtent({ width_, height_, texture_properties.depth })
+			.setFormat(texture_properties.image_format)
+			.setMipLevels(texture_properties.mip_levels)
+			.setTiling(texture_properties.tiling)
 			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setUsage(properties.usage)
-			.setSamples(properties.samples)
-			.setSharingMode(properties.sharing_mode);
+			.setUsage(texture_properties.usage)
+			.setSamples(texture_properties.samples)
+			.setSharingMode(texture_properties.sharing_mode);
 
-		switch (properties.texture_type)
+		switch (texture_properties.texture_type)
 		{
 		case egkr::texture::type::texture_2d:
 		case egkr::texture::type::cube:
@@ -116,12 +116,12 @@ namespace egkr
 			break;
 		}
 
-		if (properties.texture_type == egkr::texture::type::cube)
+		if (texture_properties.texture_type == egkr::texture::type::cube)
 		{
 			image_info.setFlags(vk::ImageCreateFlagBits::eCubeCompatible);
 		}
 
-		image_info.setArrayLayers(properties.texture_type == egkr::texture::type::cube ? 6 : 1);
+		image_info.setArrayLayers(texture_properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 		image_ = context_->device.logical_device.createImage(image_info, context_->allocator);
 		if (image_ == vk::Image{})
@@ -130,7 +130,7 @@ namespace egkr
 		}
 
 		const auto memory_requirements = context_->device.logical_device.getImageMemoryRequirements(image_);
-		auto memory_type = context_->device.find_memory_index(memory_requirements.memoryTypeBits, properties.memory_properties);
+		auto memory_type = context_->device.find_memory_index(memory_requirements.memoryTypeBits, texture_properties.memory_properties);
 		if (memory_type == invalid_32_id)
 		{
 			LOG_ERROR("Required memory type not found");
@@ -146,17 +146,17 @@ namespace egkr
 		//TODO conigurable memory offset
 		context_->device.logical_device.bindImageMemory(image_, memory_, 0);
 
-		create_view(properties);
+		create_view(texture_properties);
 
 	}
 
-	bool vulkan_texture::populate(const egkr::texture::properties& properties, const uint8_t* texture_data)
+	bool vulkan_texture::populate(const egkr::texture::properties& texture_properties, const uint8_t* texture_data)
 	{
 		ZoneScoped;
 
 		if (texture_data)
 		{
-			vk::DeviceSize image_size = properties.width * properties.height * properties.channel_count * (properties.texture_type == egkr::texture::type::cube ? 6 : 1);
+			vk::DeviceSize image_size = texture_properties.width * texture_properties.height * texture_properties.channel_count * (texture_properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
 			auto image_format = vk::Format::eR8G8B8A8Unorm;
 
@@ -167,7 +167,7 @@ namespace egkr
 				.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment,
 				.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 				.aspect_flags = vk::ImageAspectFlagBits::eColor,
-				.texture_type = properties.texture_type
+				.texture_type = texture_properties.texture_type
 			};
 			create(image_properties);
 
@@ -192,7 +192,7 @@ namespace egkr
 		vk::ImageAspectFlags aspect;
 		vk::Format format;
 
-		if ((uint32_t)(properties_.flags & egkr::texture::flags::depth) != 0)
+		if ((uint32_t)(properties_.texture_flags & egkr::texture::flags::depth) != 0)
 		{
 			usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 			aspect = vk::ImageAspectFlagBits::eDepth;
@@ -206,7 +206,7 @@ namespace egkr
 		}
 
 		{
-			const vulkan_texture::properties properties
+			const vulkan_texture::properties texture_properties
 			{
 				.image_format = format,
 				.tiling = vk::ImageTiling::eOptimal,
@@ -214,7 +214,7 @@ namespace egkr
 				.memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 				.aspect_flags = aspect,
 			};
-			create(properties);
+			create(texture_properties);
 
 			increment_generation();
 
@@ -307,7 +307,7 @@ namespace egkr
 
 		destroy();
 
-		const vulkan_texture::properties properties
+		const vulkan_texture::properties texture_properties
 		{
 			.image_format = channel_count_to_format(properties_.channel_count, vk::Format::eR8G8B8A8Unorm),
 			.tiling = vk::ImageTiling::eOptimal,
@@ -318,9 +318,9 @@ namespace egkr
 		width_ = width;
 		height_ = height;
 
-		create(properties);
+		create(texture_properties);
 
-		create_view(properties);
+		create_view(texture_properties);
 
 		increment_generation();
 		return true;
@@ -346,7 +346,7 @@ namespace egkr
 				logical_device.freeMemory(memory_, context_->allocator);
 				memory_ = VK_NULL_HANDLE;
 			}
-			if ((int)(properties_.flags & egkr::texture::flags::is_wrapped) == 0)
+			if ((int)(properties_.texture_flags & egkr::texture::flags::is_wrapped) == 0)
 			{
 
 				if (image_)
@@ -533,8 +533,8 @@ namespace egkr
 		}
 	}
 
-	vulkan_texture_map::vulkan_texture_map(const vulkan_context* context, const egkr::texture_map::properties& properties)
-		: egkr::texture_map(properties), context_{ context }
+	vulkan_texture_map::vulkan_texture_map(const vulkan_context* context, const egkr::texture_map::properties& map_properties)
+		: egkr::texture_map(map_properties), context_{ context }
 	{}
 
 	void vulkan_texture_map::acquire()
@@ -561,9 +561,9 @@ namespace egkr
 		if (context_)
 		{
 			context_->device.logical_device.waitIdle();
-			if (texture)
+			if (map_texture)
 			{
-				texture->destroy();
+				map_texture->destroy();
 			}
 
 			if (sampler)

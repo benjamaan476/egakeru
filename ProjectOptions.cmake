@@ -15,6 +15,9 @@ macro(egakeru_supports_sanitizers)
   else()
     set(SUPPORTS_ASAN ON)
   endif()
+
+  set(SUPPORTS_ASAN OFF)
+  set(SUPPORTS_UBSAN OFF)
 endmacro()
 
 macro(egakeru_setup_options)
@@ -55,7 +58,7 @@ macro(egakeru_setup_options)
     option(egakeru_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
     option(egakeru_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
     option(egakeru_ENABLE_CPPCHECK "Enable cpp-check analysis" ON)
-    option(egakeru_ENABLE_PCH "Enable precompiled headers" ON)
+    option(egakeru_ENABLE_PCH "Enable precompiled headers" OFF)
     option(egakeru_ENABLE_CACHE "Enable ccache" OFF)
   endif()
 

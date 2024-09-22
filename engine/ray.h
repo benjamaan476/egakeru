@@ -24,7 +24,7 @@ namespace egkr
 			float distance;
 		};
 
-		struct result
+		struct hit_result
 		{
 			egkr::vector <hit> hits;
 			operator bool() const { return !hits.empty(); }
@@ -33,9 +33,9 @@ namespace egkr
 		static ray create(const float3& origin, const float3& direction);
 		static ray from_screen(const int2& screen_position, const float4& viewport_rect, const float3& origin, const float4x4& view, const float4x4& projection);
 
-		std::optional<float3> aabb(const extent3d& extents) const;
-		std::optional<float> oriented_extents(const extent3d& bb, const float4x4& model) const;
-		std::optional<std::tuple<float3, float>> plane(const std::optional<egkr::plane>& plane) const;
-		std::optional<std::tuple<float3, float>> disk(const std::optional<egkr::plane>& plane, const float3& center, float min_radius, float max_radius) const;
+		[[nodiscard]] std::optional<float3> aabb(const extent3d& extents) const;
+		[[nodiscard]] std::optional<float> oriented_extents(const extent3d& bb, const float4x4& model) const;
+		[[nodiscard]] std::optional<std::tuple<float3, float>> plane(const std::optional<egkr::plane>& plane) const;
+		[[nodiscard]] std::optional<std::tuple<float3, float>> disk(const std::optional<egkr::plane>& plane, const float3& center, float min_radius, float max_radius) const;
 	};
 }

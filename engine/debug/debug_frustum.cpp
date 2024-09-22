@@ -58,7 +58,7 @@ namespace egkr::debug
 
 	void debug_frustum::recalculate_lines(const frustum& frustum)
 	{
-		const float half_v = frustum.far * std::tanf(0.5f * frustum.fov);
+		const float half_v = frustum.far * std::tan(0.5f * frustum.fov);
 		const float half_h = half_v * frustum.aspect;
 
 		const auto half_right = half_h * frustum.right;

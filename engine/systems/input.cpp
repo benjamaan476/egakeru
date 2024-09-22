@@ -41,9 +41,9 @@ namespace egkr
 						}
 						else if (binding->type == keymap::entry_bind_type::hold)
 						{
-							if (binding->callback && check_modifiers(binding->modifier))
+							if (binding->callback && check_modifiers(binding->keymap_modifier))
 							{
-								binding->callback((key)i, binding->type, binding->modifier, binding->user_data);
+								binding->callback((key)i, binding->type, binding->keymap_modifier, binding->user_data);
 							}
 						}
 						binding = binding->next;
@@ -129,16 +129,16 @@ namespace egkr
 					}
 					else if (pressed && binding->type == keymap::entry_bind_type::press)
 					{
-						if (binding->callback && check_modifiers(binding->modifier))
+						if (binding->callback && check_modifiers(binding->keymap_modifier))
 						{
-							binding->callback(key, binding->type, binding->modifier, binding->user_data);
+							binding->callback(key, binding->type, binding->keymap_modifier, binding->user_data);
 						}
 					}
 					else if (!pressed && binding->type == keymap::entry_bind_type::release)
 					{
-						if (binding->callback && check_modifiers(binding->modifier))
+						if (binding->callback && check_modifiers(binding->keymap_modifier))
 						{
-							binding->callback(key, binding->type, binding->modifier, binding->user_data);
+							binding->callback(key, binding->type, binding->keymap_modifier, binding->user_data);
 						}
 					}
 

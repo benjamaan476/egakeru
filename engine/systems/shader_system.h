@@ -42,7 +42,7 @@ namespace egkr
 		static void set_sampler(std::string_view sampler_name, const texture* texture);
 		static void set_sampler(uint32_t sampler_id, const texture* texture);
 
-		static void bind_instance(uint32_t isntance_id);
+		static void bind_instance(uint32_t instance_id);
 
 	private:
 		static uint32_t new_shader_id();

@@ -11,9 +11,9 @@ namespace egkr
 {
 	struct mesh_load_parameters
 	{
-		std::string resource_name{};
-		mesh::shared_ptr mesh{};
-		resource::resource::shared_ptr mesh_resource{};
+		std::string resource_name;
+		mesh::shared_ptr loaded_mesh;
+		resource::resource::shared_ptr mesh_resource;
 	};
 
 	static void load_job_success(void* params)
@@ -24,7 +24,7 @@ namespace egkr
 
 		for (const auto& geo : *geo_configs)
 		{
-			mesh_params->mesh->add_geometry(geometry_system::acquire(geo));
+			mesh_params->loaded_mesh->add_geometry(geometry_system::acquire(geo));
 			auto local_extents = geo.extents;
 			vertex_3d* vertices = (vertex_3d*)geo.vertices;
 
@@ -57,7 +57,7 @@ namespace egkr
 				}
 			}
 
-			auto& global_extents = mesh_params->mesh->extents();
+			auto& global_extents = mesh_params->loaded_mesh->extents();
 
 				if (local_extents.min.x < global_extents.min.x)
 				{
@@ -85,7 +85,7 @@ namespace egkr
 				}
 		}
 
-		mesh_params->mesh->increment_generation();
+		mesh_params->loaded_mesh->increment_generation();
 		LOG_TRACE("Successfully loaded mesh '{}'", mesh_params->resource_name);
 
 		resource_system::unload(mesh_params->mesh_resource);
@@ -123,10 +123,9 @@ namespace egkr
 	//	return mesh;
 	//}
 
-	mesh::mesh(const configuration& configuration)
-		: resource(0, 0, ""), configuration_{configuration}
+	mesh::mesh(const configuration& mesh_configuration)
+		: resource(0, 0, ""), configuration_{mesh_configuration}, unique_id_(identifier::acquire_unique_id(this))
 	{
-		unique_id_ = identifier::acquire_unique_id(this);
 	}
 
 	mesh::~mesh()
@@ -206,7 +205,7 @@ namespace egkr
 
 	void mesh::load_from_resource(std::string_view name)
 	{
-		mesh_load_parameters parameters{ .resource_name = name.data(), .mesh = shared_from_this(), .mesh_resource = {}};
+		mesh_load_parameters parameters{ .resource_name = name.data(), .loaded_mesh = shared_from_this(), .mesh_resource = {}};
 
 		auto info = job_system::job_system::create_job(load_job_start, load_job_success, load_job_fail, &parameters, sizeof(mesh_load_parameters), sizeof(mesh_load_parameters));
 		job_system::job_system::submit(info);

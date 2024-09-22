@@ -15,6 +15,7 @@ target_link_libraries(
           egakeru::egakeru_warnings  
           Vulkan::Vulkan
           Vulkan::Headers
+          OpenAL::OpenAL
           engine)
 
 target_link_system_libraries(
@@ -24,14 +25,12 @@ target_link_system_libraries(
           glfw
           glm::glm
 )
-target_link_libraries(sandbox PRIVATE ${OPENAL_LIBRARY})
-
 target_include_directories(sandbox PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
 
 set_target_properties(sandbox PROPERTIES LINK_DEPENDS $<TARGET_FILE:engine>)
 
-add_custom_command(
-    TARGET sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:sandbox> $<TARGET_FILE_DIR:sandbox>
-    COMMAND_EXPAND_LISTS
-  )
+# add_custom_command(
+#     TARGET sandbox POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:sandbox> $<TARGET_FILE_DIR:sandbox>
+#     COMMAND_EXPAND_LISTS
+#   )

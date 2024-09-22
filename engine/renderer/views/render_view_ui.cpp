@@ -10,8 +10,8 @@
 
 namespace egkr
 {
-	render_view_ui::render_view_ui(const configuration& configuration)
-		:render_view(configuration)
+	render_view_ui::render_view_ui(const configuration& view_configuration)
+		:render_view(view_configuration)
 	{
 	}
 
@@ -52,12 +52,12 @@ namespace egkr
 
 	render_view_packet render_view_ui::on_build_packet(void* data, viewport* viewport)
 	{
-		ui_packet_data* ui_data = (ui_packet_data*)data;
+		auto* ui_data = (ui_packet_data*)data;
 
 		render_view_packet packet{};
-		packet.render_view = this;
+		packet.view = this;
 		packet.view_matrix = view_;
-		packet.viewport = viewport;
+		packet.view_viewport = viewport;
 		packet.extended_data = new ui_packet_data(*ui_data);
 
 		for (const auto& msh : ui_data->mesh_data.meshes)
@@ -66,7 +66,7 @@ namespace egkr
 			{
 				for (const auto& geo : mesh->get_geometries())
 				{
-					packet.render_data.emplace_back(geo, mesh);
+					packet.render_packet_data.emplace_back(geo, mesh);
 				}
 			}
 		}
@@ -76,19 +76,19 @@ namespace egkr
 
 	bool render_view_ui::on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const
 	{
-		renderer->set_active_viewport(render_view_packet->viewport);
+		renderer->set_active_viewport(render_view_packet->view_viewport);
 
-		for (auto& pass : renderpasses_)
+		for (const auto& pass : renderpasses_)
 		{
 			pass->begin(pass->get_render_targets()[frame_data.render_target_index].get());
 
 			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_->get_id(), frame_data, render_view_packet->viewport->projection, render_view_packet->view_matrix, {}, {}, 0);
+			material_system::apply_global(shader_->get_id(), frame_data, render_view_packet->view_viewport->projection, render_view_packet->view_matrix, {}, {}, 0);
 
-			for (auto render_data : render_view_packet->render_data)
+			for (const auto& render_data : render_view_packet->render_packet_data)
 			{
-				auto m = render_data.geometry->get_material();
+				auto m = render_data.render_geometry->get_material();
 
 				bool needs_update = (m->get_render_frame() != frame_data.frame_number) || m->get_draw_index() != frame_data.draw_index;
 
@@ -100,7 +100,7 @@ namespace egkr
 				{
 					material_system::apply_local(m, transform->get_world());
 				}
-				render_data.geometry->draw();
+				render_data.render_geometry->draw();
 			}
 
 			auto* texts = (ui_packet_data*)render_view_packet->extended_data;
@@ -111,7 +111,7 @@ namespace egkr
 					shader_system::bind_instance(text->get_id());
 
 					auto atlas = text->get_data()->atlas;
-					if (atlas->texture->get_generation() == invalid_32_id)
+					if (atlas->map_texture->get_generation() == invalid_32_id)
 					{
 						continue;
 					}

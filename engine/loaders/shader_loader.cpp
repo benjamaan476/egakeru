@@ -18,15 +18,13 @@ namespace egkr
 	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
 
-		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data(), ".shadercfg");
+		std::string filename = std::format("{}/{}{}", base_path, name, ".shadercfg");
 
 		const auto properties = load_configuration_file(filename);
 
 		resource::properties resource_properties{};
-		resource_properties.type = get_loader_type();
+		resource_properties.resource_type = get_loader_type();
 		resource_properties.name = name;
 		resource_properties.full_path = filename;
 
@@ -45,7 +43,7 @@ namespace egkr
 	shader::properties shader_loader::load_configuration_file(std::string_view path)
 	{
 		shader::properties properties{};
-		properties.cull_mode = shader::cull_mode::back;
+		properties.shader_cull_mode = shader::cull_mode::back;
 		auto handle = filesystem::open(path, file_mode::read, false);
 		if (!handle.is_valid)
 		{
@@ -92,14 +90,14 @@ namespace egkr
 			{
 				if (std::stoi(value))
 				{
-					properties.flags |= shader::flags::depth_write;
+					properties.shader_flags |= shader::flags::depth_write;
 				}
 			}
 			else if (variable_name == "depth_test")
 			{
 				if (std::stoi(value))
 				{
-					properties.flags |= shader::flags::depth_test;
+					properties.shader_flags |= shader::flags::depth_test;
 				}
 			}
 			else if (variable_name == "stages")
@@ -131,7 +129,7 @@ namespace egkr
 						LOG_ERROR("Unrecognised shader type: {}", stage);
 						continue;
 					}
-					properties.stages.push_back(shader_stage);
+					properties.shader_stages.push_back(shader_stage);
 					value = value.substr(offset + 1);
 					offset = value.find_first_of(',');
 				}
@@ -159,7 +157,7 @@ namespace egkr
 					LOG_ERROR("Unrecognised shader type: {}", stage);
 					continue;
 				}
-				properties.stages.push_back(shader_stage);
+				properties.shader_stages.push_back(shader_stage);
 
 			}
 			else if (variable_name == "stagefiles")
@@ -183,15 +181,15 @@ namespace egkr
 			{
 				if (value == "front")
 				{
-					properties.cull_mode = shader::cull_mode::front;
+					properties.shader_cull_mode = shader::cull_mode::front;
 				}
 				else if (value == "back")
 				{
-					properties.cull_mode = shader::cull_mode::back;
+					properties.shader_cull_mode = shader::cull_mode::back;
 				}
 				else if (value == "both")
 				{
-					properties.cull_mode = shader::cull_mode::both;
+					properties.shader_cull_mode = shader::cull_mode::both;
 				}
 			}
 			else if (variable_name == "topology")
@@ -380,15 +378,15 @@ namespace egkr
 
 					if (scope == "0")
 					{
-						uniform.scope = shader::scope::global;
+						uniform.shader_scope = shader::scope::global;
 					}
 					else if (scope == "1")
 					{
-						uniform.scope = shader::scope::instance;
+						uniform.shader_scope = shader::scope::instance;
 					}
 					else if (scope == "2")
 					{
-						uniform.scope = shader::scope::local;
+						uniform.shader_scope = shader::scope::local;
 					}
 					else
 					{

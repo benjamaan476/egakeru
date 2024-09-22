@@ -10,14 +10,14 @@ namespace egkr
 {
 	static font_system::unique_ptr font_system_{};
 
-	font_system* font_system::create(const configuration& configuration)
+	font_system* font_system::create(const configuration& font_configuration)
 	{
-		font_system_ = std::make_unique<font_system>(configuration);
+		font_system_ = std::make_unique<font_system>(font_configuration);
 		return font_system_.get();
 	}
 
-	font_system::font_system(const configuration& configuration)
-		: configuration_{ configuration }
+	font_system::font_system(const configuration& font_configuration)
+		: configuration_{ font_configuration }
 	{}
 
 	bool font_system::init()
@@ -62,7 +62,7 @@ namespace egkr
 	bool font_system::load_system_font(const system_font_configuration& configuration)
 	{
 		auto system_font_resource = resource_system::load(configuration.resource_name, resource::type::system_font, nullptr);
-		font::system_font_resource_data* data = (font::system_font_resource_data*)system_font_resource->data;
+		auto* data = (font::system_font_resource_data*)system_font_resource->data;
 
 		for (const auto& face : data->fonts)
 		{
@@ -113,8 +113,8 @@ namespace egkr
 		auto resource = resource_system::load(configuration.resource_name, resource::type::bitmap_font, nullptr);
 		font.loaded_resource = resource;
 		font.resource_data = (font::bitmap_font_resource_data*)(font.loaded_resource->data);
-		bool result = setup_font_data(font.resource_data->data);
-		font.resource_data->data.atlas->texture = texture_system::acquire(font.resource_data->pages[0].file);
+		bool result = setup_font_data(font.resource_data->font_data);
+		font.resource_data->font_data.atlas->map_texture = texture_system::acquire(font.resource_data->pages[0].file);
 
 
 		auto id = font_system_->registered_bitmap_fonts_.size();
@@ -148,13 +148,13 @@ namespace egkr
 	}
 
 
-	bool font_system::verify_atlas(std::shared_ptr<font::data> data, const std::string& text)
+	bool font_system::verify_atlas(const std::shared_ptr<font::data>& data, const std::string& text)
 	{
-		if (data->type == font::type::bitmap)
+		if (data->font_type == font::type::bitmap)
 		{
 			return true;
 		}
-		else if (data->type == font::type::system)
+		else if (data->font_type == font::type::system)
 		{
 			if(!font_system_->registered_system_fonts_by_name_.contains(data->face))
 			{
@@ -217,7 +217,7 @@ namespace egkr
 	{
 		font::data variant
 		{
-			.type = font::type::system,
+			.font_type = font::type::system,
 			.face = font_name,
 			.size = size,
 			.atlas_size_x = 1024,
@@ -235,7 +235,7 @@ namespace egkr
 			internal->codepoint.push_back(i + 32);
 		}
 		auto font_texture_name = std::format("__system_text_atlas_{}_i{}_sz{}__", font_name, lookup.index, size);
-		variant.atlas->texture = texture_system::acquire_writable(font_texture_name, variant.atlas_size_x, variant.atlas_size_y, 4, true);
+		variant.atlas->map_texture = texture_system::acquire_writable(font_texture_name, variant.atlas_size_x, variant.atlas_size_y, 4, true);
 		internal->scale = stbtt_ScaleForPixelHeight(&lookup.info, (float)size);
 
 		int32_t ascent{};
@@ -294,7 +294,7 @@ namespace egkr
 			rgba_pixels[i * 4 + 3] = pixels[i];
 		}
 
-		variant.atlas->texture->write_data(0, pack_image_size * 4, rgba_pixels);
+		variant.atlas->map_texture->write_data(0, pack_image_size * 4, rgba_pixels);
 
 		free(pixels);
 		free(rgba_pixels);

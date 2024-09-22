@@ -18,11 +18,8 @@ namespace egkr
 	{
 		//bianry file needs full filename
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s" };
 
-		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data());
-
+		std::string filename = std::format("{}/{}", base_path, name);
 
 		auto handle = filesystem::open(filename, file_mode::read, true);
 		if (!handle.is_valid)
@@ -35,7 +32,7 @@ namespace egkr
 
 		resource::properties properties
 		{
-			.type = get_loader_type(),
+			.resource_type = get_loader_type(),
 			.name = name.data(),
 			.full_path = name.data(),
 			.data = new(binary_resource_properties)

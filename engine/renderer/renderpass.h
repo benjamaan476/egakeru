@@ -20,9 +20,9 @@ namespace egkr
 
 		struct configuration
 		{
-			std::string name{};
+			std::string name;
 			float4 clear_colour{};
-			clear_flags clear_flags{};
+			clear_flags pass_clear_flags{};
 			float depth{};
 			uint32_t stencil{};
 			render_target::configuration target{};

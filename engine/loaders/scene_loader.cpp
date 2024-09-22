@@ -30,10 +30,8 @@ namespace egkr
 	resource::shared_ptr scene_loader::load(std::string_view name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s" };
 
-		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data());
+		std::string filename = std::format("{}/{}", base_path, name);
 
 		auto handle = filesystem::open(filename, file_mode::read, false);
 		if (!handle.is_valid)
@@ -46,7 +44,7 @@ namespace egkr
 
 		resource::properties properties
 		{
-			.type = resource::type::scene,
+			.resource_type = resource::type::scene,
 			.name = name.data(),
 			.full_path = filename,
 		};

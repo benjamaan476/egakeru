@@ -10,8 +10,8 @@ namespace egkr
 		return std::make_shared<swapchain>(context, configuration);
 	}
 
-	swapchain::swapchain(vulkan_context* context, const configuration& configuration)
-		: context_{context}, configuration_{configuration}
+	swapchain::swapchain(vulkan_context* context, const configuration& swapchain_configuration)
+		: context_{context}, configuration_{swapchain_configuration}
 	{
 		create();
 	}
@@ -118,7 +118,7 @@ namespace egkr
 		auto present_mode = choose_swapchain_present_mode(swapchain_support.present_modes);
 		extent_ = choose_swapchain_extent(swapchain_support.capabilities);
 
-		image_count_ = (uint8_t)swapchain_support.capabilities.minImageCount + 1;
+		image_count_ = (uint8_t)swapchain_support.capabilities.minImageCount;
 		max_frames_in_flight_ = image_count_ - 1;
 		render_targets_.resize(image_count_);
 		depth_attachments_.resize(image_count_);
@@ -187,7 +187,7 @@ namespace egkr
 		return available_formats[0];
 	}
 
-	vk::PresentModeKHR swapchain::choose_swapchain_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes)
+	vk::PresentModeKHR swapchain::choose_swapchain_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) const
 	{
 		vk::PresentModeKHR present_mode{};
 		if ((configuration_.flags & renderer_backend::flags::vsync) != 0)
@@ -232,10 +232,10 @@ namespace egkr
 		}
 	}
 
-	std::vector<vk::Image> swapchain::get_swapchain_images(vk::SwapchainKHR swapchain)
+	std::vector<vk::Image> swapchain::get_swapchain_images(vk::SwapchainKHR vk_swapchain)
 	{
 		std::vector<vk::Image> swapchain_images;
-		auto images = context_->device.logical_device.getSwapchainImagesKHR(swapchain);
+		auto images = context_->device.logical_device.getSwapchainImagesKHR(vk_swapchain);
 		image_count_ = (uint8_t)images.size();
 		for (const auto& image : images)
 		{

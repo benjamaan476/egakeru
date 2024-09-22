@@ -10,7 +10,7 @@
 
 namespace egkr
 {
-	render_view_editor::render_view_editor(const configuration& configuration) : render_view(configuration)
+	render_view_editor::render_view_editor(const configuration& view_configuration) : render_view(view_configuration)
 	{}
 
 	bool render_view_editor::on_create()
@@ -47,11 +47,11 @@ namespace egkr
 	{
 		render_view_packet packet{};
 
-		packet.render_view = this;
+		packet.view = this;
 		packet.view_matrix = camera_->get_view();
 		packet.view_position = camera_->get_position();
 		packet.ambient_colour = ambient_colour_;
-		packet.viewport = viewport;
+		packet.view_viewport = viewport;
 		gizmo_ = *(editor::gizmo*)data;
 
 		return packet;
@@ -59,9 +59,9 @@ namespace egkr
 
 	bool render_view_editor::on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const
 	{
-		renderer->set_active_viewport(render_view_packet->viewport);
+		renderer->set_active_viewport(render_view_packet->view_viewport);
 
-		for (auto& pass : renderpasses_)
+		for (const auto& pass : renderpasses_)
 		{
 			pass->begin(pass->get_render_targets()[frame_data.render_target_index].get());
 
@@ -71,7 +71,7 @@ namespace egkr
 			bool needs_update = (frame_data.frame_number != colour_shader->get_frame_number()) || (frame_data.draw_index != colour_shader->get_draw_index());
 			if (needs_update)
 			{
-				shader_system::set_uniform(locations_.projection, &render_view_packet->viewport->projection);
+				shader_system::set_uniform(locations_.projection, &render_view_packet->view_viewport->projection);
 				shader_system::set_uniform(locations_.view, &render_view_packet->view_matrix);
 			}
 			shader_system::apply_global(needs_update);
@@ -84,7 +84,9 @@ namespace egkr
 			gizmo_.get_selected_model()
 				.and_then([&](float4x4 model) -> std::optional<float4x4>
 						  {
-							  float3 model_scale, translation, skew;
+							  float3 model_scale;
+							  float3 translation;
+							  float3 skew;
 							  float4 perspective;
 							  glm::quat rotation;
 							  glm::decompose(model, model_scale, rotation, translation, skew, perspective);

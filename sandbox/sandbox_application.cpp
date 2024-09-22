@@ -130,18 +130,18 @@ void sandbox_application::prepare_render_packet(egkr::render_packet* render_pack
 			meshes_[0]->rotate(q);
 
 			meshes_[1]->rotate(q);*/
-			render_packet->render_views[egkr::render_view::type::world].viewport = &world_view;
+			render_packet->render_views[egkr::render_view::type::world].view_viewport = &world_view;
 		}
 
 	if (test_lines_)
 	{
-		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .geometry = test_lines_->get_geometry(), .transform = test_lines_});
+		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .render_geometry = test_lines_->get_geometry(), .transform = test_lines_});
 	}
 
 	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_, &world_view);
 	auto cam = egkr::camera_system::get_default();
 	const auto& pos = cam->get_position();
-	std::string text = std::format("Camera pos: {} {} {}\n Mouse pos: {} {}", pos.x, pos.y, pos.z, mouse_pos_.x, mouse_pos_.y);
+	std::string text = std::format("Camera pos: {} {} {}\n Mouse pos: {} {}", (double)pos.x, (double)pos.y, (double)pos.z, mouse_pos_.x, mouse_pos_.y);
 
 	more_test_text_->set_text(text);
 
@@ -165,22 +165,22 @@ void sandbox_application::render(egkr::render_packet* render_packet, egkr::frame
 
 	{
 		auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
-		world_view_packet.viewport = &world_view;
-		world_view_packet.render_view->on_render(&world_view_packet, frame_data);
+		world_view_packet.view_viewport = &world_view;
+		world_view_packet.view->on_render(&world_view_packet, frame_data);
 
 		auto& editor_view_packet = render_packet->render_views[egkr::render_view::type::editor];
-		editor_view_packet.render_view->on_render(&editor_view_packet, frame_data);
+		editor_view_packet.view->on_render(&editor_view_packet, frame_data);
 	}
 	egkr::renderer->end(frame_data);
 
 	egkr::renderer->begin(frame_data);
 	{
 		auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
-		world_view_packet.viewport = &world_view2;
-		world_view_packet.render_view->on_render(&world_view_packet, frame_data);
+		world_view_packet.view_viewport = &world_view2;
+		world_view_packet.view->on_render(&world_view_packet, frame_data);
 
 		auto& ui_view_packet = render_packet->render_views[egkr::render_view::type::ui];
-		ui_view_packet.render_view->on_render(&ui_view_packet, frame_data);
+		ui_view_packet.view->on_render(&ui_view_packet, frame_data);
 	}
 	egkr::renderer->end(frame_data);
 
@@ -198,7 +198,7 @@ bool sandbox_application::resize(uint32_t width, uint32_t height)
 		{
 			return false;
 		}
-		float half_width = width / 2.f;
+		float half_width = (float)width / 2.f;
 		world_view.resize({ half_width + 20, 20, half_width - 40, height - 40 });
 		ui_view.resize({ 0, 0, width, height });
 		world_view2.resize({ 20, 20, half_width - 40, height - 40 });
@@ -216,7 +216,7 @@ bool sandbox_application::boot()
 		{
 			.name = "Renderpass.Builtin.Skybox",
 			.clear_colour = {0, 0, 0.2F, 1.F},
-			.clear_flags = egkr::renderpass::clear_flags::colour,
+			.pass_clear_flags = egkr::renderpass::clear_flags::colour,
 			.depth = 1.F,
 			.stencil = 0
 		};
@@ -225,8 +225,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::colour,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::dont_care,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::dont_care,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = false
 		};
 
@@ -236,7 +236,7 @@ bool sandbox_application::boot()
 		{
 			.name = "Renderpass.Builtin.World",
 			.clear_colour = {0, 0, 0.2F, 1.F},
-			.clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
+			.pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
 			.depth = 1.F,
 			.stencil = 0
 		};
@@ -245,8 +245,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::colour,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::load,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::load,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = false
 		};
 
@@ -255,8 +255,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::depth,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::dont_care,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::dont_care,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = false
 		};
 
@@ -264,7 +264,7 @@ bool sandbox_application::boot()
 		renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
 
 		egkr::render_view::configuration opaque_world{};
-		opaque_world.type = egkr::render_view::type::world;
+		opaque_world.view_type = egkr::render_view::type::world;
 		opaque_world.width = width_;
 		opaque_world.height = height_;
 		opaque_world.name = "world-opaque";
@@ -279,7 +279,7 @@ bool sandbox_application::boot()
 		{
 			.name = "Renderpass.Builtin.World",
 			.clear_colour = {0, 0, 0.2F, 1.F},
-			.clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
+			.pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil,
 			.depth = 1.F,
 			.stencil = 0
 		};
@@ -288,8 +288,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::colour,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::load,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::load,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = false
 		};
 
@@ -298,8 +298,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::depth,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::dont_care,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::dont_care,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = false
 		};
 
@@ -307,7 +307,7 @@ bool sandbox_application::boot()
 		renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
 
 		egkr::render_view::configuration opaque_world{};
-		opaque_world.type = egkr::render_view::type::editor;
+		opaque_world.view_type = egkr::render_view::type::editor;
 		opaque_world.width = width_;
 		opaque_world.height = height_;
 		opaque_world.name = "editor";
@@ -322,7 +322,7 @@ bool sandbox_application::boot()
 		{
 			.name = "Renderpass.Builtin.UI",
 			.clear_colour = {0, 0, 0.2F, 1.F},
-			.clear_flags = egkr::renderpass::clear_flags::none,
+			.pass_clear_flags = egkr::renderpass::clear_flags::none,
 			.depth = 1.F,
 			.stencil = 0
 		};
@@ -331,8 +331,8 @@ bool sandbox_application::boot()
 		{
 			.type = egkr::render_target::attachment_type::colour,
 			.source = egkr::render_target::attachment_source::default_source,
-			.load_operation = egkr::render_target::load_operation::load,
-			.store_operation = egkr::render_target::store_operation::store,
+			.load_op = egkr::render_target::load_operation::load,
+			.store_op = egkr::render_target::store_operation::store,
 			.present_after = true
 		};
 
@@ -342,7 +342,7 @@ bool sandbox_application::boot()
 		ui.name = "ui";
 		ui.width = width_;
 		ui.height = height_;
-		ui.type = egkr::render_view::type::ui;
+		ui.view_type = egkr::render_view::type::ui;
 		ui.view_source = egkr::render_view::view_matrix_source::ui_camera;
 		ui.passes.push_back(renderpass_configuration);
 		render_view_configuration_.push_back(ui);
@@ -636,7 +636,7 @@ void sandbox_application::load_scene()
 	egkr::debug::configuration grid_configuration
 	{
 		.name = "debug_grid",
-		.orientation = egkr::debug::orientation::xy,
+		.grid_orientation = egkr::debug::orientation::xy,
 		.tile_count_dim0 = 100,
 		.tile_count_dim1 = 100,
 		.tile_scale = 1,

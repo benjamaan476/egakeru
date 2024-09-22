@@ -9,7 +9,7 @@ namespace egkr::renderpass
 	}
 
 	renderpass::renderpass(const configuration& configuration)
-		: clear_colour_{ configuration.clear_colour }, clear_flags_{ configuration.clear_flags }, depth_{ configuration.depth }, stencil_{ configuration.stencil }
+		: clear_colour_{ configuration.clear_colour }, clear_flags_{ configuration.pass_clear_flags }, depth_{ configuration.depth }, stencil_{ configuration.stencil }
 	{
 		render_targets_[0] = render_target::render_target::create(configuration.target.attachments);
 		render_targets_[1] = render_target::render_target::create(configuration.target.attachments);

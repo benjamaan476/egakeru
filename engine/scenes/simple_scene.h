@@ -73,13 +73,6 @@ namespace egkr
 			std::vector<point_light_scene_configuration> point_lights;
 		};
 
-		struct pending_mesh
-		{
-			mesh::shared_ptr mesh;
-			egkr::vector<geometry::properties> geometries;
-			std::string resource_name;
-		};
-
 		class simple_scene : public transformable
 		{
 		public:
@@ -116,7 +109,7 @@ namespace egkr
 
 			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
 
-			ray::result raycast(const ray& ray);
+			ray::hit_result raycast(const ray& ray);
 
 			std::shared_ptr<transformable> get_transform(uint32_t unique_id) const;
 		private:
@@ -134,7 +127,6 @@ namespace egkr
 			std::shared_ptr<light::directional_light> directional_light_;
 			std::unordered_map<std::string, light::point_light> point_lights_;
 
-			std::queue<pending_mesh> pending_meshes_;
 			std::unordered_map<std::string, mesh::shared_ptr> meshes_;
 
 			std::unordered_map<std::string, egkr::debug::debug_box3d::shared_ptr> debug_boxes_;

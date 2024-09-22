@@ -7,8 +7,8 @@ namespace egkr
 		return viewport(rect, type, fov, near_clip, far_clip);
 	}
 
-	viewport::viewport(const float4& rect, projection_type type, float fov, float near_clip, float far_clip)
-		: viewport_rect(rect), type(type), fov(fov), near_clip(near_clip), far_clip(far_clip)
+	viewport::viewport(const float4& rect, projection_type projection_type, float viewport_fov, float near, float far)
+		: viewport_rect(rect), type(projection_type), fov(viewport_fov), near_clip(near), far_clip(far)
 	{
 
 		update_projection();

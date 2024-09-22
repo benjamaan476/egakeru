@@ -57,11 +57,11 @@ namespace egkr::audio
 	{
 		for (uint32_t i{ 0 }; i < state->channels_.size(); ++i)
 		{
-			if (state->channels_[i].emitter)
+			if (state->channels_[i].audio_emitter)
 			{
-				state->plugin_->set_source_position(i, state->channels_[i].emitter->position);
-				state->plugin_->set_looping(i, state->channels_[i].emitter->looping);
-				state->plugin_->set_source_gain(i, state->channels_[i].emitter->volume * state->master_volume_ * state->channels_[i].volume);
+				state->plugin_->set_source_position(i, state->channels_[i].audio_emitter->position);
+				state->plugin_->set_looping(i, state->channels_[i].audio_emitter->looping);
+				state->plugin_->set_source_gain(i, state->channels_[i].audio_emitter->volume * state->master_volume_ * state->channels_[i].volume);
 			}
 		}
 		return state->plugin_->update();
@@ -95,9 +95,9 @@ namespace egkr::audio
 		for (uint32_t i{ 0 }; i < state->configuration_.audio_channel_count; ++i)
 		{
 			float mix = state->master_volume_ * state->channels_[i].volume;
-			if (state->channels_[i].emitter)
+			if (state->channels_[i].audio_emitter)
 			{
-				mix *= state->channels_[i].emitter->volume;
+				mix *= state->channels_[i].audio_emitter->volume;
 			}
 
 			state->plugin_->set_source_gain(i, mix);
@@ -115,9 +115,9 @@ namespace egkr::audio
 	{
 		state->channels_[channel_id].volume = volume;
 		float mix = state->master_volume_ * state->channels_[channel_id].volume;
-		if (state->channels_[channel_id].emitter)
+		if (state->channels_[channel_id].audio_emitter)
 		{
-			mix *= state->channels_[channel_id].emitter->volume;
+			mix *= state->channels_[channel_id].audio_emitter->volume;
 		}
 
 		state->plugin_->set_source_gain(channel_id, mix);
@@ -136,7 +136,7 @@ namespace egkr::audio
 		{
 			for (uint8_t i{}; i < state->channels_.size(); ++i)
 			{
-				if (!state->channels_[i].current && !state->channels_[i].emitter)
+				if (!state->channels_[i].current && !state->channels_[i].audio_emitter)
 				{
 					channel_id = i;
 					break;
@@ -150,12 +150,12 @@ namespace egkr::audio
 			return false;
 		}
 
-		state->channels_[channel_id].emitter = nullptr;
+		state->channels_[channel_id].audio_emitter = nullptr;
 		state->channels_[channel_id].current = file;
 
 		state->plugin_->set_source_gain(channel_id, state->channels_[channel_id].volume);
 
-		if (file->type == type::sound_effect)
+		if (file->audio_type == type::sound_effect)
 		{
 			const float3 position = state->plugin_->get_listener_position();
 			state->plugin_->set_source_position(channel_id, position);
@@ -173,7 +173,7 @@ namespace egkr::audio
 		{
 			for (uint8_t i{}; i < state->channels_.size(); ++i)
 			{
-				if (!state->channels_[i].current && !state->channels_[i].emitter)
+				if (!state->channels_[i].current && !state->channels_[i].audio_emitter)
 				{
 					channel_id = i;
 					break;
@@ -187,7 +187,7 @@ namespace egkr::audio
 			return false;
 		}
 
-		state->channels_[channel_id].emitter = emitter;
+		state->channels_[channel_id].audio_emitter = emitter;
 		state->channels_[channel_id].current = emitter->audio_file;
 
 		return state->plugin_->play_on_source(emitter->audio_file, channel_id);
