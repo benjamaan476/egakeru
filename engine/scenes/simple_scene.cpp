@@ -347,15 +347,14 @@ namespace egkr::scene
 		for (const auto& mesh : meshes_ | std::views::values)
 		{
 			const auto world = mesh->get_world();
-			if (ray.oriented_extents(mesh->extents(), world))
+			if (auto distance = ray.oriented_extents(mesh->extents(), world))
 			{
-				const auto distance = ray.oriented_extents(mesh->extents(), world).value();
 				ray::hit hit
 				{
 					.type = ray::hit_type::bounding_box,
 					.unique_id = mesh->unique_id(),
-					.position = ray.origin + ray.direction * distance,
-					.distance = distance,
+					.position = ray.origin + ray.direction * distance.value(),
+					.distance = distance.value(),
 				};
 				result.hits.push_back(hit);
 			}

@@ -28,6 +28,7 @@ namespace egkr
 	vulkan_geometry::~vulkan_geometry()
 	{
 		free();
+		context_ = nullptr;
 	}
 
 	bool vulkan_geometry::populate(const properties& geometry_properties)

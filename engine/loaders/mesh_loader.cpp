@@ -23,7 +23,7 @@ namespace egkr
 		{
 			const auto base_path = get_base_path();
 
-			filename = std::format("{}/{}{}", base_path.data(), name.data(), file_type.extension.data());
+			filename = std::format("{}/{}{}", base_path, name, file_type.extension);
 
 			auto handle = filesystem::open(filename, file_mode::read, file_type.is_binary);
 			if (handle.is_valid)

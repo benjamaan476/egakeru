@@ -118,7 +118,7 @@ namespace egkr
 		auto present_mode = choose_swapchain_present_mode(swapchain_support.present_modes);
 		extent_ = choose_swapchain_extent(swapchain_support.capabilities);
 
-		image_count_ = (uint8_t)swapchain_support.capabilities.minImageCount;
+		image_count_ = (uint8_t)swapchain_support.capabilities.minImageCount + 1;
 		max_frames_in_flight_ = image_count_ - 1;
 		render_targets_.resize(image_count_);
 		depth_attachments_.resize(image_count_);

@@ -143,4 +143,5 @@ namespace egkr
 		LOG_ERROR("Tried to unload a resource without a corresponding loader registered");
 		return false;
 	}
+
 }

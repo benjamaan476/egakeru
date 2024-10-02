@@ -37,8 +37,11 @@ namespace egkr
 	{
 		ZoneScoped;
 
-		context->device.logical_device.freeCommandBuffers(pool, command_buffer_);
-		command_buffer_ = VK_NULL_HANDLE;
+		if(command_buffer_)
+		{
+			context->device.logical_device.freeCommandBuffers(pool, command_buffer_);
+			command_buffer_ = VK_NULL_HANDLE;
+		}
 		state_ = command_buffer_state::not_allocated;
 	}
 

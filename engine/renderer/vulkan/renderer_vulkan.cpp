@@ -193,7 +193,7 @@ namespace egkr
 			requirements.transfer = true;
 			requirements.sampler_anisotropy = true;
 
-			requirements.discrete_gpu = false;
+			requirements.discrete_gpu = true;
 
 			physical_device_queue_family_info queue_info{};
 
@@ -976,7 +976,7 @@ namespace egkr
 	{
 		if (index >= context_.swpchain->get_image_count())
 		{
-			LOG_ERROR("Invalid index");
+			LOG_ERROR("Invalid index: {}", index);
 			return nullptr;
 		}
 		return context_.swpchain->get_render_texture(index);

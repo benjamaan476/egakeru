@@ -11,7 +11,7 @@ namespace egkr
 {
 	struct mesh_load_parameters
 	{
-		std::string resource_name;
+		const char* resource_name;
 		mesh::shared_ptr loaded_mesh;
 		resource::resource::shared_ptr mesh_resource;
 	};
