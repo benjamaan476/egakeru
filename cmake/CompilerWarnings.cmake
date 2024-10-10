@@ -72,6 +72,8 @@ function(
         -Wno-deprecated-copy-with-user-provided-dtor
         -Wno-cast-align
         -Wno-vla-extension
+        -Wno-unsafe-buffer-usage
+        -Wno-cast-function-type-strict
     )
   endif()
 
