@@ -1,10 +1,7 @@
 #include "platform_windows.h"
 
-//#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-// #define GLFW_EXPOSE_NATIVE_WIN32
-// #include <GLFW/glfw3native.h>
 
 #include "systems/input.h"
 #include "event.h"
@@ -30,8 +27,13 @@ namespace egkr
 
 	bool platform_windows::startup(const platform::configuration& platform_configuration)
 	{
-		glfwInit();
+		if(!glfwInit())
+		{
+			LOG_ERROR("Failed to initialise platform");
+			return false;
+		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
 
@@ -48,7 +50,13 @@ namespace egkr
 		glfwSetScrollCallback(window_, &platform_windows::mouse_wheel_callback);
 		glfwSetCursorPosCallback(window_, &platform_windows::mouse_move_callback);
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
-		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
+		glfwSetWindowSizeCallback(window_, [](GLFWwindow*, int width, int height)
+				{
+				event::context context{};
+				context.set(0, (uint32_t)width);
+				context.set(1, (uint32_t)height);
+				event::fire_event(event::code::resize, nullptr, context);
+				});
 
 		startup_time_ = std::chrono::steady_clock::now();
 		is_initialised_ = true;

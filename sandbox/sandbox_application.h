@@ -38,26 +38,26 @@ private:
 
 private:
 
-	egkr::scene::simple_scene::unique_ptr main_scene_{};
+	egkr::scene::simple_scene::unique_ptr main_scene_;
 	egkr::frustum camera_frustum_;
 	bool update_frustum_{true};
-	egkr::skybox::shared_ptr skybox_{};
-	egkr::vector<egkr::mesh::shared_ptr> meshes_{};
-	egkr::vector<egkr::mesh::weak_ptr> ui_meshes_{};
-	egkr::mesh::shared_ptr ui_mesh_{};
-	egkr::text::ui_text::shared_ptr test_text_{};
-	egkr::text::ui_text::shared_ptr more_test_text_{};
+	egkr::skybox::shared_ptr skybox_;
+	egkr::vector<egkr::mesh::shared_ptr> meshes_;
+	egkr::vector<egkr::mesh::weak_ptr> ui_meshes_;
+	egkr::mesh::shared_ptr ui_mesh_;
+	egkr::text::ui_text::shared_ptr test_text_;
+	egkr::text::ui_text::shared_ptr more_test_text_;
 
-	egkr::mesh::shared_ptr sponza_{};
+	egkr::mesh::shared_ptr sponza_;
 	bool scene_loaded_{};
 
-	egkr::debug::debug_box3d::shared_ptr box_{};
-	egkr::debug::debug_grid::shared_ptr grid_{};
-	egkr::debug::debug_frustum::shared_ptr debug_frustum_{};
-	egkr::debug::debug_line::shared_ptr test_lines_{};
-	egkr::debug::debug_box3d::shared_ptr test_boxes_{};
+	egkr::debug::debug_box3d::shared_ptr box_;
+	egkr::debug::debug_grid::shared_ptr grid_;
+	egkr::debug::debug_frustum::shared_ptr debug_frustum_;
+	egkr::debug::debug_line::shared_ptr test_lines_;
+	egkr::debug::debug_box3d::shared_ptr test_boxes_;
 
-	std::shared_ptr<egkr::light::directional_light> dir_light_{};
+	std::shared_ptr<egkr::light::directional_light> dir_light_;
 
 	egkr::application_data application_frame_data{};
 
@@ -66,7 +66,7 @@ private:
 	egkr::audio::file* test_music{};
 	egkr::audio::emitter test_emitter{};
 
-	egkr::editor::gizmo gizmo_{};
+	egkr::editor::gizmo gizmo_;
 	egkr::int2 mouse_pos_{};
 
 	uint32_t hovered_object_id_{};

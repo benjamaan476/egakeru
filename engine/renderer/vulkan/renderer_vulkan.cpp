@@ -193,7 +193,7 @@ namespace egkr
 			requirements.transfer = true;
 			requirements.sampler_anisotropy = true;
 
-			requirements.discrete_gpu = true;
+			requirements.discrete_gpu = false;
 
 			physical_device_queue_family_info queue_info{};
 
