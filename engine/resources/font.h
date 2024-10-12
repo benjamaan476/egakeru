@@ -56,7 +56,7 @@ namespace egkr::font
 
 	struct bitmap_font_resource_data
 	{
-		data font_data{};
+		data data{};
 		egkr::vector<bitmap_font_page> pages;
 	};
 

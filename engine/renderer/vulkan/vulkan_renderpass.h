@@ -32,7 +32,7 @@ namespace egkr
 
 		private:
 			const vulkan_context* context_{};
-			vk::RenderPass renderpass_;
+			vk::RenderPass renderpass_{};
 		};
 	}
 }

@@ -23,6 +23,11 @@ project(
 include(cmake/PreventInSourceBuilds.cmake)
 include(ProjectOptions.cmake)
 
+if(UNIX AND NOT APPLE)
+  set(LINUX TRUE)
+  add_definitions(-DLINUX)
+endif()
+
 
 egakeru_setup_options()
 
@@ -57,7 +62,9 @@ if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)
 endif()
 
-add_definitions(-DENABLE_DEBUG_MACRO)
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+  add_definitions(-DENABLE_DEBUG_MACRO)
+endif()
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)

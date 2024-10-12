@@ -53,7 +53,7 @@ namespace egkr
 		static bool set_debug_obj_name(const vulkan_context* context, VkObjectType type, uint64_t handle, const std::string& name);
 #define SET_DEBUG_NAME(context, type, handle, name) renderer_vulkan::set_debug_obj_name(context, type, handle, name);
 #else
-#define SET_DEBUG_NAME(type, handle, name)
+#define SET_DEBUG_NAME(context, type, handle, name)
 #endif // ENABLE_DEBUG_MACRO
 
 	private:
@@ -78,7 +78,7 @@ namespace egkr
 		platform::shared_ptr platform_;
 
 #ifdef NDEBUG
-		const bool enable_validation_layers_ = true;
+		const bool enable_validation_layers_ = false;
 #else
 		const bool enable_validation_layers_ = true;
 #endif

@@ -12,7 +12,7 @@ namespace egkr
 	mesh_loader::mesh_loader(const loader_properties& properties)
 		:resource_loader{ resource::type::mesh, properties } {}
 
-	resource::shared_ptr mesh_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr mesh_loader::load(const std::string& name, void* /*params*/)
 	{
 		egkr::vector<supported_file_type> file_types{{".esm", mesh_file_type::esm, true}, { ".obj", mesh_file_type::obj, false }};
 
@@ -22,7 +22,6 @@ namespace egkr
 		for (const auto& file_type : file_types)
 		{
 			const auto base_path = get_base_path();
-
 			filename = std::format("{}/{}{}", base_path, name, file_type.extension);
 
 			auto handle = filesystem::open(filename, file_mode::read, file_type.is_binary);
@@ -63,7 +62,7 @@ namespace egkr
 		resource::properties properties{};
 		properties.name = name;
 		properties.full_path = filename;
-		properties.resource_type = resource::type::mesh;
+		properties.type = resource::type::mesh;
 
 		properties.data = new egkr::vector<geometry::properties>();
 		*(egkr::vector<geometry::properties>*)properties.data = resource_data;
@@ -160,11 +159,11 @@ namespace egkr
 				mesh_face_data face{};
 				if (normals.empty() || tex_coords.empty())
 				{
-					sscanf(line_string.data(), "%s %u %u %u", waste, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
+					sscanf(line_string.data(), "%s %d %d %d", waste, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
 				}
 				else
 				{
-					sscanf(line_string.data(), "%s %u/%u/%u %u/%u/%u %u/%u/%u", waste, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index, &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index, &face.vertices[2].normal_index);
+					sscanf(line_string.data(), "%s %d/%d/%d %d/%d/%d %d/%d/%d", waste, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index, &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index, &face.vertices[2].normal_index);
 				}
 
 				auto group_index = groups.size() - 1;
@@ -577,7 +576,8 @@ namespace egkr
 
 	bool mesh_loader::write_emt(std::string_view directory, const material_properties& properties)
 	{
-		std::string filename = std::format("{}/../materials/{}{}", directory.data(), properties.name.data(), ".emt");
+		//TODO: ew
+		std::string filename = std::format("{}/../materials/{}{}", directory, properties.name, ".emt");
 			auto handle = filesystem::open(filename, file_mode::write, false);
 
 			egkr::vector<uint8_t> line(128);

@@ -11,6 +11,7 @@
 #include "renderpass.h"
 #include "render_target.h"
 #include "renderbuffer.h"
+#include <utility>
 
 namespace egkr
 {
@@ -45,7 +46,7 @@ namespace egkr
 
 	struct render_packet
 	{
-		std::unordered_map<render_view::type, render_view_packet> render_views;
+		std::vector<render_view_packet> render_views{std::to_underlying(render_view::type::MAX_TYPE)};
 	};
 
 	class renderer_backend

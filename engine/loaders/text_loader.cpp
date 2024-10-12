@@ -13,11 +13,10 @@ namespace egkr
 	text_loader::text_loader(const loader_properties& properties)
 		: resource_loader{ resource::type::text, properties }
 	{}
-	resource::shared_ptr text_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr text_loader::load(const std::string& name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-
-		const auto filename = std::format("{}/{}", base_path.data(), name.data());
+		std::string filename = std::format("{}/{}", base_path, name);
 
 		auto handle = filesystem::open(filename, file_mode::read, false);
 		if (!handle.is_valid)
@@ -29,7 +28,7 @@ namespace egkr
 		auto line = filesystem::read_all(handle);
 
 		resource::properties properties{};
-		properties.resource_type = get_loader_type();
+		properties.type = get_loader_type();
 		properties.name = name;
 		properties.full_path = name;
 		properties.data = new(binary_resource_properties);

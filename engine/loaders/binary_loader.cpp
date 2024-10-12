@@ -14,12 +14,11 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr binary_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr binary_loader::load(const std::string& name, void* /*params*/)
 	{
 		//bianry file needs full filename
 		const auto base_path = get_base_path();
-
-		std::string filename = std::format("{}/{}", base_path, name);
+		const std::string filename = std::format("{}/{}", base_path, name);
 
 		auto handle = filesystem::open(filename, file_mode::read, true);
 		if (!handle.is_valid)
@@ -32,7 +31,7 @@ namespace egkr
 
 		resource::properties properties
 		{
-			.resource_type = get_loader_type(),
+			.type = get_loader_type(),
 			.name = name.data(),
 			.full_path = name.data(),
 			.data = new(binary_resource_properties)

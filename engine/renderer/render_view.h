@@ -27,12 +27,13 @@ namespace egkr
 	class render_view
 	{
 	public:
-		enum class type
+		enum type : uint8_t
 		{
 			skybox,
 			world,
 			editor,
-			ui
+			ui,
+			MAX_TYPE
 		};
 
 		enum class view_matrix_source

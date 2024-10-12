@@ -1,3 +1,7 @@
 #pragma once
 
-#define API 
+#ifndef LINUX
+#define API __declspec(dllexport)
+#else
+#define API
+#endif

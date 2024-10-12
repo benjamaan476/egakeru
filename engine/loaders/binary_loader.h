@@ -12,7 +12,7 @@ namespace egkr
 
 		explicit binary_loader(const loader_properties& properties);
 
-		resource::shared_ptr load(std::string_view name, void* params) override;
+		resource::shared_ptr load(const std::string& name, void* params) override;
 		bool unload(const resource::shared_ptr& resource) override;
 	};
 }

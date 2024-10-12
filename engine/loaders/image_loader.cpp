@@ -20,13 +20,12 @@ namespace egkr
 
 	}
 
-	resource::shared_ptr image_loader::load(std::string_view name, void* params)
+	resource::shared_ptr image_loader::load(const std::string& name, void* params)
 	{
 		auto* parameters = std::bit_cast<image_resource_parameters*>(params);
 
 		auto base_path = get_base_path();
 
-		// Base path/{name}{extension}
 		stbi_set_flip_vertically_on_load(parameters->flip_y);
 
 		std::string filename;
@@ -35,7 +34,7 @@ namespace egkr
 		auto found{ false };
 		for (const auto& extension : extensions)
 		{
-			filename = std::format("{}/{}{}", base_path.data(), name.data(), extension.data());
+			filename = std::format("{}/{}{}", base_path, name, extension);
 
 			if (filesystem::does_path_exist(filename))
 			{
@@ -86,7 +85,7 @@ namespace egkr
 			}
 
 			resource::properties image_properties{};
-			image_properties.resource_type = resource::type::image;
+			image_properties.type = resource::type::image;
 			image_properties.name = name;
 			image_properties.full_path = filename;
 

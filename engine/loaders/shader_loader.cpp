@@ -15,16 +15,15 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr shader_loader::load(const std::string& name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-
-		std::string filename = std::format("{}/{}{}", base_path, name, ".shadercfg");
+		const std::string filename = std::format("{}/{}{}", base_path, name, ".shadercfg");
 
 		const auto properties = load_configuration_file(filename);
 
 		resource::properties resource_properties{};
-		resource_properties.resource_type = get_loader_type();
+		resource_properties.type = get_loader_type();
 		resource_properties.name = name;
 		resource_properties.full_path = filename;
 

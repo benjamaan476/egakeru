@@ -44,7 +44,7 @@ namespace egkr
 
 		struct properties
 		{
-			type resource_type{};
+			type type{};
 			std::string name{};
 			std::string full_path{};
 			void* data{};

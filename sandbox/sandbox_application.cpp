@@ -396,7 +396,7 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 	auto* application = (sandbox_application*)listener;
 	if (code == egkr::event::code::debug01)
 	{
-		const std::array<std::string_view, 2> materials{ "Random_Stones", "Seamless" };
+		const std::array<std::string, 2> materials{ "random_stones", "seamless" };
 
 		static uint32_t choice = 0;
 		choice++;

@@ -113,8 +113,8 @@ namespace egkr
 		auto resource = resource_system::load(configuration.resource_name, resource::type::bitmap_font, nullptr);
 		font.loaded_resource = resource;
 		font.resource_data = (font::bitmap_font_resource_data*)(font.loaded_resource->data);
-		bool result = setup_font_data(font.resource_data->font_data);
-		font.resource_data->font_data.atlas->map_texture = texture_system::acquire(font.resource_data->pages[0].file);
+		bool result = setup_font_data(font.resource_data->data);
+		font.resource_data->data.atlas->map_texture = texture_system::acquire(font.resource_data->pages[0].file);
 
 
 		auto id = font_system_->registered_bitmap_fonts_.size();

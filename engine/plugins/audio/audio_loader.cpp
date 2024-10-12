@@ -79,13 +79,12 @@ namespace egkr
 		//mp3dec_init(&decoder);
 	}
 
-	resource::shared_ptr audio_loader::load(std::string_view name, void* params)
+	resource::shared_ptr audio_loader::load(const std::string& name, void* params)
 	{
 		auto* parameters = std::bit_cast<audio_resource_loader_params*>(params);
 
 		auto base_path = get_base_path();
-
-		std::string filename = std::format("{}/{}", base_path, name);
+		const std::string filename = std::format("{}/{}", base_path, name);
 
 		audio::file* resource_data = new audio::file();
 		resource_data->internal_data = new audio_file_internal();
@@ -145,7 +144,7 @@ namespace egkr
 		}
 
 		resource::properties audio_properties{};
-		audio_properties.resource_type = resource::type::audio;
+		audio_properties.type = resource::type::audio;
 		audio_properties.name = name;
 		audio_properties.full_path = filename;
 

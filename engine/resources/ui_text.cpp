@@ -64,7 +64,7 @@ namespace egkr
 			{
 				const auto& font = font_system::get_bitmap_font(name);
 				data_ = std::make_shared<font::data>();
-				*data_ = font.font.resource_data->font_data;
+				*data_ = font.font.resource_data->data;
 				type_ = type;
 				return;
 			}

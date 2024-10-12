@@ -37,7 +37,7 @@ namespace egkr
 		[[nodiscard]] auto& unique_id() { return unique_id_; }
 
 	private:
-		void load_from_resource(std::string_view name);
+		void load_from_resource(const std::string& name);
 	private:
 		configuration configuration_{};
 		egkr::vector<geometry::geometry::shared_ptr> geometries_;
