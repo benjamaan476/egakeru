@@ -59,6 +59,10 @@ endif()
 
 add_definitions(-DENABLE_DEBUG_MACRO)
 
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 # Adding the src:
 add_subdirectory(engine)
 add_subdirectory(sandbox)

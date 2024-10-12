@@ -80,7 +80,7 @@ namespace egkr
 		{
 			return { '\0' };
 		}
-		return std::vector<uint8_t>(buff.c_str(), buff.c_str() + len);
+		return std::vector<uint8_t>(buff.data(), buff.data() + len);
 	}
 
 	uint64_t filesystem::write_line(file_handle& handle, const egkr::vector<uint8_t>& line)
