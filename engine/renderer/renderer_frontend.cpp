@@ -82,7 +82,7 @@ namespace egkr
 		if (backend_->begin_frame())
 		{
 			auto attachment_index = backend_->get_window_index();
-			for (auto& [type, view] : packet.render_views)
+			for (auto& view : packet.render_views)
 			{
 				if (!view_system::on_render(view.render_view, &view, backend_->get_frame_number(), attachment_index))
 				{

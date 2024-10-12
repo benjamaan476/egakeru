@@ -192,7 +192,7 @@ namespace egkr
 			requirements.transfer = true;
 			requirements.sampler_anisotropy = true;
 
-			requirements.discrete_gpu = false;
+			requirements.discrete_gpu = true;
 
 			physical_device_queue_family_info queue_info{};
 
@@ -515,6 +515,7 @@ namespace egkr
 		context_.scissor_rect = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
 		set_scissor(context_.scissor_rect);
 
+		set_winding(winding::counter_clockwise);
 
 		return true;
 	}

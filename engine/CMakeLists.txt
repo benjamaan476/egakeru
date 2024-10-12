@@ -49,10 +49,9 @@ target_link_libraries(
           egakeru::egakeru_warnings
           Vulkan::Vulkan
           Vulkan::Headers
+          OpenAL::OpenAL
           glm::glm
 )
-
-target_link_libraries(engine PRIVATE ${OPENAL_LIBRARY})
 
 target_link_system_libraries(
   engine

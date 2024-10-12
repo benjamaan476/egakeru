@@ -17,9 +17,9 @@ namespace egkr::audio
         egkr::audio::plugin::configuration configuration{};
         ALCdevice* device{};
         ALCcontext* context{};
-        egkr::vector<ALuint> buffers{};
-        egkr::vector<uint32_t> free_buffers{};
-        egkr::vector<source> sources{};
+        egkr::vector<ALuint> buffers;
+        egkr::vector<uint32_t> free_buffers;
+        egkr::vector<source> sources;
         float3 listener_position{};
         float3 listener_forward{ 1, 0, 0 };
         float3 listener_up{ 0, 0, 1 };

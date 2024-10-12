@@ -79,15 +79,12 @@ namespace egkr
 		//mp3dec_init(&decoder);
 	}
 
-	resource::shared_ptr audio_loader::load(std::string_view name, void* params)
+	resource::shared_ptr audio_loader::load(const std::string& name, void* params)
 	{
 		auto* parameters = std::bit_cast<audio_resource_loader_params*>(params);
 
 		auto base_path = get_base_path();
-
-		constexpr std::string_view format_string{ "%s/%s" };
-		char buff[512]{};
-		sprintf_s(buff, format_string.data(), base_path.data(), name.data());
+		const std::string filename = std::format("{}/{}", base_path, name);
 
 		audio::file* resource_data = new audio::file();
 		resource_data->internal_data = new audio_file_internal();
@@ -97,7 +94,7 @@ namespace egkr
 			LOG_TRACE("Processing OGG file");
 			int32_t ogg_error{};
 
-			resource_data->internal_data->vorbis = stb_vorbis_open_filename(buff, &ogg_error, nullptr);
+			resource_data->internal_data->vorbis = stb_vorbis_open_filename(filename.c_str(), &ogg_error, nullptr);
 			if (!resource_data->internal_data->vorbis)
 			{
 				LOG_ERROR("Failed to load vorbis file: {}", ogg_error);
@@ -149,7 +146,7 @@ namespace egkr
 		resource::properties audio_properties{};
 		audio_properties.type = resource::type::audio;
 		audio_properties.name = name;
-		audio_properties.full_path = buff;
+		audio_properties.full_path = filename;
 
 		audio_properties.data = new(audio::file);
 		*(audio::file*)audio_properties.data = *resource_data;

@@ -109,7 +109,7 @@ namespace egkr
 		constexpr frustum(const float3& position, const float3& forward, const float3& right, const float3& up, float aspect, float fov, float near, float far)
 			: position{ position }, forward{ forward }, right{ right }, up{ up }, fov{ fov }, near{ near }, far{ far }, aspect{aspect}
 		{
-			const float half_v = far * std::tanf(0.5f * fov);
+			const float half_v = far * std::tan(0.5f * fov);
 			const float half_h = half_v * aspect;
 
 			const auto forward_fwd = forward * far;

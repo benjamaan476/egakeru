@@ -14,13 +14,10 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr material_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr material_loader::load(const std::string& name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
-
-		char material_filename[128];
-		sprintf_s(material_filename, format_string.data(), base_path.data(), name.data(), ".emt");
+		const std::string material_filename = std::format("{}/{}{}", base_path, name, ".emt");
 
 		const auto properties = load_configuration_file(material_filename);
 

@@ -15,13 +15,10 @@ namespace egkr
 	{
 	}
 
-	resource::shared_ptr shader_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr shader_loader::load(const std::string& name, void* /*params*/)
 	{
 		const auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
-
-		char filename[128];
-		sprintf_s(filename, format_string.data(), base_path.data(), name.data(), ".shadercfg");
+		const std::string filename = std::format("{}/{}{}", base_path, name, ".shadercfg");
 
 		const auto properties = load_configuration_file(filename);
 

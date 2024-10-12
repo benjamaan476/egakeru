@@ -588,30 +588,30 @@ namespace egkr::editor
 		float4 colour{ 1.f, 0.f, 0.f, 1.f };
 		for (uint8_t i{ 0u }; i < segment_count; ++i)
 		{
-			float4 position{ 0.f, std::sinf(axis_length * i * two_pi / segment_count), std::cosf(axis_length * i * two_pi / segment_count), 1.f };
+			float4 position{ 0.f, std::sin(axis_length * i * two_pi / segment_count), std::cos(axis_length * i * two_pi / segment_count), 1.f };
 			vertices.emplace_back(position, colour);
 
-			position = { 0.f, std::sinf(axis_length * (i + 1) * two_pi / segment_count), std::cosf(axis_length * (i + 1) * two_pi / segment_count), 1.f };
+			position = { 0.f, std::sin(axis_length * (i + 1) * two_pi / segment_count), std::cos(axis_length * (i + 1) * two_pi / segment_count), 1.f };
 			vertices.emplace_back(position, colour);
 		}
 
 		colour = { 0.f, 1.f, 0.f, 1.f };
 		for (uint8_t i{ 0u }; i < segment_count; ++i)
 		{
-			float4 position{ std::sinf(axis_length * i * two_pi / segment_count), 0.f, std::cosf(axis_length * i * two_pi / segment_count), 1.f };
+			float4 position{ std::sin(axis_length * i * two_pi / segment_count), 0.f, std::cos(axis_length * i * two_pi / segment_count), 1.f };
 			vertices.emplace_back(position, colour);
 
-			position = { std::sinf(axis_length * (i + 1) * two_pi / segment_count), 0.f, std::cosf(axis_length * (i + 1) * two_pi / segment_count), 1.f };
+			position = { std::sin(axis_length * (i + 1) * two_pi / segment_count), 0.f, std::cos(axis_length * (i + 1) * two_pi / segment_count), 1.f };
 			vertices.emplace_back(position, colour);
 		}
 
 		colour = { 0.f, 0.f, 1.f, 1.f };
 		for (uint8_t i{ 0u }; i < segment_count; ++i)
 		{
-			float4 position{ std::cosf(axis_length * i * two_pi / segment_count), std::sinf(axis_length * i * two_pi / segment_count), 0.f, 1.f };
+			float4 position{ std::cos(axis_length * i * two_pi / segment_count), std::sin(axis_length * i * two_pi / segment_count), 0.f, 1.f };
 			vertices.emplace_back(position, colour);
 
-			position = { std::cosf(axis_length * (i + 1) * two_pi / segment_count), std::sinf(axis_length * (i + 1) * two_pi / segment_count), 0.f, 1.f };
+			position = { std::cos(axis_length * (i + 1) * two_pi / segment_count), std::sin(axis_length * (i + 1) * two_pi / segment_count), 0.f, 1.f };
 			vertices.emplace_back(position, colour);
 		}
 

@@ -39,8 +39,7 @@ namespace egkr
 			LOG_ERROR("Invalid mode passed while trying to open file: '%s'", path);
 			return { {}, "", false };
 		}
-		FILE* handle{};
-		fopen_s(&handle, absolute_filepath.string().c_str(), openmode.c_str());
+		FILE* handle = fopen(absolute_filepath.string().c_str(), openmode.c_str());
 
 		if (!handle)
 		{

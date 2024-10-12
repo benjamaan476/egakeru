@@ -25,6 +25,11 @@ project(
 include(cmake/PreventInSourceBuilds.cmake)
 include(ProjectOptions.cmake)
 
+if(UNIX AND NOT APPLE)
+  set(LINUX TRUE)
+  add_definitions(-DLINUX)
+endif()
+
 
 egakeru_setup_options()
 

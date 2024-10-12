@@ -12,22 +12,20 @@ namespace egkr
 		:resource_loader(resource::type::system_font, properties)
 	{}
 
-	resource::shared_ptr system_font_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr system_font_loader::load(const std::string& name, void* /*params*/)
 	{
 		auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
-
-		char buff[128]{};
 
 		std::array<supported_system_font_file_type, 2> filetypes{ supported_system_font_file_type{".esf", system_font_file_type::esf, true},  supported_system_font_file_type{".fontcfg", system_font_file_type::font_config, false} };
 
+		std::string filename;
 		bool found{};
 		supported_system_font_file_type filetype{};
 		for (const auto& extension : filetypes)
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), extension.extension.data());
+			filename = std::format("{}/{}{}", base_path, name, extension.extension);
 
-			if (filesystem::does_path_exist(buff))
+			if (filesystem::does_path_exist(filename))
 			{
 				filetype = extension;
 				found = true;
@@ -38,21 +36,21 @@ namespace egkr
 
 		if (!found)
 		{
-			LOG_ERROR("File not found: {}", buff);
+			LOG_ERROR("File not found: {}", filename);
 			return nullptr;
 		}
 
 
 		font::system_font_resource_data resource_data{};
-		auto file = filesystem::open(buff, file_mode::read, filetype.is_binary);
+		auto file = filesystem::open(filename, file_mode::read, filetype.is_binary);
 
 		switch (filetype.type)
 		{
 		case system_font_file_type::font_config:
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".ebf");
+			filename = std::format("{}/{}{}", base_path, name, ".ebf");
 
-			std::string ebf_file_name = buff;
+			std::string ebf_file_name = filename;
 			resource_data = import_fontcfg_file(file, ebf_file_name);
 		} break;
 		case system_font_file_type::esf:
@@ -66,7 +64,7 @@ namespace egkr
 		}
 		}
 
-		resource::properties properties{ .type = resource::type::system_font, .name = name.data(), .full_path = buff, };
+		resource::properties properties{ .type = resource::type::system_font, .name = name.data(), .full_path = filename, };
 		properties.data = new font::system_font_resource_data();
 		*((font::system_font_resource_data*)(properties.data)) = resource_data;
 		return resource::create(properties);

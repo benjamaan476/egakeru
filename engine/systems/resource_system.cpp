@@ -122,7 +122,7 @@ namespace egkr
 		registered_loaders_[loader->get_loader_type()] = std::move(loader);
 	}
 
-	resource::shared_ptr resource_system::load(std::string_view name, resource::type type, void* params)
+	resource::shared_ptr resource_system::load(const std::string& name, resource::type type, void* params)
 	{
 		if (resource_system_->registered_loaders_.contains(type))
 		{

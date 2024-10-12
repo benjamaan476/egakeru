@@ -118,7 +118,6 @@ namespace egkr
 		vulkan_stage create_module(const vulkan_stage_configuration& configuration);
 	private:
 		const vulkan_context* context_{};
-		uint32_t id{ invalid_32_id };
 		vulkan_configuration configuration{};
 		renderpass::vulkan_renderpass* renderpass{};
 		egkr::vector<vulkan_stage> vulkan_stages;

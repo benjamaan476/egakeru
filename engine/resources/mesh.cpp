@@ -11,9 +11,9 @@ namespace egkr
 {
 	struct mesh_load_parameters
 	{
-		std::string resource_name{};
-		mesh::shared_ptr mesh{};
-		resource::resource::shared_ptr mesh_resource{};
+		const char* resource_name;
+		mesh::shared_ptr mesh;
+		resource::resource::shared_ptr mesh_resource;
 	};
 
 	static void load_job_success(void* params)
@@ -204,9 +204,9 @@ namespace egkr
 		set_generation(invalid_32_id);
 	}
 
-	void mesh::load_from_resource(std::string_view name)
+	void mesh::load_from_resource(const std::string& name)
 	{
-		mesh_load_parameters parameters{ .resource_name = name.data(), .mesh = shared_from_this(), .mesh_resource = {}};
+		mesh_load_parameters parameters{ .resource_name = name.c_str(), .mesh = shared_from_this(), .mesh_resource = {}};
 
 		auto info = job_system::job_system::create_job(load_job_start, load_job_success, load_job_fail, &parameters, sizeof(mesh_load_parameters), sizeof(mesh_load_parameters));
 		job_system::job_system::submit(info);

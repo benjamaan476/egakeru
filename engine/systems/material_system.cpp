@@ -72,7 +72,7 @@ namespace egkr
 		return material_system_->default_material_;
 	}
 
-	material::shared_ptr material_system::acquire(std::string_view name)
+	material::shared_ptr material_system::acquire(const std::string& name)
 	{
 		auto material_resource = resource_system::load(name, resource::type::material, nullptr);
 

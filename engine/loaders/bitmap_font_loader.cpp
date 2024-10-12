@@ -11,22 +11,20 @@ namespace egkr
 		: resource_loader(resource::type::bitmap_font, properties)
 	{}
 
-	resource::shared_ptr bitmap_font_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr bitmap_font_loader::load(const std::string& name, void* /*params*/)
 	{
 		auto base_path = get_base_path();
-		constexpr std::string_view format_string{ "%s/%s%s" };
 
-		char buff[128]{};
+		const std::array<supported_bitmap_font_file_type, 2> filetypes{ supported_bitmap_font_file_type{".ebf", bitmap_font_file_type::ebf, true},  supported_bitmap_font_file_type{".fnt", bitmap_font_file_type::fnt, false} };
 
-		std::array<supported_bitmap_font_file_type, 2> filetypes{ supported_bitmap_font_file_type{".ebf", bitmap_font_file_type::ebf, true},  supported_bitmap_font_file_type{".fnt", bitmap_font_file_type::fnt, false} };
-
+		std::string filename;
 		bool found{};
 		supported_bitmap_font_file_type filetype{};
 		for (const auto& extension : filetypes)
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), extension.extension.data());
+			filename = std::format("{}/{}{}", base_path, name, extension.extension);
 
-			if (filesystem::does_path_exist(buff))
+			if (filesystem::does_path_exist(filename))
 			{
 				filetype = extension;
 				found = true;
@@ -37,21 +35,21 @@ namespace egkr
 
 		if (!found)
 		{
-			LOG_ERROR("File not found: {}", buff);
+			LOG_ERROR("File not found: {}", filename);
 			return nullptr;
 		}
 
 
 		font::bitmap_font_resource_data resource_data{};
-		auto file = filesystem::open(buff, file_mode::read, filetype.is_binary);
+		auto file = filesystem::open(filename, file_mode::read, filetype.is_binary);
 
 		switch (filetype.type)
 		{
 		case bitmap_font_file_type::fnt:
 		{
-			sprintf_s(buff, format_string.data(), base_path.data(), name.data(), ".ebf");
+			filename = std::format("{}/{}{}", base_path, name, ".ebf");
 
-			std::string ebf_file_name = buff;
+			std::string ebf_file_name = filename;
 			resource_data = import_fnt_file(file, ebf_file_name);
 			resource_data.data.type = font::type::bitmap;
 		} break;
@@ -67,7 +65,7 @@ namespace egkr
 		}
 		}
 
-		resource::properties properties{ .type = resource::type::bitmap_font, .name = name.data(), .full_path = buff,};
+		resource::properties properties{ .type = resource::type::bitmap_font, .name = name.data(), .full_path = filename,};
 		properties.data = new font::bitmap_font_resource_data();
 		*((font::bitmap_font_resource_data*)(properties.data)) = resource_data;
 		return resource::create(properties);
@@ -105,7 +103,7 @@ namespace egkr
 			case 'i' :
 			{
 				char buff[128]{};
-				sscanf_s(line_string.data(), "info face=\"%[^\"]\" size=%u", buff, sizeof(buff), &data.data.size);
+				sscanf(line_string.data(), R"(info face="%[^"]" size=%u)", buff, &data.data.size);
 				data.data.face = buff;
 			} break;
 			case 'c':
@@ -113,18 +111,18 @@ namespace egkr
 				if (line[1] == 'o')
 				{
 					uint32_t num_pages{};
-					sscanf_s(line_string.data(), "common lineHeight=%d base=%*d scaleW=%d scaleH=%d pages=%u", &data.data.line_height, &data.data.atlas_size_x, &data.data.atlas_size_y, &num_pages);
+					sscanf(line_string.data(), "common lineHeight=%d base=%*d scaleW=%d scaleH=%d pages=%u", &data.data.line_height, &data.data.atlas_size_x, &data.data.atlas_size_y, &num_pages);
 
 				}
 				else if (line[4] == 's')
 				{
 					uint32_t num_chars{};
-					sscanf_s(line_string.data(), "chars count=%u", &num_chars);
+					sscanf(line_string.data(), "chars count=%u", &num_chars);
 				}
 				else
 				{
 					font::glyph glyph{};
-					sscanf_s(line_string.data(), "char id=%u x=%hu y=%hu width=%hu height=%hu xoffset=%hd yoffset=%hd xadvance=%hd page=%hhd", &glyph.codepoint, &glyph.x, &glyph.y, &glyph.width, &glyph.height, &glyph.x_offset, &glyph.y_offset, &glyph.x_advance, &glyph.page_id);
+					sscanf(line_string.data(), "char id=%u x=%hu y=%hu width=%hu height=%hu xoffset=%hd yoffset=%hd xadvance=%hd page=%hhd", &glyph.codepoint, &glyph.x, &glyph.y, &glyph.width, &glyph.height, &glyph.x_offset, &glyph.y_offset, &glyph.x_advance, &glyph.page_id);
 					data.data.glyphs.push_back(glyph);
 				}
 			} break;
@@ -132,7 +130,7 @@ namespace egkr
 			{
 				font::bitmap_font_page page{};
 				page.file.resize(128);
-				sscanf_s(line_string.data(), "page id=%d file=\"%[^\"]\"", &page.id, page.file.data(), page.file.size());
+				sscanf(line_string.data(), R"(page id=%s file="%[^"]")", &page.id, page.file.data());
 				data.pages.push_back(page);
 			} break;
 			case 'k':
@@ -140,12 +138,12 @@ namespace egkr
 				if (line[7] == 's')
 				{
 					uint32_t kerning_count{};
-					sscanf_s(line_string.data(), "kernings count=%d", &kerning_count);
+					sscanf(line_string.data(), "kernings count=%d", &kerning_count);
 				}
 				else
 				{
 					font::kerning kerning{};
-					sscanf_s(line_string.data(), "kerning first=%d second=%d amount=%hd", &kerning.codepoint_0, &kerning.codepoint_1, &kerning.amount);
+					sscanf(line_string.data(), "kerning first=%d second=%d amount=%hd", &kerning.codepoint_0, &kerning.codepoint_1, &kerning.amount);
 					data.data.kernings.push_back(kerning);
 				}
 			} break;

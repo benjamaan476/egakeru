@@ -49,7 +49,7 @@ namespace egkr
 		bool shutdown() override;
 
 		static material::shared_ptr get_default_material();
-		static material::shared_ptr acquire(std::string_view name);
+		static material::shared_ptr acquire(const std::string& name);
 		static material::shared_ptr acquire(const material_properties& properties);
 		static bool release(const material::shared_ptr& material);
 

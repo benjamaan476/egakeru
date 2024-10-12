@@ -12,19 +12,18 @@ namespace egkr
 	mesh_loader::mesh_loader(const loader_properties& properties)
 		:resource_loader{ resource::type::mesh, properties } {}
 
-	resource::shared_ptr mesh_loader::load(std::string_view name, void* /*params*/)
+	resource::shared_ptr mesh_loader::load(const std::string& name, void* /*params*/)
 	{
 		egkr::vector<supported_file_type> file_types{{".esm", mesh_file_type::esm, true}, { ".obj", mesh_file_type::obj, false }};
 
 		bool found{};
 		supported_file_type found_type{};
-		char filename[128];
+		std::string filename;
 		for (const auto& file_type : file_types)
 		{
 			const auto base_path = get_base_path();
-			constexpr std::string_view format_string{ "%s/%s%s" };
+			filename = std::format("{}/{}{}", base_path, name, file_type.extension);
 
-			sprintf_s(filename, format_string.data(), base_path.data(), name.data(), file_type.extension.data());
 			auto handle = filesystem::open(filename, file_mode::read, file_type.is_binary);
 			if (handle.is_valid)
 			{
@@ -128,7 +127,7 @@ namespace egkr
 				{
 					char waste[2]{};
 					float3 pos{};
-					sscanf_s(line_string.data(), "%s %f %f %f", waste, 2, &pos.x, &pos.y, &pos.z);
+					sscanf(line_string.data(), "%s %f %f %f", waste, &pos.x, &pos.y, &pos.z);
 					positions.push_back(pos);
 				}
 				break;
@@ -136,7 +135,7 @@ namespace egkr
 				{
 					char waste[3]{};
 					float3 norm{};
-					sscanf_s(line_string.data(), "%s %f %f %f", waste, 3, &norm.x, &norm.y, &norm.z);
+					sscanf(line_string.data(), "%s %f %f %f", waste, &norm.x, &norm.y, &norm.z);
 					normals.push_back(norm);
 				}
 				break;
@@ -144,7 +143,7 @@ namespace egkr
 				{
 					char waste[3]{};
 					float2 tex{};
-					sscanf_s(line_string.data(), "%s %f %f", waste, 3, &tex.x, &tex.y);
+					sscanf(line_string.data(), "%s %f %f", waste, &tex.x, &tex.y);
 					tex_coords.push_back(tex);
 				}
 				break;
@@ -160,13 +159,11 @@ namespace egkr
 				mesh_face_data face{};
 				if (normals.empty() || tex_coords.empty())
 				{
-					std::string format{"%s %d %d %d"};
-					sscanf_s(line_string.data(), format.data(), waste, 2, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
+					sscanf(line_string.data(), "%s %d %d %d", waste, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
 				}
 				else
 				{
-					std::string format{"%s %d/%d/%d %d/%d/%d %d/%d/%d"};
-					sscanf_s(line_string.data(), format.data(), waste, 2, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index, &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index, &face.vertices[2].normal_index);
+					sscanf(line_string.data(), "%s %d/%d/%d %d/%d/%d %d/%d/%d", waste, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index, &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index, &face.vertices[2].normal_index);
 				}
 
 				auto group_index = groups.size() - 1;
@@ -177,8 +174,7 @@ namespace egkr
 			{
 				char waste[7]{};
 				char matname[128]{};
-				std::string format{"%s %s"};
-				sscanf_s(line_string.data(), format.data(), waste, 7, matname, 128);
+				sscanf(line_string.data(), "%s %s", waste, matname);
 				material_filename = matname;
 			}
 			break;
@@ -190,7 +186,7 @@ namespace egkr
 
 				char waste[8]{};
 				char material[128]{};
-				sscanf_s(line_string.data(), "%s %s", waste, 8, material, sizeof(material));
+				sscanf(line_string.data(), "%s %s", waste, material);
 				material_names[current_material_name_count] = material;
 				current_material_name_count++;
 			}
@@ -220,7 +216,7 @@ namespace egkr
 				groups.clear();
 				char waste[2]{};
 				char names[128]{};
-				sscanf_s(line_string.data(), "%s %s", waste, 2, names, 128);
+				sscanf(line_string.data(), "%s %s", waste, names);
 				name = names;
 
 			}
@@ -405,8 +401,7 @@ namespace egkr
 				case 'd':
 				{
 					char waste[3]{};
-					std::string format{ "%s %f %f %f" };
-					sscanf_s(line_string.data(), format.data(), waste, 3, &current_properties.diffuse_colour.r, &current_properties.diffuse_colour.g, &current_properties.diffuse_colour.b);
+					sscanf(line_string.data(), "%s %f %f %f", waste, &current_properties.diffuse_colour.r, &current_properties.diffuse_colour.g, &current_properties.diffuse_colour.b);
 					current_properties.diffuse_colour.a = 1.F;
 				} break;
 				case 's': break;
@@ -417,15 +412,13 @@ namespace egkr
 			case 'N':
 			{
 				char waste[3]{};
-				std::string format{ "%s %f" };
-				sscanf_s(line_string.data(), format.data(), waste, 3, &current_properties.shininess);
+				sscanf(line_string.data(), "%s %f", waste, &current_properties.shininess);
 			} break;
 			case 'm':
 			{
 				char map_type[10]{};
 				char texture_filename[128]{};
-				std::string format{ "%s %s" };
-				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
+				sscanf(line_string.data(), "%s %s", map_type, texture_filename);
 
 				std::filesystem::path path{ texture_filename };
 				path = path.stem();
@@ -447,8 +440,7 @@ namespace egkr
 			{
 				char map_type[10]{};
 				char texture_filename[128]{};
-				std::string format{ "%s %s" };
-				sscanf_s(line_string.data(), format.data(), map_type, 10, texture_filename, 128);
+				sscanf(line_string.data(), "%s %s", map_type, texture_filename);
 
 				std::filesystem::path path{ texture_filename };
 				path = path.stem();
@@ -459,8 +451,7 @@ namespace egkr
 			{
 				char waste[7]{};
 				char material_name[128]{};
-				auto format{ "%s %s" };
-				sscanf_s(line_string.data(), format, waste, sizeof(waste), material_name, sizeof(material_name));
+				sscanf(line_string.data(), "%s %s", waste, material_name);
 
 				current_properties.shader_name = "Shader.Builtin.Material";
 				if (std::abs(current_properties.shininess) <= 0.001f)
@@ -585,10 +576,8 @@ namespace egkr
 
 	bool mesh_loader::write_emt(std::string_view directory, const material_properties& properties)
 	{
-		std::string_view format{ "%s/../materials/%s%s" };
-
-		char filename[128]{};
-			sprintf_s(filename, format.data(), directory.data(), properties.name.data(), ".emt");
+		//TODO: ew
+		std::string filename = std::format("{}/../materials/{}{}", directory, properties.name, ".emt");
 			auto handle = filesystem::open(filename, file_mode::write, false);
 
 			egkr::vector<uint8_t> line(128);

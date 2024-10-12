@@ -6,8 +6,8 @@ namespace egkr
 {
 	struct loader_properties
 	{
-		std::string path{};
-		std::optional<std::string> custom_type{};
+		std::string path;
+		std::optional<std::string> custom_type;
 	};
 
 	class resource_loader
@@ -19,17 +19,17 @@ namespace egkr
 		virtual ~resource_loader() = default;
 
 		// Params is used to pass loader specific settings to the loader
-		virtual resource::shared_ptr load(std::string_view name, void* params) = 0;
+		virtual resource::shared_ptr load(const std::string& name, void* params) = 0;
 		virtual bool unload(const resource::shared_ptr& resource) = 0;
 
-		const auto& get_loader_type() const { return loader_type_; }
+		[[nodiscard]] const auto& get_loader_type() const { return loader_type_; }
 
 	protected:
-		std::string_view get_base_path() const { return type_path_; }
+		[[nodiscard]] std::string_view get_base_path() const { return type_path_; }
 	private:
 		resource::type loader_type_{};
 
-		std::string custom_type_name_{};
-		std::string type_path_{};
+		std::string custom_type_name_;
+		std::string type_path_;
 	};
 }

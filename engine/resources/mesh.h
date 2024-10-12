@@ -37,13 +37,13 @@ namespace egkr
 		[[nodiscard]] auto& unique_id() { return unique_id_; }
 
 	private:
-		void load_from_resource(std::string_view name);
+		void load_from_resource(const std::string& name);
 	private:
 		configuration configuration_{};
-		egkr::vector<geometry::geometry::shared_ptr> geometries_{};
+		egkr::vector<geometry::geometry::shared_ptr> geometries_;
 		extent3d extents_{};
 		//TODO how to do this properly?
-		debug::debug_box3d::shared_ptr debug_data{};
+		debug::debug_box3d::shared_ptr debug_data;
 		uint32_t unique_id_{};
 	};
 }
