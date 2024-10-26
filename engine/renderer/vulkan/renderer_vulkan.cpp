@@ -499,7 +499,12 @@ namespace egkr
 			context_.device.logical_device.waitIdle();
 			return false;
 		}
-		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
+		if(!context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max()))
+		{
+			LOG_FATAL("Could not wait for In-flight frame");
+			return false;
+		}
+
 		context_.image_index = context_.swpchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
 
 		frame_data.frame_number = frame_number_;
@@ -511,9 +516,12 @@ namespace egkr
 
 	bool renderer_vulkan::begin(const frame_data& /*frame_data*/)
 	{
-		ZoneScoped;
+		if(!context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max()))
+		{
+			LOG_FATAL("Could not wait for In-flight frame");
+			return false;
+		}
 
-		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.reset();
 		command_buffer.begin(false, false, false);
@@ -524,8 +532,6 @@ namespace egkr
 
 	void renderer_vulkan::end(frame_data& frame_data)
 	{
-		ZoneScoped;
-
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.end();
 

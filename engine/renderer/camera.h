@@ -9,7 +9,7 @@ namespace egkr
 		using shared_ptr = std::shared_ptr<camera>;
 		static shared_ptr create(std::string_view name);
 
-		camera(std::string_view name);
+		explicit camera(std::string_view name);
 
 		void reset();
 		[[nodiscard]] const auto& get_position() const { return position_;}
@@ -46,7 +46,7 @@ namespace egkr
 		void pitch(float amount);
 
 	private:
-		std::string name_{};
+		std::string name_;
 		float3 position_{};
 		float3 rotation_{};
 		bool is_dirty_{true};

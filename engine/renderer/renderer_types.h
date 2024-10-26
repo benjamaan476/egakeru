@@ -101,6 +101,7 @@ namespace egkr
 		[[nodiscard]] virtual uint8_t get_window_index() const = 0;
 
 		[[nodiscard]] uint64_t get_frame_number() const { return frame_number_; }
+		[[nodiscard]] uint64_t get_draw_index() const { return draw_index_; }
 
 		[[nodiscard]] virtual bool is_multithreaded() const = 0;
 	protected:

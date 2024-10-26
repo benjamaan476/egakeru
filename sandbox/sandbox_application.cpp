@@ -124,7 +124,7 @@ void sandbox_application::update(const egkr::frame_data& frame_data)
 void sandbox_application::prepare_render_packet(egkr::render_packet* render_packet, const egkr::frame_data& /*frame_data*/)
 {
 	main_scene_->populate_render_packet(render_packet, &world_view);
-		if (main_scene_->is_loaded())
+		if (!main_scene_->is_loaded())
 		{
 			/*glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
 			meshes_[0]->rotate(q);
@@ -171,13 +171,13 @@ void sandbox_application::render(egkr::render_packet* render_packet, egkr::frame
 		auto& editor_view_packet = render_packet->render_views[egkr::render_view::type::editor];
 		editor_view_packet.view->on_render(&editor_view_packet, frame_data);
 	}
-	egkr::renderer->end(frame_data);
+	// egkr::renderer->end(frame_data);
 
-	egkr::renderer->begin(frame_data);
+	// egkr::renderer->begin(frame_data);
 	{
-		auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
-		world_view_packet.view_viewport = &world_view2;
-		world_view_packet.view->on_render(&world_view_packet, frame_data);
+		// auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
+		// world_view_packet.view_viewport = &world_view2;
+		// world_view_packet.view->on_render(&world_view_packet, frame_data);
 
 		auto& ui_view_packet = render_packet->render_views[egkr::render_view::type::ui];
 		ui_view_packet.view->on_render(&ui_view_packet, frame_data);
