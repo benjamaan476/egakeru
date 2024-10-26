@@ -70,7 +70,7 @@ namespace egkr
 		virtual bool on_create() = 0;
 		virtual bool on_destroy() = 0;
 		virtual void on_resize(uint32_t width, uint32_t height) = 0;
-		virtual render_view_packet on_build_packet(void* data, viewport* viewport) = 0;
+		virtual render_view_packet on_build_packet(void* data, const camera::shared_ptr& camera, viewport* viewport) = 0;
 		virtual bool on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const = 0;
 
 		virtual bool regenerate_attachment_target(uint32_t /*pass_index*/, const render_target::attachment& /*attachment*/) { return true; }
@@ -87,7 +87,6 @@ namespace egkr
 		uint32_t mode_{};
 		std::vector<renderpass::renderpass::shared_ptr> renderpasses_;
 		std::string custom_shader_name_;
-		camera::shared_ptr camera_;
 	};
 
 	struct skybox_packet_data

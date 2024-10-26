@@ -87,7 +87,7 @@ namespace egkr
 			void unload();
 
 			void update(const frame_data& delta_time, const camera::shared_ptr& camera, viewport* viewport);
-			void populate_render_packet(render_packet* packet, viewport* viewport);
+			void populate_render_packet(render_packet* packet, const camera::shared_ptr& camera, viewport* viewport);
 
 			//Game owns these, scene just references them
 			void add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light);

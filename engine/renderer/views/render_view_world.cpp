@@ -66,15 +66,15 @@ namespace egkr
 			height_ = height;
 		}
 	}
-	render_view_packet render_view_world::on_build_packet(void* data, viewport* viewport)
+	render_view_packet render_view_world::on_build_packet(void* data, const camera::shared_ptr& camera, viewport* viewport)
 	{
 		auto* mesh_data = (frame_geometry_data*)data;
 
 		render_view_packet packet{};
 
 		packet.view = this;
-		packet.view_matrix = camera_->get_view();
-		packet.view_position = camera_->get_position();
+		packet.view_matrix = camera->get_view();
+		packet.view_position = camera->get_position();
 		packet.ambient_colour = ambient_colour_;
 		packet.render_packet_data = mesh_data->world_geometries;
 		packet.debug_render_data = mesh_data->debug_geometries;
@@ -94,7 +94,7 @@ namespace egkr
 			{
 
 				shader_system::use(skybox_shader_->get_id());
-				float4x4 view = camera_->get_view();
+				float4x4 view = render_view_packet->view_matrix;
 				view[3][0] = 0.F;
 				view[3][1] = 0.F;
 				view[3][2] = 0.F;

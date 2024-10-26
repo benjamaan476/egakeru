@@ -35,8 +35,6 @@ namespace egkr
 		type_{ view_configuration.view_type },
 		custom_shader_name_{ view_configuration.custom_shader_name }
 	{
-		camera_ = camera_system::get_default();
-
 		for (const auto& pass : view_configuration.passes)
 		{
 			auto renderpass = renderpass::renderpass::create(pass);

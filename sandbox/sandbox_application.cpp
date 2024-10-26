@@ -70,10 +70,15 @@ bool sandbox_application::init()
 	ui_mesh_->load();
 	ui_meshes_.push_back(ui_mesh_);
 
-	camera_ = egkr::camera_system::get_default();
+	camera_ = egkr::camera_system::acquire("world");
 	camera_->set_position({ 10, 10, 10 });
 	camera_->set_rotation({ 0.f, glm::radians(45.f), glm::radians(45.f) });
 	camera_->set_aspect((float)width_ / (float)height_);
+
+	auto cam = egkr::camera_system::get_default();
+	cam->set_position({ 10, 10, 10 });
+	cam->set_rotation({ 0.f, glm::radians(45.f), glm::radians(45.f) });
+	cam->set_aspect((float)width_ / (float)height_);
 
 	//TODO add to scene
 	test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
@@ -123,7 +128,7 @@ void sandbox_application::update(const egkr::frame_data& frame_data)
 
 void sandbox_application::prepare_render_packet(egkr::render_packet* render_packet, const egkr::frame_data& /*frame_data*/)
 {
-	main_scene_->populate_render_packet(render_packet, &world_view);
+	main_scene_->populate_render_packet(render_packet, camera_, &world_view);
 		if (!main_scene_->is_loaded())
 		{
 			/*glm::quat q({ 0, 0, 0.5F * frame_data.delta_time });
@@ -138,9 +143,8 @@ void sandbox_application::prepare_render_packet(egkr::render_packet* render_pack
 		render_packet->render_views[egkr::render_view::type::world].debug_render_data.push_back(egkr::render_data{ .render_geometry = test_lines_->get_geometry(), .transform = test_lines_});
 	}
 
-	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_, &world_view);
-	auto cam = egkr::camera_system::get_default();
-	const auto& pos = cam->get_position();
+	render_packet->render_views[egkr::render_view::type::editor] = egkr::view_system::build_packet(egkr::view_system::get("editor").get(), &gizmo_, camera_, &world_view);
+	const auto& pos = camera_->get_position();
 	std::string text = std::format("Camera pos: {} {} {}\n Mouse pos: {} {}", (double)pos.x, (double)pos.y, (double)pos.z, mouse_pos_.x, mouse_pos_.y);
 
 	more_test_text_->set_text(text);
@@ -153,7 +157,7 @@ void sandbox_application::prepare_render_packet(egkr::render_packet* render_pack
 	}
 	egkr::ui_packet_data ui{ .mesh_data = {ui_meshes_}, .texts = texts };
 	auto ui_view_packet = egkr::view_system::get("ui");
-	render_packet->render_views[egkr::render_view::type::ui] = egkr::view_system::build_packet(ui_view_packet.get(), &ui, &ui_view);
+	render_packet->render_views[egkr::render_view::type::ui] = egkr::view_system::build_packet(ui_view_packet.get(), &ui, nullptr, &ui_view);
 
 	application_frame_data.reset();
 }
@@ -171,13 +175,14 @@ void sandbox_application::render(egkr::render_packet* render_packet, egkr::frame
 		auto& editor_view_packet = render_packet->render_views[egkr::render_view::type::editor];
 		editor_view_packet.view->on_render(&editor_view_packet, frame_data);
 	}
-	// egkr::renderer->end(frame_data);
+	 egkr::renderer->end(frame_data);
 
-	// egkr::renderer->begin(frame_data);
+	 egkr::renderer->begin(frame_data);
 	{
-		// auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
-		// world_view_packet.view_viewport = &world_view2;
-		// world_view_packet.view->on_render(&world_view_packet, frame_data);
+		 auto& world_view_packet = render_packet->render_views[egkr::render_view::type::world];
+		 world_view_packet.view_viewport = &world_view2;
+		 world_view_packet.view_matrix = egkr::camera_system::get_default()->get_view();
+		 world_view_packet.view->on_render(&world_view_packet, frame_data);
 
 		auto& ui_view_packet = render_packet->render_views[egkr::render_view::type::ui];
 		ui_view_packet.view->on_render(&ui_view_packet, frame_data);
@@ -466,7 +471,7 @@ bool sandbox_application::on_button_up(egkr::event::code code, void* /*sender*/,
 		{
 			const auto& view = game->camera_->get_view();
 			const auto& origin = game->camera_->get_position();
-			const auto& proj = game->camera_->get_projection();
+			const auto& proj = game->world_view.projection;
 			egkr::ray ray = egkr::ray::from_screen({ xpos, ypos }, game->world_view.viewport_rect, origin, view, proj);
 
 			auto hit = game->gizmo_.raycast(ray);

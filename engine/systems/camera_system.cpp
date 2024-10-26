@@ -54,7 +54,7 @@ namespace egkr
 		camera_system_->cameras_.push_back(camera::create(name));
 		camera_system_->camera_id_by_name_[name.data()] = id;
 
-		return camera::shared_ptr();
+		return camera_system_->cameras_.back();
 	}
 
 	void camera_system::release(const camera::shared_ptr /*camera*/)

@@ -22,7 +22,7 @@ namespace egkr
 		static void create_view(const render_view::configuration& configuration);
 		static	void on_window_resize(uint32_t width, uint32_t height);
 		static render_view::shared_ptr get(std::string_view name);
-		static render_view_packet build_packet(render_view* view, void* data, viewport* viewport);
+		static render_view_packet build_packet(render_view* view, void* data, const camera::shared_ptr& camera, viewport* viewport);
 		static bool on_render(const render_view* view, render_view_packet* packet, const frame_data& frame_data);
 
 	private:

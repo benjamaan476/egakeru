@@ -50,7 +50,7 @@ namespace egkr
 		}
 	}
 
-	render_view_packet render_view_ui::on_build_packet(void* data, viewport* viewport)
+	render_view_packet render_view_ui::on_build_packet(void* data, const camera::shared_ptr& /*camera*/, viewport* viewport)
 	{
 		auto* ui_data = (ui_packet_data*)data;
 

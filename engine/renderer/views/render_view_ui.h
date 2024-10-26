@@ -14,7 +14,7 @@ namespace egkr
 		bool on_create() override;
 		bool on_destroy() override;
 		void on_resize(uint32_t width, uint32_t height) override;
-		render_view_packet on_build_packet(void* data, viewport* viewport) override;
+		render_view_packet on_build_packet(void* data, const camera::shared_ptr& camera, viewport* viewport) override;
 		bool on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const override;
 	private:
 
