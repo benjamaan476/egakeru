@@ -1,5 +1,6 @@
 #include "bitmap_font_loader.h"
 
+#include <format>
 namespace egkr
 {
 	bitmap_font_loader::unique_ptr bitmap_font_loader::create(const loader_properties& properties)
@@ -51,12 +52,12 @@ namespace egkr
 
 			std::string ebf_file_name = filename;
 			resource_data = import_fnt_file(file, ebf_file_name);
-			resource_data.data.type = font::type::bitmap;
+			resource_data.data.font_type = font::type::bitmap;
 		} break;
 		case bitmap_font_file_type::ebf:
 		{
 			resource_data = read_ebf_file(file);
-			resource_data.data.type = font::type::bitmap;
+			resource_data.data.font_type = font::type::bitmap;
 		} break;
 		case bitmap_font_file_type::not_found:
 		default:
@@ -160,7 +161,7 @@ namespace egkr
 		filesystem::read(handle, header);
 
 		font::bitmap_font_resource_data data{};
-		filesystem::read(handle, data.data.type);
+		filesystem::read(handle, data.data.font_type);
 		size_t face_length{};
 		filesystem::read<size_t>(handle, face_length);
 
@@ -223,10 +224,10 @@ namespace egkr
 			return {};
 		}
 
-		resource::header header{ .type = resource::type::bitmap_font };
+		resource::header header{ .resource_type = resource::type::bitmap_font };
 		filesystem::write(handle, header, 1);
 
-		filesystem::write(handle, data.data.type);
+		filesystem::write(handle, data.data.font_type);
 		filesystem::write(handle, data.data.face.size());
 		filesystem::write(handle, data.data.face.data(), sizeof(const char), data.data.face.size());
 		filesystem::write(handle, data.data.size);

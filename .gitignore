@@ -6,6 +6,7 @@ conan-cache/
 
 # User spesific settings
 CMakeUserPresets.json
+compile_commands.json
 
 # IDE files
 .vs/
@@ -34,3 +35,5 @@ ehthumbs.db
 Thumbs.db
 *.spv
 .cache
+
+compile_commands.json

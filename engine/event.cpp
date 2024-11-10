@@ -5,7 +5,7 @@ namespace egkr
 	struct registered_event
 	{
 		void* listener{};
-		event::callback callback{};
+		event::callback callback;
 
 		bool operator==(const registered_event& other) const
 		{
@@ -15,7 +15,7 @@ namespace egkr
 
 	struct event_code_entry
 	{
-		std::vector<registered_event> event{};
+		std::vector<registered_event> event;
 	};
 
 	struct event_system_state

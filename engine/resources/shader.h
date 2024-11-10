@@ -56,18 +56,18 @@ namespace egkr
 
 		struct attribute_configuration
 		{
-			std::string name{};
+			std::string name;
 			uint16_t size{};
 			attribute_type type{};
 		};
 
 		struct uniform_configuration
 		{
-			std::string name{};
+			std::string name;
 			uint16_t size{};
 			uint32_t location{};
 			uniform_type type{};
-			scope scope{};
+			scope shader_scope{};
 		};
 
 		enum primitive_topology_type
@@ -123,21 +123,21 @@ namespace egkr
 
 		struct properties
 		{
-			std::string name{};
-			egkr::vector<attribute_configuration> attributes{};
-			egkr::vector<uniform_configuration> uniforms{};
-			egkr::vector<stages> stages{};
-			egkr::vector<std::string> stage_names{};
-			egkr::vector<std::string> stage_filenames{};
+			std::string name;
+			egkr::vector<attribute_configuration> attributes;
+			egkr::vector<uniform_configuration> uniforms;
+			egkr::vector<stages> shader_stages;
+			egkr::vector<std::string> stage_names;
+			egkr::vector<std::string> stage_filenames;
 			primitive_topology_type topology_types{ primitive_topology_type::triangle_list };
-			cull_mode cull_mode{ cull_mode::back };
+			cull_mode shader_cull_mode{ cull_mode::back };
 
 			uint8_t global_uniform_count{};
 			uint8_t global_uniform_sampler_count{};
 			uint8_t instance_uniform_count{};
 			uint8_t instance_uniform_sampler_count{};
 			uint8_t local_uniform_count{};
-			flags flags{};
+			flags shader_flags{};
 		};
 
 		enum state
@@ -154,13 +154,13 @@ namespace egkr
 			uint16_t index{};
 			uint16_t size{};
 			uint8_t set_index{};
-			scope scope{};
+			scope uniform_scope{};
 			uniform_type type{};
 		};
 
 		struct attribute
 		{
-			std::string name{};
+			std::string name;
 			uint32_t size{};
 			attribute_type type{};
 		};
@@ -202,8 +202,10 @@ namespace egkr
 
 		const auto& get_attribute_stride() const { return attribute_stride_; }
 
-		[[nodiscard]] uint32_t get_frame_number() const { return frame_number_; }
-		void set_frame_number(uint32_t frame) { frame_number_ = frame; }
+		[[nodiscard]] uint64_t get_frame_number() const { return frame_number_; }
+		void set_frame_number(uint64_t frame) { frame_number_ = frame; }
+		[[nodiscard]] uint64_t get_draw_index() const { return draw_index_; }
+		void set_draw_index(uint64_t frame) { draw_index_ = frame; }
 
 		virtual bool use() = 0;
 		virtual bool populate(renderpass::renderpass* renderpass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages) = 0;
@@ -236,17 +238,17 @@ namespace egkr
 
 		uint64_t push_constant_size_{};
 		uint64_t push_constan_stride_{};
-		egkr::vector<std::shared_ptr<texture_map>> global_textures_{};
+		egkr::vector<std::shared_ptr<texture_map>> global_textures_;
 
 		uint8_t instance_texture_count_{};
 		scope bound_scope_{};
 		uint32_t bound_instance_id_{};
 		uint64_t bound_ubo_offset_{};
 
-		std::unordered_map<std::string, uint32_t> uniform_id_by_name_{};
-		egkr::vector<uniform> uniforms_{};
+		std::unordered_map<std::string, uint32_t> uniform_id_by_name_;
+		egkr::vector<uniform> uniforms_;
 
-		egkr::vector<attribute> attributes_{};
+		egkr::vector<attribute> attributes_;
 		state state_{ state::not_created };
 
 		egkr::vector<range> push_const_ranges_;
@@ -256,7 +258,8 @@ namespace egkr
 		uint16_t bound_pipeline_index_{};
 
 		flags flags_{};
-		uint32_t frame_number_{};
+		uint64_t frame_number_{};
+		uint64_t draw_index_{};
 	};
 	ENUM_CLASS_OPERATORS(shader::primitive_topology_type)
 	ENUM_CLASS_OPERATORS(shader::flags)

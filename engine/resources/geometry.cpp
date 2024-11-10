@@ -10,18 +10,18 @@ namespace egkr
 		return renderer->create_geometry(properties);
 	}
 
-	geometry::geometry(const geometry::properties& properties)
-		: resource(properties.id, properties.generation, properties.name), properties_{properties}
+	geometry::geometry(const geometry::properties& geometry_properties)
+		: resource(geometry_properties.id, geometry_properties.generation, geometry_properties.name), properties_{geometry_properties}
 	{
-		if (properties.material_name == default_material_name_)
+		if (geometry_properties.material_name == default_material_name_)
 		{
 			material_ = material_system::get_default_material();
 		}
 		else
 		{
-			if (properties.material_name != "")
+			if (geometry_properties.material_name != "")
 			{
-				material_ = material_system::acquire(properties.material_name);
+				material_ = material_system::acquire(geometry_properties.material_name);
 			}
 		}
 	}

@@ -13,37 +13,37 @@ namespace egkr
 		return mat;
 	}
 
-	material::material(const material_properties& properties)
-		: resource(0, 0, properties.name), diffuse_colour_{ properties.diffuse_colour }, shader_name_{ properties.shader_name }
+	material::material(const material_properties& material_properties)
+		: resource(0, 0, material_properties.name), diffuse_colour_{ material_properties.diffuse_colour }, shader_name_{ material_properties.shader_name }
 	{
 		diffuse_map_ = texture_map::create({});
-		if (properties.diffuse_map_name == default_diffuse_name)
+		if (material_properties.diffuse_map_name == default_diffuse_name)
 		{
-			diffuse_map_->texture = texture_system::get_default_diffuse_texture();
+			diffuse_map_->map_texture = texture_system::get_default_diffuse_texture();
 		}
 		else
 		{
-			diffuse_map_->texture = texture_system::acquire(properties.diffuse_map_name);
+			diffuse_map_->map_texture = texture_system::acquire(material_properties.diffuse_map_name);
 		}
 
 		specular_map_ = texture_map::create({});
-		if (properties.specular_map_name == default_specular_name)
+		if (material_properties.specular_map_name == default_specular_name)
 		{
-			specular_map_->texture = texture_system::get_default_specular_texture();
+			specular_map_->map_texture = texture_system::get_default_specular_texture();
 		}
 		else
 		{
-			specular_map_->texture = texture_system::acquire(properties.specular_map_name);
+			specular_map_->map_texture = texture_system::acquire(material_properties.specular_map_name);
 		}
 
 		normal_map_ = texture_map::create({});
-		if (properties.normal_map_name == default_normal_name)
+		if (material_properties.normal_map_name == default_normal_name)
 		{
-			normal_map_->texture = texture_system::get_default_diffuse_texture();
+			normal_map_->map_texture = texture_system::get_default_diffuse_texture();
 		}
 		else
 		{
-			normal_map_->texture = texture_system::acquire(properties.normal_map_name);
+			normal_map_->map_texture = texture_system::acquire(material_properties.normal_map_name);
 		}
 		shader_id_ = shader_system::get_shader_id(shader_name_);
 

@@ -25,12 +25,17 @@ namespace egkr
 		return nullptr;
 	}
 
-	bool platform_windows::startup(const platform::configuration& configuration)
+	bool platform_windows::startup(const platform::configuration& platform_configuration)
 	{
-		glfwInit();
+		if(!glfwInit())
+		{
+			LOG_ERROR("Failed to initialise platform");
+			return false;
+		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
@@ -38,14 +43,20 @@ namespace egkr
 			return false;
 		}
 		glfwMakeContextCurrent(window_);
-		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
+		glfwSetWindowPos(window_, (int)platform_configuration.start_x, (int)platform_configuration.start_y);
 
 		glfwSetKeyCallback(window_, &platform_windows::key_callback);
 		glfwSetMouseButtonCallback(window_, &platform_windows::mouse_callback);
 		glfwSetScrollCallback(window_, &platform_windows::mouse_wheel_callback);
 		glfwSetCursorPosCallback(window_, &platform_windows::mouse_move_callback);
 		glfwSetWindowCloseCallback(window_, &platform_windows::on_close);
-		glfwSetWindowSizeCallback(window_, &platform_windows::on_resize);
+		glfwSetWindowSizeCallback(window_, [](GLFWwindow*, int width, int height)
+				{
+				event::context context{};
+				context.set(0, (uint32_t)width);
+				context.set(1, (uint32_t)height);
+				event::fire_event(event::code::resize, nullptr, context);
+				});
 
 		startup_time_ = std::chrono::steady_clock::now();
 		is_initialised_ = true;
@@ -92,7 +103,7 @@ namespace egkr
 			LOG_WARN("Key event from wrong window");
 			return;
 		}
-		auto pressed = action == GLFW_PRESS | action == GLFW_REPEAT;
+		auto pressed = action == GLFW_PRESS || action == GLFW_REPEAT;
 
 		input::process_key((egkr::key)key, pressed);
 	}

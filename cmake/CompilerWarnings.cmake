@@ -64,16 +64,16 @@ function(
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-covered-switch-default
-        -Wno-unsafe-buffer-usage
         -Wno-switch-enum
         -Wno-disabled-macro-expansion
-        -Wno-cast-function-type-strict
         -Wno-implicit-int-float-conversion
         -Wno-ctad-maybe-unsupported
         -Wno-c++20-compat
         -Wno-deprecated-copy-with-user-provided-dtor
         -Wno-cast-align
         -Wno-vla-extension
+        -Wno-unsafe-buffer-usage
+        -Wno-cast-function-type-strict
     )
   endif()
 

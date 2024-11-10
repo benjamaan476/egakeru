@@ -33,7 +33,7 @@ namespace egkr::audio
 
     struct work_thread_params
     {
-        source* source{};
+        source* audio_source{};
     };
 
     struct source
@@ -48,14 +48,14 @@ namespace egkr::audio
         bool trigger_exit{false};
         //std::mutex mutex;
         audio::file* current{};
-        std::jthread thread{};
+        std::jthread thread;
 
         source()
         {
             alGenSources((ALuint)1, &id);
 
             work_thread_params* params = new work_thread_params();
-            params->source = this;
+            params->audio_source = this;
             thread = std::jthread(&source::worker_thread, params);
         }
 
@@ -68,7 +68,7 @@ namespace egkr::audio
 
         static uint32_t worker_thread(work_thread_params* params)
         {
-            source* s = params->source;
+            source* s = params->audio_source;
 
             delete params;
             bool do_break{};
@@ -88,7 +88,7 @@ namespace egkr::audio
                     }
                 }
 
-                if (s->current && s->current->type == type::music_stream)
+                if (s->current && s->current->audio_type == type::music_stream)
                 { 
                     update_stream(s->current, s);
                 }
@@ -115,22 +115,22 @@ namespace egkr::audio
         {
             {
                 //std::lock_guard lock{ mutex };
-                if (file->type == audio::type::sound_effect)
+                if (file->audio_type == audio::type::sound_effect)
                 {
-                    alSourceQueueBuffers(id, 1, &file->plugin_data->buffer);
+                    alSourceQueueBuffers(id, 1, &file->data->buffer);
                     //check_error();
                 }
                 else
                 {
                     for (uint32_t i{}; i < OAL_PLUGIN_MUSIC_BUFFER_COUNT; ++i)
                     {
-                        if (!stream_music_data(file->plugin_data->buffers[i], file))
+                        if (!stream_music_data(file->data->buffers[i], file))
                         {
                             LOG_ERROR("Failed to stream data to buffer {} in music file. File load failed", i);
                             break;
                         }
                     }
-                    alSourceQueueBuffers(id, OAL_PLUGIN_MUSIC_BUFFER_COUNT, file->plugin_data->buffers.data());
+                    alSourceQueueBuffers(id, OAL_PLUGIN_MUSIC_BUFFER_COUNT, file->data->buffers.data());
                     //check_error();
                 }
 
@@ -285,7 +285,7 @@ namespace egkr::audio
             if (!stream_music_data(buffer_id, audio))
             {
                 bool done{ true };
-                if (audio->plugin_data->is_looping)
+                if (audio->data->is_looping)
                 {
                     audio->rewind();
                     done = !stream_music_data(buffer_id, audio);
@@ -300,11 +300,11 @@ namespace egkr::audio
         return true;
     }
 
-    bool oal::init(const configuration& configuration)
+    bool oal::init(const configuration& oal_configuration)
     {
         internal_data = new plugin_internal_data();
 
-        internal_data->configuration = configuration;
+        internal_data->configuration = oal_configuration;
         if (internal_data->configuration.max_sources < 1)
         {
             LOG_WARN("Audio plugin max_sources was configured as 0. Defaulting to 8.");
@@ -440,13 +440,13 @@ namespace egkr::audio
         auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
-        file->plugin_data = new plugin_data();
+        file->data = new plugin_data();
 
-        file->plugin_data->buffer = find_free_buffer();
+        file->data->buffer = find_free_buffer();
 
-        if (file->plugin_data->buffer == invalid_32_id)
+        if (file->data->buffer == invalid_32_id)
         {
-            delete file->plugin_data;
+            delete file->data;
             resource_system::unload(resource);
             LOG_ERROR("Unable to open audio file due to no buffers being available");
             return nullptr;
@@ -459,12 +459,12 @@ namespace egkr::audio
         {
             void* pcm = file->stream_buffer_data();
             check_error();
-            alBufferData(file->plugin_data->buffer, (ALenum)file->format, (int16_t*)pcm, (ALsizei)file->total_samples_left, (ALsizei)file->sample_rate);
+            alBufferData(file->data->buffer, (ALenum)file->format, (int16_t*)pcm, (ALsizei)file->total_samples_left, (ALsizei)file->sample_rate);
             check_error();
             return file;
         }
 
-        if (file && file->plugin_data) { delete file->plugin_data; }
+        if (file && file->data) { delete file->data; }
         resource_system::unload(resource);
         return nullptr;
     }
@@ -480,12 +480,12 @@ namespace egkr::audio
         auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
-        file->plugin_data = new plugin_data();
+        file->data = new plugin_data();
 
         for (uint32_t i{}; i < OAL_PLUGIN_MUSIC_BUFFER_COUNT; ++i)
         {
-            file->plugin_data->buffers[i] = find_free_buffer();
-            if (file->plugin_data->buffers[i] == invalid_32_id)
+            file->data->buffers[i] = find_free_buffer();
+            if (file->data->buffers[i] == invalid_32_id)
             {
                 LOG_ERROR("Unable to open music file due to no buffers being available");
                 return nullptr;
@@ -496,15 +496,15 @@ namespace egkr::audio
         file->format = AL_FORMAT_MONO16;
         if (file->channels == 2) { file->format = AL_FORMAT_STEREO16; }
 
-        file->plugin_data->is_looping = true;
+        file->data->is_looping = true;
         return file;
     }
 
     void oal::unload_audio(audio::file* file)
     {
-        clear_buffer(&file->plugin_data->buffer, 0);
+        clear_buffer(&file->data->buffer, 0);
 
-        delete file->plugin_data;
+        delete file->data;
         resource_system::unload(file->audio_resource);
     }
 

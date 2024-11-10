@@ -17,9 +17,9 @@ namespace egkr
 		{
 			vk::Format image_format{};
 			vk::ImageTiling tiling{};
-			vk::ImageUsageFlags usage{};
-			vk::MemoryPropertyFlags memory_properties{};
-			vk::ImageAspectFlags aspect_flags{};
+			vk::ImageUsageFlags usage;
+			vk::MemoryPropertyFlags memory_properties;
+			vk::ImageAspectFlags aspect_flags;
 
 			texture::type texture_type{};
 
@@ -30,7 +30,7 @@ namespace egkr
 			const uint32_t depth{ 1 };
 			const uint32_t mip_levels{ 4 };
 		};
-		static vulkan_texture* create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view);
+		static vulkan_texture* create(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view);
 		static vulkan_texture* create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view);
 		void create_view(const properties& properties);
 

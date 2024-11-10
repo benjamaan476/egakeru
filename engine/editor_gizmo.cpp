@@ -65,17 +65,17 @@ namespace egkr::editor
 	{
 	}
 
-	void gizmo::set_mode(mode mode)
+	void gizmo::set_mode(mode mode_gizmo)
 	{
-		gizmo_mode = mode;
+		gizmo_mode = mode_gizmo;
 	}
 
-	ray::result gizmo::raycast(const ray& ray)
+	ray::hit_result gizmo::raycast(const ray& ray)
 	{
-		ray::result result;
-		const auto& gizmo_data = mode_data.at(gizmo_mode);
+		ray::hit_result result;
+		const auto& data = mode_data.at(gizmo_mode);
 
-		for (const auto& extents : gizmo_data.extents)
+		for (const auto& extents : data.extents)
 		{
 			ray.oriented_extents(extents, get_local())
 				.transform([&](float distance)
@@ -141,12 +141,12 @@ namespace egkr::editor
 		data.interaction_plane = {};
 	}
 
-	void gizmo::handle_interaction(interaction_type interaction_type, const ray& ray)
+	void gizmo::handle_interaction(interaction_type type, const ray& ray)
 	{
 		if (gizmo_mode == mode::move)
 		{
 			auto& data = mode_data.at(mode::move);
-			if (interaction_type == interaction_type::mouse_hover)
+			if (type == interaction_type::mouse_hover)
 			{
 				float4x4 model;
 				if (auto selected = selected_transform.lock())
@@ -177,14 +177,14 @@ namespace egkr::editor
 						if (j == hit_axis)
 						{
 							data.vertices[2 * j + 0].colour = yellow;
-							data.vertices[2 * j + 1].colour = yellow;
+							data.vertices[2 * j + 1u].colour = yellow;
 						}
 						else
 						{
 							data.vertices[2 * j + 0].colour = float4(0.f, 0.f, 0.f, 1.f);
 							data.vertices[2 * j + 0].colour[j] = 1.f;
-							data.vertices[2 * j + 1].colour = float4(0.f, 0.f, 0.f, 1.f);
-							data.vertices[2 * j + 1].colour[j] = 1.f;
+							data.vertices[2 * j + 1u].colour = float4(0.f, 0.f, 0.f, 1.f);
+							data.vertices[2 * j + 1u].colour[j] = 1.f;
 						}
 					}
 					if (hit_axis == 3)
@@ -239,7 +239,7 @@ namespace egkr::editor
 					data.geometry_->update_vertices(0, (uint32_t)data.vertices.size(), data.vertices.data());
 				}
 			}
-			else if (interaction_type == interaction_type::mouse_drag)
+			else if (type == interaction_type::mouse_drag)
 			{
 				ray.plane(data.interaction_plane)
 					.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
@@ -286,7 +286,7 @@ namespace egkr::editor
 		else if (gizmo_mode == mode::scale)
 		{
 			auto& data = mode_data.at(mode::scale);
-			if (interaction_type == interaction_type::mouse_hover)
+			if (type == interaction_type::mouse_hover)
 			{
 				float4x4 model;
 				if (auto selected = selected_transform.lock())
@@ -317,14 +317,14 @@ namespace egkr::editor
 							if (j == hit_axis)
 							{
 								data.vertices[2 * j + 0].colour = yellow;
-								data.vertices[2 * j + 1].colour = yellow;
+								data.vertices[2 * j + 1u].colour = yellow;
 							}
 							else
 							{
 								data.vertices[2 * j + 0].colour = float4(0.f, 0.f, 0.f, 1.f);
 								data.vertices[2 * j + 0].colour[j] = 1.f;
-								data.vertices[2 * j + 1].colour = float4(0.f, 0.f, 0.f, 1.f);
-								data.vertices[2 * j + 1].colour[j] = 1.f;
+								data.vertices[2 * j + 1u].colour = float4(0.f, 0.f, 0.f, 1.f);
+								data.vertices[2 * j + 1u].colour[j] = 1.f;
 							}
 						}
 
@@ -347,7 +347,7 @@ namespace egkr::editor
 
 				}
 			}
-			else if (interaction_type == interaction_type::mouse_drag)
+			else if (type == interaction_type::mouse_drag)
 			{
 				ray.plane(data.interaction_plane)
 					.and_then([&](auto hit) -> std::optional<std::tuple<float3, float>>
@@ -394,7 +394,7 @@ namespace egkr::editor
 		else if (gizmo_mode == mode::rotate)
 		{
 			auto& data = mode_data.at(mode::rotate);
-			if (interaction_type == interaction_type::mouse_hover)
+			if (type == interaction_type::mouse_hover)
 			{
 				float4x4 model;
 				if (auto selected = selected_transform.lock())
@@ -431,11 +431,11 @@ namespace egkr::editor
 				{
 					data.current_axis_index = (uint8_t)hit_axis;
 
-					for (uint32_t i : std::ranges::iota_view{ 0u, 2u * 3u * segment_count })
+					for (int32_t i : std::ranges::iota_view{ 0, 2 * 3 * segment_count })
 					{
 						float4 col{ 0.f, 0.f, 0.f, 1.f };
 						col[i / (2 * segment_count)] = 1.f;
-						data.vertices[i].colour = col;
+						data.vertices[(uint32_t)i].colour = col;
 					}
 
 					if (hit_axis != invalid_8_id)
@@ -493,16 +493,16 @@ namespace egkr::editor
 		egkr::vector<colour_vertex_3d> vertices(18);
 		float axis_length{ 2.f };
 
-		for (uint32_t i{ 0u }; i < 6; i += 2)
+		for (int32_t i{ 0 }; i < 6; i += 2)
 		{
 			float4 position{ 0.f, 0.f, 0.f, 1.f };
 			float4 colour{0.f, 0.f, 0.f, 1.f};
 			position[i / 2] = 0.2f;
 			colour[i / 2] = 1.f;
-			vertices[i] = { .position = position, .colour = colour };
+			vertices[(size_t)i] = { .position = position, .colour = colour };
 			position[i / 2] = axis_length;
 			colour[i / 2] = 1.f;
-			vertices[i + 1] = { .position = position, .colour = colour };
+			vertices[(size_t)(i + 1)] = { .position = position, .colour = colour };
 		}
 		axis_length = 0.4f;
 		float4 colour{ 1.f, 0.f, 0.f, 1.f };
@@ -543,16 +543,16 @@ namespace egkr::editor
 		egkr::vector<colour_vertex_3d> vertices(12);
 		float axis_length{ 2.f };
 
-		for (uint32_t i{ 0u }; i < 6; i += 2)
+		for (int32_t i{ 0 }; i < 6; i += 2)
 		{
 			float4 position{ 0.f, 0.f, 0.f, 1.f };
 			float4 colour{ 0.f, 0.f, 0.f, 1.f };
 			position[i / 2] = 0.2f;
 			colour[i / 2] = 1.f;
-			vertices[i] = { .position = position, .colour = colour };
+			vertices[(size_t)i] = { .position = position, .colour = colour };
 			position[i / 2] = axis_length;
 			colour[i / 2] = 1.f;
-			vertices[i + 1] = { .position = position, .colour = colour };
+			vertices[(size_t)(i + 1)] = { .position = position, .colour = colour };
 		}
 		axis_length = 0.4f;
 		const float4 red{ 1.f, 0.f, 0.f, 1.f };

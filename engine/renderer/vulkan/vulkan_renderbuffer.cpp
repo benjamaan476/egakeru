@@ -61,7 +61,7 @@ namespace egkr
 		memory_requirements_ = context_->device.logical_device.getBufferMemoryRequirements(handle_);
 		memory_index_ = context_->device.find_memory_index(memory_requirements_.memoryTypeBits, memory_property_flags_);
 
-		SET_DEBUG_NAME(context_, VkObjectType::VK_OBJECT_TYPE_BUFFER, (uint64_t)(const VkBuffer)handle_, "buffer" + buffer_name)
+		SET_DEBUG_NAME(context_, VkObjectType::VK_OBJECT_TYPE_BUFFER, (uint64_t)(VkBuffer)handle_, "buffer" + buffer_name)
 
 		if (memory_index_ == invalid_32_id)
 		{

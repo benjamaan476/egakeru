@@ -22,6 +22,7 @@
 #include <cctype>
 #include <locale>
 #include <ranges>
+#include <cmath>
 
 enum log_level
 {
@@ -106,22 +107,22 @@ namespace egkr
 		float aspect{};
 
 		frustum() = default;
-		constexpr frustum(const float3& position, const float3& forward, const float3& right, const float3& up, float aspect, float fov, float near, float far)
-			: position{ position }, forward{ forward }, right{ right }, up{ up }, fov{ fov }, near{ near }, far{ far }, aspect{aspect}
+		constexpr frustum(const float3& pos, const float3& forward_axis, const float3& right_axis, const float3& up_axis, float aspect_ratio, float frusum_fov, float near_plane, float far_plane)
+			: position{ pos }, forward{ forward_axis }, right{ right_axis }, up{ up_axis }, fov{ frusum_fov }, near{ near_plane }, far{ far_plane }, aspect{aspect_ratio}
 		{
 			const float half_v = far * std::tan(0.5f * fov);
 			const float half_h = half_v * aspect;
 
-			const auto forward_fwd = forward * far;
-			const auto half_right = half_h * right;
-			const auto half_up = half_v * up;
+			const auto forward_fwd = forward_axis * far_plane;
+			const auto half_right = half_h * right_axis;
+			const auto half_up = half_v * up_axis;
 
-			sides[0] = plane::create(position + near * forward, forward);
-			sides[1] = plane::create(position + forward_fwd, -forward);
-			sides[2] = plane::create(position, glm::cross(up, half_right + forward_fwd));
-			sides[3] = plane::create(position, glm::cross(forward_fwd - half_right, up));
-			sides[4] = plane::create(position, glm::cross(right, forward_fwd - half_up));
-			sides[5] = plane::create(position, glm::cross(half_up + forward_fwd, right));
+			sides[0] = plane::create(pos + near_plane * forward_axis, forward_axis);
+			sides[1] = plane::create(pos + forward_fwd, -forward_axis);
+			sides[2] = plane::create(pos, glm::cross(up_axis, half_right + forward_fwd));
+			sides[3] = plane::create(pos, glm::cross(forward_fwd - half_right, up_axis));
+			sides[4] = plane::create(pos, glm::cross(right_axis, forward_fwd - half_up));
+			sides[5] = plane::create(pos, glm::cross(half_up + forward_fwd, right_axis));
 
 		}
 

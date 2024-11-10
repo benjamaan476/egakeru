@@ -76,20 +76,20 @@ namespace egkr
 
 	struct vulkan_context
 	{
-		vk::Instance instance{};
+		vk::Instance instance;
 		vk::AllocationCallbacks* allocator = nullptr;
 		VkDebugUtilsMessengerEXT debug{};
 		vulkan_device device{};
-		vk::SurfaceKHR surface{};
-		swapchain::shared_ptr swapchain{};
+		vk::SurfaceKHR surface;
+		swapchain::shared_ptr swpchain;
 
-		egkr::vector<command_buffer> graphics_command_buffers{};
+		egkr::vector<command_buffer> graphics_command_buffers;
 
-		egkr::vector<vk::Semaphore> image_available_semaphore{};
-		egkr::vector<vk::Semaphore> queue_complete_semaphore{};
+		egkr::vector<vk::Semaphore> image_available_semaphore;
+		egkr::vector<vk::Semaphore> queue_complete_semaphore;
 
-		egkr::vector<fence::shared_ptr> in_flight_fences{};
-		egkr::vector<fence::shared_ptr> images_in_flight{};
+		egkr::vector<fence::shared_ptr> in_flight_fences;
+		egkr::vector<fence::shared_ptr> images_in_flight;
 
 		uint32_t framebuffer_width{};
 		uint32_t framebuffer_height{};
@@ -109,7 +109,6 @@ namespace egkr
 		PFN_vkSetDebugUtilsObjectNameEXT pfn_set_debug_name{};
 #endif
 
-		float4 viewport_rect{};
 		float4 scissor_rect{};
 	};
 

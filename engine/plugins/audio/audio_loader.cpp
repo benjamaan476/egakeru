@@ -88,7 +88,7 @@ namespace egkr
 
 		audio::file* resource_data = new audio::file();
 		resource_data->internal_data = new audio_file_internal();
-		resource_data->type = parameters->type;
+		resource_data->audio_type = parameters->type;
 		if (name.contains(".ogg"))
 		{
 			LOG_TRACE("Processing OGG file");
@@ -105,7 +105,7 @@ namespace egkr
 			resource_data->sample_rate = info.sample_rate;
 			resource_data->total_samples_left = stb_vorbis_stream_length_in_samples(resource_data->internal_data->vorbis);
 
-			if (resource_data->type == audio::type::music_stream)
+			if (resource_data->audio_type == audio::type::music_stream)
 			{
 				const uint64_t buffer_lenght = parameters->chunk_size * sizeof(int16_t);
 				resource_data->internal_data->pcm = (int16_t*)malloc(buffer_lenght);

@@ -77,23 +77,6 @@ namespace egkr
 		view_system::on_window_resize(width, height);
 	}
 
-	void renderer_frontend::draw_frame(render_packet& packet) const
-	{
-		if (backend_->begin_frame())
-		{
-			auto attachment_index = backend_->get_window_index();
-			for (auto& view : packet.render_views)
-			{
-				if (!view_system::on_render(view.render_view, &view, backend_->get_frame_number(), attachment_index))
-				{
-					LOG_ERROR("Failed to render view");
-				}
-			}
-
-			backend_->end_frame();
-		}
-	}
-
 	void renderer_frontend::free_material(material* texture) const
 	{
 		return backend_->free_material(texture);
@@ -149,16 +132,6 @@ namespace egkr
 		return backend_->create_renderbuffer(buffer_type, size);
 	}
 
-	void renderer_frontend::set_viewport(const float4& rect) const
-	{
-		backend_->set_viewport(rect);
-	}
-
-	void renderer_frontend::reset_viewport() const
-	{
-		backend_->reset_viewport();
-	}
-
 	void renderer_frontend::set_scissor(const float4& rect) const
 	{
 		backend_->set_scissor(rect);
@@ -167,6 +140,36 @@ namespace egkr
 	void renderer_frontend::reset_scissor() const
 	{
 		backend_->reset_scissor();
+	}
+
+	void renderer_frontend::set_active_viewport(viewport* viewport)
+	{
+		active_viewport_ = viewport;
+		float4 viewport_rect{viewport->viewport_rect.x, viewport->viewport_rect.y + viewport->viewport_rect.w, viewport->viewport_rect.z, -viewport->viewport_rect.w };
+		float4 scissor_rect{ viewport->viewport_rect.x, viewport->viewport_rect.y, viewport->viewport_rect.z, viewport->viewport_rect.w };
+		backend_->set_viewport(viewport_rect);
+		backend_->set_scissor(scissor_rect);
+
+	}
+
+	bool renderer_frontend::prepare_frame(frame_data& frame_data) const
+	{
+		return backend_->prepare_frame(frame_data);
+	}
+
+	bool renderer_frontend::begin(const frame_data& frame_data) const
+	{
+		return backend_->begin(frame_data);
+	}
+
+	void renderer_frontend::end(frame_data& frame_data) const
+	{
+		backend_->end(frame_data);
+	}
+
+	void renderer_frontend::present(const frame_data & frame_data) const
+	{
+		backend_->present(frame_data);
 	}
 
 	void renderer_frontend::set_winding(winding winding) const

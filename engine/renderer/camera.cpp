@@ -51,11 +51,6 @@ namespace egkr
 		return view_;
 	}
 
-	float4x4 camera::get_projection() const
-	{
-		return glm::perspective(fov_, aspect_ratio_, near_clip_, far_clip_);
-	}
-
 	float3 camera::get_forward() const
 	{
 		return -glm::normalize(glm::inverse(view_)[2]);
@@ -150,11 +145,6 @@ namespace egkr
 	{
 		rotation_.y += amount;
 		is_dirty_ = true;
-	}
-
-	float camera::get_fov() const
-	{
-		return fov_;
 	}
 
 	float camera::get_near_clip() const

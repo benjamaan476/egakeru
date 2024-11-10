@@ -3,14 +3,15 @@
 #include <systems/material_system.h>
 #include <systems/resource_system.h>
 #include <renderer/renderer_types.h>
+#include <renderer/renderer_frontend.h>
 
 #include <resources/ui_text.h>
 #include <resources/font.h>
 
 namespace egkr
 {
-	render_view_ui::render_view_ui(const configuration& configuration)
-		:render_view(configuration)
+	render_view_ui::render_view_ui(const configuration& view_configuration)
+		:render_view(view_configuration)
 	{
 	}
 
@@ -28,9 +29,6 @@ namespace egkr
 		diffuse_colour_location_ = shader_->get_uniform_index("diffuse_colour");
 		model_location_ = shader_->get_uniform_index("model");
 
-		near_clip_ = -100.F;
-		far_clip_ = 100.F;
-		projection_ = glm::ortho(0.F, (float)width_, (float)height_, 0.F, near_clip_, far_clip_);
 		view_ = float4x4{ 1.F };
 
 		event::register_event(event::code::render_target_refresh_required, this, on_event);
@@ -49,23 +47,17 @@ namespace egkr
 		{
 			width_ = width;
 			height_ = height;
-			projection_ = glm::ortho(0.F, (float)width_, (float)height_, 0.F, near_clip_, far_clip_);
-
-			for (auto& pass : renderpasses_)
-			{
-				pass->set_render_area(width_, height_);
-			}
 		}
 	}
 
-	render_view_packet render_view_ui::on_build_packet(void* data)
+	render_view_packet render_view_ui::on_build_packet(void* data, const camera::shared_ptr& /*camera*/, viewport* viewport)
 	{
-		ui_packet_data* ui_data = (ui_packet_data*)data;
+		auto* ui_data = (ui_packet_data*)data;
 
 		render_view_packet packet{};
-		packet.render_view = this;
-		packet.projection_matrix = projection_;
+		packet.view = this;
 		packet.view_matrix = view_;
+		packet.view_viewport = viewport;
 		packet.extended_data = new ui_packet_data(*ui_data);
 
 		for (const auto& msh : ui_data->mesh_data.meshes)
@@ -74,7 +66,7 @@ namespace egkr
 			{
 				for (const auto& geo : mesh->get_geometries())
 				{
-					packet.render_data.emplace_back(geo, mesh);
+					packet.render_packet_data.emplace_back(geo, mesh);
 				}
 			}
 		}
@@ -82,30 +74,33 @@ namespace egkr
 		return packet;
 	}
 
-	bool render_view_ui::on_render(const render_view_packet* render_view_packet, uint32_t frame_number, uint32_t render_target_index) const
+	bool render_view_ui::on_render(render_view_packet* render_view_packet, const frame_data& frame_data) const
 	{
-		for (auto& pass : renderpasses_)
+		renderer->set_active_viewport(render_view_packet->view_viewport);
+
+		for (const auto& pass : renderpasses_)
 		{
-			pass->begin(pass->get_render_targets()[render_target_index].get());
+			pass->begin(pass->get_render_targets()[frame_data.render_target_index].get());
 
 			shader_system::use(shader_->get_id());
 
-			material_system::apply_global(shader_->get_id(), frame_number, render_view_packet->projection_matrix, render_view_packet->view_matrix, {}, {}, 0);
+			material_system::apply_global(shader_->get_id(), frame_data, render_view_packet->view_viewport->projection, render_view_packet->view_matrix, {}, {}, 0);
 
-			for (auto render_data : render_view_packet->render_data)
+			for (const auto& render_data : render_view_packet->render_packet_data)
 			{
-				auto m = render_data.geometry->get_material();
+				auto m = render_data.render_geometry->get_material();
 
-				bool needs_update = m->get_render_frame() != frame_number;
+				bool needs_update = (m->get_render_frame() != frame_data.frame_number) || m->get_draw_index() != frame_data.draw_index;
 
 				material_system::apply_instance(m, needs_update);
-				m->set_render_frame(frame_number);
+				m->set_render_frame(frame_data.frame_number);
+				m->set_draw_index(frame_data.draw_index);
 
 				if (auto transform = render_data.transform.lock())
 				{
 					material_system::apply_local(m, transform->get_world());
 				}
-				render_data.geometry->draw();
+				render_data.render_geometry->draw();
 			}
 
 			auto* texts = (ui_packet_data*)render_view_packet->extended_data;
@@ -116,7 +111,7 @@ namespace egkr
 					shader_system::bind_instance(text->get_id());
 
 					auto atlas = text->get_data()->atlas;
-					if (atlas->texture->get_generation() == invalid_32_id)
+					if (atlas->map_texture->get_generation() == invalid_32_id)
 					{
 						continue;
 					}
@@ -124,9 +119,10 @@ namespace egkr
 					constexpr static const float4 white_colour{ 1, 1, 1, 1 };
 					shader_system::set_uniform(diffuse_colour_location_, &white_colour);
 
-					bool needs_update = text->get_render_frame() != frame_number;
+					bool needs_update = (text->get_render_frame() != frame_data.frame_number) || (text->get_draw_index() != frame_data.draw_index);
 					shader_system::apply_instance(needs_update);
-					text->set_render_frame(frame_number);
+					text->set_render_frame(frame_data.frame_number);
+					text->set_draw_index(frame_data.draw_index);
 
 					float4x4 model = text->get_world();
 

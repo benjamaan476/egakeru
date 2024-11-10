@@ -6,13 +6,13 @@
 
 namespace egkr
 {
-    shader::shared_ptr vulkan_shader::create(const vulkan_context* context, const properties& properties)
+    shader::shared_ptr vulkan_shader::create(const vulkan_context* context, const properties& shader_properties)
     {
-        return std::make_shared<vulkan_shader>(context, properties);
+        return std::make_shared<vulkan_shader>(context, shader_properties);
     }
 
-    vulkan_shader::vulkan_shader(const vulkan_context* context, const properties& properties)
-        : shader(properties), context_{ context }
+    vulkan_shader::vulkan_shader(const vulkan_context* context, const properties& shader_properties)
+        : shader(shader_properties), context_{ context }
     {
     }
 	vulkan_shader::~vulkan_shader()
@@ -76,10 +76,10 @@ namespace egkr
 
     bool vulkan_shader::use()
     {
-		auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
-        pipelines_[bound_pipeline_index_]->bind(command_buffer, vk::PipelineBindPoint::eGraphics);
-		command_buffer.get_handle().setPrimitiveTopology(current_topology_);
-        return true;
+	    const auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
+	    pipelines_[bound_pipeline_index_]->bind(command_buffer, vk::PipelineBindPoint::eGraphics);
+	    command_buffer.get_handle().setPrimitiveTopology(current_topology_);
+	    return true;
     }
 
     bool vulkan_shader::populate(renderpass::renderpass* pass, const egkr::vector<std::string>& stage_filenames, const egkr::vector<stages>& shader_stages)
@@ -113,7 +113,7 @@ namespace egkr
 		for (auto i{ 0U }; i < stage_flags.size(); ++i)
 		{
 			auto& stage = stage_flags[i];
-			auto& name = stage_filenames[i];
+			const auto& name = stage_filenames[i];
 			configuration.stages.emplace_back(stage, name);
 		}
 
@@ -121,13 +121,13 @@ namespace egkr
 		configuration.pool_sizes.push_back(vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 4096));
 
 
-		for (const auto& uniform : uniforms_)
+		for (const auto& shader_uniform : uniforms_)
 		{
-			switch (uniform.scope)
+			switch (shader_uniform.uniform_scope)
 			{
 			case scope::global:
 			{
-				if (uniform.type == uniform_type::sampler)
+				if (shader_uniform.type == uniform_type::sampler)
 				{
 					properties_.global_uniform_sampler_count++;
 				}
@@ -138,7 +138,7 @@ namespace egkr
 			} break;
 			case scope::instance:
 			{
-				if (uniform.type == uniform_type::sampler)
+				if (shader_uniform.type == uniform_type::sampler)
 				{
 					properties_.instance_uniform_sampler_count++;
 				}
@@ -231,13 +231,13 @@ namespace egkr
 		uint32_t offset{ 0 };
 		for (auto i{ 0U }; i < attributes.size(); ++i)
 		{
-			vk::VertexInputAttributeDescription attribute{};
-			attribute
+			vk::VertexInputAttributeDescription vertex_attribute{};
+			vertex_attribute
 				.setLocation(i)
 				.setBinding(0)
 				.setOffset(offset)
 				.setFormat(vulkan_attribute_types[attributes[i].type]);
-			configuration.attributes.push_back(attribute);
+			configuration.attributes.push_back(vertex_attribute);
 
 			offset += attributes[i].size;
 		}
@@ -262,9 +262,9 @@ namespace egkr
 		vk::Viewport viewport{};
 		viewport
 			.setX(0.F)
-			.setY(context_->framebuffer_height)
-			.setWidth(context_->framebuffer_width)
-			.setHeight(-context_->framebuffer_height)
+			.setY((float)context_->framebuffer_height)
+			.setWidth((float)context_->framebuffer_width)
+			.setHeight(-(float)context_->framebuffer_height)
 			.setMinDepth(0.F)
 			.setMaxDepth(1.F);
 
@@ -295,9 +295,9 @@ namespace egkr
 		pipeline_properties.push_constant_ranges = get_push_constant_ranges();
 		pipeline_properties.input_binding_description = binding_desc;
 		pipeline_properties.input_attribute_description = configuration.attributes;
-		pipeline_properties.cull_mode = properties_.cull_mode;
+		pipeline_properties.cull_mode = properties_.shader_cull_mode;
 		pipeline_properties.shader_name = properties_.name;
-		pipeline_properties.shader_flags = properties_.flags;
+		pipeline_properties.shader_flags = properties_.shader_flags;
 		bool pipeline_bound{};
 
 		if (topology_types_ & primitive_topology_type::point_list)
@@ -424,7 +424,7 @@ namespace egkr
 
 						auto vulkan_map = (vulkan_texture_map*)texture_map.get();
 
-						auto texture_data = (vulkan_texture*)texture_map->texture;
+						auto texture_data = (vulkan_texture*)texture_map->map_texture;
 
 						if (texture_data->get_generation() == invalid_32_id)
 						{
@@ -536,34 +536,34 @@ namespace egkr
 		return instance_id;
 	}
 
-	bool vulkan_shader::set_uniform(const uniform& uniform, const void* value)
+	bool vulkan_shader::set_uniform(const uniform& shader_uniform, const void* value)
 	{
-		if (uniform.type == uniform_type::sampler)
+		if (shader_uniform.type == uniform_type::sampler)
 		{
-			if (uniform.scope == scope::global)
+			if (shader_uniform.uniform_scope == scope::global)
 			{
-				set_global_texture(uniform.location, ((const texture_map::shared_ptr*)(value))->get());
+				set_global_texture(shader_uniform.location, ((const texture_map::shared_ptr*)(value))->get());
 			}
 			else
 			{
-				instance_states[get_bound_instance_id()].instance_textures[uniform.location] = *(const texture_map::shared_ptr*)value;
+				instance_states[get_bound_instance_id()].instance_textures[shader_uniform.location] = *(const texture_map::shared_ptr*)value;
 			}
 		}
 		else
 		{
-			if (uniform.scope == scope::local)
+			if (shader_uniform.uniform_scope == scope::local)
 			{
 				// Is local, using push constants. Do this immediately.
 				auto& command_buffer = context_->graphics_command_buffers[context_->image_index].get_handle();
-				command_buffer.pushConstants(pipelines_[bound_pipeline_index_]->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, (uint32_t)uniform.offset, uniform.size, value);
+				command_buffer.pushConstants(pipelines_[bound_pipeline_index_]->get_layout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, (uint32_t)shader_uniform.offset, shader_uniform.size, value);
 			}
 			else
 			{
 				// Map the appropriate memory location and copy the data over.
 				auto addr = (uint8_t*)mapped_uniform_buffer_memory;
-				addr += get_bound_ubo_offset() + uniform.offset;
+				addr += get_bound_ubo_offset() + shader_uniform.offset;
 
-				memcpy(addr, value, uniform.size);
+				memcpy(addr, value, shader_uniform.size);
 				if (addr)
 				{
 				}
@@ -574,8 +574,8 @@ namespace egkr
 
 	vulkan_stage vulkan_shader::create_module(const vulkan_stage_configuration& stage_configuration)
 	{
-		auto resource = resource_system::load(stage_configuration.filename, resource::type::binary, nullptr);
-		auto* code = (binary_resource_properties*)resource->data;
+		auto shader_resource = resource_system::load(stage_configuration.filename, resource::type::binary, nullptr);
+		auto* code = (binary_resource_properties*)shader_resource->data;
 
 		vulkan_stage shader_stage{};
 
@@ -586,7 +586,7 @@ namespace egkr
 		shader_stage.handle = context_->device.logical_device.createShaderModule(create_info, context_->allocator);
 		shader_stage.create_info = create_info;
 
-		resource_system::unload(resource);
+		resource_system::unload(shader_resource);
 
 		vk::PipelineShaderStageCreateInfo pipeline_create_info{};
 		pipeline_create_info

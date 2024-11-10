@@ -58,7 +58,7 @@ namespace egkr::editor
 		void set_mode(mode mode);
 
 		void draw() const { mode_data.at(gizmo_mode).draw(); }
-		ray::result raycast(const ray& ray);
+		ray::hit_result raycast(const ray& ray);
 
 		void begin_interaction(interaction_type type, const ray& ray);
 		void end_interaction(interaction_type type, const ray& ray);

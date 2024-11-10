@@ -20,7 +20,10 @@ Checks: "*,
         -hicpp-signed-bitwise,
         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
         -cppcoreguidelines-pro-type-cstyle-cast,
+        -cppcoreguidelines-pro-type-union-access,
         -missing-field-initializers,
+        -hicpp-uppercase-literal-suffix,
+        -cppcoreguidlines-avoid-magic-numbers,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

@@ -2,7 +2,6 @@
 
 #include <renderer/views/render_view_ui.h>
 #include <renderer/views/render_view_world.h>
-#include <renderer/views/render_view_skybox.h>
 
 namespace egkr
 {
@@ -96,13 +95,13 @@ namespace egkr
 		return nullptr;
 	}
 
-	render_view_packet view_system::build_packet(render_view* view, void* data)
+	render_view_packet view_system::build_packet(render_view* view, void* data, const camera::shared_ptr& camera, viewport* viewport)
 	{
-		return	view->on_build_packet(data);
+		return	view->on_build_packet(data, camera, viewport);
 	}
 
-	bool view_system::on_render(const render_view* view, const render_view_packet* packet, uint32_t frame_number, uint32_t render_target_index)
+	bool view_system::on_render(const render_view* view, render_view_packet* packet, const frame_data& frame_data)
 	{
-		return view->on_render(packet, frame_number, render_target_index);
+		return view->on_render(packet, frame_data);
 	}
 }

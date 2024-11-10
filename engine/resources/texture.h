@@ -26,14 +26,14 @@ namespace egkr
 
 		struct properties
 		{
-			std::string name{};
+			std::string name;
 			uint32_t id{};
 			uint32_t width{};
 			uint32_t height{};
 			uint8_t channel_count{};
 
 			uint32_t generation{ invalid_32_id };
-			flags flags{};
+			flags texture_flags{};
 
 			type texture_type{};
 
@@ -56,9 +56,9 @@ namespace egkr
 
 		void destroy();
 
-		void set_flags(flags flags)
+		void set_flags(flags texture_flags)
 		{
-			properties_.flags = flags;
+			properties_.texture_flags = texture_flags;
 		}
 		void set_width(uint32_t width)
 		{
@@ -72,14 +72,14 @@ namespace egkr
 		{
 			properties_.channel_count = channel_count;
 		}
-		void set_type(type type)
+		void set_type(type texture_type)
 		{
-			properties_.texture_type = type;
+			properties_.texture_type = texture_type;
 		}
 
 		[[nodiscard]] const auto& get_flags() const
 		{
-			return properties_.flags;
+			return properties_.texture_flags;
 		}
 		[[nodiscard]] const auto& get_width() const
 		{
@@ -134,7 +134,7 @@ namespace egkr
 			repeat repeat_v{ repeat::repeat };
 			repeat repeat_w{ repeat::repeat };
 
-			use use{};
+			use map_use{};
 		};
 		using shared_ptr = std::shared_ptr<texture_map>;
 		static shared_ptr create(const properties& properties);
@@ -158,6 +158,6 @@ namespace egkr
 		repeat repeat_w;
 
 		use use{};
-		texture* texture{};
+		texture* map_texture{};
 	};
 }

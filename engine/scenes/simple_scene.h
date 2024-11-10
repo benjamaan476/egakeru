@@ -5,6 +5,7 @@
 #include "resources/mesh.h"
 #include "resources/skybox.h"
 #include "renderer/camera.h"
+#include "renderer/viewport.h"
 
 #include "debug/debug_box3d.h"
 #include "debug/debug_grid.h"
@@ -72,13 +73,6 @@ namespace egkr
 			std::vector<point_light_scene_configuration> point_lights;
 		};
 
-		struct pending_mesh
-		{
-			mesh::shared_ptr mesh;
-			egkr::vector<geometry::properties> geometries;
-			std::string resource_name;
-		};
-
 		class simple_scene : public transformable
 		{
 		public:
@@ -92,8 +86,8 @@ namespace egkr
 			void load();
 			void unload();
 
-			void update(const frame_data& delta_time, const camera::shared_ptr& camera, float aspect);
-			void populate_render_packet(render_packet* packet);
+			void update(const frame_data& delta_time, const camera::shared_ptr& camera, viewport* viewport);
+			void populate_render_packet(render_packet* packet, const camera::shared_ptr& camera, viewport* viewport);
 
 			//Game owns these, scene just references them
 			void add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light);
@@ -115,7 +109,7 @@ namespace egkr
 
 			[[nodiscard]] bool is_loaded() const { return state_ >= state::loaded; }
 
-			ray::result raycast(const ray& ray);
+			ray::hit_result raycast(const ray& ray);
 
 			std::shared_ptr<transformable> get_transform(uint32_t unique_id) const;
 		private:
@@ -133,7 +127,6 @@ namespace egkr
 			std::shared_ptr<light::directional_light> directional_light_;
 			std::unordered_map<std::string, light::point_light> point_lights_;
 
-			std::queue<pending_mesh> pending_meshes_;
 			std::unordered_map<std::string, mesh::shared_ptr> meshes_;
 
 			std::unordered_map<std::string, egkr::debug::debug_box3d::shared_ptr> debug_boxes_;

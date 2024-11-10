@@ -77,22 +77,22 @@ namespace egkr
 
 	struct system_font_variant_data
 	{
-		egkr::vector<int32_t> codepoint{};
+		egkr::vector<int32_t> codepoint;
 		float scale{};
 	};
 
 	struct bitmap_font_lookup
 	{
-		uint16_t id;
+		uint16_t id{};
 		bitmap_font_internal_data font;
 	};
 
 	struct system_font_lookup
 	{
 		uint16_t id{};
-		egkr::vector<font::data> size_variants{};
+		egkr::vector<font::data> size_variants;
 		uint64_t binary_size{};
-		std::string face{};
+		std::string face;
 		void* font_binary{};
 		int32_t offset{};
 		int32_t index{};
@@ -104,8 +104,8 @@ namespace egkr
 	public:
 		struct configuration
 		{
-			egkr::vector<system_font_configuration> system_font_configurations{};
-			egkr::vector<bitmap_font_configuration> bitmap_font_configurations{};
+			egkr::vector<system_font_configuration> system_font_configurations;
+			egkr::vector<bitmap_font_configuration> bitmap_font_configurations;
 			uint8_t max_system_font_count{};
 			uint8_t max_bitmap_font_count{};
 		};
@@ -126,7 +126,7 @@ namespace egkr
 		static const bitmap_font_lookup& get_bitmap_font(const std::string& name);
 		static system_font_lookup& get_system_font(const std::string& name);
 
-		static bool verify_atlas(std::shared_ptr<font::data> data, const std::string& text);
+		static bool verify_atlas(const std::shared_ptr<font::data>& data, const std::string& text);
 		static bool setup_font_data(font::data& data);
 		static font::data create_system_font_variant(const system_font_lookup& lookup, uint16_t size, const std::string& font_name);
 
@@ -135,9 +135,9 @@ namespace egkr
 		static bool verify_system_font_size_variant(const system_font_lookup& lookup, font::data& variant, const std::string& text);
 	private:
 		configuration configuration_{};
-		egkr::vector<bitmap_font_lookup> registered_bitmap_fonts_{};
-		egkr::vector<system_font_lookup> registered_system_fonts_{};
-		std::unordered_map<std::string, bitmap_font_reference> registered_bitmap_fonts_by_name_{};
-		std::unordered_map<std::string, system_font_reference> registered_system_fonts_by_name_{};
+		egkr::vector<bitmap_font_lookup> registered_bitmap_fonts_;
+		egkr::vector<system_font_lookup> registered_system_fonts_;
+		std::unordered_map<std::string, bitmap_font_reference> registered_bitmap_fonts_by_name_;
+		std::unordered_map<std::string, system_font_reference> registered_system_fonts_by_name_;
 	};
 }

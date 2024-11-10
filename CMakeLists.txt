@@ -5,9 +5,7 @@ cmake_minimum_required(VERSION 3.21)
 # manual dependency management
 
 # Only set the cxx_standard if it is not set by someone else
-if (NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 23)
-endif()
 
 # strongly encouraged to enable this globally to avoid conflicts between
 # -Wpedantic being enabled and -std=c++20 and -std=gnu++20 for example
@@ -64,7 +62,13 @@ if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)
 endif()
 
-add_definitions(-DENABLE_DEBUG_MACRO)
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+  add_definitions(-DENABLE_DEBUG_MACRO)
+endif()
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 # Adding the src:
 add_subdirectory(engine)

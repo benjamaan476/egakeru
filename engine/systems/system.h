@@ -12,7 +12,7 @@ namespace egkr
 		platform,
 		resource,
 		shader,
-		renderer,
+		renderer_system,
 		job,
 		texture,
 		font,
@@ -61,6 +61,6 @@ namespace egkr
 		static void shutdown_known();
 		static void shutdown_extension();
 		static void shutdown_user();
-		std::unordered_map<system_type, system*> registered_systems_{};
+		std::unordered_map<system_type, system*> registered_systems_;
 	};
 }

@@ -57,7 +57,7 @@ namespace egkr
 		int32_t channels{};
 		int32_t required_channels{ 4 };
 
-		auto image_data = (uint8_t*)stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
+		auto image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
 
 		if (image_data)
 		{
@@ -78,7 +78,7 @@ namespace egkr
 
 					if (image_data[index + 3] < 255)
 					{
-						properties.flags |= texture::flags::has_transparency;
+						properties.texture_flags |= texture::flags::has_transparency;
 						break;
 					}
 				}

@@ -56,7 +56,7 @@ namespace egkr::scene
 		state_ = state::unloading;
 	}
 
-	void simple_scene::update(const frame_data& /*delta_time*/, const camera::shared_ptr& camera, float aspect)
+	void simple_scene::update(const frame_data& /*delta_time*/, const camera::shared_ptr& camera, viewport* viewport)
 	{
 		if (state_ == state::unloading)
 		{
@@ -66,7 +66,7 @@ namespace egkr::scene
 
 		if (state_ >= state::loaded)
 		{
-			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), aspect, camera->get_fov(), camera->get_near_clip(), camera->get_far_clip());
+			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), viewport->viewport_rect.w / viewport->viewport_rect.z, viewport->fov, camera->get_near_clip(), camera->get_far_clip());
 			//if (update_frustum_)
 			//{
 			//	debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
@@ -90,7 +90,7 @@ namespace egkr::scene
 
 					if (frustum.intersects_aabb(center, half_extents))
 					{
-						egkr::render_data data{ .geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
+						egkr::render_data data{ .render_geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
 						frame_geometry_.world_geometries.emplace_back(data);
 					}
 				}
@@ -114,17 +114,17 @@ namespace egkr::scene
 
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
@@ -140,13 +140,11 @@ namespace egkr::scene
 		}
 	}
 
-	void simple_scene::populate_render_packet(render_packet* packet)
+	void simple_scene::populate_render_packet(render_packet* packet, const camera::shared_ptr& camera, viewport* viewport)
 	{
-		skybox_packet_data skybox{ .skybox = skybox_ };
-		packet->render_views[render_view::type::skybox] = view_system::build_packet(view_system::get("skybox").get(), &skybox);
-
 		auto world_view = view_system::get("world-opaque");
-		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_);
+		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_, camera, viewport);
+		packet->render_views[render_view::type::world].skybox_data.skybox_data = skybox_;
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
@@ -230,7 +228,7 @@ namespace egkr::scene
 		{
 			if (skybox_)
 			{
-				skybox_->unload();
+				skybox_->destroy();
 				skybox_.reset();
 			}
 		}
@@ -342,22 +340,21 @@ namespace egkr::scene
 		state_ = state::unloaded;
 	}
 
-	ray::result simple_scene::raycast(const ray& ray)
+	ray::hit_result simple_scene::raycast(const ray& ray)
 	{
-		ray::result result{};
+		ray::hit_result result{};
 
 		for (const auto& mesh : meshes_ | std::views::values)
 		{
 			const auto world = mesh->get_world();
-			if (ray.oriented_extents(mesh->extents(), world))
+			if (auto distance = ray.oriented_extents(mesh->extents(), world))
 			{
-				const auto distance = ray.oriented_extents(mesh->extents(), world).value();
 				ray::hit hit
 				{
 					.type = ray::hit_type::bounding_box,
 					.unique_id = mesh->unique_id(),
-					.position = ray.origin + ray.direction * distance,
-					.distance = distance,
+					.position = ray.origin + ray.direction * distance.value(),
+					.distance = distance.value(),
 				};
 				result.hits.push_back(hit);
 			}

@@ -37,7 +37,7 @@ namespace egkr
 		struct header
 		{
 			uint32_t magic_number{ RESOURCE_MAGIC };
-			type type;
+			type resource_type;
 			uint8_t version{ 1 };
 			uint16_t reserved{};
 		};

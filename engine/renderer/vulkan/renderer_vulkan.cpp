@@ -34,6 +34,7 @@ namespace egkr
 			break;
 		default:
 			//	LOG_ERROR("{0}: {1}", "Debug layer", callbackData->pMessage);
+			break;
 		}
 
 		return (VkBool32)true;
@@ -338,7 +339,7 @@ namespace egkr
 
 		if (context_.graphics_command_buffers.empty())
 		{
-			context_.graphics_command_buffers.resize(context_.swapchain->get_image_count());
+			context_.graphics_command_buffers.resize(context_.swpchain->get_image_count());
 		}
 
 		for (auto& command_buffer : context_.graphics_command_buffers)
@@ -360,7 +361,7 @@ namespace egkr
 	}
 
 	renderer_vulkan::renderer_vulkan(platform::shared_ptr platform)
-		:platform_{ std::move(platform) }
+		: platform_{ std::move(platform) }
 	{
 		ZoneScoped;
 
@@ -374,9 +375,9 @@ namespace egkr
 		shutdown();
 	}
 
-	bool renderer_vulkan::init(const configuration& configuration, uint8_t& out_window_attachment_count)
+	bool renderer_vulkan::init(const configuration& renderer_configurationn, uint8_t& out_window_attachment_count)
 	{
-		application_name_ = configuration.application_name;
+		application_name_ = renderer_configurationn.application_name;
 		ZoneScoped;
 
 		if (!init_instance())
@@ -392,19 +393,19 @@ namespace egkr
 
 		context_.surface = create_surface();
 		context_.device.create(&context_);
-		context_.swapchain = swapchain::create(&context_, {configuration.flags});
-		out_window_attachment_count = context_.swapchain->get_image_count();
+		context_.swpchain = swapchain::create(&context_, {renderer_configurationn.backend_flags});
+		out_window_attachment_count = context_.swpchain->get_image_count();
 
 
 		create_command_buffers();
 
-		context_.image_available_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
-		context_.queue_complete_semaphore.resize(context_.swapchain->get_max_frames_in_flight());
+		context_.image_available_semaphore.resize(context_.swpchain->get_max_frames_in_flight());
+		context_.queue_complete_semaphore.resize(context_.swpchain->get_max_frames_in_flight());
 
-		context_.in_flight_fences.resize(context_.swapchain->get_image_count());
-		context_.images_in_flight.resize(context_.swapchain->get_image_count());
+		context_.in_flight_fences.resize(context_.swpchain->get_image_count());
+		context_.images_in_flight.resize(context_.swpchain->get_image_count());
 
-		for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
+		for (auto i{ 0U }; i < context_.swpchain->get_max_frames_in_flight(); ++i)
 		{
 			context_.image_available_semaphore[i] = context_.device.logical_device.createSemaphore({}, context_.allocator);
 			context_.queue_complete_semaphore[i] = context_.device.logical_device.createSemaphore({}, context_.allocator);
@@ -423,7 +424,7 @@ namespace egkr
 		{
 			context_.device.logical_device.waitIdle();
 
-			for (auto i{ 0U }; i < context_.swapchain->get_max_frames_in_flight(); ++i)
+			for (auto i{ 0U }; i < context_.swpchain->get_max_frames_in_flight(); ++i)
 			{
 				context_.device.logical_device.destroySemaphore(context_.queue_complete_semaphore[i], context_.allocator);
 				context_.device.logical_device.destroySemaphore(context_.image_available_semaphore[i], context_.allocator);
@@ -440,8 +441,8 @@ namespace egkr
 
 			context_.device.logical_device.destroyCommandPool(context_.device.graphics_command_pool);
 
-			context_.swapchain->destroy();
-			context_.swapchain.reset();
+			context_.swpchain->destroy();
+			context_.swpchain.reset();
 
 			context_.instance.destroySurfaceKHR(context_.surface);
 			if (enable_validation_layers_)
@@ -489,41 +490,48 @@ namespace egkr
 		}
 	}
 
-	bool renderer_vulkan::begin_frame()
+	bool renderer_vulkan::prepare_frame(frame_data& frame_data)
 	{
-		ZoneScoped;
-
-		new_frame();
+		frame_number_++;
+		draw_index_ = 0;
 		if (context_.recreating_swapchain)
 		{
 			context_.device.logical_device.waitIdle();
 			return false;
 		}
+		if(!context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max()))
+		{
+			LOG_FATAL("Could not wait for In-flight frame");
+			return false;
+		}
 
+		context_.image_index = context_.swpchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
 
-		context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max());
-		context_.image_index = context_.swapchain->acquire_next_image_index(context_.image_available_semaphore[context_.current_frame], VK_NULL_HANDLE);
+		frame_data.frame_number = frame_number_;
+		frame_data.draw_index = draw_index_;
+		frame_data.render_target_index = get_window_index();
+
+		return true;
+	}
+
+	bool renderer_vulkan::begin(const frame_data& /*frame_data*/)
+	{
+		if(!context_.in_flight_fences[context_.current_frame]->wait(std::numeric_limits<uint64_t>::max()))
+		{
+			LOG_FATAL("Could not wait for In-flight frame");
+			return false;
+		}
 
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.reset();
 		command_buffer.begin(false, false, false);
-
-		context_.viewport_rect = { 0, context_.framebuffer_height, context_.framebuffer_width, -(float)context_.framebuffer_height };
-
-		set_viewport(context_.viewport_rect);
-
-		context_.scissor_rect = { 0, 0, context_.framebuffer_width, context_.framebuffer_height };
-		set_scissor(context_.scissor_rect);
-
 		set_winding(winding::counter_clockwise);
 
 		return true;
 	}
 
-	void renderer_vulkan::end_frame()
+	void renderer_vulkan::end(frame_data& frame_data)
 	{
-		ZoneScoped;
-
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.end();
 
@@ -539,15 +547,31 @@ namespace egkr
 		vk::SubmitInfo submit_info{};
 		submit_info
 			.setCommandBuffers(command_buffer.get_handle())
-			.setSignalSemaphores(context_.queue_complete_semaphore[context_.current_frame])
-			.setWaitSemaphores(context_.image_available_semaphore[context_.current_frame])
 			.setWaitDstStageMask(stage_mask);
+		if (draw_index_ == 0)
+		{
+			submit_info
+				.setSignalSemaphores(context_.queue_complete_semaphore[context_.current_frame])
+				.setWaitSemaphores(context_.image_available_semaphore[context_.current_frame]);
+		}
+		else
+		{
+			submit_info
+				.setSignalSemaphoreCount(0)
+				.setWaitSemaphoreCount(0);
+		}
 
 		context_.device.graphics_queue.submit(submit_info, context_.in_flight_fences[context_.current_frame]->get_handle());
 		command_buffer.update_submitted();
+		draw_index_++;
+		frame_data.draw_index++;
 
-		context_.swapchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
 		FrameMark;
+	}
+
+	void renderer_vulkan::present(const frame_data& /*frame_data*/)
+	{
+		context_.swpchain->present(context_.device.graphics_queue, context_.device.present_queue, context_.queue_complete_semaphore[context_.current_frame], context_.image_index);
 	}
 
 	bool renderer_vulkan::init_instance()
@@ -826,12 +850,12 @@ namespace egkr
 
 
 		context_.framebuffer_last_size_generation = context_.framebuffer_size_generation;
-		for (auto i{ 0U }; i < context_.swapchain->get_image_count(); ++i)
+		for (auto i{ 0U }; i < context_.swpchain->get_image_count(); ++i)
 		{
 			context_.graphics_command_buffers[i].free(&context_, context_.device.graphics_command_pool);
 		}
 
-		context_.swapchain->recreate();
+		context_.swpchain->recreate();
 
 		create_command_buffers();
 		context_.recreating_swapchain = false;
@@ -864,8 +888,8 @@ namespace egkr
 		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name)
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view")
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)tex->get_image(), properties.name)
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(VkImageView)tex->get_view(), properties.name + "_view")
 		return tex;
 	}
 
@@ -874,8 +898,8 @@ namespace egkr
 		auto tex = vulkan_texture::create(&context_, properties.width, properties.height, properties, true);
 		tex->populate(properties, data);
 
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(const VkImage)tex->get_image(), properties.name)
-		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(const VkImageView)tex->get_view(), properties.name + "_view")
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)tex->get_image(), properties.name)
+		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(VkImageView)tex->get_view(), properties.name + "_view")
 		*(vulkan_texture*)out_texture = *tex;
 	}
 
@@ -903,9 +927,9 @@ namespace egkr
 		return render_target::vulkan_render_target::create(&context_, attachments);
 	}
 	
-	renderpass::renderpass::shared_ptr renderer_vulkan::create_renderpass(const renderpass::configuration& configuration) const
+	renderpass::renderpass::shared_ptr renderer_vulkan::create_renderpass(const renderpass::configuration& pass_configuration) const
 	{
-		return renderpass::vulkan_renderpass::create(&context_, configuration);
+		return renderpass::vulkan_renderpass::create(&context_, pass_configuration);
 	}
 
 	texture_map::shared_ptr renderer_vulkan::create_texture_map(const texture_map::properties& properties) const
@@ -933,11 +957,6 @@ namespace egkr
 		command_buffer.get_handle().setViewport(0, viewport);
 	}
 
-	void renderer_vulkan::reset_viewport() const
-	{
-		set_viewport(context_.viewport_rect);
-	}
-
 	void renderer_vulkan::set_scissor(const float4& rect) const
 	{
 		vk::Rect2D scissor{};
@@ -962,17 +981,17 @@ namespace egkr
 
 	texture* renderer_vulkan::get_window_attachment(uint8_t index) const
 	{
-		if (index >= context_.swapchain->get_image_count())
+		if (index >= context_.swpchain->get_image_count())
 		{
-			LOG_ERROR("Invalid index");
+			LOG_ERROR("Invalid index: {}", index);
 			return nullptr;
 		}
-		return context_.swapchain->get_render_texture(index);
+		return context_.swpchain->get_render_texture(index);
 	}
 
 	texture* renderer_vulkan::get_depth_attachment(uint8_t index) const
 	{
-		return context_.swapchain->get_depth_attachment(index);
+		return context_.swpchain->get_depth_attachment(index);
 	}
 
 	uint8_t renderer_vulkan::get_window_index() const

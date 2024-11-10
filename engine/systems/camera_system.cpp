@@ -1,18 +1,17 @@
 #include "camera_system.h"
-#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
 	static camera_system::unique_ptr camera_system_{};
 
-	camera_system* camera_system::create(const configuration& configuration)
+	camera_system* camera_system::create(const configuration& camera_configuration)
 	{
-		camera_system_ = std::make_unique<camera_system>(configuration);
+		camera_system_ = std::make_unique<camera_system>(camera_configuration);
 		return camera_system_.get();
 	}
 
-	camera_system::camera_system(const configuration& configuration)
-		: configuration_{ configuration }
+	camera_system::camera_system(const configuration& camera_configuration)
+		: configuration_{ camera_configuration }
 	{
 		create_default();
 	}
@@ -55,7 +54,7 @@ namespace egkr
 		camera_system_->cameras_.push_back(camera::create(name));
 		camera_system_->camera_id_by_name_[name.data()] = id;
 
-		return camera::shared_ptr();
+		return camera_system_->cameras_.back();
 	}
 
 	void camera_system::release(const camera::shared_ptr /*camera*/)

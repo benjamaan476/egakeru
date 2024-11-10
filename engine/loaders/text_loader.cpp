@@ -2,6 +2,8 @@
 
 #include "platform/filesystem.h"
 
+#include <format>
+
 namespace egkr
 {
 	text_loader::unique_ptr text_loader::create(const loader_properties& properties)

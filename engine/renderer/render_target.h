@@ -40,8 +40,8 @@ namespace egkr
 		{
 			attachment_type type;
 			attachment_source source;
-			load_operation load_operation;
-			store_operation store_operation;
+			load_operation load_op;
+			store_operation store_op;
 			bool present_after;
 		};
 
@@ -49,15 +49,15 @@ namespace egkr
 		{
 			attachment_type type;
 			attachment_source source;
-			load_operation load_operation;
-			store_operation store_operation;
+			load_operation load_op;
+			store_operation store_op;
 			bool present_after;
-			texture* texture;
+			texture* texture_attachment;
 		};
 
 		struct configuration
 		{
-			egkr::vector<attachment_configuration> attachments{};
+			egkr::vector<attachment_configuration> attachments;
 		};
 
 		class render_target
@@ -69,7 +69,7 @@ namespace egkr
 			static shared_ptr create(const egkr::vector<attachment_configuration>& attachments);
 			render_target();
 
-			const auto& get_attachments() const { return attachments_; }
+			[[nodiscard]] const auto& get_attachments() const { return attachments_; }
 			auto& get_attachments() { return attachments_; }
 			virtual ~render_target();
 			virtual bool free(bool free_internal_memory) = 0;
@@ -80,7 +80,7 @@ namespace egkr
 			}
 
 		protected:
-			egkr::vector<attachment> attachments_{};
+			egkr::vector<attachment> attachments_;
 		};
 	}
 }

@@ -7,14 +7,14 @@ namespace egkr
 		return { .origin = origin, .direction = direction };
 	}
 
-	ray ray::from_screen(const int2& screen_position, const int2& viewport_size, const float3& origin, const float4x4& view, const float4x4& projection)
+	ray ray::from_screen(const int2& screen_position, const float4& viewport_rect, const float3& origin, const float4x4& view, const float4x4& projection)
 	{
 		ray ray{};
 		ray.origin = origin;
 
 		float2 ndc{};
-		ndc.x = 2.f * (float)screen_position.x / (float)viewport_size.x - 1;
-		ndc.y = 1.f - 2.f * (float)screen_position.y / (float)viewport_size.y;
+		ndc.x = 2.f * (float)(screen_position.x - viewport_rect.x) / viewport_rect.z - 1;
+		ndc.y = 1.f - 2.f * (float)(screen_position.y - viewport_rect.y) / viewport_rect.w;
 
 		const float4 clip{ ndc.x, ndc.y, -1.f, 1.f };
 		float4 eye = glm::inverse(projection) * clip;

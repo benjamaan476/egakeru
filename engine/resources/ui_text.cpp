@@ -201,15 +201,15 @@ namespace egkr
 				}
 				else
 				{
-					float minx = x + glyph->x_offset;
-					float miny = y + glyph->y_offset;
-					float maxx = minx + glyph->width;
-					float maxy = miny + glyph->height;
+					float minx = x + (float)glyph->x_offset;
+					float miny = y + (float)glyph->y_offset;
+					float maxx = minx + (float)glyph->width;
+					float maxy = miny + (float)glyph->height;
 
 					float tminx = (float)glyph->x / (float)data_->atlas_size_x;
 					float tminy = (float)glyph->y / (float)data_->atlas_size_y;
-					float tmaxx = (float)(glyph->x + glyph->width) / data_->atlas_size_x;
-					float tmaxy = (float)(glyph->y + glyph->height) / data_->atlas_size_y;
+					float tmaxx = (float)(glyph->x + glyph->width) / (float)data_->atlas_size_x;
+					float tmaxy = (float)(glyph->y + glyph->height) / (float)data_->atlas_size_y;
 
 					if (type_ == text::type::system)
 					{
@@ -251,7 +251,7 @@ namespace egkr
 							}
 						}
 					}
-							x += glyph->x_advance + kern;
+							x += (float)glyph->x_advance + (float)kern;
 
 				}
 					index_buffer_data[(uc * 6) + 0] = (uc * 4) + 2;

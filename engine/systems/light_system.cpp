@@ -27,10 +27,13 @@ namespace egkr
 
 	bool light_system::shutdown()
 	{
+		if(light_system_)
+		{
 		point_lights_.clear();
 		directional_light_.reset();
 
 		light_system_ = nullptr;
+		}
 		return true;
 	}
 

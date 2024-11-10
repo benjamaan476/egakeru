@@ -82,18 +82,18 @@ namespace egkr
 		//Posts, not gaps
 		for (auto y{ 0U }; y < y_segments + 1; ++y)
 		{
-			auto y_pos = 2 * y / (float)y_segments - 1;
+			auto y_pos = 2 * (float)y / (float)y_segments - 1;
 
-			auto tex_y = y / (float)y_segments;
-			tex_y *= tile_y;
+			auto tex_y = (float)y / (float)y_segments;
+			tex_y *= (float)tile_y;
 
 			for (auto x{ 0U }; x < x_segments + 1; ++x)
 			{
-				auto x_pos = 2 * x / (float)x_segments - 1;
-				auto tex_x = x / (float)x_segments;
-				tex_x *= tile_x;
+				auto x_pos = 2 * (float)x / (float)x_segments - 1;
+				auto tex_x = (float)x / (float)x_segments;
+				tex_x *= (float)tile_x;
 
-				vertices[index] = { {width * x_pos, height * y_pos, 0.F}, {0.F, 0.F, 1.F}, {tex_x, tex_y} };
+				vertices[index] = { {(float)width * x_pos, (float)height * y_pos, 0.F}, {0.F, 0.F, 1.F}, {tex_x, tex_y} };
 				++index;
 			}
 		}

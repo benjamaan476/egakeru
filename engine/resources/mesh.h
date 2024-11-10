@@ -13,8 +13,8 @@ namespace egkr
 
 		struct configuration
 		{
-			std::string name{};
-			egkr::vector<geometry::properties> geometry_configurations{};
+			std::string name;
+			egkr::vector<geometry::properties> geometry_configurations;
 		};
 
 		using shared_ptr = std::shared_ptr<mesh>;

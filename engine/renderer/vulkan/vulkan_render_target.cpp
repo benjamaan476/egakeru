@@ -23,8 +23,8 @@ namespace egkr::render_target
 			{
 				.type = configuration.type,
 				.source = configuration.source,
-				.load_operation = configuration.load_operation,
-				.store_operation = configuration.store_operation,
+				.load_op= configuration.load_op,
+				.store_op = configuration.store_op,
 				.present_after = configuration.present_after
 			};
 			attachments_.push_back(attach);
@@ -38,7 +38,7 @@ namespace egkr::render_target
 		attachments_ = attachments;
 		for (const auto& attachment : attachments_)
 		{
-			attachment_views.push_back(((vulkan_texture*)(attachment.texture))->get_view());
+			attachment_views.push_back(((vulkan_texture*)(attachment.texture_attachment))->get_view());
 		}
 		vk::FramebufferCreateInfo create_info{};
 		create_info

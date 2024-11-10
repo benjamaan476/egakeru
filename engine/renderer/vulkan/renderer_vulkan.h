@@ -21,8 +21,11 @@ namespace egkr
 		void shutdown() final;
 		void tidy_up() final;
 		void resize(uint32_t width_, uint32_t height_) final;
-		bool begin_frame() final;
-		void end_frame() final;
+
+		bool prepare_frame(frame_data& frame_data) final;
+		bool begin(const frame_data& frame_data) final;
+		void end(frame_data& frame_data) final;
+		void present(const frame_data& frame_data) final;
 
 		void free_material(material* texture) const override;
 
@@ -38,7 +41,6 @@ namespace egkr
 		renderbuffer::renderbuffer::shared_ptr create_renderbuffer(renderbuffer::type buffer_type, uint64_t size) const override;
 
 		void set_viewport(const float4& rect) const override;
-		void reset_viewport() const override;
 		void set_scissor(const float4& rect) const override;
 		void reset_scissor() const override;
 		void set_winding(winding winding) const override;
@@ -51,7 +53,7 @@ namespace egkr
 		static bool set_debug_obj_name(const vulkan_context* context, VkObjectType type, uint64_t handle, const std::string& name);
 #define SET_DEBUG_NAME(context, type, handle, name) renderer_vulkan::set_debug_obj_name(context, type, handle, name);
 #else
-#define SET_DEBUG_NAME(type, handle, name)
+#define SET_DEBUG_NAME(context, type, handle, name)
 #endif // ENABLE_DEBUG_MACRO
 
 	private:
@@ -73,8 +75,7 @@ namespace egkr
 
 	private:
 		vulkan_context context_{};
-
-		platform::shared_ptr platform_{};
+		platform::shared_ptr platform_;
 
 #ifdef NDEBUG
 		const bool enable_validation_layers_ = false;

@@ -19,13 +19,13 @@ namespace egkr
 		class file
 		{
 		public:
-			type type;
+			type audio_type;
 			resource::shared_ptr audio_resource;
 			uint32_t format{};
 			int32_t channels{};
 			uint32_t sample_rate{};
 			uint64_t total_samples_left{};
-			plugin_data* plugin_data{};
+			plugin_data* data{};
 			audio_file_internal* internal_data{};
 			
 			uint64_t load_samples(uint32_t chunk_size, uint32_t count);
