@@ -95,7 +95,7 @@ namespace egkr
 		virtual void reset_scissor() const = 0;
 		virtual void set_winding(winding winding) const = 0;
 
-
+		[[nodiscard]] virtual uint32_t get_window_attachment_count() const = 0;
 		[[nodiscard]] virtual texture* get_window_attachment(uint8_t index) const = 0;
 		[[nodiscard]] virtual texture* get_depth_attachment(uint8_t index) const = 0;
 		[[nodiscard]] virtual uint8_t get_window_index() const = 0;
