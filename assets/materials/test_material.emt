@@ -5,5 +5,5 @@ name=test_material
 diffuse_colour=1.0 1.0 1.0 1.0
 diffuse_map_name=orange_lines_512
 specular_map_name=orange_lines_512_spec
-shader=Shader.Builtin.Material
+shader=Shader.Material
 shininess=64.0

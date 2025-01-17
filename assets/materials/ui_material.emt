@@ -3,4 +3,4 @@ version=0.1
 name=ui_material
 diffuse_colour=1.0 1.0 1.0 1.0
 diffuse_map_name=sword_parts
-shader=Shader.Builtin.UI
+shader=Shader.UI

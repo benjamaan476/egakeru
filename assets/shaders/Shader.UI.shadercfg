@@ -1,7 +1,7 @@
 version=1.0
-name=Shader.Builtin.UI
+name=Shader.UI
 stages=vertex,fragment
-stagefiles=shaders/Builtin.UIShader.vert.spv,shaders/Builtin.UIShader.frag.spv
+stagefiles=shaders/UIShader.vert.spv,shaders/UIShader.frag.spv
 depth_test=0
 depth_write=0
 

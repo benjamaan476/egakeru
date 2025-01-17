@@ -5,5 +5,5 @@ name=random_stones
 diffuse_colour=1.0 1.0 1.0 1.0
 diffuse_map_name=RandomStones
 specular_map_name=RandomStones_spec
-shader=Shader.Builtin.Material
+shader=Shader.Material
 shininess=64.0

@@ -1,7 +1,7 @@
 version=1.0
-name=Shader.Builtin.Material
+name=Shader.Material
 stages=vertex,fragment
-stagefiles=shaders/Builtin.MaterialShader.vert.spv,shaders/Builtin.MaterialShader.frag.spv
+stagefiles=shaders/MaterialShader.vert.spv,shaders/MaterialShader.frag.spv
 depth_test=1
 depth_write=1
 

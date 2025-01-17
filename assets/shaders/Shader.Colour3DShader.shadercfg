@@ -1,7 +1,7 @@
 version=1.0
-name=Shader.Builtin.Colour3DShader
+name=Shader.Colour3DShader
 stages=vertex,fragment
-stagefiles=shaders/Builtin.Colour3DShader.vert.spv,shaders/Builtin.Colour3DShader.frag.spv
+stagefiles=shaders/Colour3DShader.vert.spv,shaders/Colour3DShader.frag.spv
 topology=line_list
 depth_test=1
 depth_write=1
