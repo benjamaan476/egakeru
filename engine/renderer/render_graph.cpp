@@ -73,8 +73,9 @@ namespace egkr
 	{
 		for (const auto& pass : passes)
 		{
-			for(const auto& target : pass.)
+				delete pass;
 		}
+		passes.clear();
 		return false;
 	}
 
@@ -89,15 +90,15 @@ namespace egkr
 	{
 		for (const auto& pass : passes)
 		{
-			if (pass.name == pass_name)
+			if (pass->get_name() == pass_name)
 			{
 				LOG_ERROR("Pass with name {} already exists", pass_name);
 				return false;
 			}
 		}
 
-		pass p;
-		if (!init(&p))
+		pass* p = new pass();
+		if (!init(p))
 		{
 			LOG_ERROR("Failed to initialise pass {}", pass_name);
 			return false;
@@ -111,17 +112,17 @@ namespace egkr
 	{
 		for (auto& pass : passes)
 		{
-			if (pass.name == pass_name)
+			if (pass->get_name() == pass_name)
 			{
-				for (const auto& source : pass.sources)
+				for (const auto& source : pass->get_sources())
 				{
 					if (source.name == source_name)
 					{
-						LOG_ERROR("Source with name {} already exists in pass {}", source.name, pass.name);
+						LOG_ERROR("Source with name {} already exists in pass {}", source.name, pass->get_name());
 						return false;
 					}
 
-					pass.sources.emplace_back(rendergraph::source{ .name = source_name, .source_type = type, .source_origin = origin });
+					pass->get_sources().emplace_back(rendergraph::source{.name = source_name, .source_type = type, .source_origin = origin});
 				}
 			}
 		}
@@ -132,17 +133,17 @@ namespace egkr
 	{
 		for (auto& pass : passes)
 		{
-			if (pass.name == pass_name)
+			if (pass->get_name() == pass_name)
 			{
-				for (const auto& s : pass.sinks)
+				for (const auto& s : pass->get_sinks())
 				{
 					if (s.name == sink_name)
 					{
-						LOG_ERROR("Sink with name {} already exists in pass {}", s.name, pass.name);
+						LOG_ERROR("Sink with name {} already exists in pass {}", s.name, pass->get_name());
 						return false;
 					}
 
-					pass.sinks.emplace_back(sink{ .name = sink_name });
+					pass->get_sinks().emplace_back(sink{.name = sink_name});
 				}
 			}
 		}
@@ -152,8 +153,8 @@ namespace egkr
 
 	bool rendergraph::set_sink_linkage(const std::string& pass_name, const std::string& sink_name, const std::string& source_pass_name, const std::string& source_name)
 	{
-		auto pass = std::ranges::find_if(passes, [pass_name](const auto& p) { return p.name == pass_name; });
-		auto sink = std::ranges::find_if(pass->sinks, [sink_name](const auto& s) { return s.name == sink_name; });
+		auto pass = std::ranges::find_if(passes, [pass_name](const auto& p) { return p->get_name() == pass_name; });
+		auto sink = std::ranges::find_if((*pass)->get_sinks(), [sink_name](const auto& s) { return s.name == sink_name; });
 
 		if (source_pass_name == "")
 		{
@@ -162,8 +163,8 @@ namespace egkr
 		}
 		else
 		{
-			auto source_pass = std::ranges::find_if(passes, [source_pass_name](const auto& p) { return p.name == source_pass_name; });
-			auto source = std::ranges::find_if(source_pass->sources, [source_name](const auto& s) { return s.name == source_name; });
+			auto source_pass = std::ranges::find_if(passes, [source_pass_name](const auto& p) { return p->get_name() == source_pass_name; });
+			auto source = std::ranges::find_if((*source_pass)->get_sources(), [source_name](const auto& s) { return s.name == source_name; });
 			sink->bound_source = &*source;
 
 		}
@@ -199,12 +200,12 @@ namespace egkr
 
 		for (const auto& pass : passes)
 		{
-			for (const auto& sink : pass.sinks)
+			for (const auto& sink : pass->get_sinks())
 			{
 				auto& source = sink.bound_source;
 				if (source->source_origin == source::origin::global && source->source_type == source::type::reder_target_colour)
 				{
-					backbuffer_first_use = &pass;
+					backbuffer_first_use = pass;
 					break;
 				}
 			}
@@ -218,14 +219,14 @@ namespace egkr
 
 		for (auto& pass : passes)
 		{
-			for (auto& source : pass.sources)
+			for (auto& source : pass->get_sources())
 			{
 				if (source.source_type == source::type::reder_target_colour && source.source_origin == source::origin::other)
 				{
 					for (const auto& other_pass : passes)
 					{
 						bool found = false;
-						for (const auto& other_sink : other_pass.sinks)
+						for (const auto& other_sink : other_pass->get_sinks())
 						{
 							if (other_sink.bound_source == &source)
 							{
@@ -237,7 +238,7 @@ namespace egkr
 						if (!found)
 						{
 							backbuffer_global_sink.bound_source = &source;
-							pass.present_after = true;
+							pass->set_present_after(true);
 							break;
 						}
 					}
@@ -245,17 +246,17 @@ namespace egkr
 			}
 		}
 
-		for (auto& pass : passes)
+		for (auto pass : passes)
 		{
-			if (!pass.init())
+			if (!pass->init())
 			{
-				LOG_ERROR("Failed to initialise pass {}", pass.name);
+				LOG_ERROR("Failed to initialise pass {}", pass->get_name());
 				return false;
 			}
 
-			if (!pass.regenerate_render_targets())
+			if (!pass->regenerate_render_targets())
 			{
-				LOG_ERROR("Failed to regenerate render targets for pass {}", pass.name);
+				LOG_ERROR("Failed to regenerate render targets for pass {}", pass->get_name());
 				return false;
 			}
 		}
@@ -266,9 +267,9 @@ namespace egkr
 	{
 		for (const auto& pass : passes)
 		{
-			if (!pass.execute(frame_data))
+			if (!pass->execute(frame_data))
 			{
-				LOG_ERROR("Failed to execute pass {}", pass.name);
+				LOG_ERROR("Failed to execute pass {}", pass->get_name());
 				return false;
 			}
 		}

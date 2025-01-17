@@ -4,12 +4,7 @@
 
 namespace egkr
 {
-	struct skybox_shader_locations
-	{
-		uint32_t projection{};
-		uint32_t view{};
-		uint32_t cubemap{};
-	};
+
 
 	class render_view_world : public render_view
 	{

@@ -14,19 +14,7 @@ namespace egkr
 
 	bool render_view_world::on_create()
 	{
-		{
-			const std::string shader_name = "Shader.Builtin.Skybox";
-			auto skybox_shader_resource = resource_system::load(shader_name, resource::type::shader, nullptr);
-			auto skybox_shader = (shader::properties*)skybox_shader_resource->data;
-			shader_system::create_shader(*skybox_shader, renderpasses_[0].get());
-			resource_system::unload(skybox_shader_resource);
-
-			skybox_shader_ = shader_system::get_shader("Shader.Builtin.Skybox");
-
-			skybox_locations_.projection = skybox_shader_->get_uniform_index("projection");
-			skybox_locations_.view = skybox_shader_->get_uniform_index("view");
-			skybox_locations_.cubemap = skybox_shader_->get_uniform_index("cube_texture");
-		}
+		
 		{
 			const std::string shader_name = "Shader.Builtin.Material";
 			auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);

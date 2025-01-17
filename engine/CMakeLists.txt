@@ -21,6 +21,7 @@ set(HEADERS
     contianers/*.h
     scenes/*.h
     interfaces/*.h
+    renderer/passes/*.h
 )
 
 add_library(engine SHARED ${SOURCES})

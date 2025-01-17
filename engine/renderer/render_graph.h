@@ -8,9 +8,6 @@
 
 namespace egkr
 {
-
-
-
 	class rendergraph
 	{
 	public:
@@ -45,12 +42,20 @@ namespace egkr
 		{
 		public:
 			pass() = default;
-			bool init();
-			bool execute(const frame_data& frame_data) const;
-			bool destroy();
+			virtual bool init() = 0;
+			virtual bool execute(const frame_data& frame_data) const = 0;
+			virtual bool destroy() = 0;
 
 			bool regenerate_render_targets();
-		private:
+
+			void set_present_after(bool present) { present_after = present; }
+
+			const std::string& get_name() const { return name; }
+			const auto& get_sources() const { return sources; }
+			auto& get_sources() { return sources; }
+			const auto& get_sinks() const { return sinks; }
+			auto& get_sinks() { return sinks; }
+		protected:
 			std::string name{};
 			std::vector<source> sources;
 			std::vector<sink> sinks;

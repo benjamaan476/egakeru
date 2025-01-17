@@ -217,25 +217,7 @@ bool sandbox_application::resize(uint32_t width, uint32_t height)
 bool sandbox_application::boot()
 {
 	{
-		egkr::renderpass::configuration skybox_renderpass_configuration
-		{
-			.name = "Renderpass.Builtin.Skybox",
-			.clear_colour = {0, 0, 0.2F, 1.F},
-			.pass_clear_flags = egkr::renderpass::clear_flags::colour,
-			.depth = 1.F,
-			.stencil = 0
-		};
-
-		egkr::render_target::attachment_configuration skybox_attachment_configration
-		{
-			.type = egkr::render_target::attachment_type::colour,
-			.source = egkr::render_target::attachment_source::default_source,
-			.load_op = egkr::render_target::load_operation::dont_care,
-			.store_op = egkr::render_target::store_operation::store,
-			.present_after = false
-		};
-
-		skybox_renderpass_configuration.target.attachments.push_back(skybox_attachment_configration);
+		
 
 		egkr::renderpass::configuration renderpass_configuration
 		{

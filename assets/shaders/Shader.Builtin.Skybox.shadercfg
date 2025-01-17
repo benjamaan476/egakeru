@@ -1,8 +1,8 @@
 version=1.0
-name=Shader.Builtin.Skybox
+name=Shader.Skybox
 cull_mode=front
 stages=vertex,fragment
-stagefiles=shaders/Builtin.SkyboxShader.vert.spv,shaders/Builtin.SkyboxShader.frag.spv
+stagefiles=shaders/SkyboxShader.vert.spv,shaders/SkyboxShader.frag.spv
 depth_test=0
 depth_write=0
 
