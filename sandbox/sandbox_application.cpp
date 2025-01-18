@@ -133,10 +133,10 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     skybox_pass->projection = world_view.projection;
     skybox_pass->view_position = camera_->get_position();
     skybox_pass->do_execute = true;
+    skybox_pass->viewport = &world_view;
     if (!main_scene_->is_loaded())
     {
 	skybox_pass->data.skybox_data = main_scene_->get_skybox();
-	scene_pass->viewport = &world_view;
     }
 
     const auto& frame_data = main_scene_->get_frame_data();
@@ -169,6 +169,18 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     }
     ui_pass->data.mesh_data = ui_meshes_;
     ui_pass->data.texts = texts;
+    ui_pass->viewport = &ui_view;
+    ui_pass->projection = ui_view.projection;
+	ui_pass->do_execute = true;
+	ui_pass->view = glm::mat4(1.F);
+
+    editor_pass->do_execute = true;
+    editor_pass->viewport = &world_view;
+    editor_pass->view = camera_->get_view();
+    editor_pass->view_position = camera_->get_position();
+    editor_pass->projection = world_view.projection;
+
+    editor_pass->data.gizmo = gizmo_;
 }
 
 void sandbox_application::render_frame(egkr::frame_data& frame_data)

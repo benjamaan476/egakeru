@@ -15,38 +15,38 @@ namespace egkr
 	for (uint8_t i{0u}; i < renderpass->get_render_target_count(); i++)
 	{
 	    auto& target = renderpass->get_render_target(i);
-	    target->destroy();
+	    //target->destroy();
 
-	    for (uint32_t a{0u}; a < target->get_attachments().size(); a++)
-	    {
-		auto& attachment = target->get_attachments()[a];
-		if (attachment.source == render_target::attachment_source::default_source)
+		for (uint32_t a{ 0u }; a < target->get_attachments().size(); a++)
 		{
-		    if (attachment.type == render_target::attachment_type::colour)
-		    {
-			attachment.texture_attachment = renderer->get_backend()->get_window_attachment(i);
-		    }
-		    else if (attachment.type == render_target::attachment_type::depth)
-		    {
-			attachment.texture_attachment = renderer->get_backend()->get_depth_attachment(i);
-		    }
-		    else
-		    {
-			LOG_ERROR("Attachment type not supported");
-			return false;
-		    }
+			auto& attachment = target->get_attachments()[a];
+			if (attachment.source == render_target::attachment_source::default_source)
+			{
+				if (attachment.type == render_target::attachment_type::colour)
+				{
+					attachment.texture_attachment = renderer->get_backend()->get_window_attachment(i);
+				}
+				else if (attachment.type == render_target::attachment_type::depth)
+				{
+					attachment.texture_attachment = renderer->get_backend()->get_depth_attachment(i);
+				}
+				else
+				{
+					LOG_ERROR("Attachment type not supported");
+					return false;
+				}
+			}
+			else if (attachment.source == render_target::attachment_source::view)
+			{
+				LOG_ERROR("Cant do this");
+				return false;
+			}
 		}
-		else if (attachment.source == render_target::attachment_source::view)
-		{
-		    LOG_ERROR("Cant do this");
-		    return false;
-		}
-
 		const auto& attachments = target->get_attachments();
 		target = render_target::render_target::create(attachments, renderpass.get(), attachments[0].texture_attachment->get_width(), attachments[0].texture_attachment->get_height());
-	    }
+	    
 	}
-	return false;
+	return true;
     }
 
     rendergraph::rendergraph(const std::string& rendergraph_name, const application* application): name{rendergraph_name}, app{application} { }
@@ -106,8 +106,8 @@ namespace egkr
 			return false;
 		    }
 
-		    pass->get_sources().emplace_back(rendergraph::source{.name = source_name, .source_type = type, .source_origin = origin});
 		}
+		    pass->get_sources().emplace_back(rendergraph::source{.name = source_name, .source_type = type, .source_origin = origin});
 	    }
 	}
 	return true;
@@ -127,8 +127,8 @@ namespace egkr
 			return false;
 		    }
 
-		    pass->get_sinks().emplace_back(sink{.name = sink_name});
 		}
+		    pass->get_sinks().emplace_back(sink{.name = sink_name});
 	    }
 	}
 
@@ -142,7 +142,7 @@ namespace egkr
 
 	if (source_pass_name == "")
 	{
-	    auto sourcee = std::ranges::find_if(global_sources, [source_pass_name](const auto& s) { return s.name == source_pass_name; });
+	    auto sourcee = std::ranges::find_if(global_sources, [source_name](const auto& s) { return s.name == source_name; });
 	    sink->bound_source = &*sourcee;
 	}
 	else
@@ -226,7 +226,21 @@ namespace egkr
 			}
 		    }
 		}
+		if (backbuffer_global_sink.bound_source)
+		{
+			break;
+		}
 	    }
+		if (backbuffer_global_sink.bound_source)
+		{
+			break;
+		}
+	}
+
+	if (!backbuffer_global_sink.bound_source)
+	{
+		LOG_ERROR("Unable to link backbuffer_global_sink to a source");
+		return false;
 	}
 
 	for (auto pass : passes)

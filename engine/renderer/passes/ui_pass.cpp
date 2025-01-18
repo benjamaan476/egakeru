@@ -21,7 +21,7 @@ namespace egkr::pass
     }
     bool ui::init()
     {
-	name = "Renderpass.UI";
+	name = "ui";
 	{
 	    egkr::renderpass::configuration renderpass_configuration{.name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::none, .depth = 1.F, .stencil = 0};
 

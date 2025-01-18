@@ -16,7 +16,7 @@ namespace egkr::pass
 
     bool skybox::init()
     {
-	name = "Renderpass.Skybox";
+	name = "skybox";
 	egkr::renderpass::configuration skybox_renderpass_configuration{.name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::colour, .depth = 1.F, .stencil = 0};
 
 	egkr::render_target::attachment_configuration skybox_attachment_configration{.type = egkr::render_target::attachment_type::colour,
@@ -73,7 +73,7 @@ namespace egkr::pass
 	    skybox->draw();
 	}
 	renderpass->end();
-	return false;
+	return true;
     }
 
     bool skybox::destroy()

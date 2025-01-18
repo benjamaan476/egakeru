@@ -34,7 +34,7 @@ namespace egkr::pass
 	bool init() override;
 	bool execute(const frame_data& frame_data) const override;
 	bool destroy() override;
-	virtual ~editor() = default;
+	 ~editor() override = default;
     private:
 	static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
     };

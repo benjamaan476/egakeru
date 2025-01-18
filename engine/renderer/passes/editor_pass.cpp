@@ -17,7 +17,7 @@ namespace egkr::pass
     }
     bool editor::init()
     {
-	name = "Renderpass.World";
+	name = "editor";
 	{
 	    egkr::renderpass::configuration renderpass_configuration{
 	        .name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};
@@ -53,7 +53,7 @@ namespace egkr::pass
 	auto shader = resource_system::load(colour_3d_shader_name, egkr::resource::type::shader, nullptr);
 	auto* properties = (shader::properties*)shader->data;
 	shader_system::create_shader(*properties, renderpass.get());
-	resource_system::unload(colour_shader);
+	resource_system::unload(shader);
 
 	colour_shader = shader_system::get_shader(colour_3d_shader_name);
 	debug_shader_locations.projection = colour_shader->get_uniform_index("projection");

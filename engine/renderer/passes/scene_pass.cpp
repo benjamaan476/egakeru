@@ -18,7 +18,7 @@ namespace egkr::pass
 
     bool scene::init()
     {
-	name = "Renderpass.World";
+	name = "scene";
 	{
 	    egkr::renderpass::configuration renderpass_configuration{
 	        .name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};

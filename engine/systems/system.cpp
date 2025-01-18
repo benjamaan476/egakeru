@@ -185,7 +185,6 @@ namespace egkr
 	system_manager_state->registered_systems_[system_type::console]->shutdown();
 	system_manager_state->registered_systems_[system_type::font]->shutdown();
 	system_manager_state->registered_systems_[system_type::light]->shutdown();
-	system_manager_state->registered_systems_[system_type::render_view]->shutdown();
 	system_manager_state->registered_systems_[system_type::camera]->shutdown();
 	system_manager_state->registered_systems_[system_type::shader]->shutdown();
 	system_manager_state->registered_systems_[system_type::job]->shutdown();
