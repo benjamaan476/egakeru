@@ -9,11 +9,18 @@
 #include <glm/gtx/quaternion.hpp>
 namespace egkr::pass
 {
+    editor* editor::create()
+    {
+	auto pass = new editor();
+	pass->init();
+	return pass;
+    }
     bool editor::init()
     {
+	name = "Renderpass.World";
 	{
 	    egkr::renderpass::configuration renderpass_configuration{
-	        .name = "Renderpass.World", .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};
+	        .name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};
 
 	    egkr::render_target::attachment_configuration colour_attachment_configration{.type = egkr::render_target::attachment_type::colour,
 	        .source = egkr::render_target::attachment_source::default_source,
@@ -39,7 +46,7 @@ namespace egkr::pass
 	    // opaque_world.passes.push_back(renderpass_configuration);
 	    // opaque_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
 
-	    renderpass->create(renderpass_configuration);
+	    renderpass = renderpass::renderpass::create(renderpass_configuration);
 	}
 
 	std::string colour_3d_shader_name = "Shader.Colour3DShader";

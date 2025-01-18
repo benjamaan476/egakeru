@@ -1,4 +1,5 @@
 #include "scene_pass.h"
+#include "renderer/renderpass.h"
 #include <systems/resource_system.h>
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
@@ -17,9 +18,10 @@ namespace egkr::pass
 
     bool scene::init()
     {
+	name = "Renderpass.World";
 	{
 	    egkr::renderpass::configuration renderpass_configuration{
-	        .name = "Renderpass.World", .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};
+	        .name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::depth | egkr::renderpass::clear_flags::stencil, .depth = 1.F, .stencil = 0};
 
 	    egkr::render_target::attachment_configuration colour_attachment_configration{.type = egkr::render_target::attachment_type::colour,
 	        .source = egkr::render_target::attachment_source::default_source,
@@ -37,7 +39,7 @@ namespace egkr::pass
 	    renderpass_configuration.target.attachments.push_back(colour_attachment_configration);
 	    renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
 
-	    renderpass->create(renderpass_configuration);
+	    renderpass = egkr::renderpass::renderpass::create(renderpass_configuration);
 	}
 
 	// egkr::render_view::configuration opaque_world{};

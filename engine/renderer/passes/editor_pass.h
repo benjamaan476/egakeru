@@ -30,6 +30,7 @@ namespace egkr::pass
 	shader::shared_ptr material_shader;
 	shader::shared_ptr colour_shader;
 
+	static editor* create();
 	bool init() override;
 	bool execute(const frame_data& frame_data) const override;
 	bool destroy() override;

@@ -58,17 +58,16 @@ namespace egkr
 	    auto& get_sinks() { return sinks; }
 
 	    viewport* viewport;
+	    float4x4 view;
+	    float4x4 projection;
+	    float3 view_position;
+	    bool do_execute;
 	protected:
 	    std::string name;
 	    std::vector<source> sources;
 	    std::vector<sink> sinks;
 	    renderpass::renderpass::shared_ptr renderpass;
 	    bool present_after{false};
-
-	    bool do_execute;
-	    float4x4 view;
-	    float4x4 projection;
-	    float3 view_position;
 	};
 
 	rendergraph() = default;

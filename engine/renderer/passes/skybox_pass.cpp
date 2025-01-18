@@ -3,6 +3,7 @@
 #include <systems/shader_system.h>
 
 #include <renderer/renderer_frontend.h>
+#include <renderer/renderpass.h>
 
 namespace egkr::pass
 {
@@ -15,8 +16,8 @@ namespace egkr::pass
 
     bool skybox::init()
     {
-	egkr::renderpass::configuration skybox_renderpass_configuration{
-	    .name = "Renderpass.Skybox", .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::colour, .depth = 1.F, .stencil = 0};
+	name = "Renderpass.Skybox";
+	egkr::renderpass::configuration skybox_renderpass_configuration{.name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::colour, .depth = 1.F, .stencil = 0};
 
 	egkr::render_target::attachment_configuration skybox_attachment_configration{.type = egkr::render_target::attachment_type::colour,
 	    .source = egkr::render_target::attachment_source::default_source,
@@ -26,7 +27,7 @@ namespace egkr::pass
 
 	skybox_renderpass_configuration.target.attachments.push_back(skybox_attachment_configration);
 
-	renderpass->create(skybox_renderpass_configuration);
+	renderpass = egkr::renderpass::renderpass::create(skybox_renderpass_configuration);
 
 	const std::string shader_name = "Shader.Skybox";
 	auto skybox_shader_resource = resource_system::load(shader_name, resource::type::shader, nullptr);

@@ -13,11 +13,17 @@
 
 namespace egkr::pass
 {
+    ui* ui::create()
+    {
+	auto pass = new ui();
+	pass->init();
+	return pass;
+    }
     bool ui::init()
     {
+	name = "Renderpass.UI";
 	{
-	    egkr::renderpass::configuration renderpass_configuration{
-	        .name = "Renderpass.UI", .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::none, .depth = 1.F, .stencil = 0};
+	    egkr::renderpass::configuration renderpass_configuration{.name = name, .clear_colour = {0, 0, 0.2F, 1.F}, .pass_clear_flags = egkr::renderpass::clear_flags::none, .depth = 1.F, .stencil = 0};
 
 	    egkr::render_target::attachment_configuration attachment_configration{.type = egkr::render_target::attachment_type::colour,
 	        .source = egkr::render_target::attachment_source::default_source,
@@ -35,7 +41,7 @@ namespace egkr::pass
 	    // ui.view_source = egkr::render_view::view_matrix_source::ui_camera;
 	    // ui.passes.push_back(renderpass_configuration);
 
-	    renderpass->create(renderpass_configuration);
+	    renderpass = renderpass::renderpass::create(renderpass_configuration);
 	}
 
 	auto ui_resource = resource_system::load("Shader.UI", resource::type::shader, nullptr);

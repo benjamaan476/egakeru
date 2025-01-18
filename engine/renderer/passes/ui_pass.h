@@ -27,6 +27,8 @@ namespace egkr::pass
 
 	shader::shared_ptr shader;
 
+	static ui* create();
+
 	bool init() override;
 	bool execute(const frame_data& frame_data) const override;
 	bool destroy() override;

@@ -42,7 +42,7 @@ namespace egkr
 	{
 	public:
 	    using shared_ptr = std::shared_ptr<renderpass>;
-	    static shared_ptr create(const configuration& configuration);
+	    [[nodiscard]] static shared_ptr create(const configuration& configuration);
 	    explicit renderpass(const configuration& configuration);
 	    virtual ~renderpass();
 
