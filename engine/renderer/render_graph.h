@@ -5,6 +5,7 @@
 #include "renderpass.h"
 #include "viewport.h"
 #include <application/application.h>
+#include <event.h>
 
 namespace egkr
 {
@@ -42,7 +43,7 @@ namespace egkr
 	{
 	public:
 	    virtual ~pass() = default;
-	    pass() = default;
+	    pass();
 	    virtual bool init() = 0;
 	    virtual bool execute(const frame_data& frame_data) const = 0;
 	    virtual bool destroy() = 0;
@@ -68,6 +69,8 @@ namespace egkr
 	    std::vector<sink> sinks;
 	    renderpass::renderpass::shared_ptr renderpass;
 	    bool present_after{false};
+	private:
+		static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
 	};
 
 	rendergraph() = default;

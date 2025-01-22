@@ -60,13 +60,13 @@ namespace egkr::pass
 	debug_shader_locations.view = colour_shader->get_uniform_index("view");
 	debug_shader_locations.model = colour_shader->get_uniform_index("model");
 
-	event::register_event(event::code::render_target_refresh_required, this, on_event);
+	event::register_event(event::code::render_mode, this, on_event);
 	return true;
     }
 
     bool editor::destroy()
     {
-	event::unregister_event(event::code::render_target_refresh_required, this, on_event);
+	event::unregister_event(event::code::render_mode, this, on_event);
 	return true;
     }
 
@@ -131,9 +131,6 @@ namespace egkr::pass
 	    context.get(0, view->data.render_mode);
 	}
 	break;
-	case event::code::render_target_refresh_required:
-	    view->regenerate_render_targets();
-	    break;
 	default:
 	    return false;
 	}

@@ -139,7 +139,7 @@ namespace egkr
 	    std::unordered_map<std::string, egkr::debug::debug_frustum::shared_ptr> debug_frusta_;
 
 	    frame_geometry_data frame_geometry_{};
-	    float4 ambient_colour_{};
+	    float4 ambient_colour_{0.25, 0.25, 0.25, 1};
 	};
     }
 }

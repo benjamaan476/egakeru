@@ -75,7 +75,6 @@ namespace egkr::pass
 	}
 
 	event::register_event(event::code::render_mode, this, on_event);
-	event::register_event(event::code::render_target_refresh_required, this, on_event);
 	return true;
     }
 
@@ -163,9 +162,6 @@ namespace egkr::pass
 	    context.get(0, view->data.render_mode);
 	}
 	break;
-	case event::code::render_target_refresh_required:
-	    view->regenerate_render_targets();
-	    break;
 	default:
 	    return false;
 	}
