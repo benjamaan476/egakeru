@@ -16,7 +16,7 @@ namespace egkr::pass
 	struct packet_data
 	{
 	    float4 ambient_colour{};
-	    int32_t render_mode{};
+	    uint32_t render_mode{};
 	    egkr::editor::gizmo gizmo;
 	} data;
 

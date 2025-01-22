@@ -91,7 +91,14 @@ namespace egkr::scene
 					if (frustum.intersects_aabb(center, half_extents))
 					{
 						egkr::render_data data{ .render_geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
-						frame_geometry_.world_geometries.emplace_back(data);
+						if (geo->get_material()->get_diffuse_map()->map_texture->get_flags() & texture::texture::flags::has_transparency == texture::texture::flags::has_transparency)
+						{
+							frame_geometry_.transparent_geometries.push_back(data);
+						}
+						else
+						{
+							frame_geometry_.world_geometries.emplace_back(data);
+						}
 					}
 				}
 			}
