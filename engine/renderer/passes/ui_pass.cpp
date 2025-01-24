@@ -33,14 +33,6 @@ namespace egkr::pass
 
 	    renderpass_configuration.target.attachments.push_back(attachment_configration);
 
-	    // egkr::render_view::configuration ui{};
-	    // ui.name = "ui";
-	    // ui.width = width_;
-	    // ui.height = height_;
-	    // ui.view_type = egkr::render_view::type::ui;
-	    // ui.view_source = egkr::render_view::view_matrix_source::ui_camera;
-	    // ui.passes.push_back(renderpass_configuration);
-
 	    renderpass = renderpass::renderpass::create(renderpass_configuration);
 	}
 

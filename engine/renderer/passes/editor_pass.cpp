@@ -38,14 +38,6 @@ namespace egkr::pass
 	    renderpass_configuration.target.attachments.push_back(colour_attachment_configration);
 	    renderpass_configuration.target.attachments.push_back(depth_attachment_configration);
 
-	    // egkr::render_view::configuration opaque_world{};
-	    // opaque_world.view_type = egkr::render_view::type::editor;
-	    // opaque_world.width = width_;
-	    // opaque_world.height = height_;
-	    // opaque_world.name = "editor";
-	    // opaque_world.passes.push_back(renderpass_configuration);
-	    // opaque_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
-
 	    renderpass = renderpass::renderpass::create(renderpass_configuration);
 	}
 

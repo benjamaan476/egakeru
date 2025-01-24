@@ -42,15 +42,6 @@ namespace egkr::pass
 	    renderpass = egkr::renderpass::renderpass::create(renderpass_configuration);
 	}
 
-	// egkr::render_view::configuration opaque_world{};
-	// opaque_world.view_type = egkr::render_view::type::world;
-	// opaque_world.width = width_;
-	// opaque_world.height = height_;
-	// opaque_world.name = "world-opaque";
-	// opaque_world.passes.push_back(skybox_renderpass_configuration);
-	// opaque_world.passes.push_back(renderpass_configuration);
-	// opaque_world.view_source = egkr::render_view::view_matrix_source::scene_camera;
-
 	{
 	    const std::string shader_name = "Shader.Material";
 	    auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);
