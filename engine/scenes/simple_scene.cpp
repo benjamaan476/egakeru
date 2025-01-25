@@ -103,6 +103,11 @@ namespace egkr::scene
 				}
 			}
 
+			for (const auto& mesh : frame_geometry_.transparent_geometries)
+			{
+				frame_geometry_.world_geometries.push_back(mesh);
+			}
+
 			for (auto& mesh : meshes_ | std::views::values)
 			{
 				if (mesh->get_generation() == invalid_32_id)
