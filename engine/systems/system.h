@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pch.h>
+#include <map>
 namespace egkr
 {
 	enum class system_type
@@ -17,7 +18,6 @@ namespace egkr
 		texture,
 		font,
 		camera,
-		render_view,
 		material,
 		geometry,
 		light,
@@ -61,6 +61,6 @@ namespace egkr
 		static void shutdown_known();
 		static void shutdown_extension();
 		static void shutdown_user();
-		std::unordered_map<system_type, system*> registered_systems_;
+		std::map<system_type, system*> registered_systems_;
 	};
 }

@@ -1,6 +1,5 @@
 #include "simple_scene.h"
 #include "identifier.h"
-#include <systems/view_system.h>
 #include <systems/light_system.h>
 #include <renderer/renderer_types.h>
 
@@ -12,7 +11,7 @@ namespace egkr::scene
 	}
 
 	simple_scene::simple_scene(const configuration& /*configuration*/)
-//		: configuration_{ configuration }
+		//		: configuration_{ configuration }
 	{
 		id_ = identifier::acquire_unique_id(this);
 	}
@@ -66,7 +65,8 @@ namespace egkr::scene
 
 		if (state_ >= state::loaded)
 		{
-			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), viewport->viewport_rect.w / viewport->viewport_rect.z, viewport->fov, camera->get_near_clip(), camera->get_far_clip());
+			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), viewport->viewport_rect.z / viewport->viewport_rect.w, viewport->fov,
+										 camera->get_near_clip(), camera->get_far_clip());
 			//if (update_frustum_)
 			//{
 			//	debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
@@ -91,9 +91,21 @@ namespace egkr::scene
 					if (frustum.intersects_aabb(center, half_extents))
 					{
 						egkr::render_data data{ .render_geometry = geo, .transform = mesh, .is_winding_reversed = mesh->get_determinant() < 0.f };
-						frame_geometry_.world_geometries.emplace_back(data);
+						if ((geo->get_material()->get_diffuse_map()->map_texture->get_flags() & texture::texture::flags::has_transparency) == texture::texture::flags::has_transparency)
+						{
+							frame_geometry_.transparent_geometries.push_back(data);
+						}
+						else
+						{
+							frame_geometry_.world_geometries.emplace_back(data);
+						}
 					}
 				}
+			}
+
+			for (const auto& mesh : frame_geometry_.transparent_geometries)
+			{
+				frame_geometry_.world_geometries.push_back(mesh);
 			}
 
 			for (auto& mesh : meshes_ | std::views::values)
@@ -111,20 +123,19 @@ namespace egkr::scene
 
 				//debug_data->set_colour({ 0, 1,0, 0 });
 				//debug_data->set_extents(mesh->extents());
-
 			}
 
-			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_boxes_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_grids_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
 
-			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box}; }))
+			for (const auto& debug : debug_frusta_ | std::views::values | std::views::transform([](auto box) { return render_data{ .render_geometry = box->get_geometry(), .transform = box }; }))
 			{
 				frame_geometry_.debug_geometries.push_back(debug);
 			}
@@ -136,15 +147,7 @@ namespace egkr::scene
 					frame_geometry_.debug_geometries.emplace_back(mesh->get_geometry(), mesh);
 				}
 			}
-
 		}
-	}
-
-	void simple_scene::populate_render_packet(render_packet* packet, const camera::shared_ptr& camera, viewport* viewport)
-	{
-		auto world_view = view_system::get("world-opaque");
-		packet->render_views[render_view::type::world] = view_system::build_packet(world_view.get(), &frame_geometry_, camera, viewport);
-		packet->render_views[render_view::type::world].skybox_data.skybox_data = skybox_;
 	}
 
 	void simple_scene::add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light)
@@ -176,7 +179,7 @@ namespace egkr::scene
 	void simple_scene::remove_point_light(const std::string& name)
 	{
 		//LOG_WARN("Cannot currently remove a point light");
-				//light_system::remove_point_light(light);
+		//light_system::remove_point_light(light);
 		if (point_lights_.contains(name))
 		{
 			point_lights_.erase(name);
@@ -336,7 +339,7 @@ namespace egkr::scene
 
 		point_lights_.clear();
 		remove_directional_light();
-		
+
 		state_ = state::unloaded;
 	}
 
@@ -349,8 +352,7 @@ namespace egkr::scene
 			const auto world = mesh->get_world();
 			if (auto distance = ray.oriented_extents(mesh->extents(), world))
 			{
-				ray::hit hit
-				{
+				ray::hit hit{
 					.type = ray::hit_type::bounding_box,
 					.unique_id = mesh->unique_id(),
 					.position = ray.origin + ray.direction * distance.value(),

@@ -193,7 +193,7 @@ namespace egkr
 			requirements.transfer = true;
 			requirements.sampler_anisotropy = true;
 
-			requirements.discrete_gpu = true;
+			requirements.discrete_gpu = false;
 
 			physical_device_queue_family_info queue_info{};
 
@@ -977,6 +977,11 @@ namespace egkr
 	{
 		auto& command_buffer = context_.graphics_command_buffers[context_.image_index];
 		command_buffer.get_handle().setFrontFace(winding == winding::counter_clockwise ? vk::FrontFace::eCounterClockwise : vk::FrontFace::eClockwise);
+	}
+
+	uint32_t renderer_vulkan::get_window_attachment_count() const
+	{
+		return context_.swpchain->get_image_count();
 	}
 
 	texture* renderer_vulkan::get_window_attachment(uint8_t index) const

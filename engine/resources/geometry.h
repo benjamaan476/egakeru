@@ -84,15 +84,23 @@ namespace egkr
 		bool is_winding_reversed;
 	};
 
+	struct geometry_distance
+	{
+		render_data geometry;
+		float distance;
+	};
+
 	struct frame_geometry_data
 	{
 		egkr::vector<render_data> world_geometries;
 		egkr::vector<render_data> debug_geometries;
+		egkr::vector<render_data> transparent_geometries;
 
 		void reset()
 		{
 			world_geometries.clear();
 			debug_geometries.clear();
+			transparent_geometries.clear();
 		}
 	};
 }

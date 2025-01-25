@@ -8,7 +8,6 @@
 #include <systems/job_system.h>
 #include <systems/shader_system.h>
 #include <systems/camera_system.h>
-#include <systems/view_system.h>
 #include <systems/light_system.h>
 #include <systems/font_system.h>
 #include <systems/console_system.h>
@@ -57,7 +56,7 @@ namespace egkr
 		}
 		return true;
 	}
-	
+
 	bool system_manager::update(const frame_data& frame_data)
 	{
 		for (auto& [type, system] : system_manager_state->registered_systems_)
@@ -96,10 +95,9 @@ namespace egkr
 	{
 		registered_systems_.emplace(system_type::input, input::create());
 		{
-			const resource_system::configuration resource_system_configuration
-			{
-			    .max_loader_count = 10,
-			    .base_path = "../../../../assets/",
+			const resource_system::configuration resource_system_configuration{
+				.max_loader_count = 10,
+				.base_path = "../../../../assets/",
 			};
 
 			registered_systems_.emplace(system_type::resource, resource_system::create(resource_system_configuration));
@@ -134,32 +132,22 @@ namespace egkr
 				types[1] = job::type::resource_load;
 			}
 
-			const job_system::configuration configuration{
-				.thread_count = thread_count,
-				.type_masks = types
-			};
+			const job_system::configuration configuration{ .thread_count = thread_count, .type_masks = types };
 			registered_systems_.emplace(system_type::job, job_system::create(configuration));
 		}
 		{
-			const shader_system::configuration configuration
-			{
-			.max_shader_count = 1024,
-			.max_uniform_count = 128,
-			.max_global_textures = 31,
-			.max_instance_textures = 31,
+			const shader_system::configuration configuration{
+				.max_shader_count = 1024,
+				.max_uniform_count = 128,
+				.max_global_textures = 31,
+				.max_instance_textures = 31,
 			};
 
 			registered_systems_.emplace(system_type::shader, shader_system::create(configuration));
 		}
 		{
-			const camera_system::configuration configuration
-			{
-				.max_registered_cameras = 31
-			};
+			const camera_system::configuration configuration{ .max_registered_cameras = 31 };
 			registered_systems_.emplace(system_type::camera, camera_system::create(configuration));
-		}
-		{
-			registered_systems_.emplace(system_type::render_view, view_system::create());
 		}
 		{
 			registered_systems_.emplace(system_type::light, light_system::create());
@@ -190,12 +178,11 @@ namespace egkr
 	}
 
 	void system_manager::shutdown_extension()
-	{ 
+	{
 	}
 
 	void system_manager::shutdown_user()
 	{
-
 	}
 
 	void system_manager::shutdown_known()
@@ -209,7 +196,6 @@ namespace egkr
 		system_manager_state->registered_systems_[system_type::console]->shutdown();
 		system_manager_state->registered_systems_[system_type::font]->shutdown();
 		system_manager_state->registered_systems_[system_type::light]->shutdown();
-		system_manager_state->registered_systems_[system_type::render_view]->shutdown();
 		system_manager_state->registered_systems_[system_type::camera]->shutdown();
 		system_manager_state->registered_systems_[system_type::shader]->shutdown();
 		system_manager_state->registered_systems_[system_type::job]->shutdown();

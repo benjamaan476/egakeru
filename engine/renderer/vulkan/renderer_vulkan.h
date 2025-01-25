@@ -45,6 +45,7 @@ namespace egkr
 		void reset_scissor() const override;
 		void set_winding(winding winding) const override;
 
+		uint32_t get_window_attachment_count() const override;
 		texture* get_window_attachment(uint8_t index) const override;
 		texture* get_depth_attachment(uint8_t index) const override;
 		uint8_t get_window_index() const override;

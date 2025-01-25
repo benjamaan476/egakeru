@@ -18,8 +18,7 @@ namespace egkr
 		return material_system_.get();
 	}
 
-	material_system::material_system()
-		: max_material_count_{ 1024 }
+	material_system::material_system() : max_material_count_{ 1024 }
 	{
 	}
 
@@ -118,9 +117,9 @@ namespace egkr
 		//{
 		//	new_material->increment_generation();
 		//}
-		
+
 		auto shader = shader_system::get_shader(new_material->get_shader_id());
-		if (material_system_->material_shader_id_ == invalid_32_id && properties.shader_name == "Shader.Builtin.Material")
+		if (material_system_->material_shader_id_ == invalid_32_id && properties.shader_name == "Shader.Material")
 		{
 			material_system_->material_shader_id_ = shader->get_id();
 			material_shader_uniform_location locations{};
@@ -140,7 +139,7 @@ namespace egkr
 			locations.num_point_lights = shader->get_uniform_index("num_point_lights");
 			material_system_->material_locations_ = locations;
 		}
-		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == "Shader.Builtin.UI")
+		else if (material_system_->ui_shader_id_ == invalid_32_id && properties.shader_name == "Shader.UI")
 		{
 			material_system_->ui_shader_id_ = shader->get_id();
 			ui_shader_uniform_location locations{};
@@ -170,7 +169,8 @@ namespace egkr
 		return false;
 	}
 
-	void material_system::apply_global(uint32_t shader_id, const frame_data& frame_data, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
+	void material_system::apply_global(
+		uint32_t shader_id, const frame_data& frame_data, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode)
 	{
 		auto shader = shader_system::get_shader(shader_id);
 
@@ -244,16 +244,17 @@ namespace egkr
 		properties.specular_map_name = default_specular_name;
 		properties.normal_map_name = default_normal_name;
 		properties.diffuse_colour = float4{ 1.F };
-		properties.shader_name = "Shader.Builtin.Material";
+		properties.shader_name = "Shader.Material";
 		material_system_->default_material_ = material::create(properties);
-		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
+		egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{
+			material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map() };
 
 		for (auto map : texture_maps)
 		{
 			map->acquire();
 		}
 
-		auto mat_shader = shader_system::get_shader("Shader.Builtin.Material");
+		auto mat_shader = shader_system::get_shader("Shader.Material");
 		auto id = mat_shader->acquire_instance_resources(texture_maps);
 		material_system_->default_material_->set_internal_id(id);
 		return true;
@@ -261,15 +262,12 @@ namespace egkr
 
 	bool material_system::load_material(const material_properties& properties, material::shared_ptr& material)
 	{
-		texture_map::properties diffuse_properties
-		{
-			.minify = texture_map::filter::linear,
+		texture_map::properties diffuse_properties{ .minify = texture_map::filter::linear,
 			.magnify = texture_map::filter::linear,
 			.repeat_u = texture_map::repeat::repeat,
 			.repeat_v = texture_map::repeat::repeat,
 			.repeat_w = texture_map::repeat::repeat,
-			.map_use = texture_map::use::map_diffuse
-		};
+			.map_use = texture_map::use::map_diffuse };
 
 		auto diffuse_map = texture_map::texture_map::create(diffuse_properties);
 		diffuse_map->acquire();
@@ -307,7 +305,7 @@ namespace egkr
 			normal_map->map_texture = texture_system::get_default_normal_texture();
 		}
 
-		egkr::vector<texture_map::texture_map::shared_ptr> maps{diffuse_map, specular_map, normal_map};
+		egkr::vector<texture_map::texture_map::shared_ptr> maps{ diffuse_map, specular_map, normal_map };
 		auto shader = shader_system::get_shader(properties.shader_name);
 		auto id = shader->acquire_instance_resources(maps);
 

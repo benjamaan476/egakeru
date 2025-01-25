@@ -47,7 +47,7 @@ namespace egkr
 
 		geometry_ = egkr::geometry_system::acquire(configuration_.geometry_properties);
 
-		auto skybox_shader = egkr::shader_system::get_shader("Shader.Builtin.Skybox");
+		auto skybox_shader = egkr::shader_system::get_shader("Shader.Skybox");
 		egkr::vector<egkr::texture_map::texture_map::shared_ptr> maps = { cubemap_ };
 		skybox_shader->acquire_instance_resources(maps);
 
