@@ -1,4 +1,7 @@
 project(engine)
+
+add_subdirectory(plugins)
+
 include_directories(${engine_SOURCE_DIR})
 
 
@@ -52,6 +55,7 @@ target_link_libraries(
           Vulkan::Headers
           OpenAL::OpenAL
           glm::glm
+          renderer_vulkan
 )
 
 target_link_system_libraries(
