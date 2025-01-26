@@ -15,7 +15,6 @@ namespace egkr::pass
 	return pass;
     }
 
-
     bool scene::init()
     {
 	name = "scene";

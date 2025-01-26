@@ -75,6 +75,10 @@ namespace egkr
     {
 	if (resource->data)
 	{
+	    auto* data = ((font::system_font_resource_data*)(resource->data));
+	    free(data->font_binary);
+	    data = nullptr;
+
 	    free(resource->data);
 	    resource->data = nullptr;
 	}

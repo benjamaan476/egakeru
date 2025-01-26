@@ -15,6 +15,7 @@ namespace egkr::pass
 	pass->init();
 	return pass;
     }
+
     bool editor::init()
     {
 	name = "editor";

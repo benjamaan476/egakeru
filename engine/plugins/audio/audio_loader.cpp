@@ -82,7 +82,14 @@ namespace egkr
 	auto base_path = get_base_path();
 	const std::string filename = std::format("{}/{}", base_path, name);
 
-	audio::file* resource_data = new audio::file();
+	resource::properties audio_properties{};
+	audio_properties.type = resource::type::audio;
+	audio_properties.name = name;
+	audio_properties.full_path = filename;
+
+	audio_properties.data = new (audio::file);
+	audio::file* resource_data = (audio::file*)audio_properties.data;
+
 	resource_data->internal_data = new audio_file_internal();
 	resource_data->audio_type = parameters->type;
 	if (name.contains(".ogg"))
@@ -138,14 +145,6 @@ namespace egkr
 	    LOG_ERROR("Unsupported audio file type");
 	    return nullptr;
 	}
-
-	resource::properties audio_properties{};
-	audio_properties.type = resource::type::audio;
-	audio_properties.name = name;
-	audio_properties.full_path = filename;
-
-	audio_properties.data = new (audio::file);
-	*(audio::file*)audio_properties.data = *resource_data;
 
 	return resource::create(audio_properties);
     }
