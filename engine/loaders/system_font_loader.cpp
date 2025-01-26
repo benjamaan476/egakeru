@@ -77,6 +77,7 @@ namespace egkr
 	{
 	    auto* data = ((font::system_font_resource_data*)(resource->data));
 	    free(data->font_binary);
+	    delete data;
 	    data = nullptr;
 
 	    free(resource->data);
@@ -119,9 +120,9 @@ namespace egkr
 	    }
 	    else if (variable_name == "file")
 	    {
-		auto font_file = value;
+		const auto& font_file = value;
 		auto font_resource = resource_system::load(font_file, resource::type::binary, nullptr);
-		binary_resource_properties* font_data = (binary_resource_properties*)font_resource->data;
+		auto* font_data = (binary_resource_properties*)font_resource->data;
 		data.binary_size = font_data->data.size();
 		data.font_binary = malloc(data.binary_size);
 		std::memcpy(data.font_binary, font_data->data.data(), data.binary_size);
@@ -135,7 +136,7 @@ namespace egkr
 	    }
 	}
 
-	if (!data.font_binary || data.fonts.empty())
+	if ((data.font_binary == nullptr) || data.fonts.empty())
 	{
 	    LOG_ERROR("Bad fontcfg file, {}. Required information missing", handle.filepath.data());
 	    return data;
