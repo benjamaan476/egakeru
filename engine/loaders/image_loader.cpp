@@ -9,108 +9,102 @@
 
 namespace egkr
 {
-	image_loader::unique_ptr image_loader::create(const loader_properties& properties)
+    image_loader::unique_ptr image_loader::create(const loader_properties& properties) { return std::make_unique<image_loader>(properties); }
+
+    image_loader::image_loader(const loader_properties& properties): resource_loader{resource::type::image, properties} { }
+
+    resource::shared_ptr image_loader::load(const std::string& name, void* params)
+    {
+	auto* parameters = std::bit_cast<image_resource_parameters*>(params);
+
+	auto base_path = get_base_path();
+
+	stbi_set_flip_vertically_on_load(parameters->flip_y);
+
+	std::string filename;
+	egkr::vector<std::string_view> extensions{".tga", ".png", ".jpg", ".bmp"};
+
+	auto found{false};
+	for (const auto& extension : extensions)
 	{
-		return std::make_unique<image_loader>(properties);
+	    filename = std::format("{}/{}{}", base_path, name, extension);
+
+	    if (filesystem::does_path_exist(filename))
+	    {
+		found = true;
+		break;
+	    }
 	}
 
-	image_loader::image_loader(const loader_properties& properties)
-		: resource_loader{resource::type::image, properties}
+	if (!found)
 	{
-
+	    LOG_ERROR("File not found: {}", filename);
+	    return {};
 	}
 
-	resource::shared_ptr image_loader::load(const std::string& name, void* params)
+	auto file = filesystem::open(filename, file_mode::read, true);
+	auto raw = filesystem::read_all(file);
+
+	int32_t width{};
+	int32_t height{};
+	int32_t channels{};
+	int32_t required_channels{4};
+
+	auto image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
+
+	if (image_data)
 	{
-		auto* parameters = std::bit_cast<image_resource_parameters*>(params);
+	    texture::properties properties{};
+	    properties.channel_count = (uint8_t)required_channels;
+	    properties.width = (uint32_t)width;
+	    properties.height = (uint32_t)height;
+	    properties.generation = 0;
+	    properties.id = 0;
+	    properties.data = image_data;
+	    properties.name = name.data();
 
-		auto base_path = get_base_path();
-
-		stbi_set_flip_vertically_on_load(parameters->flip_y);
-
-		std::string filename;
-		egkr::vector<std::string_view> extensions{".tga", ".png", ".jpg", ".bmp"};
-
-		auto found{ false };
-		for (const auto& extension : extensions)
+	    for (auto y{0}; y < height; ++y)
+	    {
+		for (auto x{0}; x < width; x += 4)
 		{
-			filename = std::format("{}/{}{}", base_path, name, extension);
+		    auto index = y * width + 4;
 
-			if (filesystem::does_path_exist(filename))
-			{
-				found = true;
-				break;
-			}
+		    if (image_data[index + 3] < 255)
+		    {
+			properties.texture_flags |= texture::flags::has_transparency;
+			break;
+		    }
 		}
+	    }
 
-		if (!found)
-		{
-			LOG_ERROR("File not found: {}", filename);
-			return {};
-		}
+	    resource::properties image_properties{};
+	    image_properties.type = resource::type::image;
+	    image_properties.name = name;
+	    image_properties.full_path = filename;
 
-		auto file = filesystem::open(filename, file_mode::read, true);
-		auto raw = filesystem::read_all(file);
+	    // Deleted by unload
+	    image_properties.data = new (texture::properties);
+	    *(texture::properties*)(image_properties.data) = properties;
 
-		int32_t width{};
-		int32_t height{};
-		int32_t channels{};
-		int32_t required_channels{ 4 };
-
-		auto image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
-
-		if (image_data)
-		{
-			texture::properties properties{};
-			properties.channel_count = (uint8_t)required_channels;
-			properties.width = (uint32_t)width;
-			properties.height = (uint32_t)height;
-			properties.generation = 0;
-			properties.id = 0;
-			properties.data = image_data;
-			properties.name = name.data();
-
-			for (auto y{ 0 }; y < height; ++y)
-			{
-				for (auto x{ 0 }; x < width; x += 4)
-				{
-					auto index = y * width + 4;
-
-					if (image_data[index + 3] < 255)
-					{
-						properties.texture_flags |= texture::flags::has_transparency;
-						break;
-					}
-				}
-			}
-
-			resource::properties image_properties{};
-			image_properties.type = resource::type::image;
-			image_properties.name = name;
-			image_properties.full_path = filename;
-
-			// Deleted by unload
-			image_properties.data = new(texture::properties);
-			*(texture::properties*)(image_properties.data) = properties;
-
-			return resource::create(image_properties);
-		}
-		else
-		{
-			if (stbi_failure_reason())
-			{
-				LOG_ERROR("Failed to load image {}, reason: {}", filename, stbi_failure_reason());
-				stbi__err(nullptr, 0);
-			}
-			return nullptr;
-		}
+	    return resource::create(image_properties);
 	}
-
-	bool egkr::image_loader::unload(const resource::shared_ptr& resource)
+	else
 	{
-		auto* data = (texture::properties*)resource->data;
-		delete data;
-
-		return true;
+	    if (stbi_failure_reason())
+	    {
+		LOG_ERROR("Failed to load image {}, reason: {}", filename, stbi_failure_reason());
+		stbi__err(nullptr, 0);
+	    }
+	    return nullptr;
 	}
+    }
+
+    bool egkr::image_loader::unload(const resource::shared_ptr& resource)
+    {
+	auto* data = (texture::properties*)resource->data;
+	stbi_image_free(data->data);
+	delete data;
+
+	return true;
+    }
 }
