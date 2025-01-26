@@ -68,6 +68,10 @@ namespace egkr
     bool mesh_loader::unload(const resource::shared_ptr& resource)
     {
 	auto* data = (egkr::vector<geometry::properties>*)resource->data;
+	for (auto& geo : *data)
+	{
+	    free(geo.vertices);
+	}
 	data->clear();
 	delete data;
 	return false;
