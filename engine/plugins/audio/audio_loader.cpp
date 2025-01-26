@@ -173,7 +173,7 @@ namespace egkr
 
 		delete file->internal_data;
 	    }
-	    delete (audio::file*)resource->data;
+	    delete file;
 	    resource->data = nullptr;
 	}
 	return true;
