@@ -1,4 +1,5 @@
 #include "renderer_vulkan.h"
+#include "pch.h"
 #include "vulkan_types.h"
 
 #include "swapchain.h"
@@ -900,6 +901,10 @@ namespace egkr
 
 		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)tex->get_image(), properties.name)
 		SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(VkImageView)tex->get_view(), properties.name + "_view")
+		if(out_texture->get_generation() != invalid_32_id)
+		{
+			delete out_texture;
+		}
 		*(vulkan_texture*)out_texture = *tex;
 	}
 

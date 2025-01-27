@@ -54,14 +54,21 @@ namespace egkr
 
 	if (image_data)
 	{
-	    texture::properties properties{};
-	    properties.channel_count = (uint8_t)required_channels;
-	    properties.width = (uint32_t)width;
-	    properties.height = (uint32_t)height;
-	    properties.generation = 0;
-	    properties.id = 0;
-	    properties.data = image_data;
-	    properties.name = name.data();
+	    resource::properties image_properties{};
+	    image_properties.type = resource::type::image;
+	    image_properties.name = name;
+	    image_properties.full_path = filename;
+
+	    image_properties.data = new (texture::properties);
+
+	    auto* properties = (texture::properties*)image_properties.data;
+	    properties->channel_count = (uint8_t)required_channels;
+	    properties->width = (uint32_t)width;
+	    properties->height = (uint32_t)height;
+	    properties->generation = 0;
+	    properties->id = 0;
+	    properties->data = image_data;
+	    properties->name = name;
 
 	    for (auto y{0}; y < height; ++y)
 	    {
@@ -71,21 +78,11 @@ namespace egkr
 
 		    if (image_data[index + 3] < 255)
 		    {
-			properties.texture_flags |= texture::flags::has_transparency;
+			properties->texture_flags |= texture::flags::has_transparency;
 			break;
 		    }
 		}
 	    }
-
-	    resource::properties image_properties{};
-	    image_properties.type = resource::type::image;
-	    image_properties.name = name;
-	    image_properties.full_path = filename;
-
-	    // Deleted by unload
-	    image_properties.data = new (texture::properties);
-	    *(texture::properties*)(image_properties.data) = properties;
-
 	    return resource::create(image_properties);
 	}
 	else
@@ -104,6 +101,7 @@ namespace egkr
 	auto* data = (texture::properties*)resource->data;
 	stbi_image_free(data->data);
 	delete data;
+	data = nullptr;
 
 	return true;
     }

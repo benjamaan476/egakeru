@@ -146,28 +146,37 @@ namespace egkr
     {
 	if (texture_system_->default_texture_)
 	{
-	    //texture_system_->default_texture_->free();
 	    texture_system_->default_texture_->free();
+	    delete texture_system_->default_texture_;
+	    texture_system_->default_texture_ = nullptr;
 	}
 
 	if (texture_system_->default_specular_texture_)
 	{
 	    texture_system_->default_specular_texture_->free();
+	    delete texture_system_->default_specular_texture_;
+	    texture_system_->default_specular_texture_ = nullptr;
 	}
 
 	if (texture_system_->default_diffuse_texture_)
 	{
 	    texture_system_->default_diffuse_texture_->free();
+	    delete texture_system_->default_diffuse_texture_;
+	    texture_system_->default_diffuse_texture_ = nullptr;
 	}
 
 	if (texture_system_->default_normal_texture_)
 	{
 	    texture_system_->default_normal_texture_->free();
+	    delete texture_system_->default_normal_texture_;
+	    texture_system_->default_normal_texture_ = nullptr;
 	}
 
 	for (auto& texture : texture_system_->registered_textures_)
 	{
 	    texture->free();
+	    delete texture;
+	    texture = nullptr;
 	}
 	texture_system_->registered_textures_.clear();
 	texture_system_->registered_textures_by_name_.clear();
@@ -443,7 +452,6 @@ namespace egkr
 	load_params->loaded_resource = image;
 
 	memcpy(result_data, load_params, sizeof(load_parameters));
-
 
 	return true;
     }

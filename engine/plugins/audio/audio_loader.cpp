@@ -167,7 +167,7 @@ namespace egkr
 		//}
 		if (file->internal_data->pcm)
 		{
-		    delete file->internal_data->pcm;
+		     free(file->internal_data->pcm);
 		    file->internal_data->pcm = nullptr;
 		}
 

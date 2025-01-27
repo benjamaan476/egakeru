@@ -64,6 +64,10 @@ namespace egkr
 	    break;
 	}
 
+	if(view_)
+	{
+	    context_->device.logical_device.destroyImageView(view_, context_->allocator);
+	}
 	view_ = context_->device.logical_device.createImageView(image_view_info, context_->allocator);
     }
 
@@ -108,6 +112,10 @@ namespace egkr
 
 	image_info.setArrayLayers(texture_properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
+	if(image_)
+	{
+	    context_->device.logical_device.destroyImage(image_, context_->allocator);
+	}
 	image_ = context_->device.logical_device.createImage(image_info, context_->allocator);
 	if (image_ == vk::Image{})
 	{

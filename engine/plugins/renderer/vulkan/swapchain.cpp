@@ -29,11 +29,15 @@ namespace egkr
 	for (auto depth : depth_attachments_)
 	{
 	    depth->destroy();
+	    delete depth;
+	    depth = nullptr;
 	}
 
 	for (auto* tex : render_textures_)
 	{
 	    tex->destroy();
+	    delete tex;
+	    tex = nullptr;
 	}
 	render_textures_.clear();
 
@@ -294,6 +298,10 @@ namespace egkr
 
 	for (auto& depth : depth_attachments_)
 	{
+	    if(depth)
+	    {
+		depth->destroy();
+	    }
 	    depth = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
 	    ((vulkan_texture*)(depth))->create(depth_image_properties);
 	}
