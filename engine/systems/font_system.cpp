@@ -50,9 +50,9 @@ namespace egkr
 		registered_bitmap_fonts_.clear();
 		registered_bitmap_fonts_by_name_.clear();
 
-		//for (auto& font : registered_system_fonts_)
+		for (auto& font : registered_system_fonts_)
 		{
-			//delete font.font_binary;
+			free(font.font_binary);
 		}
 		registered_system_fonts_.clear();
 		registered_system_fonts_by_name_.clear();
