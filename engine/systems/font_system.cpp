@@ -1,5 +1,6 @@
 #include "font_system.h"
 
+#include <glm/detail/qualifier.hpp>
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
 
@@ -297,6 +298,7 @@ namespace egkr
 		variant.atlas->map_texture->write_data(0, pack_image_size * 4, rgba_pixels);
 
 		free(pixels);
+		free(packed_chars);
 		free(rgba_pixels);
 
 		if (!variant.glyphs.empty())
@@ -330,6 +332,7 @@ namespace egkr
 			variant.kernings.resize((size_t)stbtt_GetKerningTableLength(&lookup.info));
 			if (!variant.kernings.empty())
 			{
+				//TODO: Make this a vector?
 				stbtt_kerningentry* kerning_table = (stbtt_kerningentry*)malloc(sizeof(stbtt_kerningentry) * variant.kernings.size());
 				int32_t entry_count = stbtt_GetKerningTable(&lookup.info, kerning_table, (int32_t)variant.kernings.size());
 
@@ -346,6 +349,7 @@ namespace egkr
 					k->codepoint_1 = kerning_table[j].glyph2;
 					k->amount = (int16_t)kerning_table[j].advance;
 				}
+				free(kerning_table);
 			}
 		}
 		return true;

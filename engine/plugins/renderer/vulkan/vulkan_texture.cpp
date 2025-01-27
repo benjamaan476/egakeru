@@ -140,6 +140,15 @@ namespace egkr
 	create_view(texture_properties);
     }
 
+    void vulkan_texture::set_image(vk::Image image)
+    {
+	if(image_)
+	{
+	    context_->device.logical_device.destroyImage(image_);
+	}
+	image_ = image;
+    }
+
     bool vulkan_texture::populate(const egkr::texture::properties& texture_properties, const uint8_t* texture_data)
     {
 	ZoneScoped;

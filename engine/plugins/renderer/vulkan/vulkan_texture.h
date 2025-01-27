@@ -62,10 +62,7 @@ namespace egkr
 		{
 			return image_;
 		}
-		void set_image(vk::Image image)
-		{
-			image_ = image;
-		}
+		void set_image(vk::Image image);
 
 		void set_view(vk::ImageView view);
 		void set_width(uint32_t width)
@@ -80,9 +77,9 @@ namespace egkr
 
 	private:
 		const vulkan_context* context_{};
-		vk::Image image_{};
-		vk::DeviceMemory memory_{};
-		vk::ImageView view_{};
+		vk::Image image_;
+		vk::DeviceMemory memory_;
+		vk::ImageView view_;
 		uint32_t width_{};
 		uint32_t height_{};
 	};
