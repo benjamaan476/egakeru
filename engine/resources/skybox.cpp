@@ -56,6 +56,7 @@ namespace egkr
 
 	bool skybox::unload()
 	{
+		free(configuration_.geometry_properties.vertices);
 		cubemap_->release();
 		cubemap_.reset();
 		geometry_->destroy();
