@@ -424,6 +424,8 @@ namespace egkr
 	texture::texture::create(*properties, (const uint8_t*)properties->data, load_params->out_texture);
 
 	load_params->out_texture->increment_generation();
+	free(load_params->name);
+	load_params->name = nullptr;
 	resource_system::unload(load_params->loaded_resource);
     }
 
