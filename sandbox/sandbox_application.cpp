@@ -272,6 +272,10 @@ bool sandbox_application::shutdown()
     //skybox_->destroy();
     //debug_frustum_->destroy();
 
+    egkr::audio::audio_system::close(test_audio);
+    egkr::audio::audio_system::close(test_loop_audio);
+    egkr::audio::audio_system::close(test_music);
+
     return true;
 }
 

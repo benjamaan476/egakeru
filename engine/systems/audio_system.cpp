@@ -89,7 +89,7 @@ namespace egkr::audio
 
 	void audio_system::close(file* file)
 	{
-		plugin_->unload_audio(file);
+		state->plugin_->unload_audio(file);
 	}
 
 	bool audio_system::set_master_volume(float volume)

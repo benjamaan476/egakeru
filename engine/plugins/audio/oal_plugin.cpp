@@ -431,7 +431,6 @@ namespace egkr::audio
 
     audio::file* oal::load_chunk(const std::string& name)
     {
-
         audio_resource_loader_params params
         {
             .type = audio::type::sound_effect,
@@ -440,6 +439,7 @@ namespace egkr::audio
         auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
+        file->audio_resource = resource;
         file->data = new plugin_data();
 
         file->data->buffer = find_free_buffer();
@@ -480,6 +480,7 @@ namespace egkr::audio
         auto resource = resource_system::load(name, resource::type::audio, &params);
 
         audio::file* file = (audio::file*)resource->data;
+        file->audio_resource = resource;
         file->data = new plugin_data();
 
         for (uint32_t i{}; i < OAL_PLUGIN_MUSIC_BUFFER_COUNT; ++i)
@@ -504,7 +505,6 @@ namespace egkr::audio
     {
         clear_buffer(&file->data->buffer, 0);
 
-        delete file->data;
         resource_system::unload(file->audio_resource);
     }
 

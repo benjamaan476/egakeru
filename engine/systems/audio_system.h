@@ -44,7 +44,7 @@ namespace egkr::audio
 			static file* load_chunk(const std::string& name);
 			static file* load_stream(const std::string& name);
 
-			void close(file* file);
+			static void close(file* file);
 
 			static bool set_master_volume(float volume);
 			static float get_master_volume();
