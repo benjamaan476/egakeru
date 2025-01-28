@@ -29,14 +29,12 @@ namespace egkr
 	for (auto depth : depth_attachments_)
 	{
 	    depth->destroy();
-	    delete depth;
 	    depth = nullptr;
 	}
 
-	for (auto* tex : render_textures_)
+	for (auto tex : render_textures_)
 	{
-	    tex->destroy();
-	    delete tex;
+	    tex.reset();
 	    tex = nullptr;
 	}
 	render_textures_.clear();
@@ -253,7 +251,7 @@ namespace egkr
 		    .memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 		    .aspect_flags = vk::ImageAspectFlagBits::eColor,
 		    .texture_type = egkr::texture::type::texture_2d};
-		((vulkan_texture*)(render_textures_[i]))->create(depth_image_properties);
+		((vulkan_texture*)(render_textures_[i].get()))->populate_internal(depth_image_properties);
 	    }
 	}
 	else
@@ -266,7 +264,7 @@ namespace egkr
 
 	for (auto i{0U}; i < image_count_; ++i)
 	{
-	    auto img = (vulkan_texture*)render_textures_[i];
+	    auto img = (vulkan_texture*)render_textures_[i].get();
 	    img->set_image(swapchain_images[i]);
 	    img->set_width(extent_.width);
 	    img->set_height(extent_.height);
@@ -274,7 +272,7 @@ namespace egkr
 
 	for (auto i{0U}; i < image_count_; ++i)
 	{
-	    auto img = (vulkan_texture*)render_textures_[i];
+	    auto img = (vulkan_texture*)render_textures_[i].get();
 	    vk::ImageSubresourceRange subresource{};
 	    subresource.setAspectMask(vk::ImageAspectFlagBits::eColor).setBaseMipLevel(0).setLevelCount(1).setBaseArrayLayer(0).setLayerCount(1);
 
@@ -298,12 +296,12 @@ namespace egkr
 
 	for (auto& depth : depth_attachments_)
 	{
-	    if(depth)
+	    if (depth)
 	    {
 		depth->destroy();
 	    }
 	    depth = texture_system::wrap_internal("__default_depth_texture__", extent_.width, extent_.height, context_->device.depth_channel_count, false, true, false, nullptr);
-	    ((vulkan_texture*)(depth))->create(depth_image_properties);
+	    ((vulkan_texture*)(depth.get()))->populate_internal(depth_image_properties);
 	}
 	return swapchain_images;
     }

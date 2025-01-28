@@ -1,6 +1,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_types.h"
 
+#include <memory>
 #include <renderer/renderer_frontend.h>
 namespace egkr
 {
@@ -21,26 +22,14 @@ namespace egkr
 	}
     }
 
-    vulkan_texture* vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties, bool create_view)
+    vulkan_texture::shared_ptr vulkan_texture::create(const vulkan_context* context, uint32_t width_, uint32_t height_, const egkr::texture::properties& properties)
     {
-	auto img = new vulkan_texture(context, width_, height_, properties);
-
-	if (create_view)
-	{
-	    //img->create_view(properties);
-	}
-	return img;
+	return std::make_shared<vulkan_texture>(context, width_, height_, properties);
     }
 
-    vulkan_texture* vulkan_texture::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties, bool create_view)
+    vulkan_texture vulkan_texture::create_raw(const vulkan_context* context, uint32_t width, uint32_t height, const egkr::texture::properties& properties)
     {
-	auto img = new vulkan_texture(context, width, height, properties);
-
-	if (create_view)
-	{
-	    //img->create_view(properties);
-	}
-	return img;
+	return vulkan_texture(context, width, height, properties);
     }
 
     void vulkan_texture::create_view(const properties& view_properties)
@@ -64,7 +53,7 @@ namespace egkr
 	    break;
 	}
 
-	if(view_)
+	if (view_)
 	{
 	    context_->device.logical_device.destroyImageView(view_, context_->allocator);
 	}
@@ -80,7 +69,7 @@ namespace egkr
 
     vulkan_texture::~vulkan_texture() { free(); }
 
-    void vulkan_texture::create(const properties& texture_properties)
+    void vulkan_texture::populate_internal(const properties& texture_properties)
     {
 	ZoneScoped;
 
@@ -112,7 +101,7 @@ namespace egkr
 
 	image_info.setArrayLayers(texture_properties.texture_type == egkr::texture::type::cube ? 6 : 1);
 
-	if(image_)
+	if (image_)
 	{
 	    context_->device.logical_device.destroyImage(image_, context_->allocator);
 	}
@@ -142,7 +131,7 @@ namespace egkr
 
     void vulkan_texture::set_image(vk::Image image)
     {
-	if(image_)
+	if (image_)
 	{
 	    context_->device.logical_device.destroyImage(image_);
 	}
@@ -165,7 +154,7 @@ namespace egkr
 	        .memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 	        .aspect_flags = vk::ImageAspectFlagBits::eColor,
 	        .texture_type = texture_properties.texture_type};
-	    create(image_properties);
+	    populate_internal(image_properties);
 
 	    if (texture_data)
 	    {
@@ -209,7 +198,7 @@ namespace egkr
 	        .memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 	        .aspect_flags = aspect,
 	    };
-	    create(texture_properties);
+	    populate_internal(texture_properties);
 
 	    increment_generation();
 
@@ -312,7 +301,7 @@ namespace egkr
 	width_ = width;
 	height_ = height;
 
-	create(texture_properties);
+	populate_internal(texture_properties);
 
 	create_view(texture_properties);
 

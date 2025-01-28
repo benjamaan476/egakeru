@@ -2,6 +2,7 @@
 #include "renderer/renderer_types.h"
 #include "vulkan_types.h"
 #include "systems/material_system.h"
+#include <vulkan/vulkan_core.h>
 
 namespace egkr
 {
@@ -26,7 +27,6 @@ namespace egkr
     vulkan_geometry::~vulkan_geometry()
     {
 	free();
-	context_ = nullptr;
     }
 
     bool vulkan_geometry::populate(const properties& geometry_properties)
@@ -117,6 +117,7 @@ namespace egkr
 	    {
 		index_buffer_.reset();
 	    }
+	    context_ = VK_NULL_HANDLE;
 	}
 
 	if (vertices_)

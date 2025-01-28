@@ -3,24 +3,24 @@
 
 namespace egkr::render_target
 {
-	render_target::shared_ptr render_target::create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height)
+    render_target::shared_ptr render_target::create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height)
+    {
+	return renderer->create_render_target(attachments, pass, width, height);
+    }
+
+    render_target::shared_ptr render_target::create(const egkr::vector<attachment_configuration>& attachments) { return renderer->create_render_target(attachments); }
+
+
+    render_target::render_target() { }
+
+    render_target::~render_target() { destroy(); }
+
+    void render_target::destroy()
+    {
+	for (auto& attachment : attachments_)
 	{
-		return renderer->create_render_target(attachments, pass, width, height);
+	    attachment.texture_attachment.reset();
 	}
-
-	render_target::shared_ptr render_target::create(const egkr::vector<attachment_configuration>& attachments)
-	{
-		return renderer->create_render_target(attachments);
-	}
-
-
-	render_target::render_target()
-	{
-
-	}
-
-	render_target::~render_target()
-	{
-		destroy();
-	}
+	attachments_.clear();
+    }
 }

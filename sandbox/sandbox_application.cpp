@@ -258,17 +258,8 @@ bool sandbox_application::shutdown()
     gizmo_.unload();
     gizmo_.destroy();
 
-    scene_pass->destroy();
-    delete scene_pass;
+    frame_graph.destroy();
 
-    skybox_pass->destroy();
-    delete skybox_pass;
-
-    editor_pass->destroy();
-    delete editor_pass;
-
-    ui_pass->destroy();
-    delete ui_pass;
     //skybox_->destroy();
     //debug_frustum_->destroy();
 

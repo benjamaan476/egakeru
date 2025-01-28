@@ -28,7 +28,7 @@ namespace egkr
 	    };
 
 	    std::string name;
-	    std::vector<texture*> textures;
+	    std::vector<texture::shared_ptr> textures;
 	    type source_type;
 	    origin source_origin;
 	};
@@ -70,7 +70,7 @@ namespace egkr
 	    renderpass::renderpass::shared_ptr renderpass;
 	    bool present_after{false};
 	private:
-		static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
+	    static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
 	};
 
 	rendergraph() = default;

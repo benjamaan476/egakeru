@@ -5,9 +5,10 @@
 
 namespace egkr
 {
-    texture* texture::create() { return renderer->create_texture(); }
+    texture::shared_ptr texture::create() { return renderer->create_texture(); }
 
-    texture* texture::create(const properties& texture_properties, const uint8_t* texture_data) { return renderer->create_texture(texture_properties, texture_data); }
+    texture::shared_ptr texture::create(const properties& texture_properties, const uint8_t* texture_data) { return renderer->create_texture(texture_properties, texture_data); }
+
     void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture) { renderer->create_texture(texture_properties, texture_data, out_texture); }
 
     texture::texture(const properties& texture_properties): resource(texture_properties.id, texture_properties.generation, texture_properties.name), properties_{texture_properties}

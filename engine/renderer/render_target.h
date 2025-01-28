@@ -5,82 +5,78 @@
 
 namespace egkr
 {
-	namespace renderpass
+    namespace renderpass
+    {
+	class renderpass;
+    }
+    namespace render_target
+    {
+	enum class attachment_type
 	{
-		class renderpass;
-	}
-	namespace render_target
+	    colour = 0x01,
+	    depth = 0x02,
+	    stencil = 0x04,
+	};
+
+	enum class attachment_source
 	{
-		enum class attachment_type
-		{
-			colour = 0x01,
-			depth = 0x02,
-			stencil = 0x04,
-		};
+	    default_source,
+	    view
+	};
 
-		enum class attachment_source
-		{
-			default_source,
-			view
-		};
+	enum class load_operation
+	{
+	    dont_care,
+	    load
+	};
 
-		enum class load_operation
-		{
-			dont_care,
-			load
-		};
+	enum class store_operation
+	{
+	    dont_care,
+	    store
+	};
 
-		enum class store_operation
-		{
-			dont_care,
-			store
-		};
+	struct attachment_configuration
+	{
+	    attachment_type type;
+	    attachment_source source;
+	    load_operation load_op;
+	    store_operation store_op;
+	    bool present_after;
+	};
 
-		struct attachment_configuration
-		{
-			attachment_type type;
-			attachment_source source;
-			load_operation load_op;
-			store_operation store_op;
-			bool present_after;
-		};
+	struct attachment
+	{
+	    attachment_type type;
+	    attachment_source source;
+	    load_operation load_op;
+	    store_operation store_op;
+	    bool present_after;
+	    texture::shared_ptr texture_attachment;
+	};
 
-		struct attachment
-		{
-			attachment_type type;
-			attachment_source source;
-			load_operation load_op;
-			store_operation store_op;
-			bool present_after;
-			texture* texture_attachment;
-		};
+	struct configuration
+	{
+	    egkr::vector<attachment_configuration> attachments;
+	};
 
-		struct configuration
-		{
-			egkr::vector<attachment_configuration> attachments;
-		};
+	class render_target
+	{
+	public:
+	    using shared_ptr = std::shared_ptr<render_target>;
 
-		class render_target
-		{
-		public:
-			using shared_ptr = std::shared_ptr<render_target>;
+	    static shared_ptr create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height);
+	    static shared_ptr create(const egkr::vector<attachment_configuration>& attachments);
+	    render_target();
 
-			static shared_ptr create(const egkr::vector<attachment>& attachments, renderpass::renderpass* pass, uint32_t width, uint32_t height);
-			static shared_ptr create(const egkr::vector<attachment_configuration>& attachments);
-			render_target();
+	    [[nodiscard]] const auto& get_attachments() const { return attachments_; }
+	    auto& get_attachments() { return attachments_; }
+	    virtual ~render_target();
+	    virtual bool free(bool free_internal_memory) = 0;
 
-			[[nodiscard]] const auto& get_attachments() const { return attachments_; }
-			auto& get_attachments() { return attachments_; }
-			virtual ~render_target();
-			virtual bool free(bool free_internal_memory) = 0;
-
-			void destroy()
-			{
-				attachments_.clear();
-			}
-
-		protected:
-			egkr::vector<attachment> attachments_;
-		};
-	}
+	    void destroy();
+	protected:
+	    egkr::vector<attachment> attachments_;
+	};
+    }
 }
