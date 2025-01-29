@@ -437,20 +437,19 @@ namespace egkr
 	free(load_params->name);
 	load_params->name = nullptr;
 	resource_system::unload(load_params->loaded_resource);
+	resource.reset();
     }
 
     bool texture_system::job_start(void* params, void* result_data)
     {
 	auto* load_params = (load_parameters*)params;
 	image_resource_parameters image_params{.flip_y = true};
-	auto image = resource_system::load(load_params->name, resource::type::image, &image_params);
+	load_params->loaded_resource = resource_system::load(load_params->name, resource::type::image, &image_params);
 
-	if (!image)
+	if (!load_params->loaded_resource)
 	{
 	    return false;
 	}
-
-	load_params->loaded_resource = image;
 
 	memcpy(result_data, load_params, sizeof(load_parameters));
 

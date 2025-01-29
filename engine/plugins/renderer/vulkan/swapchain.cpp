@@ -12,7 +12,7 @@ namespace egkr
 
     swapchain::~swapchain()
     {
-	//	destroy();
+	destroy();
     }
 
     void swapchain::destroy()
@@ -24,15 +24,18 @@ namespace egkr
 	if (swapchain_)
 	{
 	    context_->device.logical_device.destroySwapchainKHR(swapchain_, context_->allocator);
+	    swapchain_ = VK_NULL_HANDLE;
 	}
 
-	for (auto depth : depth_attachments_)
+	for (auto& depth : depth_attachments_)
 	{
 	    depth->destroy();
+	    depth.reset();
 	    depth = nullptr;
 	}
+	depth_attachments_.clear();
 
-	for (auto tex : render_textures_)
+	for (auto& tex : render_textures_)
 	{
 	    tex.reset();
 	    tex = nullptr;
@@ -41,10 +44,10 @@ namespace egkr
 
 	image_count_ = 0;
 
-
 	for (auto& render_target : render_targets_)
 	{
 	    render_target->free(true);
+	    render_target.reset();
 	}
 	render_targets_.clear();
     }

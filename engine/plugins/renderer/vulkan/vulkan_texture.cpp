@@ -1,4 +1,5 @@
 #include "vulkan_texture.h"
+#include "plugins/renderer/vulkan/renderer_vulkan.h"
 #include "vulkan_types.h"
 
 #include <memory>
@@ -106,6 +107,7 @@ namespace egkr
 	    context_->device.logical_device.destroyImage(image_, context_->allocator);
 	}
 	image_ = context_->device.logical_device.createImage(image_info, context_->allocator);
+	SET_DEBUG_NAME(context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)image_, properties_.name)
 	if (image_ == vk::Image{})
 	{
 	    LOG_ERROR("Failed to create vulkan_image");

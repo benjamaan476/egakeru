@@ -1,6 +1,5 @@
 #include "image_loader.h"
 
-#include "log/log.h"
 #include "resources/texture.h"
 #include "platform/filesystem.h"
 
@@ -51,13 +50,10 @@ namespace egkr
 	int32_t channels{};
 	int32_t required_channels{4};
 
-	auto *image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
+	auto* image_data = stbi_load_from_memory(raw.data(), (int32_t)raw.size(), &width, &height, &channels, required_channels);
 
 	if (image_data != nullptr)
 	{
-	    [[maybe_unused]] static int count = 0;
-	    count++;
-	    LOG_TRACE("Loaded image: {}, {}", name, count);
 	    resource::properties image_properties{};
 	    image_properties.type = resource::type::image;
 	    image_properties.name = name;
@@ -104,9 +100,6 @@ namespace egkr
     bool egkr::image_loader::unload(const resource::shared_ptr& resource)
     {
 	auto* data = (texture::properties*)resource->data;
-	    [[maybe_unused]] static int count = 0;
-	    count++;
-	    LOG_TRACE("Unloaded image: {}, {}", data->name, count);
 	stbi_image_free(data->data);
 	delete data;
 	data = nullptr;

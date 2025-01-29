@@ -10,7 +10,10 @@ namespace egkr
     bool rendergraph::pass::init() { return false; }
     bool rendergraph::pass::execute(const frame_data& /*frame_data*/) const { return false; }
 
-    bool rendergraph::pass::destroy() { return false; }
+    bool rendergraph::pass::destroy() 
+    {
+	return true; 
+    }
 
     bool rendergraph::pass::regenerate_render_targets()
     {

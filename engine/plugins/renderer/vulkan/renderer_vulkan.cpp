@@ -849,8 +849,8 @@ namespace egkr
 	*(vulkan_texture*)out_texture = vulkan_texture::create_raw(&context_, properties.width, properties.height, properties);
 	out_texture->populate(properties, data);
 
-	SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)tex->get_image(), properties.name)
-	SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(VkImageView)tex->get_view(), properties.name + "_view")
+	SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE, (uint64_t)(VkImage)((vulkan_texture*)out_texture)->get_image(), properties.name)
+	SET_DEBUG_NAME(&context_, VkObjectType::VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)(VkImageView)((vulkan_texture*)out_texture)->get_view(), properties.name + "_view")
     }
 
     shader::shared_ptr renderer_vulkan::create_shader(const shader::properties& properties) const

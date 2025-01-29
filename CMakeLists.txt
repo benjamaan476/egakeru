@@ -62,9 +62,9 @@ if(DEFINED TRACY_ENABLE)
 add_subdirectory (tracy)
 endif()
 
-if(CMAKE_BUILD_TYPE EQUAL "Debug")
+# if(CMAKE_BUILD_TYPE EQUAL "Debug")
   add_definitions(-DENABLE_DEBUG_MACRO)
-endif()
+# endif()
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
