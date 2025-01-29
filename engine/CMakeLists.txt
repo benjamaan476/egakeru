@@ -106,7 +106,7 @@ set(HEADERS
 
 add_library(engine SHARED ${SOURCES})
 if (WIN32)
-    target_sources(engine
+    target_sources(engine PRIVATE
     platform/windows/platform_windows.cpp
     )
 endif()
@@ -138,6 +138,8 @@ target_link_libraries(
   engine
   PRIVATE egakeru::egakeru_options
           egakeru::egakeru_warnings
+          Vulkan::Vulkan
+          Vulkan::Headers
           OpenAL::OpenAL
           glm::glm
 )

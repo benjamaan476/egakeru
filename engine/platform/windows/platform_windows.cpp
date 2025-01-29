@@ -3,7 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <windows.h>
+#include <Windows.h>
 
 #include "systems/input.h"
 #include "event.h"
