@@ -1,12 +1,28 @@
 #pragma once
 #include "pch.h"
 #include <vulkan/vulkan.hpp>
+#include <expected>
 
 namespace egkr
 {
 	class platform : public std::enable_shared_from_this<platform>
 	{
 	public:
+		struct dynamic_library
+		{
+			struct function
+			{
+				std::string name;
+				void* pfn;
+			};
+
+			uint64_t size{0};
+			void* internal_data{nullptr};
+			std::string library_name;
+			std::string filename;
+			egkr::vector<function> functions;
+		};
+
 		struct configuration
 		{
 			uint32_t start_x{};
@@ -33,5 +49,8 @@ namespace egkr
 		virtual vk::SurfaceKHR create_surface(vk::Instance instance) = 0;
 
 		virtual uint2 get_framebuffer_size() = 0;
+		// virtual std::expected<dynamic_library, void> load_library(const std::string& library_name) const = 0;
+		// virtual bool unload_library(dynamic_library& library) const = 0;
+		// virtual bool load_function(const std::string& function_name, dynamic_library& library) const = 0;
 	};
 }

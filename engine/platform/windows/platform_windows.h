@@ -27,6 +27,9 @@ namespace egkr
 		vk::SurfaceKHR create_surface(vk::Instance instance) final;
 
 		uint2 get_framebuffer_size() final;
+		// std::expected<dynamic_library, void> load_library(const std::string& library_name) const override;
+		// bool unload_library(dynamic_library& library) const override;
+		// bool load_function(const std::string& function_name, dynamic_library& library) const override;
 
 	private:
 

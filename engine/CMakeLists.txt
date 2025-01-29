@@ -112,7 +112,7 @@ if (WIN32)
 endif()
 if (LINUX)
     target_sources(engine PRIVATE
-    platform/windows/platform_windows.cpp
+    platform/linux/platform_linux.cpp
     )
 endif()
 
@@ -138,11 +138,8 @@ target_link_libraries(
   engine
   PRIVATE egakeru::egakeru_options
           egakeru::egakeru_warnings
-          Vulkan::Vulkan
-          Vulkan::Headers
           OpenAL::OpenAL
           glm::glm
-          renderer_vulkan
 )
 
 target_link_system_libraries(

@@ -3,7 +3,7 @@
 #ifdef WIN32
 #include "windows/platform_windows.h"
 #elif LINUX
-#include "windows/platform_windows.h"
+#include "linux/platform_linux.h"
 #endif
 namespace egkr
 {

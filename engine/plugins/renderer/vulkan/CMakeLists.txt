@@ -3,8 +3,18 @@ project(renderer_vulkan)
 include_directories(${engine_SOURCE_DIR})
 
 file(GLOB_RECURSE SOURCES
-    ${engine_SOURCE_DIR}/*.cpp
-	*.cpp	
+  command_buffer.cpp
+  fence.cpp
+  pipeline.cpp
+  renderer_vulkan.cpp
+  swapchain.cpp
+  vulkan_geometry.cpp
+  vulkan_render_target.cpp
+  vulkan_renderbuffer.cpp
+  vulkan_renderpass.cpp
+  vulkan_shader.cpp
+  vulkan_texture.cpp
+  ${engine_SOURCE_DIR}/engine/engine.cpp
 )
 
 add_library(renderer_vulkan SHARED ${SOURCES})

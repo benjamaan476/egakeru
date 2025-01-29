@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <windows.h>
+
 #include "systems/input.h"
 #include "event.h"
 
@@ -184,4 +186,60 @@ namespace egkr
 
 		return { (uint32_t)width_, (uint32_t)height_ };
 	}
+
+	// std::expected<platform::dynamic_library, void> internal_platform::load_library(const std::string& library_name) const
+	// {
+	// 	if(library_name.empty())
+	// 	{
+	// 		LOG_ERROR("Invalid library name, cannot load");
+	// 		return {};
+	// 	}
+	//
+	// 	std::string filename = std::format("%s.dll", library_name);
+	//
+	// 	HMODULE library = LoadLibraryA(filename.c_str());
+	// 	if(!library)
+	// 	{
+	// 		LOG_ERROR("Could not load library: {}", library_name);
+	// 		return {};
+	// 	}
+	//
+	// 	return {.size = sizeof(HMODULE), .internal_data = library, .library_name = library_name, .filename = filename};
+	// }
+	//
+	// bool internal_platform::unload_library(dynamic_library& library) const
+	// {
+	// 	if(library.internal_data == nullptr)
+	// 	{
+	// 		LOG_ERROR("Library already unloaded: {}", library.library_name);
+	// 		return false;
+	// 	}
+	//
+	// 	if(FreeLibrary((HMODULE)library.internal_data) == 0)
+	// 	{
+	// 		LOG_ERROR("Couldn't free library: {}", library.library_name);
+	// 		return false;
+	// 	}
+	//
+	// 	library = {};
+	// }
+	//
+	// bool internal_platform::load_function(const std::string& function_name, dynamic_library& library) const
+	// {
+	// 	if(library.internal_data == nullptr)
+	// 	{
+	// 		LOG_ERROR("Attempted to load function from invalid library");
+	// 		return false;
+	// 	}
+	// 	
+	// 	FARPROC addr = GetProcAddress((HMODULE)library.interal_data, function_name.c_str());
+	// 	if(!addr)
+	// 	{
+	// 		LOG_ERROR("Could not load function {} from {}", function_name, library.library_name);
+	// 		return false;
+	// 	}
+	// 	library.functions.emplace_back(function_name, addr);
+	// 	return true;
+	//
+	// }
 }

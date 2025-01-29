@@ -33,9 +33,9 @@ namespace egkr
 
 		bool is_running_{};
 		bool is_suspended_{};
-		platform::shared_ptr platform_{};
-		std::string name_{};
-		application::unique_ptr application_{};
+		platform::shared_ptr platform_;
+		std::string name_;
+		application::unique_ptr application_;
 		frame_data frame_data_{};
 	};
 }
