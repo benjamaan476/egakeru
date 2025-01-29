@@ -33,7 +33,7 @@ namespace egkr
 		const platform::configuration platform_config
 			= { .start_x = start_x, .start_y = start_y, .width_ = application_->get_engine_configuration().width, .height_ = application_->get_engine_configuration().height, .name = name_ };
 
-		platform_ = egkr::platform::create(egkr::platform_type::windows);
+		platform_ = egkr::platform::create();
 		if (platform_ == nullptr)
 		{
 			LOG_FATAL("Failed to create platform");

@@ -436,7 +436,6 @@ void sandbox_application::load_scene()
     const auto scene = egkr::resource_system::load("test_scene.ess", egkr::resource::type::scene, nullptr);
     auto scene_configuration = *(egkr::scene::configuration*)scene->data;
 
-
     egkr::skybox::configuration skybox_config{.name = scene_configuration.skybox.name};
     skybox_ = egkr::skybox::skybox::create(skybox_config);
     main_scene_->add_skybox(skybox_->get_name(), skybox_);
@@ -547,6 +546,7 @@ void sandbox_application::load_scene()
 
     //TODO temp
     main_scene_->load();
+    egkr::resource_system::unload(scene);
 }
 void sandbox_application::configure_rendergraph()
 {

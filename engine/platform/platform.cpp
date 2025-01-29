@@ -1,20 +1,14 @@
 #include "platform.h"
 
+#ifdef WIN32
 #include "windows/platform_windows.h"
+#elif LINUX
+#include "windows/platform_windows.h"
+#endif
 namespace egkr
 {
-	platform::shared_ptr platform::create(platform_type type)
+	platform::shared_ptr platform::create()
 	{
-		switch (type)
-		{
-		case platform_type::windows:
-			return platform_windows::create();
-		case platform_type::linux:
-		case platform_type::macos:
-		case platform_type::android:
-		default:
-			LOG_ERROR("Unsupported platform type: {0}", platform_type_to_string(type));
-			return nullptr;
-		}
+		return internal_platform::create();
 	}
 }

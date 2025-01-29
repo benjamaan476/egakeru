@@ -53,10 +53,15 @@ namespace egkr
 
 		for (auto& font : registered_system_fonts_)
 		{
+			for(auto& variant: font.size_variants)
+			{
+				delete (system_font_variant_data*)variant.internal;
+			}
 			free(font.font_binary);
 		}
 		registered_system_fonts_.clear();
 		registered_system_fonts_by_name_.clear();
+
 		return true;
 	}
 
