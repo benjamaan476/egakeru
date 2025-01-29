@@ -1,8 +1,6 @@
 #include "render_graph.h"
 #include <algorithm>
-#include <ranges>
-#include "renderer/renderer_frontend.h"
-
+#include "engine/engine.h"
 
 namespace egkr
 {
@@ -29,11 +27,11 @@ namespace egkr
 		{
 		    if (attachment.type == render_target::attachment_type::colour)
 		    {
-			attachment.texture_attachment = renderer->get_backend()->get_window_attachment(i);
+			attachment.texture_attachment = engine::get()->get_renderer()->get_backend()->get_window_attachment(i);
 		    }
 		    else if (attachment.type == render_target::attachment_type::depth)
 		    {
-			attachment.texture_attachment = renderer->get_backend()->get_depth_attachment(i);
+			attachment.texture_attachment = engine::get()->get_renderer()->get_backend()->get_depth_attachment(i);
 		    }
 		    else
 		    {
@@ -67,9 +65,9 @@ namespace egkr
 	return false;
     }
 
-    rendergraph::rendergraph(const std::string& rendergraph_name, const application* application): name{rendergraph_name}, app{application} { }
+    rendergraph::rendergraph(const std::string& rendergraph_name): name{rendergraph_name} { }
 
-    rendergraph rendergraph::create(const std::string& rendergraph_name, application* application) { return rendergraph(rendergraph_name, application); }
+    rendergraph rendergraph::create(const std::string& rendergraph_name) { return rendergraph(rendergraph_name); }
 
     bool rendergraph::destroy()
     {
@@ -186,15 +184,15 @@ namespace egkr
 	{
 	    if (global_source.source_origin == source::origin::global)
 	    {
-		for (uint8_t i{0u}; i < renderer->get_backend()->get_window_attachment_count(); i++)
+		for (uint8_t i{0u}; i < engine::get()->get_renderer()->get_backend()->get_window_attachment_count(); i++)
 		{
 		    if (global_source.source_type == source::type::render_target_colour)
 		    {
-			global_source.textures.push_back(renderer->get_backend()->get_window_attachment(i));
+			global_source.textures.push_back(engine::get()->get_renderer()->get_backend()->get_window_attachment(i));
 		    }
 		    else if (global_source.source_type == source::type::render_target_depth_stencil)
 		    {
-			global_source.textures.push_back(renderer->get_backend()->get_depth_attachment(i));
+			global_source.textures.push_back(engine::get()->get_renderer()->get_backend()->get_depth_attachment(i));
 		    }
 		    else
 		    {

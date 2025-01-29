@@ -14,9 +14,8 @@
 #include <systems/evar_system.h>
 #include <systems/audio_system.h>
 
-#include <renderer/renderer_frontend.h>
-
 #include <application/application.h>
+#include "engine/engine.h"
 
 namespace egkr
 {
@@ -116,7 +115,7 @@ namespace egkr
 			std::vector<job::type> types{ thread_count };
 
 			std::fill(types.begin(), types.end(), job::type::general);
-			auto is_multi = renderer->get_backend()->is_multithreaded();
+			auto is_multi = engine::get()->get_renderer()->get_backend()->is_multithreaded();
 			if (thread_count == 1 || !is_multi)
 			{
 				types[0] |= job::type::gpu_resource | job::type::resource_load;

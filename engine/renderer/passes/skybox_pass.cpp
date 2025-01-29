@@ -2,7 +2,7 @@
 #include <systems/resource_system.h>
 #include <systems/shader_system.h>
 
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 #include <renderer/renderpass.h>
 
 namespace egkr::pass
@@ -45,7 +45,7 @@ namespace egkr::pass
 
 	bool skybox::execute(const frame_data& frame_data) const
 	{
-		renderer->set_active_viewport(viewport);
+		engine::get()->get_renderer()->set_active_viewport(viewport);
 		renderpass->begin(frame_data.render_target_index);
 		if (auto& skybox = data.skybox_data)
 		{

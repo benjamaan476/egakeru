@@ -1,15 +1,13 @@
 #include "texture.h"
-
-#include "renderer/renderer_types.h"
-#include "renderer/renderer_frontend.h"
+#include "engine/engine.h"
 
 namespace egkr
 {
-    texture::shared_ptr texture::create() { return renderer->create_texture(); }
+    texture::shared_ptr texture::create() { return engine::get()->get_renderer()->create_texture(); }
 
-    texture::shared_ptr texture::create(const properties& texture_properties, const uint8_t* texture_data) { return renderer->create_texture(texture_properties, texture_data); }
+    texture::shared_ptr texture::create(const properties& texture_properties, const uint8_t* texture_data) { return engine::get()->get_renderer()->create_texture(texture_properties, texture_data); }
 
-    void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture) { renderer->create_texture(texture_properties, texture_data, out_texture); }
+    void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture) { engine::get()->get_renderer()->create_texture(texture_properties, texture_data, out_texture); }
 
     texture::texture(const properties& texture_properties): resource(texture_properties.id, texture_properties.generation, texture_properties.name), properties_{texture_properties}
     {
@@ -36,7 +34,7 @@ namespace egkr
     texture_map::shared_ptr texture_map::texture_map::create(const properties& properties)
     {
 	{
-	    return renderer->create_texture_map(properties);
+	    return engine::get()->get_renderer()->create_texture_map(properties);
 	}
     }
 

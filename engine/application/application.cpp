@@ -15,4 +15,9 @@ namespace egkr
 	{
 		engine_ = engine;
 	}
+
+	const renderer_frontend::unique_ptr& application::get_renderer() const
+	{
+		return engine_->get_renderer(); 
+	}
 }

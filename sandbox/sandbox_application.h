@@ -44,7 +44,6 @@ private:
 private:
     egkr::scene::simple_scene::unique_ptr main_scene_;
     egkr::frustum camera_frustum_;
-    bool update_frustum_{true};
     egkr::skybox::shared_ptr skybox_;
     egkr::vector<egkr::mesh::shared_ptr> meshes_;
     egkr::vector<egkr::mesh::weak_ptr> ui_meshes_;

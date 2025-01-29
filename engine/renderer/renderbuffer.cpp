@@ -1,12 +1,12 @@
 #include "renderbuffer.h"
 
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 
 namespace egkr::renderbuffer
 {
 	renderbuffer::shared_ptr renderbuffer::create(type buffer_type, uint64_t size)
 	{
-		return renderer->create_renderbuffer(buffer_type, size);
+		return engine::get()->get_renderer()->create_renderbuffer(buffer_type, size);
 	}
 
 	renderbuffer::renderbuffer(type buffer_type, uint64_t size)

@@ -3,7 +3,6 @@
 #include "resources/geometry.h"
 #include "sandbox_keybinds.h"
 
-#include <iterator>
 #include <systems/geometry_system.h>
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
@@ -188,11 +187,12 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
 
 void sandbox_application::render_frame(egkr::frame_data& frame_data)
 {
-    egkr::renderer->prepare_frame(frame_data);
-    egkr::renderer->begin(frame_data);
+    const auto& renderer = get_renderer();
+    renderer->prepare_frame(frame_data);
+    renderer->begin(frame_data);
     frame_graph.execute(frame_data);
-    egkr::renderer->end(frame_data);
-    egkr::renderer->present(frame_data);
+    renderer->end(frame_data);
+    renderer->present(frame_data);
 }
 
 bool sandbox_application::resize(uint32_t width, uint32_t height)
@@ -283,7 +283,6 @@ bool sandbox_application::on_debug_event(egkr::event::code code, void* /*sender*
 
 	auto material = egkr::material_system::acquire(materials[choice]);
 	application->meshes_[0]->get_geometries()[0]->set_material(material);
-	//application->update_frustum_ = !application->update_frustum_;
     }
 
     if (code == egkr::event::code::debug02)
@@ -550,7 +549,7 @@ void sandbox_application::load_scene()
 }
 void sandbox_application::configure_rendergraph()
 {
-    frame_graph = egkr::rendergraph::create("sandbox", this);
+    frame_graph = egkr::rendergraph::create("sandbox");
     frame_graph.add_gloabl_source("colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::global);
     frame_graph.add_gloabl_source("depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
 

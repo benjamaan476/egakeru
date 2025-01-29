@@ -67,10 +67,6 @@ namespace egkr::scene
 		{
 			auto frustum = egkr::frustum(camera->get_position(), camera->get_forward(), camera->get_right(), camera->get_up(), viewport->viewport_rect.z / viewport->viewport_rect.w, viewport->fov,
 										 camera->get_near_clip(), camera->get_far_clip());
-			//if (update_frustum_)
-			//{
-			//	debug_frustum_ = egkr::debug::debug_frustum::create(camera_frustum_);
-			//}
 
 			for (auto& mesh : meshes_ | std::views::values)
 			{

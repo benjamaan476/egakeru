@@ -5,8 +5,6 @@
 
 namespace egkr
 {
-    class renderer_backend;
-
     class texture : public resource
     {
     public:

@@ -45,17 +45,17 @@ namespace egkr
 	    virtual ~pass() = default;
 	    pass();
 	    virtual bool init() = 0;
-	    virtual bool execute(const frame_data& frame_data) const = 0;
+	    [[nodiscard]] virtual bool execute(const frame_data& frame_data) const = 0;
 	    virtual bool destroy() = 0;
 
 	    bool regenerate_render_targets();
 
 	    void set_present_after(bool present) { present_after = present; }
 
-	    const std::string& get_name() const { return name; }
-	    const auto& get_sources() const { return sources; }
+	    [[nodiscard]] const std::string& get_name() const { return name; }
+	    [[nodiscard]] const auto& get_sources() const { return sources; }
 	    auto& get_sources() { return sources; }
-	    const auto& get_sinks() const { return sinks; }
+	    [[nodiscard]] const auto& get_sinks() const { return sinks; }
 	    auto& get_sinks() { return sinks; }
 
 	    viewport* viewport;
@@ -74,9 +74,9 @@ namespace egkr
 	};
 
 	rendergraph() = default;
-	rendergraph(const std::string& rendergraph_name, const application* app);
+	explicit rendergraph(const std::string& rendergraph_name);
 
-	static rendergraph create(const std::string& rendergraph_name, application* app);
+	static rendergraph create(const std::string& rendergraph_name);
 	bool destroy();
 
 	bool add_gloabl_source(const std::string& rendergrglobal_source_nameaph_name, source::type type, source::origin origin);
@@ -90,7 +90,6 @@ namespace egkr
 	bool execute(const frame_data& frame_data);
     private:
 	std::string name;
-	const application* app{};
 	std::vector<source> global_sources;
 	std::vector<pass*> passes;
 	sink backbuffer_global_sink{};

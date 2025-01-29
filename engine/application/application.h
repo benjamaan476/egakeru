@@ -3,6 +3,7 @@
 #include "keymap.h"
 #include "engine/engine_configuration.h"
 #include "renderer/camera.h"
+#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
@@ -34,6 +35,8 @@ namespace egkr
 	[[nodiscard]] auto& get_console_keymap() { return console_keymap; }
 
 	void set_engine(engine* engine);
+
+	[[nodiscard]] const renderer_frontend::unique_ptr& get_renderer() const;
     protected:
 	[[nodiscard]] auto* get_engine() const { return engine_; }
 	font_system::configuration font_system_configuration_{};
@@ -47,6 +50,4 @@ namespace egkr
     private:
 	engine_configuration engine_configuration_{};
     };
-
-    static application::unique_ptr application_{};
 }

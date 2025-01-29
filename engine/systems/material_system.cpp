@@ -1,11 +1,10 @@
 #include "material_system.h"
 
+#include "engine/engine.h"
 #include "texture_system.h"
 #include "systems/resource_system.h"
 #include "systems/shader_system.h"
 #include "systems/light_system.h"
-
-#include "renderer/renderer_frontend.h"
 
 namespace egkr
 {
@@ -47,13 +46,13 @@ namespace egkr
     {
 	if (material_system_->default_material_)
 	{
-	    renderer->free_material(material_system_->default_material_.get());
+	    engine::get()->get_renderer()->free_material(material_system_->default_material_.get());
 	    material_system_->default_material_.reset();
 	}
 
 	for (auto& material : material_system_->registered_materials_)
 	{
-	    renderer->free_material(material.get());
+	    engine::get()->get_renderer()->free_material(material.get());
 	}
 	material_system_->registered_materials_.clear();
 
@@ -84,7 +83,7 @@ namespace egkr
 	}
 
 
-	if (material_system_->registered_materials_by_name_.contains(properties.name.data()))
+	if (material_system_->registered_materials_by_name_.contains(properties.name))
 	{
 	    auto material_handle = material_system_->registered_materials_by_name_[properties.name.data()];
 	    return material_system_->registered_materials_[material_handle];

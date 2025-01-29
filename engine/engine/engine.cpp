@@ -2,18 +2,20 @@
 
 #include "systems/input.h"
 #include "systems/audio_system.h"
-#include "renderer/renderer_frontend.h"
 
 using namespace std::chrono_literals;
 
 namespace egkr
 {
 	static engine::unique_ptr engine_;
+	const engine::unique_ptr& engine::get() { return engine_; }
+
 	bool engine::create(application::unique_ptr application)
 	{
 		if (!engine_)
 		{
 			engine_ = std::make_unique<engine>(std::move(application));
+			engine_->init();
 			return true;
 		}
 
@@ -21,10 +23,13 @@ namespace egkr
 		return false;
 	}
 
-	engine::engine(application::unique_ptr application) : name_{ application->get_engine_configuration().name }
+	engine::engine(application::unique_ptr application) : name_{ application->get_engine_configuration().name }, application_(std::move(application))
 	{
-		application_ = std::move(application);
+		
+	}
 
+	void engine::init()
+	{
 		egkr::log::init();
 
 		const uint32_t start_x = 100;
@@ -47,11 +52,12 @@ namespace egkr
 			return;
 		}
 
-		renderer_frontend::create(backend_type::vulkan, platform_);
+		renderer_ = renderer_frontend::create(backend_type::vulkan, platform_);
 
+		application_->set_engine(this);
 		system_manager::create(application_.get());
 
-		if (!renderer->init())
+		if (!renderer_->init())
 		{
 			LOG_FATAL("Failed to initialise renderer");
 		}
@@ -61,7 +67,6 @@ namespace egkr
 		system_manager::init();
 
 
-		application_->set_engine(this);
 
 		if (!application_->init())
 		{
@@ -74,6 +79,7 @@ namespace egkr
 
 		is_running_ = true;
 		is_initialised_ = true;
+
 	}
 
 	void engine::run()
@@ -108,14 +114,14 @@ namespace egkr
 
 	void engine::shutdown()
 	{
-		renderer->tidy_up();
+		engine_->get_renderer()->tidy_up();
 		engine_->application_->shutdown();
 		egkr::event::unregister_event(egkr::event::code::key_down, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event::code::quit, nullptr, on_event);
 		egkr::event::unregister_event(egkr::event::code::resize, nullptr, on_resize);
 
 		system_manager::shutdown();
-		renderer->shutdown();
+		engine_->get_renderer()->shutdown();
 		engine_->platform_->shutdown();
 	}
 
@@ -171,7 +177,7 @@ namespace egkr
 					engine_->is_suspended_ = false;
 				}
 
-				renderer->on_resize(width, height);
+				engine_->get_renderer()->on_resize(width, height);
 			}
 		}
 		return false;

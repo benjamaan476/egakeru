@@ -1,6 +1,6 @@
 #include "material.h"
 
-#include "renderer/renderer_frontend.h"
+#include "engine/engine.h"
 
 #include "systems/texture_system.h"
 #include "systems/shader_system.h"
@@ -51,7 +51,7 @@ namespace egkr
 
 	material::~material()
 	{
-		renderer->free_material(this);
+		engine::get()->get_renderer()->free_material(this);
 		diffuse_map_.reset();
 		specular_map_.reset();
 		normal_map_.reset();

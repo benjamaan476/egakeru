@@ -4,7 +4,7 @@
 #include <systems/shader_system.h>
 #include <systems/material_system.h>
 
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 
 namespace egkr::pass
 {
@@ -70,7 +70,7 @@ namespace egkr::pass
 
     bool scene::execute(const frame_data& frame_data) const
     {
-	renderer->set_active_viewport(viewport);
+	engine::get()->get_renderer()->set_active_viewport(viewport);
 	renderpass->begin(frame_data.render_target_index);
 
 	shader_system::use(material_shader->get_id());
@@ -92,12 +92,12 @@ namespace egkr::pass
 
 	    if (render_data.is_winding_reversed)
 	    {
-		renderer->set_winding(winding::clockwise);
+		engine::get()->get_renderer()->set_winding(winding::clockwise);
 	    }
 	    render_data.render_geometry->draw();
 	    if (render_data.is_winding_reversed)
 	    {
-		renderer->set_winding(winding::counter_clockwise);
+		engine::get()->get_renderer()->set_winding(winding::counter_clockwise);
 	    }
 	}
 
