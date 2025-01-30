@@ -148,7 +148,6 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     scene_pass->data.geometries = frame_data.world_geometries;
     scene_pass->data.debug_geometries = frame_data.debug_geometries;
     scene_pass->data.ambient_colour = main_scene_->get_ambient_colour();
-    scene_pass->data.render_mode = render_mode;
 
     if (test_lines_)
     {
@@ -329,7 +328,7 @@ bool sandbox_application::on_button_up(egkr::event::code code, void* /*sender*/,
 
     if (code == egkr::event::code::mouse_up)
     {
-	int32_t button;
+	int32_t button{};
 	context.get(0, button);
 
 	int32_t xpos{};
@@ -475,27 +474,6 @@ void sandbox_application::load_scene()
 	main_scene_->add_debug(light.name + "_box", box_);
     }
 
-
-    //egkr::light::point_light light_1
-    //{
-    //	.position = {5.5, -5.5, 0.0, 0.0},
-    //	.colour = {1.0, 0.0, 0.0, 1.0},
-    //	.constant = 1.0F,
-    //	.linear = 0.35F,
-    //	.quadratic = 0.44F,
-    //};
-    //main_scene_->add_point_light("light_1", light_1);
-
-    //egkr::light::point_light light_2
-    //{
-    //.position = {5.5, 5.5, 0.0, 0.0},
-    //.colour = {0.0, 0.0, 1.0, 1.0 },
-    //.constant = 1.0F,
-    //.linear = 0.35F,
-    //.quadratic = 0.44F,
-    //};
-    //main_scene_->add_point_light("light_2", light_2);
-
     dir_light_ = std::make_shared<egkr::light::directional_light>(scene_configuration.directional_light.direction, scene_configuration.directional_light.colour);
     main_scene_->add_directional_light(scene_configuration.directional_light.name, dir_light_);
 
@@ -531,22 +509,11 @@ void sandbox_application::load_scene()
 	    }
 	}
     }
-    //sponza_ = egkr::mesh::create({ "sponza2" });
-
-    //egkr::transform obj = egkr::transform::create({ 0, 0, -5 });
-    //obj.set_scale({ 0.1F, 0.1F, 0.1F });
-    //obj.set_rotation(glm::quat{ { glm::radians(90.F), 0, 0 } });
-
-    //sponza_->set_model(obj);
-    //meshes_.push_back(sponza_);
-
-    //main_scene_->add_mesh("sponza2", sponza_);
-
-
-    //TODO temp
+    //TODO: temp
     main_scene_->load();
     egkr::resource_system::unload(scene);
 }
+
 void sandbox_application::configure_rendergraph()
 {
     frame_graph = egkr::rendergraph::create("sandbox");

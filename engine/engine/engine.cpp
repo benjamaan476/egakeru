@@ -1,8 +1,5 @@
 #include "engine.h"
 
-#include "systems/input.h"
-#include "systems/audio_system.h"
-
 using namespace std::chrono_literals;
 
 namespace egkr
@@ -25,20 +22,17 @@ namespace egkr
 
 	engine::engine(application::unique_ptr application) : name_{ application->get_engine_configuration().name }, application_(std::move(application))
 	{
-		
 	}
 
 	void engine::init()
 	{
 		egkr::log::init();
-
 		const uint32_t start_x = 100;
 		const uint32_t start_y = 100;
 
-		const platform::configuration platform_config
-			= { .start_x = start_x, .start_y = start_y, .width_ = application_->get_engine_configuration().width, .height_ = application_->get_engine_configuration().height, .name = name_ };
-
+		const platform::configuration platform_config{ .start_x = start_x, .start_y = start_y, .width_ = application_->get_engine_configuration().width, .height_ = application_->get_engine_configuration().height, .name = name_ };
 		platform_ = egkr::platform::create();
+
 		if (platform_ == nullptr)
 		{
 			LOG_FATAL("Failed to create platform");
@@ -144,11 +138,11 @@ namespace egkr
 
 			switch ((key)key_value)
 			{
-			case egkr::key::esc:
-				engine_->is_running_ = false;
-				break;
-			default:
-				break;
+				case egkr::key::esc:
+					engine_->is_running_ = false;
+					break;
+				default:
+					break;
 			}
 		}
 

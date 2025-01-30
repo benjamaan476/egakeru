@@ -81,6 +81,4 @@ private:
     egkr::pass::scene* scene_pass{};
     egkr::pass::editor* editor_pass{};
     egkr::pass::ui* ui_pass{};
-
-    uint32_t render_mode{0};
 };

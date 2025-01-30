@@ -348,9 +348,9 @@ namespace egkr
 
     renderer_vulkan::~renderer_vulkan() { shutdown(); }
 
-    bool renderer_vulkan::init(const configuration& renderer_configurationn, uint8_t& out_window_attachment_count)
+    bool renderer_vulkan::init(const configuration& configuration, uint8_t& out_window_attachment_count)
     {
-	application_name_ = renderer_configurationn.application_name;
+	application_name_ = configuration.application_name;
 	ZoneScoped;
 
 	if (!init_instance())
@@ -366,7 +366,7 @@ namespace egkr
 
 	context_.surface = create_surface();
 	context_.device.create(&context_);
-	context_.swpchain = swapchain::create(&context_, {renderer_configurationn.backend_flags});
+	context_.swpchain = swapchain::create(&context_, {configuration.backend_flags});
 	out_window_attachment_count = context_.swpchain->get_image_count();
 
 
@@ -570,17 +570,17 @@ namespace egkr
 	auto valid = std::ranges::all_of(validation_layers_,
 	    [&layers](const char* layer)
 	    {
-	        auto layerFound = false;
-	        for (const auto& layerProperty : layers)
-	        {
+		auto layerFound = false;
+		for (const auto& layerProperty : layers)
+		{
 		    if (strcmp(layer, layerProperty.layerName.data()) == 0)
 		    {
-		        layerFound = true;
-		        break;
+			layerFound = true;
+			break;
 		    }
-	        }
+		}
 
-	        return layerFound;
+		return layerFound;
 	    });
 
 	if (enable_validation_layers_ && !valid)

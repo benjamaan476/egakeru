@@ -27,7 +27,7 @@ namespace egkr
 
 	bool internal_platform::startup(const platform::configuration& platform_configuration)
 	{
-		if(!glfwInit())
+		if(glfwInit() == 0)
 		{
 			LOG_ERROR("Failed to initialise platform");
 			return false;
@@ -70,7 +70,6 @@ namespace egkr
 			glfwSetWindowShouldClose(window_, 1);
 			glfwDestroyWindow(window_);
 			glfwTerminate();
-
 		}
 
 		is_initialised_ = false;
