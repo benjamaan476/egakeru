@@ -31,7 +31,7 @@ namespace egkr
 		const uint32_t start_y = 100;
 
 		const platform::configuration platform_config{ .start_x = start_x, .start_y = start_y, .width_ = application_->get_engine_configuration().width, .height_ = application_->get_engine_configuration().height, .name = name_ };
-		platform_ = egkr::platform::create();
+		platform_ = egkr::platform::create(platform_config);
 
 		if (platform_ == nullptr)
 		{
@@ -39,22 +39,15 @@ namespace egkr
 			return;
 		}
 
-		auto success = platform_->startup(platform_config);
-		if (!success)
+		renderer_ = renderer_frontend::create(application_->move_renderer_plugin());
+		if (!renderer_->init(platform_))
 		{
-			LOG_FATAL("Failed to start platform");
-			return;
+			LOG_FATAL("Failed to initialise renderer");
 		}
-
-		renderer_ = renderer_frontend::create(backend_type::vulkan, platform_);
 
 		application_->set_engine(this);
 		system_manager::create(application_.get());
 
-		if (!renderer_->init())
-		{
-			LOG_FATAL("Failed to initialise renderer");
-		}
 
 		application_->boot();
 
@@ -73,7 +66,6 @@ namespace egkr
 
 		is_running_ = true;
 		is_initialised_ = true;
-
 	}
 
 	void engine::run()
@@ -94,6 +86,7 @@ namespace egkr
 				engine_->application_->prepare_frame(engine_->frame_data_);
 				engine_->application_->render_frame(engine_->frame_data_);
 			}
+
 			auto frame_duration = engine_->platform_->get_time() - time;
 			if (engine_->limit_framerate_ && frame_duration < engine_->frame_time_)
 			{

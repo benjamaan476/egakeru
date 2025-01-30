@@ -2,44 +2,29 @@
 
 namespace egkr
 {
-    renderer_frontend::unique_ptr renderer_frontend::create(backend_type type, const platform::shared_ptr& platform)
+    renderer_frontend::unique_ptr renderer_frontend::create(renderer_backend::unique_ptr renderer_plugin)
     {
-	return std::make_unique<renderer_frontend>(type, platform);
+	return std::make_unique<renderer_frontend>(std::move(renderer_plugin));
     }
 
-    renderer_frontend::renderer_frontend(backend_type type, const platform::shared_ptr& platform)
+    renderer_frontend::renderer_frontend(renderer_backend::unique_ptr renderer_plugin) : backend_(std::move(renderer_plugin))
+    {
+    }
+
+    bool renderer_frontend::init(const platform::shared_ptr& platform)
     {
 	const auto& size = platform->get_framebuffer_size();
 	framebuffer_width_ = (uint32_t)size.x;
 	framebuffer_height_ = (uint32_t)size.y;
-
-	float4x4 view{1};
-	view = glm::translate(view, {0.F, 0.F, 30.F});
-	view = glm::inverse(view);
-	switch (type)
-	{
-	case backend_type::vulkan:
-	    backend_ = renderer_backend::create(platform); // renderer_vulkan::create(platform);
-	    break;
-	case backend_type::opengl:
-	case backend_type::directx:
-	default:
-	    LOG_ERROR("Unsupported renderer backend chosen");
-	    break;
-	}
-    }
-
-    bool renderer_frontend::init()
-    {
 	renderer_backend::configuration configuration{};
-	auto backen_init = backend_->init(configuration, window_attachment_count);
+	auto backen_init = backend_->init(configuration, platform, window_attachment_count);
 
 	return backen_init;
     }
 
     void renderer_frontend::shutdown() { backend_->shutdown(); }
 
-    API void renderer_frontend::tidy_up() { return backend_->tidy_up(); }
+    API void renderer_frontend::tidy_up() { backend_->tidy_up(); }
 
     void renderer_frontend::on_resize(uint32_t width, uint32_t height)
     {

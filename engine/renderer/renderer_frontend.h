@@ -14,11 +14,11 @@ namespace egkr
     {
     public:
 	using unique_ptr = std::unique_ptr<renderer_frontend>;
-	API static unique_ptr create(backend_type type, const platform::shared_ptr& platform);
+	API static unique_ptr create(renderer_backend::unique_ptr renderer_plugin);
 
-	renderer_frontend(backend_type type, const platform::shared_ptr& platform);
+	explicit renderer_frontend(renderer_backend::unique_ptr renderer_plugin);
 
-	API bool init();
+	API bool init(const platform::shared_ptr& platform);
 	API void shutdown();
 	API void tidy_up();
 	API void on_resize(uint32_t width, uint32_t height);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "application/application.h"
+#include "renderer/renderer_types.h"
 #include "resources/mesh.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"
@@ -21,7 +22,7 @@
 class sandbox_application final : public egkr::application
 {
 public:
-    explicit sandbox_application(const egkr::engine_configuration& configuration);
+    sandbox_application(const egkr::engine_configuration& configuration, egkr::renderer_backend::unique_ptr renderer_plugin);
     bool init() final;
     void update(const egkr::frame_data& frame_data) final;
     void prepare_frame(const egkr::frame_data& frame_data) final;

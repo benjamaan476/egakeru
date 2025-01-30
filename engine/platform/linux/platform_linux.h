@@ -10,11 +10,11 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<internal_platform>;
+		static shared_ptr create(const platform::configuration& configuration);
 
+		explicit internal_platform(const platform::configuration& configuration);
 		~internal_platform() final;
 
-		static shared_ptr create();
-		bool startup(const platform::configuration& configuration) final;
 		void shutdown() final;
 
 		void pump() final;

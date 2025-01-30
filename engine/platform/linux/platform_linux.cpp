@@ -8,42 +8,25 @@
 
 namespace egkr
 {
-	internal_platform::~internal_platform()
-	{
-		shutdown();
-		window_ = nullptr;
-	}
-
-	internal_platform::shared_ptr internal_platform::create()
-	{
-		if (!is_initialised_)
-		{
-			return std::make_shared<internal_platform>(); 
-		}
-
-		LOG_WARN("Already created platfrom");
-		return nullptr;
-	}
-
-	bool internal_platform::startup(const platform::configuration& platform_configuration)
+	internal_platform::internal_platform(const platform::configuration& configuration)
 	{
 		if(glfwInit() == 0)
 		{
 			LOG_ERROR("Failed to initialise platform");
-			return false;
+			return;
 		}
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
 			LOG_FATAL("Failed to create glfw window");
-			return false;
+			return;
 		}
 		glfwMakeContextCurrent(window_);
-		glfwSetWindowPos(window_, (int)platform_configuration.start_x, (int)platform_configuration.start_y);
+		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
 
 		glfwSetKeyCallback(window_, &internal_platform::key_callback);
 		glfwSetMouseButtonCallback(window_, &internal_platform::mouse_callback);
@@ -60,7 +43,23 @@ namespace egkr
 
 		startup_time_ = std::chrono::steady_clock::now();
 		is_initialised_ = true;
-		return true;
+	}
+
+	internal_platform::~internal_platform()
+	{
+		shutdown();
+		window_ = nullptr;
+	}
+
+	internal_platform::shared_ptr internal_platform::create(const platform::configuration& configuration)
+	{
+		if (!is_initialised_)
+		{
+			return std::make_shared<internal_platform>(configuration); 
+		}
+
+		LOG_WARN("Already created platfrom");
+		return nullptr;
 	}
 
 	void internal_platform::shutdown()

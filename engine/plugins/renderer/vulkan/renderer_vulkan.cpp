@@ -330,28 +330,29 @@ namespace egkr
 	}
     }
 
-    renderer_backend::unique_ptr renderer_vulkan::create(const platform::shared_ptr& platform)
+    renderer_backend::unique_ptr renderer_vulkan::create()
     {
 	ZoneScoped;
 
-	return std::make_unique<renderer_vulkan>(platform);
+	return std::make_unique<renderer_vulkan>();
     }
 
-    renderer_vulkan::renderer_vulkan(platform::shared_ptr platform): platform_{std::move(platform)}
+    renderer_vulkan::renderer_vulkan()
     {
 	ZoneScoped;
 
-	const auto size = platform_->get_framebuffer_size();
-	context_.framebuffer_width = size.x;
-	context_.framebuffer_height = size.y;
     }
 
     renderer_vulkan::~renderer_vulkan() { shutdown(); }
 
-    bool renderer_vulkan::init(const configuration& configuration, uint8_t& out_window_attachment_count)
+    bool renderer_vulkan::init(const configuration& configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count)
     {
 	application_name_ = configuration.application_name;
-	ZoneScoped;
+	platform_ = platform;
+	
+	const auto size = platform_->get_framebuffer_size();
+	context_.framebuffer_width = size.x;
+	context_.framebuffer_height = size.y;
 
 	if (!init_instance())
 	{

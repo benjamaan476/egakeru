@@ -5,7 +5,7 @@
 
 namespace egkr
 {
-	class platform : public std::enable_shared_from_this<platform>
+	class platform
 	{
 	public:
 		struct dynamic_library
@@ -32,11 +32,10 @@ namespace egkr
 			std::string name;
 		};
 		using shared_ptr = std::shared_ptr<platform>;
-		static shared_ptr create();
+		static shared_ptr create(const platform::configuration& configuration);
 
 		virtual ~platform() = default;
 
-		virtual bool startup(const configuration& configuration) = 0;
 		virtual void shutdown() = 0;
 
 		virtual void pump() = 0;

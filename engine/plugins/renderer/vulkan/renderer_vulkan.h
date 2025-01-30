@@ -12,12 +12,12 @@ namespace egkr
     class renderer_vulkan : public renderer_backend
     {
     public:
-	static renderer_backend::unique_ptr create(const platform::shared_ptr& platform);
+	static renderer_backend::unique_ptr create();
 
-	explicit renderer_vulkan(platform::shared_ptr platform);
+	explicit renderer_vulkan();
 	~renderer_vulkan() override;
 
-	bool init(const configuration& configuration, uint8_t& out_window_attachment_count) final;
+	bool init(const configuration& configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count) final;
 	void shutdown() final;
 	void tidy_up() final;
 	void resize(uint32_t width_, uint32_t height_) final;

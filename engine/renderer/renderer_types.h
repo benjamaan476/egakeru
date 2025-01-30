@@ -55,14 +55,13 @@ namespace egkr
 	struct configuration
 	{
 	    std::string application_name;
-	    flags backend_flags;
+	    flags backend_flags{};
 	};
 
 	using unique_ptr = std::unique_ptr<renderer_backend>;
 	virtual ~renderer_backend() = default;
 
-	static unique_ptr create(const platform::shared_ptr& platform);
-	virtual bool init(const configuration& configuration, uint8_t& out_window_attachment_count) = 0;
+	virtual bool init(const configuration& configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count) = 0;
 	virtual void shutdown() = 0;
 	virtual void tidy_up() = 0;
 	virtual void resize(uint32_t width_, uint32_t height_) = 0;

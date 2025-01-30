@@ -7,8 +7,8 @@
 #endif
 namespace egkr
 {
-	platform::shared_ptr platform::create()
+	platform::shared_ptr platform::create(const platform::configuration& configuration)
 	{
-		return internal_platform::create();
+		return internal_platform::create(configuration);
 	}
 }
