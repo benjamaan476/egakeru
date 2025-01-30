@@ -55,11 +55,11 @@ namespace egkr
 		window_ = nullptr;
 	}
 
-	internal_platform::shared_ptr internal_platform::create()
+	internal_platform::shared_ptr internal_platform::create(const platform::configuration& configuration)
 	{
 		if (!is_initialised_)
 		{
-			return std::make_shared<internal_platform>(); 
+			return std::make_shared<internal_platform>(configuration); 
 		}
 
 		LOG_WARN("Already created platfrom");
@@ -170,13 +170,6 @@ namespace egkr
 		auto* extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 		std::vector<const char*> extension(extensions, extensions + extensionCount);
 		return  extension;
-	}
-
-	vk::SurfaceKHR internal_platform::create_surface(vk::Instance instance)
-	{
-		VkSurfaceKHR surface{};
-		glfwCreateWindowSurface(instance, window_, nullptr, &surface);
-		return { surface };
 	}
 
 	void* internal_platform::get_window() const

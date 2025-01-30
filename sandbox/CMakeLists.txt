@@ -16,7 +16,7 @@ target_link_libraries(
           Vulkan::Vulkan
           Vulkan::Headers
           OpenAL::OpenAL
-          renderer_vulkan
+          $<TARGET_OBJECTS:renderer_vulkan>
           $<TARGET_OBJECTS:engine>)
 
 target_link_system_libraries(

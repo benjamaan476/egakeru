@@ -14,7 +14,7 @@ namespace egkr
 		explicit internal_platform(const platform::configuration& configuration);
 		~internal_platform() final;
 
-		static shared_ptr create();
+		static shared_ptr create(const platform::configuration& configuration);
 		void shutdown() final;
 
 		void pump() final;
@@ -24,7 +24,6 @@ namespace egkr
 		void sleep(std::chrono::nanoseconds time) const final;
 
 		[[nodiscard]] egkr::vector<const char*> get_required_extensions() const final;	
-		vk::SurfaceKHR create_surface(vk::Instance instance) final;
 
 		[[nodiscard]] void* get_window() const override;
 		uint2 get_framebuffer_size() final;

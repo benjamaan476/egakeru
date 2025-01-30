@@ -70,18 +70,6 @@ set(SOURCES
     systems/system.cpp
     systems/texture_system.cpp
 
-    plugins/renderer/vulkan/command_buffer.cpp
-    plugins/renderer/vulkan/fence.cpp
-    plugins/renderer/vulkan/pipeline.cpp
-    plugins/renderer/vulkan/renderer_vulkan.cpp
-    plugins/renderer/vulkan/swapchain.cpp
-    plugins/renderer/vulkan/vulkan_geometry.cpp
-    plugins/renderer/vulkan/vulkan_render_target.cpp
-    plugins/renderer/vulkan/vulkan_renderbuffer.cpp
-    plugins/renderer/vulkan/vulkan_renderpass.cpp
-    plugins/renderer/vulkan/vulkan_shader.cpp
-    plugins/renderer/vulkan/vulkan_texture.cpp
-
     plugins/audio/audio_loader.cpp
     plugins/audio/oal_plugin.cpp
 )
