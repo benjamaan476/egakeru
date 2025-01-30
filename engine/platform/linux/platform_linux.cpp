@@ -159,19 +159,17 @@ namespace egkr
 		event::fire_event(event::code::resize, nullptr, context);
 	}
 
+	void* internal_platform::get_window() const
+	{
+		return window_;
+	}
+
 	egkr::vector<const char*> egkr::internal_platform::get_required_extensions() const
 	{
 		uint32_t extensionCount = 0;
 		auto* extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 		std::vector<const char*> extension(extensions, extensions + extensionCount);
 		return  extension;
-	}
-
-	vk::SurfaceKHR internal_platform::create_surface(vk::Instance instance)
-	{
-		VkSurfaceKHR surface{};
-		glfwCreateWindowSurface(instance, window_, nullptr, &surface);
-		return { surface };
 	}
 
 	uint2 internal_platform::get_framebuffer_size()

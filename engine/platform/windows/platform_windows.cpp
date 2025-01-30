@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #include "systems/input.h"
@@ -176,6 +177,11 @@ namespace egkr
 		VkSurfaceKHR surface{};
 		glfwCreateWindowSurface(instance, window_, nullptr, &surface);
 		return { surface };
+	}
+
+	void* internal_platform::get_window() const
+	{
+		return window_;
 	}
 
 	uint2 internal_platform::get_framebuffer_size()

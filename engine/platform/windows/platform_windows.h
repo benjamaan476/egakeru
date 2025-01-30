@@ -18,14 +18,15 @@ namespace egkr
 		void shutdown() final;
 
 		void pump() final;
-		bool is_running() const final;
+		[[nodiscard]] bool is_running() const final;
 
-		std::chrono::nanoseconds get_time() const final;
+		[[nodiscard]] std::chrono::nanoseconds get_time() const final;
 		void sleep(std::chrono::nanoseconds time) const final;
 
-		egkr::vector<const char*> get_required_extensions() const final;	
+		[[nodiscard]] egkr::vector<const char*> get_required_extensions() const final;	
 		vk::SurfaceKHR create_surface(vk::Instance instance) final;
 
+		[[nodiscard]] void* get_window() const override;
 		uint2 get_framebuffer_size() final;
 		// std::expected<dynamic_library, void> load_library(const std::string& library_name) const override;
 		// bool unload_library(dynamic_library& library) const override;

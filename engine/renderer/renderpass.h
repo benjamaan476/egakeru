@@ -61,8 +61,6 @@ namespace egkr
 	    float_t depth_{};
 	    uint32_t stencil_{};
 	    egkr::vector<render_target::render_target::shared_ptr> render_targets_{3};
-	private:
-	    uint16_t id{invalid_16_id};
 	};
     }
 }

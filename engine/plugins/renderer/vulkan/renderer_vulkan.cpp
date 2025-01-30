@@ -11,6 +11,9 @@
 #include "resources/shader.h"
 #include <memory>
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 namespace egkr
 {
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -644,7 +647,9 @@ namespace egkr
     {
 	ZoneScoped;
 
-	return platform_->create_surface(context_.instance);
+	VkSurfaceKHR surface{};
+	glfwCreateWindowSurface(context_.instance, (GLFWwindow*)platform_->get_window(), nullptr, &surface);
+	return { surface };
     }
 
     bool renderer_vulkan::pick_physical_device()

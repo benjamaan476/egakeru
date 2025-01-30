@@ -138,8 +138,6 @@ target_link_libraries(
   engine
   PRIVATE egakeru::egakeru_options
           egakeru::egakeru_warnings
-          Vulkan::Vulkan
-          Vulkan::Headers
           OpenAL::OpenAL
           glm::glm
 )
