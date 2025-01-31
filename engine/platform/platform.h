@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <expected>
 
 namespace egkr
 {
@@ -48,8 +47,9 @@ namespace egkr
 		[[nodiscard]] virtual void* get_window() const = 0;
 
 		virtual uint2 get_framebuffer_size() = 0;
-		// virtual std::expected<dynamic_library, void> load_library(const std::string& library_name) const = 0;
-		// virtual bool unload_library(dynamic_library& library) const = 0;
-		// virtual bool load_function(const std::string& function_name, dynamic_library& library) const = 0;
+
+		[[nodiscard]] static std::optional<dynamic_library> load_library(const std::string& library_name);
+		static bool unload_library(dynamic_library& library);
+		static bool load_function(const std::string& function_name, dynamic_library& library);
 	};
 }

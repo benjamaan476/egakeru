@@ -9,7 +9,7 @@
 namespace egkr
 {
     class swapchain;
-    class renderer_vulkan : public renderer_backend
+    class  renderer_vulkan : public renderer_backend
     {
     public:
 	static renderer_backend::unique_ptr create();

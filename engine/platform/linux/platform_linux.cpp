@@ -1,7 +1,10 @@
 #include "platform_linux.h"
+#include <iostream>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#include <dlfcn.h>
 
 #include "systems/input.h"
 #include "event.h"
@@ -180,4 +183,60 @@ namespace egkr
 
 		return { (uint32_t)width_, (uint32_t)height_ };
 	}
+
+	std::optional<internal_platform::dynamic_library> internal_platform::load_library(const std::string& library_name)
+	{
+		if(library_name.empty())
+		{
+			LOG_ERROR("Invalid library name, cannot load");
+			return {};
+		}
+
+		std::string filename = std::format("./lib{}.so", library_name);
+
+		void* lib = dlopen(filename.c_str(), RTLD_NOW);
+		std::cout << "Loading library " + filename << std::endl;
+		if(!lib)
+		{
+			std::cout << dlerror() << std::endl;
+			LOG_ERROR("Could not load library: {}", library_name);
+			return {};
+		}
+
+		return {{.internal_data = lib, .library_name = library_name, .filename = filename}};
+		
+	}
+
+	bool internal_platform::unload_library(dynamic_library& library)
+	{
+		if(library.internal_data == nullptr)
+		{
+			LOG_ERROR("Library already unloaded: {}", library.library_name);
+			return false;
+		}
+
+		dlclose(library.internal_data);
+		library=  {};
+		return true;
+	}
+
+	bool internal_platform::load_function(const std::string& function_name, dynamic_library& library)
+	{
+		if(library.internal_data == nullptr)
+		{
+			LOG_ERROR("Attempted to load function from invalid library");
+			return false;
+		}
+
+		void* proc = dlsym(library.internal_data, function_name.c_str());
+		if(!proc)
+		{
+			LOG_ERROR("Could not load function {} from {}", function_name, library.library_name);
+			return false;
+		}
+
+		library.functions.emplace_back(function_name, proc);
+		return true;
+	}
+
 }

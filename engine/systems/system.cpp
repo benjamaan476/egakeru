@@ -46,7 +46,7 @@ namespace egkr
 			return false;
 		}
 
-		for (auto system : system_manager_state->registered_systems_ | std::views::values)
+		for (auto *system : system_manager_state->registered_systems_ | std::views::values)
 		{
 			if (!system->init())
 			{
