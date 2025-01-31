@@ -348,9 +348,9 @@ namespace egkr
 
     renderer_vulkan::~renderer_vulkan() { shutdown(); }
 
-    bool renderer_vulkan::init(const configuration& configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count)
+    bool renderer_vulkan::init(const configuration& renderer_configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count)
     {
-	application_name_ = configuration.application_name;
+	application_name_ = renderer_configuration.application_name;
 	platform_ = platform;
 	
 	const auto size = platform_->get_framebuffer_size();
@@ -370,7 +370,7 @@ namespace egkr
 
 	context_.surface = create_surface();
 	context_.device.create(&context_);
-	context_.swpchain = swapchain::create(&context_, {configuration.backend_flags});
+	context_.swpchain = swapchain::create(&context_, {renderer_configuration.backend_flags});
 	out_window_attachment_count = context_.swpchain->get_image_count();
 
 

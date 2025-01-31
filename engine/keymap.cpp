@@ -4,7 +4,7 @@ namespace egkr
 {
 	keymap keymap::create()
 	{
-		return keymap();
+		return {};
 	}
 
 	keymap::keymap()
@@ -18,39 +18,20 @@ namespace egkr
 	void keymap::add_binding(key key, entry_bind_type type, modifier key_modifier, void* user_data, keybind_callback callback)
 	{
 		auto& binding_entry = entries[std::to_underlying(key)];
-		auto* node = binding_entry.bindings;
-		auto* previous = binding_entry.bindings;
+		auto& node = binding_entry.bindings;
 
-		while (node)
-		{
-			previous = node;
-			node = node->next;
-		}
-
-		binding* new_binding = new binding{ .type = type, .keymap_modifier = key_modifier, .callback = callback, .user_data = user_data };
-		if (previous)
-		{
-			previous->next = new_binding;
-		}
-		else
-		{
-			binding_entry.bindings = new_binding;
-		}
+		node.emplace_back(type, key_modifier, callback, user_data);
 	}
 
 	void keymap::remove_binding(key key, entry_bind_type type, modifier keymap_modifier, keybind_callback callback)
 	{
 		auto& binding_entry = entries[std::to_underlying(key)];
 
-		auto* node = binding_entry.bindings;
-		auto* previous = binding_entry.bindings;
-
-		while (node)
+		for(auto it = binding_entry.bindings.begin(); it != binding_entry.bindings.end(); it++)
 		{
-			if (node->callback.target_type() == callback.target_type() && node->keymap_modifier == keymap_modifier && node->type == type)
+			if (it->callback.target_type() == callback.target_type() && it->keymap_modifier == keymap_modifier && it->type == type)
 			{
-				previous->next = node->next;
-				delete node;
+				binding_entry.bindings.erase(it);
 				return;
 			}
 		}

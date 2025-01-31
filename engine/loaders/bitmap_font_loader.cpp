@@ -115,7 +115,7 @@ namespace egkr
 		if (line[1] == 'o')
 		{
 		    uint32_t num_pages{};
-		    sscanf(line_string.data(), "common lineHeight=%d base=%*d scaleW=%d scaleH=%d pages=%u", &data.data.line_height, &data.data.atlas_size_x, &data.data.atlas_size_y, &num_pages);
+		    sscanf(line_string.data(), "common lineHeight=%d base=%*d scaleW=%u scaleH=%u pages=%u", &data.data.line_height, &data.data.atlas_size_x, &data.data.atlas_size_y, &num_pages);
 		}
 		else if (line[4] == 's')
 		{
@@ -125,7 +125,7 @@ namespace egkr
 		else
 		{
 		    font::glyph glyph{};
-		    sscanf(line_string.data(), "char id=%u x=%hu y=%hu width=%hu height=%hu xoffset=%hd yoffset=%hd xadvance=%hd page=%hhd", &glyph.codepoint, &glyph.x, &glyph.y, &glyph.width, &glyph.height,
+		    sscanf(line_string.data(), "char id=%d x=%hu y=%hu width=%hu height=%hu xoffset=%hd yoffset=%hd xadvance=%hd page=%hhu", &glyph.codepoint, &glyph.x, &glyph.y, &glyph.width, &glyph.height,
 		        &glyph.x_offset, &glyph.y_offset, &glyph.x_advance, &glyph.page_id);
 		    data.data.glyphs.push_back(glyph);
 		}
@@ -144,7 +144,7 @@ namespace egkr
 		if (line[7] == 's')
 		{
 		    uint32_t kerning_count{};
-		    sscanf(line_string.data(), "kernings count=%d", &kerning_count);
+		    sscanf(line_string.data(), "kernings count=%u", &kerning_count);
 		}
 		else
 		{

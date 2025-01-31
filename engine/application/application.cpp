@@ -3,8 +3,8 @@
 
 namespace egkr
 {
-	application::application(engine_configuration configuration, renderer_backend::unique_ptr renderer_plugin)
-		: engine_configuration_{ std::move(configuration) }, renderer_plugin{std::move(renderer_plugin)}
+	application::application(engine_configuration configuration, renderer_backend::unique_ptr plugin)
+		: engine_configuration_{ std::move(configuration) }, renderer_plugin{std::move(plugin)}
 	{
 		width_ = engine_configuration_.width;
 		height_ = engine_configuration_.height;

@@ -37,6 +37,10 @@ namespace egkr
 
 	for (auto& tex : render_textures_)
 	{
+	    if(tex->get_properties().data)
+	    {
+		::free(tex->get_properties().data);
+	    }
 	    tex.reset();
 	    tex = nullptr;
 	}

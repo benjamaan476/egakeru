@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "keys.h"
+#include <list>
 
 namespace egkr
 {
@@ -32,13 +33,12 @@ namespace egkr
 			modifier keymap_modifier{};
 			keybind_callback callback;
 			void* user_data{};
-			binding* next{};
 		};
 
 		struct entry
 		{
 			key keymap_key{};
-			binding* bindings{};
+			std::list<binding> bindings;
 		};
 
 		static keymap create();

@@ -29,24 +29,23 @@ namespace egkr
 	    {
 		for (auto& map : keymaps | std::views::reverse)
 		{
-		    auto* binding = map.entries[i].bindings;
+		    auto& binding = map.entries[i].bindings;
 		    bool unset{};
 
-		    while (binding)
+		    for(const auto& node : binding)
 		    {
-			if (binding->type == keymap::entry_bind_type::unset)
+			if (node.type == keymap::entry_bind_type::unset)
 			{
 			    unset = true;
 			    break;
 			}
-			else if (binding->type == keymap::entry_bind_type::hold)
+			else if (node.type == keymap::entry_bind_type::hold)
 			{
-			    if (binding->callback && check_modifiers(binding->keymap_modifier))
+			    if (node.callback && check_modifiers(node.keymap_modifier))
 			    {
-				binding->callback((key)i, binding->type, binding->keymap_modifier, binding->user_data);
+				node.callback((key)i, node.type, node.keymap_modifier, node.user_data);
 			    }
 			}
-			binding = binding->next;
 		    }
 
 		    if (unset || map.overrides_all)
@@ -95,36 +94,25 @@ namespace egkr
 	{
 	    key_state = pressed;
 
-	    for (auto i = state->keymaps.size() - 1; i > 0; --i)
+	    for(const auto& map : state->keymaps | std::views::reverse)
 	    {
-		//Need to do it this way as keys can remove keymaps which invalidates iterators
-		auto& map = state->keymaps[i];
-		auto* binding = map.entries[std::to_underlying(key)].bindings;
+		auto binding = map.entries[std::to_underlying(key)].bindings;
 		bool unset{};
 
-		while (binding)
+		for(const auto& node : binding)
 		{
-		    if (binding->type == keymap::entry_bind_type::unset)
+		    if (node.type == keymap::entry_bind_type::unset)
 		    {
 			unset = true;
 			break;
 		    }
-		    else if (pressed && binding->type == keymap::entry_bind_type::press)
+		    else if ((pressed && node.type == keymap::entry_bind_type::press) || (!pressed && node.type == keymap::entry_bind_type::release))
 		    {
-			if (binding->callback && check_modifiers(binding->keymap_modifier))
+			if (node.callback && check_modifiers(node.keymap_modifier))
 			{
-			    binding->callback(key, binding->type, binding->keymap_modifier, binding->user_data);
+			    node.callback(key, node.type, node.keymap_modifier, node.user_data);
 			}
 		    }
-		    else if (!pressed && binding->type == keymap::entry_bind_type::release)
-		    {
-			if (binding->callback && check_modifiers(binding->keymap_modifier))
-			{
-			    binding->callback(key, binding->type, binding->keymap_modifier, binding->user_data);
-			}
-		    }
-
-		    binding = binding->next;
 		}
 
 		if (unset || map.overrides_all)

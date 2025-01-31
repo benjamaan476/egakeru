@@ -1,6 +1,7 @@
 #include "font_system.h"
 
 #include <glm/detail/qualifier.hpp>
+#include <ranges>
 #include <systems/resource_system.h>
 #include <systems/texture_system.h>
 
@@ -254,21 +255,21 @@ namespace egkr
 		{
 			LOG_ERROR("Failed to rebuild atlas for {}", font_name);
 		}
-
-
 		return variant;
 	}
 
 	bool font_system::rebuild_system_font_variant_atlas(const system_font_lookup& lookup, font::data& variant)
 	{
-		system_font_variant_data* internal = (system_font_variant_data*)variant.internal;
+		auto* internal = (system_font_variant_data*)variant.internal;
+
 		uint32_t pack_image_size = variant.atlas_size_x * variant.atlas_size_y * sizeof(uint8_t);
-		uint8_t* pixels = (uint8_t*)malloc(pack_image_size);
-		uint32_t codepoint_count = (uint32_t)internal->codepoint.size();
-		stbtt_packedchar* packed_chars = (stbtt_packedchar*)malloc(sizeof(stbtt_packedchar) * codepoint_count);
+		std::vector<uint8_t> pixels(pack_image_size);
+
+		auto codepoint_count = (uint32_t)internal->codepoint.size();
+		std::vector<stbtt_packedchar> packed_chars(codepoint_count);
 
 		stbtt_pack_context context{};
-		if (!stbtt_PackBegin(&context, pixels, (int32_t)variant.atlas_size_x, (int32_t)variant.atlas_size_y, 0, 1, nullptr))
+		if (!stbtt_PackBegin(&context, pixels.data(), (int32_t)variant.atlas_size_x, (int32_t)variant.atlas_size_y, 0, 1, nullptr))
 		{
 			LOG_ERROR("stbtt_PackBegin failed");
 			return false;
@@ -280,7 +281,7 @@ namespace egkr
 			.first_unicode_codepoint_in_range = 0,
 			.array_of_unicode_codepoints = internal->codepoint.data(),
 			.num_chars = (int32_t)codepoint_count,
-			.chardata_for_range = packed_chars,
+			.chardata_for_range = packed_chars.data(),
 		};
 
 		if (!stbtt_PackFontRanges(&context, (unsigned char*)lookup.font_binary, lookup.index, &range, 1))
@@ -291,7 +292,7 @@ namespace egkr
 
 		stbtt_PackEnd(&context);
 
-		uint8_t* rgba_pixels = (uint8_t*)malloc(pack_image_size * 4);
+		std::vector<uint8_t> rgba_pixels(pack_image_size * 4);
 		for (uint32_t i{}; i < pack_image_size; ++i)
 		{
 			rgba_pixels[i * 4 + 0] = pixels[i];
@@ -300,11 +301,7 @@ namespace egkr
 			rgba_pixels[i * 4 + 3] = pixels[i];
 		}
 
-		variant.atlas->map_texture->write_data(0, pack_image_size * 4, rgba_pixels);
-
-		free(pixels);
-		free(packed_chars);
-		free(rgba_pixels);
+		variant.atlas->map_texture->write_data(0, rgba_pixels.size(), rgba_pixels.data());
 
 		if (!variant.glyphs.empty())
 		{
@@ -312,22 +309,21 @@ namespace egkr
 		}
 		variant.glyphs.reserve(codepoint_count);
 
-		for (uint32_t i{}; i < codepoint_count; ++i)
+		for(const auto& [i, pc] : packed_chars | std::views::enumerate)
 		{
-			const stbtt_packedchar* pc = &packed_chars[i];
-			const font::glyph g
+			const font::glyph glyph
 			{
-				.codepoint = internal->codepoint[i],
-				.x = pc->x0,
-				.y = pc->y0,
-				.width = (uint16_t)(pc->x1 - pc->x0),
-				.height = (uint16_t)(pc->y1 - pc->y0),
-				.x_offset = (int16_t)pc->xoff,
-				.y_offset = (int16_t)pc->yoff,
-				.x_advance = (int16_t)pc->xadvance,
+				.codepoint = internal->codepoint[(unsigned long)i],
+				.x = pc.x0,
+				.y = pc.y0,
+				.width = (uint16_t)(pc.x1 - pc.x0),
+				.height = (uint16_t)(pc.y1 - pc.y0),
+				.x_offset = (int16_t)pc.xoff,
+				.y_offset = (int16_t)pc.yoff,
+				.x_advance = (int16_t)pc.xadvance,
 				.page_id = 0,
 			};
-			variant.glyphs.push_back(g);
+			variant.glyphs.push_back(glyph);
 
 			if (!variant.kernings.empty())
 			{
@@ -337,9 +333,8 @@ namespace egkr
 			variant.kernings.resize((size_t)stbtt_GetKerningTableLength(&lookup.info));
 			if (!variant.kernings.empty())
 			{
-				//TODO: Make this a vector?
-				stbtt_kerningentry* kerning_table = (stbtt_kerningentry*)malloc(sizeof(stbtt_kerningentry) * variant.kernings.size());
-				int32_t entry_count = stbtt_GetKerningTable(&lookup.info, kerning_table, (int32_t)variant.kernings.size());
+				std::vector<stbtt_kerningentry> kerning_table(variant.kernings.size());
+				int32_t entry_count = stbtt_GetKerningTable(&lookup.info, kerning_table.data(), (int32_t)variant.kernings.size());
 
 				if (entry_count != (int32_t)variant.kernings.size())
 				{
@@ -347,14 +342,12 @@ namespace egkr
 					return {};
 				}
 
-				for (uint32_t j{0U}; j < variant.kernings.size(); ++j)
+				for(const auto& [table, kern] : std::views::zip(kerning_table, variant.kernings))
 				{
-					auto* k = &variant.kernings[j];
-					k->codepoint_0 = kerning_table[j].glyph1;
-					k->codepoint_1 = kerning_table[j].glyph2;
-					k->amount = (int16_t)kerning_table[j].advance;
+					kern.codepoint_0 = table.glyph1;
+					kern.codepoint_1 = table.glyph2;
+					kern.amount = (int16_t)table.advance;
 				}
-				free(kerning_table);
 			}
 		}
 		return true;

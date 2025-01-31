@@ -18,7 +18,7 @@
 
 #include "ray.h"
 
-sandbox_application::sandbox_application(const egkr::engine_configuration& configuration, egkr::renderer_backend::unique_ptr renderer_plugin): application(configuration, std::move(renderer_plugin))
+sandbox_application::sandbox_application(const egkr::engine_configuration& configuration, egkr::renderer_backend::unique_ptr plugin): application(configuration, std::move(plugin))
 {
     egkr::bitmap_font_configuration bitmap_font_configuration{.name = "Arial 32", .size = 32, .resource_name = "Arial32"};
     egkr::system_font_configuration system_font_configuration{.name = "NotoSansCJK", .default_size = 24, .resource_name = "NotoSansCJK"};

@@ -31,13 +31,13 @@ namespace egkr
 	    global_descriptor_sets.clear();
 	}
 
-	for (auto& state : instance_states)
+	for (auto& instance_state : instance_states)
 	{
-	    for (const auto& set : state.descriptor_set_state.descriptor_sets)
+	    for (const auto& set : instance_state.descriptor_set_state.descriptor_sets)
 	    {
 		context_->device.logical_device.freeDescriptorSets(descriptor_pool, set);
 	    }
-	    state.descriptor_set_state.descriptor_sets.clear();
+	    instance_state.descriptor_set_state.descriptor_sets.clear();
 	}
 	instance_states.clear();
 

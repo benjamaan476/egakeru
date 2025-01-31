@@ -8,7 +8,7 @@
 
 namespace egkr
 {
-	internal_platform::internal_platform(const platform::configuration& configuration)
+	internal_platform::internal_platform(const platform::configuration& platform_configuration)
 	{
 		if(glfwInit() == 0)
 		{
@@ -18,7 +18,7 @@ namespace egkr
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
@@ -26,7 +26,7 @@ namespace egkr
 			return;
 		}
 		glfwMakeContextCurrent(window_);
-		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
+		glfwSetWindowPos(window_, (int)platform_configuration.start_x, (int)platform_configuration.start_y);
 
 		glfwSetKeyCallback(window_, &internal_platform::key_callback);
 		glfwSetMouseButtonCallback(window_, &internal_platform::mouse_callback);

@@ -65,6 +65,7 @@ namespace egkr
 	[[nodiscard]] const auto& get_width() const { return properties_.width; }
 	[[nodiscard]] const auto& get_height() const { return properties_.height; }
 	[[nodiscard]] const auto& get_channel_count() const { return properties_.channel_count; }
+	[[nodiscard]] auto& get_properties() const { return properties_; }
     protected:
 	properties properties_{};
     };

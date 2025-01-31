@@ -86,14 +86,15 @@ namespace egkr::renderpass
 			{
 				bool do_clear_depth = clear_flags_ & clear_flags::depth;
 
-				if (attachment_config.source == render_target::attachment_source::default_source)
+				//TODO: investigate identical branch
+				// if (attachment_config.source == render_target::attachment_source::default_source)
 				{
 					attach.setFormat(context_->device.depth_format);
 				}
-				else
-				{
-					attach.setFormat(context_->device.depth_format);
-				}
+				// else
+				// {
+				// 	attach.setFormat(context_->device.depth_format);
+				// }
 
 				attach.setSamples(vk::SampleCountFlagBits::e1);
 

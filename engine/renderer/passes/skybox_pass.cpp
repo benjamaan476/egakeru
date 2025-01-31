@@ -47,7 +47,7 @@ namespace egkr::pass
 	{
 		engine::get()->get_renderer()->set_active_viewport(viewport);
 		renderpass->begin(frame_data.render_target_index);
-		if (auto& skybox = data.skybox_data)
+		if (const auto& skybox_data = data.skybox_data)
 		{
 			shader_system::use(shader->get_id());
 			//Reset view position so that skybox doesn't move
@@ -60,17 +60,17 @@ namespace egkr::pass
 			shader_system::set_uniform(shader_locations.projection, &projection);
 			shader_system::set_uniform(shader_locations.view, &skybox_view);
 
-			bool needs_update = (skybox->get_frame_number() != frame_data.frame_number) || (skybox->get_draw_index() != frame_data.draw_index);
+			bool needs_update = (skybox_data->get_frame_number() != frame_data.frame_number) || (skybox_data->get_draw_index() != frame_data.draw_index);
 			shader_system::apply_global(needs_update);
 
-			shader_system::bind_instance(skybox->get_instance_id());
-			shader_system::set_uniform(shader_locations.cubemap, &skybox->get_texture_map());
+			shader_system::bind_instance(skybox_data->get_instance_id());
+			shader_system::set_uniform(shader_locations.cubemap, &skybox_data->get_texture_map());
 
 			shader_system::apply_instance(needs_update);
-			skybox->set_frame_number(frame_data.frame_number);
-			skybox->set_draw_index(frame_data.draw_index);
+			skybox_data->set_frame_number(frame_data.frame_number);
+			skybox_data->set_draw_index(frame_data.draw_index);
 
-			skybox->draw();
+			skybox_data->draw();
 		}
 		renderpass->end();
 		return true;

@@ -174,7 +174,6 @@ namespace egkr
 		delete file->internal_data;
 	    }
 	    delete file;
-	    resource->data = nullptr;
 	}
 	return true;
     }

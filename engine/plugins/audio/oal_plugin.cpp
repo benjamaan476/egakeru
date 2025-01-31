@@ -512,6 +512,7 @@ namespace egkr::audio
 	    if (file->data->buffers[i] == invalid_32_id)
 	    {
 		LOG_ERROR("Unable to open music file due to no buffers being available");
+		resource_system::unload(resource);
 		return nullptr;
 	    }
 	}

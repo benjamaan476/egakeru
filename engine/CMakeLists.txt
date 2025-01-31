@@ -137,7 +137,6 @@ target_link_system_libraries(
           glfw
 )
 
-
 set(SHADER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
 set(SHADER_BINARY_DIR ${CMAKE_SOURCE_DIR}/assets/shaders)
 
