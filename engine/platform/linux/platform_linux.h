@@ -10,11 +10,11 @@ namespace egkr
 	{
 	public:
 		using shared_ptr = std::shared_ptr<internal_platform>;
+		static shared_ptr create(const platform::configuration& configuration);
 
 		explicit internal_platform(const platform::configuration& configuration);
 		~internal_platform() final;
 
-		static shared_ptr create(const platform::configuration& configuration);
 		void shutdown() final;
 
 		void pump() final;
@@ -27,10 +27,10 @@ namespace egkr
 
 		[[nodiscard]] void* get_window() const override;
 		uint2 get_framebuffer_size() final;
-		[[nodiscard]] static std::optional<dynamic_library> load_library(const std::string& library_name);
-		bool unload_library(dynamic_library& library);
-		bool load_function(const std::string& function_name, dynamic_library& library);
 
+		[[nodiscard]] static std::optional<dynamic_library> load_library(const std::string& library_name);
+		static bool unload_library(dynamic_library& library);
+		static bool load_function(const std::string& function_name, dynamic_library& library);
 	private:
 
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

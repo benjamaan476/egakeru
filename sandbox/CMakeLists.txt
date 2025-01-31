@@ -5,7 +5,7 @@ file(GLOB SOURCES
     sandbox_keybinds.cpp
 )
 
-add_executable(sandbox $<TARGET_OBJECTS:engine> ${SOURCES})
+add_executable(sandbox ${SOURCES})
 
 include_directories(${engine_SOURCE_DIR})
 
@@ -16,7 +16,8 @@ target_link_libraries(
           Vulkan::Vulkan
           Vulkan::Headers
           OpenAL::OpenAL
-          engine)
+          $<TARGET_OBJECTS:renderer_vulkan>
+          $<TARGET_OBJECTS:engine>)
 
 target_link_system_libraries(
   sandbox

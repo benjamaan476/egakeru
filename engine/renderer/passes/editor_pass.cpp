@@ -3,7 +3,7 @@
 #include <systems/resource_system.h>
 #include <systems/shader_system.h>
 
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -15,6 +15,7 @@ namespace egkr::pass
 	pass->init();
 	return pass;
     }
+
     bool editor::init()
     {
 	name = "editor";
@@ -64,7 +65,7 @@ namespace egkr::pass
 
     bool editor::execute(const frame_data& frame_data) const
     {
-	renderer->set_active_viewport(viewport);
+	engine::get()->get_renderer()->set_active_viewport(viewport);
 
 	renderpass->begin(frame_data.render_target_index);
 

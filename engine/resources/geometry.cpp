@@ -1,13 +1,13 @@
 #include "geometry.h"
 
 #include "systems/material_system.h"
-#include "renderer/renderer_frontend.h"
+#include "engine/engine.h"
 
 namespace egkr
 {
 	geometry::shared_ptr geometry::create(const geometry::properties& properties)
 	{
-		return renderer->create_geometry(properties);
+		return engine::get()->get_renderer()->create_geometry(properties);
 	}
 
 	geometry::geometry(const geometry::properties& geometry_properties)

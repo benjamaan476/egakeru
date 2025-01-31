@@ -1,13 +1,13 @@
 #include "shader.h"
 
 #include "systems/texture_system.h"
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 
 namespace egkr
 {
 	shader::shared_ptr shader::create(const properties& properties, renderpass::renderpass* pass)
 	{
-		auto shade = renderer->create_shader(properties);
+		auto shade = engine::get()->get_renderer()->create_shader(properties);
 
 		shade->populate(pass, properties.stage_filenames, properties.shader_stages);
 		return shade;
@@ -181,7 +181,7 @@ namespace egkr
 		else
 		{
 			shader_uniform.set_index = invalid_8_id;
-			range r{ get_aligned(push_constant_size_, 4), get_aligned(size, 4) };
+			range r{ .offset=get_aligned(push_constant_size_, 4), .size=get_aligned(size, 4) };
 			shader_uniform.offset = r.offset;
 			shader_uniform.size = (uint16_t)r.size;
 

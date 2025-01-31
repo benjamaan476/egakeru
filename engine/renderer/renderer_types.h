@@ -55,12 +55,13 @@ namespace egkr
 	struct configuration
 	{
 	    std::string application_name;
-	    flags backend_flags;
+	    flags backend_flags{};
 	};
 
 	using unique_ptr = std::unique_ptr<renderer_backend>;
 	virtual ~renderer_backend() = default;
-	virtual bool init(const configuration& configuration, uint8_t& out_window_attachment_count) = 0;
+
+	virtual bool init(const configuration& configuration, const platform::shared_ptr& platform, uint8_t& out_window_attachment_count) = 0;
 	virtual void shutdown() = 0;
 	virtual void tidy_up() = 0;
 	virtual void resize(uint32_t width_, uint32_t height_) = 0;
@@ -72,8 +73,8 @@ namespace egkr
 
 	virtual void free_material(material* texture) const = 0;
 
-	[[nodiscard]] virtual texture* create_texture() const = 0;
-	virtual texture* create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
+	[[nodiscard]] virtual texture::shared_ptr create_texture() const = 0;
+	virtual texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const = 0;
 	virtual void create_texture(const texture::properties& properties, const uint8_t* data, texture* out_texture) const = 0;
 	[[nodiscard]] virtual shader::shader::shared_ptr create_shader(const shader::properties& properties) const = 0;
 	[[nodiscard]] virtual geometry::geometry::shared_ptr create_geometry(const geometry::properties& properties) const = 0;
@@ -90,8 +91,8 @@ namespace egkr
 	virtual void set_winding(winding winding) const = 0;
 
 	[[nodiscard]] virtual uint32_t get_window_attachment_count() const = 0;
-	[[nodiscard]] virtual texture* get_window_attachment(uint8_t index) const = 0;
-	[[nodiscard]] virtual texture* get_depth_attachment(uint8_t index) const = 0;
+	[[nodiscard]] virtual texture::shared_ptr get_window_attachment(uint8_t index) const = 0;
+	[[nodiscard]] virtual texture::shared_ptr get_depth_attachment(uint8_t index) const = 0;
 	[[nodiscard]] virtual uint8_t get_window_index() const = 0;
 
 	[[nodiscard]] uint64_t get_frame_number() const { return frame_number_; }

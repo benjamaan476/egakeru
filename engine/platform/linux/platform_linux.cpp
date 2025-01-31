@@ -1,20 +1,19 @@
-#include "platform_windows.h"
+#include "platform_linux.h"
+#include <iostream>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <dlfcn.h>
 
 #include "systems/input.h"
 #include "event.h"
 
 namespace egkr
 {
-
-	internal_platform::internal_platform(const platform::configuration& configuration)
+	internal_platform::internal_platform(const platform::configuration& platform_configuration)
 	{
-		if(!glfwInit())
+		if(glfwInit() == 0)
 		{
 			LOG_ERROR("Failed to initialise platform");
 			return;
@@ -22,7 +21,7 @@ namespace egkr
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		window_ = glfwCreateWindow((int)configuration.width_, (int)configuration.height_, configuration.name.c_str(), nullptr, nullptr);
+		window_ = glfwCreateWindow((int)platform_configuration.width_, (int)platform_configuration.height_, platform_configuration.name.c_str(), nullptr, nullptr);
 
 		if (window_ == nullptr)
 		{
@@ -30,7 +29,7 @@ namespace egkr
 			return;
 		}
 		glfwMakeContextCurrent(window_);
-		glfwSetWindowPos(window_, (int)configuration.start_x, (int)configuration.start_y);
+		glfwSetWindowPos(window_, (int)platform_configuration.start_x, (int)platform_configuration.start_y);
 
 		glfwSetKeyCallback(window_, &internal_platform::key_callback);
 		glfwSetMouseButtonCallback(window_, &internal_platform::mouse_callback);
@@ -73,7 +72,6 @@ namespace egkr
 			glfwSetWindowShouldClose(window_, 1);
 			glfwDestroyWindow(window_);
 			glfwTerminate();
-
 		}
 
 		is_initialised_ = false;
@@ -164,17 +162,17 @@ namespace egkr
 		event::fire_event(event::code::resize, nullptr, context);
 	}
 
+	void* internal_platform::get_window() const
+	{
+		return window_;
+	}
+
 	egkr::vector<const char*> egkr::internal_platform::get_required_extensions() const
 	{
 		uint32_t extensionCount = 0;
 		auto* extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 		std::vector<const char*> extension(extensions, extensions + extensionCount);
 		return  extension;
-	}
-
-	void* internal_platform::get_window() const
-	{
-		return window_;
 	}
 
 	uint2 internal_platform::get_framebuffer_size()
@@ -186,7 +184,7 @@ namespace egkr
 		return { (uint32_t)width_, (uint32_t)height_ };
 	}
 
-	std::optional<platform::dynamic_library internal_platform::load_library(const std::string& library_name)
+	std::optional<internal_platform::dynamic_library> internal_platform::load_library(const std::string& library_name)
 	{
 		if(library_name.empty())
 		{
@@ -194,16 +192,19 @@ namespace egkr
 			return {};
 		}
 
-		std::string filename = std::format("%s.dll", library_name);
+		std::string filename = std::format("./lib{}.so", library_name);
 
-		HMODULE library = LoadLibraryA(filename.c_str());
-		if(!library)
+		void* lib = dlopen(filename.c_str(), RTLD_NOW);
+		std::cout << "Loading library " + filename << std::endl;
+		if(!lib)
 		{
+			std::cout << dlerror() << std::endl;
 			LOG_ERROR("Could not load library: {}", library_name);
 			return {};
 		}
 
-		return {{.size = sizeof(HMODULE), .internal_data = library, .library_name = library_name, .filename = filename}};
+		return {{.internal_data = lib, .library_name = library_name, .filename = filename}};
+		
 	}
 
 	bool internal_platform::unload_library(dynamic_library& library)
@@ -214,13 +215,8 @@ namespace egkr
 			return false;
 		}
 
-		if(FreeLibrary((HMODULE)library.internal_data) == 0)
-		{
-			LOG_ERROR("Couldn't free library: {}", library.library_name);
-			return false;
-		}
-
-		library = {};
+		dlclose(library.internal_data);
+		library=  {};
 		return true;
 	}
 
@@ -231,15 +227,16 @@ namespace egkr
 			LOG_ERROR("Attempted to load function from invalid library");
 			return false;
 		}
-		
-		FARPROC addr = GetProcAddress((HMODULE)library.interal_data, function_name.c_str());
-		if(!addr)
+
+		void* proc = dlsym(library.internal_data, function_name.c_str());
+		if(!proc)
 		{
 			LOG_ERROR("Could not load function {} from {}", function_name, library.library_name);
 			return false;
 		}
-		library.functions.emplace_back(function_name, addr);
-		return true;
 
+		library.functions.emplace_back(function_name, proc);
+		return true;
 	}
+
 }

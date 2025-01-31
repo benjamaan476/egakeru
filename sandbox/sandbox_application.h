@@ -1,6 +1,7 @@
 #pragma once
 
 #include "application/application.h"
+#include "renderer/renderer_types.h"
 #include "resources/mesh.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"
@@ -21,7 +22,7 @@
 class sandbox_application final : public egkr::application
 {
 public:
-    explicit sandbox_application(const egkr::engine_configuration& configuration);
+    sandbox_application(const egkr::engine_configuration& configuration, egkr::renderer_backend::unique_ptr renderer_plugin);
     bool init() final;
     void update(const egkr::frame_data& frame_data) final;
     void prepare_frame(const egkr::frame_data& frame_data) final;
@@ -44,7 +45,6 @@ private:
 private:
     egkr::scene::simple_scene::unique_ptr main_scene_;
     egkr::frustum camera_frustum_;
-    bool update_frustum_{true};
     egkr::skybox::shared_ptr skybox_;
     egkr::vector<egkr::mesh::shared_ptr> meshes_;
     egkr::vector<egkr::mesh::weak_ptr> ui_meshes_;
@@ -82,6 +82,4 @@ private:
     egkr::pass::scene* scene_pass{};
     egkr::pass::editor* editor_pass{};
     egkr::pass::ui* ui_pass{};
-
-    uint32_t render_mode{0};
 };

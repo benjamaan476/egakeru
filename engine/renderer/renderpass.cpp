@@ -1,11 +1,11 @@
 #include "renderpass.h"
-#include <renderer/renderer_frontend.h>
+#include "engine/engine.h"
 
 namespace egkr::renderpass
 {
 	renderpass::shared_ptr renderpass::create(const configuration& configuration)
 	{
-		return renderer->create_renderpass(configuration);
+		return engine::get()->get_renderer()->create_renderpass(configuration);
 	}
 
 	renderpass::renderpass(const configuration& configuration)

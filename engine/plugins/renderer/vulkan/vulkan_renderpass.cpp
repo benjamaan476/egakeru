@@ -3,7 +3,7 @@
 #include "command_buffer.h"
 #include "vulkan_types.h"
 
-#include "renderer/renderer_frontend.h"
+#include "engine/engine.h"
 
 namespace egkr::renderpass
 {
@@ -86,14 +86,15 @@ namespace egkr::renderpass
 			{
 				bool do_clear_depth = clear_flags_ & clear_flags::depth;
 
-				if (attachment_config.source == render_target::attachment_source::default_source)
+				//TODO: investigate identical branch
+				// if (attachment_config.source == render_target::attachment_source::default_source)
 				{
 					attach.setFormat(context_->device.depth_format);
 				}
-				else
-				{
-					attach.setFormat(context_->device.depth_format);
-				}
+				// else
+				// {
+				// 	attach.setFormat(context_->device.depth_format);
+				// }
 
 				attach.setSamples(vk::SampleCountFlagBits::e1);
 
@@ -211,7 +212,7 @@ namespace egkr::renderpass
 		auto* vulkan_render_target = (render_target::vulkan_render_target*)render_target.get();
 		const auto& command_buffer = context_->graphics_command_buffers[context_->image_index];
 
-		auto* viewport = renderer->get_active_viewport();
+		auto* viewport = engine::get()->get_renderer()->get_active_viewport();
 
 		vk::Rect2D render_area{};
 		render_area.setOffset({ (int32_t)viewport->viewport_rect.x, (int32_t)viewport->viewport_rect.y }).setExtent({ (uint32_t)viewport->viewport_rect.z, (uint32_t)viewport->viewport_rect.w });

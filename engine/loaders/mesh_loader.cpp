@@ -10,7 +10,7 @@ namespace egkr
 
     resource::shared_ptr mesh_loader::load(const std::string& name, void* /*params*/)
     {
-	egkr::vector<supported_file_type> file_types{{".esm", mesh_file_type::esm, true}, {".obj", mesh_file_type::obj, false}};
+	egkr::vector<supported_file_type> file_types{{.extension=".esm", .file_type=mesh_file_type::esm, .is_binary=true}, {.extension=".obj", .file_type=mesh_file_type::obj, .is_binary=false}};
 
 	bool found{};
 	supported_file_type found_type{};
@@ -68,6 +68,10 @@ namespace egkr
     bool mesh_loader::unload(const resource::shared_ptr& resource)
     {
 	auto* data = (egkr::vector<geometry::properties>*)resource->data;
+	for (auto& geo : *data)
+	{
+	    free(geo.vertices);
+	}
 	data->clear();
 	delete data;
 	return false;
@@ -156,11 +160,11 @@ namespace egkr
 		mesh_face_data face{};
 		if (normals.empty() || tex_coords.empty())
 		{
-		    sscanf(line_string.data(), "%s %d %d %d", waste, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
+		    sscanf(line_string.data(), "%s %u %u %u", waste, &face.vertices[0].position_index, &face.vertices[1].position_index, &face.vertices[2].position_index);
 		}
 		else
 		{
-		    sscanf(line_string.data(), "%s %d/%d/%d %d/%d/%d %d/%d/%d", waste, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index,
+		    sscanf(line_string.data(), "%s %u/%u/%u %u/%u/%u %u/%u/%u", waste, &face.vertices[0].position_index, &face.vertices[0].tex_index, &face.vertices[0].normal_index,
 		        &face.vertices[1].position_index, &face.vertices[1].tex_index, &face.vertices[1].normal_index, &face.vertices[2].position_index, &face.vertices[2].tex_index,
 		        &face.vertices[2].normal_index);
 		}

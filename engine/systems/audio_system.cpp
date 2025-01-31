@@ -45,7 +45,10 @@ namespace egkr::audio
 
 	bool audio_system::shutdown()
 	{
-		return state->plugin_->shutdown();
+		bool result =  state->plugin_->shutdown();
+		delete state->plugin_;
+		state->plugin_ = nullptr;
+		return result;
 	}
 
 	bool audio_system::init()
@@ -86,7 +89,7 @@ namespace egkr::audio
 
 	void audio_system::close(file* file)
 	{
-		plugin_->unload_audio(file);
+		state->plugin_->unload_audio(file);
 	}
 
 	bool audio_system::set_master_volume(float volume)
