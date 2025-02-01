@@ -55,6 +55,11 @@ namespace egkr
 	    std::optional<std::string> parent_name;
 	};
 
+	struct terrain_scene_configuration
+	{
+	    std::string name;
+	};
+
 	struct point_light_scene_configuration
 	{
 	    std::string name;
@@ -72,6 +77,7 @@ namespace egkr
 	    skybox_scene_configuration skybox{};
 	    directional_light_scene_configuration directional_light;
 	    std::vector<mesh_scene_configuration> meshes;
+	    std::vector<terrain_scene_configuration> terrains;
 	    std::vector<point_light_scene_configuration> point_lights;
 	};
 

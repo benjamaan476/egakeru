@@ -101,6 +101,7 @@ namespace egkr::scene
 		frame_geometry_.world_geometries.push_back(mesh);
 	    }
 
+	    //TODO: Frustum culling
 	    egkr::render_data terrain_data{.render_geometry = terrain_->get_geometry(), .transform = terrain_, .is_winding_reversed = terrain_->get_determinant() < 0.f};
 	    frame_geometry_.terrain_geometries.push_back(terrain_data);
 

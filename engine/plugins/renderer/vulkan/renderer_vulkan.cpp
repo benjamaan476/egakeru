@@ -340,11 +340,7 @@ namespace egkr
 	return std::make_unique<renderer_vulkan>();
     }
 
-    renderer_vulkan::renderer_vulkan()
-    {
-	ZoneScoped;
-
-    }
+    renderer_vulkan::renderer_vulkan() { ZoneScoped; }
 
     renderer_vulkan::~renderer_vulkan() { shutdown(); }
 
@@ -352,7 +348,7 @@ namespace egkr
     {
 	application_name_ = renderer_configuration.application_name;
 	platform_ = platform;
-	
+
 	const auto size = platform_->get_framebuffer_size();
 	context_.framebuffer_width = size.x;
 	context_.framebuffer_height = size.y;
@@ -574,17 +570,17 @@ namespace egkr
 	auto valid = std::ranges::all_of(validation_layers_,
 	    [&layers](const char* layer)
 	    {
-		auto layerFound = false;
-		for (const auto& layerProperty : layers)
-		{
+	        auto layerFound = false;
+	        for (const auto& layerProperty : layers)
+	        {
 		    if (strcmp(layer, layerProperty.layerName.data()) == 0)
 		    {
-			layerFound = true;
-			break;
+		        layerFound = true;
+		        break;
 		    }
-		}
+	        }
 
-		return layerFound;
+	        return layerFound;
 	    });
 
 	if (enable_validation_layers_ && !valid)
@@ -649,7 +645,7 @@ namespace egkr
 
 	VkSurfaceKHR surface{};
 	glfwCreateWindowSurface(context_.instance, (GLFWwindow*)platform_->get_window(), nullptr, &surface);
-	return { surface };
+	return {surface};
     }
 
     bool renderer_vulkan::pick_physical_device()

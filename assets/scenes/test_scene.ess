@@ -35,8 +35,12 @@ linear=0.35
 quadratic=0.44
 [/PointLight]
 
-[Mesh]
-name=sponza
-resource_name=sponza2
-transform=0.0 0.0 -5.0 90.0 0.0 0.0 0.1 0.1 0.1
-[/Mesh]
+# [Mesh]
+# name=sponza
+# resource_name=sponza2
+# transform=0.0 0.0 -5.0 90.0 0.0 0.0 0.1 0.1 0.1
+# [/Mesh]
+
+[Terrain]
+name=test_terrain
+[/Terrain]

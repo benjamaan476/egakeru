@@ -109,9 +109,9 @@ bool sandbox_application::init()
     gizmo_.init();
     gizmo_.load();
 
-    world_view = egkr::viewport::create({0, 0, 800, 600}, egkr::projection_type::perspective, glm::radians(57.f), 0.1f, 4000.f);
+    world_view = egkr::viewport::create({0, 0, width_, height_}, egkr::projection_type::perspective, glm::radians(57.f), 0.1f, 4000.f);
     world_view2 = egkr::viewport::create({20, 20, 128.8, 72}, egkr::projection_type::perspective, glm::radians(57.f), 0.1f, 4000.f);
-    ui_view = egkr::viewport::create({0, 0, 800, 600}, egkr::projection_type::orthographic, 0, -100.f, 100.f);
+    ui_view = egkr::viewport::create({0, 0, width_, height_}, egkr::projection_type::orthographic, 0, -100.f, 100.f);
     return true;
 }
 
@@ -443,7 +443,7 @@ void sandbox_application::load_scene()
     skybox_ = egkr::skybox::skybox::create(skybox_config);
     main_scene_->add_skybox(skybox_->get_name(), skybox_);
 
-    egkr::terrain::configuration terrain_config{.name = "terrain", .tiles_x = 5, .scale_x = 5, .tiles_y = 5, .scale_y = 5};
+    egkr::terrain::configuration terrain_config{.name = "terrain", .tiles_x = 50, .scale_x = 1, .tiles_y = 50, .scale_y = 1};
     terrain_ = egkr::terrain::create(terrain_config);
     main_scene_->add_terrain(terrain_->get_name(), terrain_);
 
@@ -500,7 +500,7 @@ void sandbox_application::load_scene()
 
     for (const auto& mesh : scene_configuration.meshes)
     {
-	auto msh = egkr::mesh::create({mesh.resource_name});
+	auto msh = egkr::mesh::create({.name = mesh.resource_name});
 	msh->set_position(mesh.pos);
 	msh->set_rotation({mesh.euler_angles});
 	msh->set_scale(mesh.scale);
