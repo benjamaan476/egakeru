@@ -5,6 +5,7 @@
 #include <systems/material_system.h>
 
 #include "engine/engine.h"
+#include "systems/light_system.h"
 
 namespace egkr::pass
 {
@@ -63,6 +64,31 @@ namespace egkr::pass
 	    debug_shader_locations.view = debug_colour_shader->get_uniform_index("view");
 	    debug_shader_locations.model = debug_colour_shader->get_uniform_index("model");
 	}
+	{
+	    std::string terrain_shader_name = "Shader.Terrain";
+	    auto shader = resource_system::load(terrain_shader_name, egkr::resource::type::shader, nullptr);
+	    auto* properties = (shader::properties*)shader->data;
+	    shader_system::create_shader(*properties, renderpass.get());
+	    resource_system::unload(shader);
+
+	    terrain_shader = shader_system::get_shader(terrain_shader_name);
+	    terrain_shader->acquire_instance_resources({});
+
+	    terrain_shader_locations.projection = terrain_shader->get_uniform_index("projection");
+	    terrain_shader_locations.view = terrain_shader->get_uniform_index("view");
+	    terrain_shader_locations.shininess = terrain_shader->get_uniform_index("shininess");
+	    terrain_shader_locations.ambient_colour = terrain_shader->get_uniform_index("ambient_colour");
+	    terrain_shader_locations.diffuse_colour = terrain_shader->get_uniform_index("diffuse_colour");
+	    // terrain_shader_locations.diffuse_texture = terrain_shader->get_uniform_index("diffuse_texture");
+	    // terrain_shader_locations.specular_texture = terrain_shader->get_uniform_index("specular_texture");
+	    // terrain_shader_locations.normal_texture = terrain_shader->get_uniform_index("normal_texture");
+	    terrain_shader_locations.view_position = terrain_shader->get_uniform_index("view_position");
+	    terrain_shader_locations.model = terrain_shader->get_uniform_index("model");
+	    terrain_shader_locations.mode = terrain_shader->get_uniform_index("mode");
+	    terrain_shader_locations.point_light = terrain_shader->get_uniform_index("point_lights");
+	    terrain_shader_locations.directional_light = terrain_shader->get_uniform_index("dir_light");
+	    terrain_shader_locations.num_point_lights = terrain_shader->get_uniform_index("num_point_lights");
+	}
 
 	event::register_event(event::code::render_mode, this, on_event);
 	return true;
@@ -72,6 +98,47 @@ namespace egkr::pass
     {
 	engine::get()->get_renderer()->set_active_viewport(viewport);
 	renderpass->begin(frame_data.render_target_index);
+
+	if (!data.terrain.empty())
+	{
+	    const float shininess{32};
+	    const float4 diffuse_colour{0.5, 0.5, 0.5, 1.0};
+	    shader_system::use(terrain_shader->get_id());
+	    shader_system::set_uniform(terrain_shader_locations.projection, &projection);
+	    shader_system::set_uniform(terrain_shader_locations.view, &view);
+	    shader_system::set_uniform(terrain_shader_locations.ambient_colour, &data.ambient_colour);
+	    shader_system::set_uniform(terrain_shader_locations.view_position, &view_position);
+	    shader_system::set_uniform(terrain_shader_locations.mode, &data.render_mode);
+
+	    shader_system::apply_global(true);
+
+	    shader_system::bind_instance(0);
+	    shader_system::set_uniform(terrain_shader_locations.diffuse_colour, &diffuse_colour);
+	    shader_system::set_uniform(terrain_shader_locations.directional_light, light_system::get_directional_light());
+	    shader_system::set_uniform(terrain_shader_locations.point_light, light_system::get_point_lights().data());
+	    auto num_point_lights = light_system::point_light_count();
+	    shader_system::set_uniform(terrain_shader_locations.num_point_lights, &num_point_lights);
+	    shader_system::set_uniform(terrain_shader_locations.shininess, &shininess);
+	    shader_system::apply_instance(true);
+
+	    for (const auto& terrain : data.terrain)
+	    {
+		const auto& world = terrain.transform.lock()->get_world();
+		shader_system::set_uniform(terrain_shader_locations.model, &world);
+	    }
+
+	    if (data.terrain.front().is_winding_reversed)
+	    {
+		engine::get()->get_renderer()->set_winding(winding::clockwise);
+	    }
+
+	    data.terrain.front().render_geometry->draw();
+
+	    if (data.terrain.front().is_winding_reversed)
+	    {
+		engine::get()->get_renderer()->set_winding(winding::counter_clockwise);
+	    }
+	}
 
 	shader_system::use(material_shader->get_id());
 	material_system::apply_global(material_shader->get_id(), frame_data, projection, view, data.ambient_colour, view_position, data.render_mode);

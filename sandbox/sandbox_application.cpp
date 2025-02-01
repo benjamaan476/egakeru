@@ -137,6 +137,10 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     {
 	skybox_pass->data.skybox_data = main_scene_->get_skybox();
     }
+    else
+    {
+	skybox_pass->data.skybox_data = nullptr;
+    }
 
     const auto& frame_data = main_scene_->get_frame_data();
     scene_pass->do_execute = true;
@@ -147,6 +151,7 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
 
     scene_pass->data.geometries = frame_data.world_geometries;
     scene_pass->data.debug_geometries = frame_data.debug_geometries;
+    scene_pass->data.terrain = frame_data.terrain_geometries;
     scene_pass->data.ambient_colour = main_scene_->get_ambient_colour();
 
     if (test_lines_)
@@ -437,6 +442,10 @@ void sandbox_application::load_scene()
     egkr::skybox::configuration skybox_config{.name = scene_configuration.skybox.name};
     skybox_ = egkr::skybox::skybox::create(skybox_config);
     main_scene_->add_skybox(skybox_->get_name(), skybox_);
+
+    egkr::terrain::configuration terrain_config{.name = "terrain", .tiles_x = 5, .scale_x = 5, .tiles_y = 5, .scale_y = 5};
+    terrain_ = egkr::terrain::create(terrain_config);
+    main_scene_->add_terrain(terrain_->get_name(), terrain_);
 
     {
 	egkr::mesh::configuration cube_1{};

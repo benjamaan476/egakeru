@@ -5,6 +5,7 @@
 #include "resources/light.h"
 #include "resources/mesh.h"
 #include "resources/skybox.h"
+#include "resources/terrain.h"
 #include "renderer/camera.h"
 #include "renderer/viewport.h"
 
@@ -103,6 +104,9 @@ namespace egkr
 	    const skybox::shared_ptr& get_skybox() const { return skybox_; }
 	    void remove_skybox(const std::string& name);
 
+	    void add_terrain(const std::string& name, const terrain::shared_ptr& terrain);
+	    void remove_terrain(const std::string& name);
+
 	    void add_debug(const std::string& name, const egkr::debug::debug_box3d::shared_ptr& debug_box);
 	    void remove_debug(const std::string& name);
 	    void add_debug(const std::string& name, const egkr::debug::debug_grid::shared_ptr& debug_grid);
@@ -128,6 +132,8 @@ namespace egkr
 
 	    std::string skybox_name_;
 	    skybox::shared_ptr skybox_;
+	    std::string terrain_name_;
+	    terrain::shared_ptr terrain_;
 	    std::string directional_light_name_;
 	    std::shared_ptr<light::directional_light> directional_light_;
 	    std::unordered_map<std::string, light::point_light> point_lights_;

@@ -3,6 +3,7 @@
 #include "application/application.h"
 #include "renderer/renderer_types.h"
 #include "resources/mesh.h"
+#include "resources/terrain.h"
 #include "resources/ui_text.h"
 #include "resources/light.h"
 #include <resources/audio.h>
@@ -46,6 +47,7 @@ private:
     egkr::scene::simple_scene::unique_ptr main_scene_;
     egkr::frustum camera_frustum_;
     egkr::skybox::shared_ptr skybox_;
+    egkr::terrain::shared_ptr terrain_;
     egkr::vector<egkr::mesh::shared_ptr> meshes_;
     egkr::vector<egkr::mesh::weak_ptr> ui_meshes_;
     egkr::mesh::shared_ptr ui_mesh_;

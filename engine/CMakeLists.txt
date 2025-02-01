@@ -53,7 +53,9 @@ set(SOURCES
     resources/skybox.cpp
     resources/texture.cpp
     resources/transform.cpp
+    resources/terrain.cpp
     resources/ui_text.cpp
+
     scenes/simple_scene.cpp
     systems/audio_system.cpp
     systems/camera_system.cpp

@@ -249,7 +249,7 @@ namespace egkr
 	binding_desc.setBinding(0).setStride(get_attribute_stride()).setInputRate(vk::VertexInputRate::eVertex);
 
 	pipeline_properties pipeline_properties{};
-	pipeline_properties.renderpass = (renderpass::vulkan_renderpass*)renderpass;
+	pipeline_properties.renderpass = renderpass;
 	pipeline_properties.descriptor_set_layout = descriptor_set_layout;
 	pipeline_properties.shader_stage_info = stage_create_infos;
 	pipeline_properties.is_wireframe = false;
@@ -329,7 +329,7 @@ namespace egkr
 	}
 
 	const auto image_index = context_->image_index;
-	auto& command_buffer = context_->graphics_command_buffers[image_index].get_handle();
+	const auto& command_buffer = context_->graphics_command_buffers[image_index].get_handle();
 
 	auto& object_state = instance_states[get_bound_instance_id()];
 	auto& object_descriptor_set = object_state.descriptor_set_state.descriptor_sets[image_index];
