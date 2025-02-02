@@ -66,7 +66,7 @@ namespace egkr
     {
 	auto material_resource = resource_system::load(name, resource::type::material, nullptr);
 
-	auto* material_config = (material_properties*)material_resource->data;
+	auto* material_config = (material::properties*)material_resource->data;
 
 	auto material = acquire(*material_config);
 
@@ -75,7 +75,7 @@ namespace egkr
 	return material;
     }
 
-    material::shared_ptr material_system::acquire(const material_properties& properties)
+    material::shared_ptr material_system::acquire(const material::properties& properties)
     {
 	if (strcmp(properties.name.data(), default_material_name_.data()) == 0)
 	{
@@ -229,7 +229,7 @@ namespace egkr
 
     bool material_system::create_default_material()
     {
-	material_properties properties{};
+	material::properties properties{};
 	properties.name = "default";
 	properties.diffuse_map_name = default_diffuse_name;
 	properties.specular_map_name = default_specular_name;
@@ -251,7 +251,7 @@ namespace egkr
 	return true;
     }
 
-    bool material_system::load_material(const material_properties& properties, material::shared_ptr& material)
+    bool material_system::load_material(const material::properties& properties, material::shared_ptr& material)
     {
 	texture_map::properties diffuse_properties{.minify = texture_map::filter::linear,
 	    .magnify = texture_map::filter::linear,

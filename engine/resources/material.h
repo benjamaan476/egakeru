@@ -9,30 +9,30 @@ namespace egkr
 {
     constexpr static std::string_view default_material_name_{"default"};
 
-    enum class material_type
-    {
-	world,
-	ui
-    };
-
-    struct material_properties
-    {
-	std::string name{"default"};
-	std::string diffuse_map_name{"default_diffuse_texture"};
-	std::string specular_map_name{"default_specular_texture"};
-	std::string normal_map_name{"default_normal_texture"};
-	std::string shader_name{"Shader.Material"};
-	float shininess{};
-	float4 diffuse_colour{0.588F, 0.588F, 0.588F, 1.F};
-    };
 
     class material : public resource
     {
     public:
-	using shared_ptr = std::shared_ptr<material>;
-	static shared_ptr create(const material_properties& properties);
+	struct properties
+	{
+	    std::string name{"default"};
+	    std::string diffuse_map_name{"default_diffuse_texture"};
+	    std::string specular_map_name{"default_specular_texture"};
+	    std::string normal_map_name{"default_normal_texture"};
+	    std::string shader_name{"Shader.Material"};
+	    float shininess{};
+	    float4 diffuse_colour{0.588F, 0.588F, 0.588F, 1.F};
+	};
 
-	explicit material(const material_properties& properties);
+	enum class type : uint8_t
+	{
+	    world,
+	    ui
+	};
+	using shared_ptr = std::shared_ptr<material>;
+	static shared_ptr create(const properties& properties);
+
+	explicit material(const properties& properties);
 	~material();
 
 	void free();
@@ -53,12 +53,12 @@ namespace egkr
 	[[nodiscard]] auto& get_normal_map() { return normal_map_; }
 
 	void set_shininess(float shininess) { shininess_ = shininess; }
-	const auto& get_shininess() const { return shininess_; }
+	[[nodiscard]] const auto& get_shininess() const { return shininess_; }
 
-	const auto& get_shader_id() const { return shader_id_; }
-	const auto& get_shader_name() const { return shader_name_; }
+	[[nodiscard]] const auto& get_shader_id() const { return shader_id_; }
+	[[nodiscard]] const auto& get_shader_name() const { return shader_name_; }
 
-	const auto& get_internal_id() const { return internal_id_; }
+	[[nodiscard]] const auto& get_internal_id() const { return internal_id_; }
 	void set_internal_id(uint32_t id) { internal_id_ = id; }
 
 	[[nodiscard]] auto get_render_frame() const { return render_frame_number_; }
@@ -69,11 +69,11 @@ namespace egkr
     private:
 	float shininess_{32.F};
 	float4 diffuse_colour_{1.F};
-	texture_map::shared_ptr diffuse_map_{};
-	texture_map::shared_ptr specular_map_{};
-	texture_map::shared_ptr normal_map_{};
+	texture_map::shared_ptr diffuse_map_;
+	texture_map::shared_ptr specular_map_;
+	texture_map::shared_ptr normal_map_;
 
-	std::string shader_name_{};
+	std::string shader_name_;
 	uint32_t shader_id_{invalid_32_id};
 	uint32_t internal_id_{invalid_32_id};
 	uint64_t render_frame_number_{invalid_64u_id};

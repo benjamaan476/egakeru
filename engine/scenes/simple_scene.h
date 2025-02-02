@@ -80,6 +80,7 @@ namespace egkr
 	    std::vector<mesh_scene_configuration> meshes;
 	    std::vector<terrain_scene_configuration> terrains;
 	    std::vector<point_light_scene_configuration> point_lights;
+	    int32_t version{};
 	};
 
 	class simple_scene : public transformable

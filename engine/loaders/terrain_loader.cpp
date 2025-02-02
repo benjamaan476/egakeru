@@ -5,6 +5,8 @@
 #include "resources/resource.h"
 #include "resources/terrain.h"
 #include "systems/resource_system.h"
+#include "parser.h"
+#include <fmt/format.h>
 #include <map>
 
 namespace egkr::loader
@@ -35,7 +37,7 @@ namespace egkr::loader
 	return true;
     }
 
-    static const std::map<std::string, std::function<void(egkr::terrain::configuration&, const std::string&)>> terrain_configuration_members = {
+    const std::map<std::string, std::function<void(egkr::terrain::configuration&, const std::string&)>> terrain_configuration_members = {
         {"version", [](egkr::terrain::configuration& /* config */, const std::string& /* value */) noexcept {}},
         {"heightmap", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.heightmap = value; }},
         {"tiles_x", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.tiles_x = (uint32_t)std::stoi(value); }},
@@ -61,35 +63,24 @@ namespace egkr::loader
 	for (; !line.empty(); line = filesystem::read_line(handle, 511), ++line_number)
 	{
 	    std::string line_string{line.begin(), line.end()};
-	    trim(line_string);
 
-	    if (line[0] == '#' || line[0] == '\0')
+	    if (const auto& parse_result = parser::parse_line(line_string))
+	    {
+		const auto& [variable_name, value] = parse_result.value();
+		if (!terrain_configuration_members.contains(variable_name))
+		{
+		    LOG_WARN("Unrecognised terrain configuration argument: {}, with value {} on line", variable_name, value, line_number);
+		    continue;
+		}
+		terrain_configuration_members.at(variable_name)(properties, value);
+	    }
+	    else
 	    {
 		continue;
 	    }
-
-	    auto split_index = line_string.find_first_of('=');
-	    if (split_index == std::string::npos)
-	    {
-		LOG_WARN("Potential formatting issue found in file {}, '=' token not found on line number {}.", path, line_number);
-		continue;
-	    }
-
-	    auto variable_name = line_string.substr(0, split_index);
-	    trim(variable_name);
-
-	    auto value = line_string.substr(split_index + 1);
-	    trim(value);
-
-	    if (!terrain_configuration_members.contains(variable_name))
-	    {
-		LOG_WARN("Unrecognised terrain configuration arguement: {}", variable_name);
-		continue;
-	    }
-	    terrain_configuration_members.at(variable_name)(properties, value);
 	}
 
-	if (properties.heightmap != "")
+	if (!properties.heightmap.empty())
 	{
 	    image_resource_parameters params{.flip_y = false};
 	    auto heightmap_image = resource_system::load(properties.heightmap, resource::type::image, &params);

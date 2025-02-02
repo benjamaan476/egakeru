@@ -374,7 +374,7 @@ namespace egkr
     bool mesh_loader::import_obj_material_library(std::string_view filepath)
     {
 	auto file = filesystem::open(filepath, file_mode::read, false);
-	material_properties current_properties{};
+	material::properties current_properties{};
 
 	bool hit_name{};
 	while (true)
@@ -581,7 +581,7 @@ namespace egkr
 	return true;
     }
 
-    bool mesh_loader::write_emt(std::string_view directory, const material_properties& properties)
+    bool mesh_loader::write_emt(std::string_view directory, const material::properties& properties)
     {
 	//TODO: ew
 	std::string filename = std::format("{}/../materials/{}{}", directory, properties.name, ".emt");
