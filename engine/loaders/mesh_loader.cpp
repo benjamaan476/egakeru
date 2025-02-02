@@ -10,7 +10,7 @@ namespace egkr
 
     resource::shared_ptr mesh_loader::load(const std::string& name, void* /*params*/)
     {
-	egkr::vector<supported_file_type> file_types{{.extension=".esm", .file_type=mesh_file_type::esm, .is_binary=true}, {.extension=".obj", .file_type=mesh_file_type::obj, .is_binary=false}};
+	egkr::vector<supported_file_type> file_types{{.extension = ".esm", .file_type = mesh_file_type::esm, .is_binary = true}, {.extension = ".obj", .file_type = mesh_file_type::obj, .is_binary = false}};
 
 	bool found{};
 	supported_file_type found_type{};
@@ -362,11 +362,11 @@ namespace egkr
 
 	properties.vertices = malloc(size);
 
+	generate_tangents(vertices, properties.indices);
 	std::copy(vertices.data(), vertices.data() + properties.vertex_count, (vertex_3d*)properties.vertices);
 
 	properties.center = (properties.extents.min + properties.extents.max) / 2.F;
 
-	generate_tangents(properties.vertices, properties.indices);
 
 	return properties;
     }

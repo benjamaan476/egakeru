@@ -1,4 +1,6 @@
 #include "sandbox_application.h"
+#include "loaders/resource_loader.h"
+#include "log/log.h"
 #include "renderer/render_graph.h"
 #include "resources/geometry.h"
 #include "sandbox_keybinds.h"
@@ -443,9 +445,24 @@ void sandbox_application::load_scene()
     skybox_ = egkr::skybox::skybox::create(skybox_config);
     main_scene_->add_skybox(skybox_->get_name(), skybox_);
 
-    egkr::terrain::configuration terrain_config{.name = "terrain", .tiles_x = 50, .scale_x = 1, .tiles_y = 50, .scale_y = 1};
-    terrain_ = egkr::terrain::create(terrain_config);
-    main_scene_->add_terrain(terrain_->get_name(), terrain_);
+    for (const auto& terrain_config : scene_configuration.terrains)
+    {
+	if (terrain_config.resource_name.empty())
+	{
+	    LOG_ERROR("Invalid terrain specified, terrain must contain a resource_name in scene description");
+	    continue;
+	}
+
+	auto terrain_resource = egkr::resource_system::load(terrain_config.resource_name, egkr::resource::type::terrain, nullptr);
+	if (!terrain_resource)
+	{
+	    LOG_ERROR("Couldn't load terrain resource for {}", terrain_config.resource_name);
+	    continue;
+	}
+
+	auto terrain = egkr::terrain::create(*(egkr::terrain::configuration*)terrain_resource->data);
+	main_scene_->add_terrain(terrain_config.name, terrain);
+    }
 
     {
 	egkr::mesh::configuration cube_1{};

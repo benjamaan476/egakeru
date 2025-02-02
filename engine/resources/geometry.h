@@ -92,6 +92,7 @@ namespace egkr
 	    world_geometries.clear();
 	    debug_geometries.clear();
 	    transparent_geometries.clear();
+	    terrain_geometries.clear();
 	}
     };
 }

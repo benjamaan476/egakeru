@@ -58,6 +58,7 @@ namespace egkr
 	struct terrain_scene_configuration
 	{
 	    std::string name;
+	    std::string resource_name;
 	};
 
 	struct point_light_scene_configuration

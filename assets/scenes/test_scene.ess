@@ -43,4 +43,5 @@ quadratic=0.44
 
 [Terrain]
 name=test_terrain
+resource_name=test_terrain
 [/Terrain]

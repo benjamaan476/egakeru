@@ -31,6 +31,7 @@ namespace egkr
 	    system_font,
 	    audio,
 	    scene,
+	    terrain,
 	    custom
 	};
 

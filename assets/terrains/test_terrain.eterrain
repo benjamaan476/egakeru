@@ -1,0 +1,7 @@
+# Test terrain file
+version=1.0
+
+heightmap=GreyScaleElevation
+scale_x=1
+scale_y=1
+scale_z=100

@@ -276,6 +276,9 @@ namespace egkr
 		case parse_mode::mesh:
 		    current_mesh.resource_name = value;
 		    break;
+		case parse_mode::terrain:
+		    current_terrain.resource_name = value;
+		    break;
 		default:
 		    break;
 		}

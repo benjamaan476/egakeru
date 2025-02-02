@@ -29,6 +29,7 @@ set(SOURCES
     loaders/shader_loader.cpp
     loaders/system_font_loader.cpp
     loaders/text_loader.cpp
+    loaders/terrain_loader.cpp
     log/log.cpp
     platform/platform.cpp
     platform/filesystem.cpp

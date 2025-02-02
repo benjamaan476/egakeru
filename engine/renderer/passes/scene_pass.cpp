@@ -123,8 +123,11 @@ namespace egkr::pass
 
 	    for (const auto& terrain : data.terrain)
 	    {
-		const auto& world = terrain.transform.lock()->get_world();
-		shader_system::set_uniform(terrain_shader_locations.model, &world);
+		if (const auto& world = terrain.transform.lock())
+		{
+		    const auto& model = world->get_world();
+		    shader_system::set_uniform(terrain_shader_locations.model, &model);
+		};
 	    }
 
 	    if (data.terrain.front().is_winding_reversed)

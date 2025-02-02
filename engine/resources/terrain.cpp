@@ -3,6 +3,9 @@
 #include <memory>
 #include "identifier.h"
 #include "pch.h"
+#include "resources/resource.h"
+#include "systems/geometry_utils.h"
+#include "systems/resource_system.h"
 
 namespace egkr
 {
@@ -10,7 +13,7 @@ namespace egkr
 
     terrain::terrain(const terrain::configuration& configuration)
         : resource(0, 0, configuration.name), unique_id{identifier::acquire_unique_id(this)}, name{configuration.name}, tiles_x{configuration.tiles_x}, tiles_y{configuration.tiles_y},
-          scale_x{configuration.scale_x}, scale_y{configuration.scale_y}
+          scale_x{configuration.scale_x}, scale_y{configuration.scale_y}, scale_z{configuration.scale_z}
     {
 	vertices.resize(tiles_x * tiles_y);
 	indices.resize(6 * tiles_x * tiles_y);
@@ -21,7 +24,8 @@ namespace egkr
 	    {
 		const uint32_t v0 = y * tiles_x + x;
 
-		vertices[v0] = terrain::vertex{.position = {x * scale_x, y * scale_y, std::rand() % 2 - 1}, .normal = {0, 0, 1}, .texture_coords = {x, y}, .colour{0.5, 0.5, 0.5, 1.0}, .tangent{1, 0, 0, 0}};
+		vertices[v0]
+		    = terrain::vertex{.position = {x * scale_x, y * scale_y, configuration.height_data[v0] * scale_z}, .normal = {0, 0, 1}, .tex = {x, y}, .colour{0.5, 0.5, 0.5, 1.0}, .tangent{1, 0, 0, 0}};
 	    }
 	}
 	uint32_t i{};
@@ -42,6 +46,9 @@ namespace egkr
 		indices[i + 5] = v3;
 	    }
 	}
+
+	generate_normals(vertices, indices);
+	generate_tangents(vertices, indices);
     }
 
     terrain::~terrain() { unload(); }

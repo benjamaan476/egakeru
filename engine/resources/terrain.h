@@ -13,10 +13,14 @@ namespace egkr
 	struct configuration
 	{
 	    std::string name;
-	    uint32_t tiles_x;
-	    float scale_x;
-	    uint32_t tiles_y;
-	    float scale_y;
+	    std::string heightmap;
+	    uint32_t tiles_x{1};
+	    uint32_t tiles_y{1};
+	    float scale_x{1.f};
+	    float scale_y{1.f};
+	    float scale_z{1.f};
+
+	    std::vector<float> height_data;
 	};
 	using shared_ptr = std::shared_ptr<terrain>;
 	static shared_ptr create(const terrain::configuration& configuration);
@@ -28,7 +32,7 @@ namespace egkr
 	{
 	    float3 position;
 	    float3 normal;
-	    float2 texture_coords;
+	    float2 tex;
 	    float4 colour;
 	    float4 tangent;
 	    // std::array<float, 8> texture_weights;
@@ -40,10 +44,11 @@ namespace egkr
     private:
 	uint32_t unique_id{invalid_32_id};
 	std::string name;
-	uint32_t tiles_x{};
-	uint32_t tiles_y{};
-	float scale_x{};
-	float scale_y{};
+	uint32_t tiles_x{1};
+	uint32_t tiles_y{1};
+	float scale_x{1};
+	float scale_y{1};
+	float scale_z{1};
 	extent3d extents{};
 	[[maybe_unused]] float3 origin{};
 
