@@ -71,7 +71,7 @@ template <typename vertex> [[maybe_unused]] static void generate_tangents(egkr::
     }
 }
 
-template <typename vertex> static void generate_normals(egkr::vector<vertex>& vertices, const egkr::vector<uint32_t>& indices)
+template <typename vertex> [[maybe_unused]] static void generate_normals(egkr::vector<vertex>& vertices, const egkr::vector<uint32_t>& indices)
 {
     for (auto i{0U}; i < indices.size(); i += 3)
     {

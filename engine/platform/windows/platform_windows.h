@@ -28,8 +28,8 @@ namespace egkr
 		[[nodiscard]] void* get_window() const override;
 		uint2 get_framebuffer_size() final;
 		[[nodiscard]] static std::optional<dynamic_library> load_library(const std::string& library_name);
-		bool unload_library(dynamic_library& library);
-		bool load_function(const std::string& function_name, dynamic_library& library);
+		static bool unload_library(dynamic_library& library);
+		static bool load_function(const std::string& function_name, dynamic_library& library);
 
 	private:
 
