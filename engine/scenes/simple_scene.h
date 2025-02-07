@@ -140,13 +140,12 @@ namespace egkr
 
 	    std::string skybox_name_;
 	    skybox::shared_ptr skybox_;
-	    std::string terrain_name_;
-	    terrain::shared_ptr terrain_;
 	    std::string directional_light_name_;
 	    std::shared_ptr<light::directional_light> directional_light_;
 	    std::unordered_map<std::string, light::point_light> point_lights_;
 
 	    std::unordered_map<std::string, mesh::shared_ptr> meshes_;
+	    std::unordered_map<std::string, terrain::shared_ptr> terrains_;
 
 	    std::unordered_map<std::string, egkr::debug::debug_box3d::shared_ptr> debug_boxes_;
 	    std::unordered_map<std::string, egkr::debug::debug_grid::shared_ptr> debug_grids_;

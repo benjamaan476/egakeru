@@ -36,12 +36,8 @@ namespace egkr::scene
 	    skybox_->load();
 	}
 
-	if (terrain_)
-	{
-	    terrain_->load();
-	}
-
 	std::ranges::for_each(meshes_ | std::views::values, [](auto& mesh) { mesh->load(); });
+	std::ranges::for_each(terrains_ | std::views::values, [](auto& terrain) { terrain->load(); });
 
 	std::ranges::for_each(debug_boxes_ | std::views::values, [](auto& box) { box->load(); });
 	std::ranges::for_each(debug_grids_ | std::views::values, [](auto& grid) { grid->load(); });
@@ -102,8 +98,11 @@ namespace egkr::scene
 	    }
 
 	    //TODO: Frustum culling
-	    egkr::render_data terrain_data{.render_geometry = terrain_->get_geometry(), .transform = terrain_, .is_winding_reversed = terrain_->get_determinant() < 0.f};
-	    frame_geometry_.terrain_geometries.push_back(terrain_data);
+	    for (const auto& terrain : terrains_ | std::views::values)
+	    {
+		egkr::render_data terrain_data{.render_geometry = terrain->get_geometry(), .transform = terrain, .is_winding_reversed = terrain->get_determinant() < 0.f};
+		frame_geometry_.terrain_geometries.push_back(terrain_data);
+	    }
 
 	    for (auto& mesh : meshes_ | std::views::values)
 	    {
@@ -237,30 +236,29 @@ namespace egkr::scene
 
     void simple_scene::add_terrain(const std::string& name, const terrain::shared_ptr& terrain)
     {
-	if (terrain_)
+	if (terrains_.contains(name))
 	{
-	    terrain_->unload();
+	    terrains_[name]->unload();
 	}
+
 	if (state_ >= state::loaded)
 	{
 	    terrain->load();
 	}
 
-	terrain_ = terrain;
-	terrain_name_ = name;
+	terrains_[name] = terrain;
     }
 
-    void simple_scene::remove_terrain(const std::string& /* name */)
+    void simple_scene::remove_terrain(const std::string& name)
     {
 	if (state_ >= state::loaded || state_ == state::unloading)
 	{
-	    if (terrain_)
+	    if (terrains_.contains(name))
 	    {
-		terrain_->unload();
-		terrain_.reset();
+		terrains_[name]->unload();
+		terrains_[name].reset();
 	    }
 	}
-	terrain_name_ = "";
     }
 
     void simple_scene::add_debug(const std::string& name, const egkr::debug::debug_box3d::shared_ptr& debug_box)
@@ -337,13 +335,18 @@ namespace egkr::scene
     void simple_scene::actual_unload()
     {
 	remove_skybox(skybox_name_);
-	remove_terrain(terrain_name_);
 
 	for (const auto& mesh : meshes_ | std::views::keys)
 	{
 	    remove_mesh(mesh);
 	}
 	meshes_.clear();
+
+	for (const auto& terrain : terrains_ | std::views::keys)
+	{
+	    remove_terrain(terrain);
+	}
+	terrains_.clear();
 
 	for (const auto& box : debug_boxes_ | std::views::keys)
 	{
