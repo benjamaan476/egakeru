@@ -309,7 +309,7 @@ namespace egkr
 		}
 		variant.glyphs.reserve(codepoint_count);
 
-		for(const auto& [i, pc] : packed_chars | std::views::enumerate)
+		for(const auto[i, pc] : packed_chars | std::views::enumerate)
 		{
 			const font::glyph glyph
 			{
@@ -342,7 +342,7 @@ namespace egkr
 					return {};
 				}
 
-				for(const auto& [table, kern] : std::views::zip(kerning_table, variant.kernings))
+				for(const auto [table, kern] : std::views::zip(kerning_table, variant.kernings))
 				{
 					kern.codepoint_0 = table.glyph1;
 					kern.codepoint_1 = table.glyph2;

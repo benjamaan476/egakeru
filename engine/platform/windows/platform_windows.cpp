@@ -186,7 +186,7 @@ namespace egkr
 		return { (uint32_t)width_, (uint32_t)height_ };
 	}
 
-	std::optional<platform::dynamic_library internal_platform::load_library(const std::string& library_name)
+	std::optional<platform::dynamic_library> internal_platform::load_library(const std::string& library_name)
 	{
 		if(library_name.empty())
 		{
@@ -232,7 +232,7 @@ namespace egkr
 			return false;
 		}
 		
-		FARPROC addr = GetProcAddress((HMODULE)library.interal_data, function_name.c_str());
+		FARPROC addr = GetProcAddress((HMODULE)library.internal_data, function_name.c_str());
 		if(!addr)
 		{
 			LOG_ERROR("Could not load function {} from {}", function_name, library.library_name);

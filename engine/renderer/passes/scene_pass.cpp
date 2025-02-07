@@ -127,7 +127,7 @@ namespace egkr::pass
 		{
 		    const auto& model = world->get_world();
 		    shader_system::set_uniform(terrain_shader_locations.model, &model);
-		};
+		}
 	    }
 
 	    if (data.terrain.front().is_winding_reversed)
