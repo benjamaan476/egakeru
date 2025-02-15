@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "resources/geometry.h"
+#include "resources/material.h"
 #include "transform.h"
 
 namespace egkr
@@ -21,6 +22,8 @@ namespace egkr
 	    float scale_z{1.f};
 
 	    std::vector<float> height_data;
+
+	    std::vector<std::string> material_names;
 	};
 	using shared_ptr = std::shared_ptr<terrain>;
 	static shared_ptr create(const terrain::configuration& configuration);
@@ -35,12 +38,13 @@ namespace egkr
 	    float2 tex;
 	    float4 colour;
 	    float4 tangent;
-	    // std::array<float, 8> texture_weights;
+	    float4 material_weights;
 	};
 
 	void load();
 	void unload();
 	[[nodiscard]] const auto& get_geometry() const { return geometry; }
+	[[nodiscard]] const auto& get_materials() const { return materials; }
     private:
 	uint32_t unique_id{invalid_32_id};
 	std::string name;
@@ -55,6 +59,8 @@ namespace egkr
 	//vertices and indices
 	std::vector<vertex> vertices;
 	std::vector<uint32_t> indices;
+	std::vector<std::string> material_names;
+	std::vector<material::shared_ptr> materials;
 
 	geometry::shared_ptr geometry;
     };

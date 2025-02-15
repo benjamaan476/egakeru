@@ -327,6 +327,11 @@ namespace egkr
 		        uniform.type = shader::uniform_type::custom;
 		        uniform.size = 32;
 	            }
+	            else if (type == "struct128")
+	            {
+		        uniform.type = shader::uniform_type::custom;
+		        uniform.size = 320;
+	            }
 	            else if (type == "struct480")
 	            {
 		        uniform.type = shader::uniform_type::custom;

@@ -74,10 +74,13 @@ namespace egkr
 	bool is_winding_reversed;
     };
 
-    struct geometry_distance
+    struct terrain_render_data
     {
-	render_data geometry;
-	float distance;
+	geometry::shared_ptr render_geometry;
+	std::weak_ptr<transformable> transform;
+	uint64_t unique_id{};
+	bool is_winding_reversed;
+	std::vector<material::shared_ptr> materials;
     };
 
     struct frame_geometry_data
@@ -85,7 +88,7 @@ namespace egkr
 	egkr::vector<render_data> world_geometries;
 	egkr::vector<render_data> debug_geometries;
 	egkr::vector<render_data> transparent_geometries;
-	egkr::vector<render_data> terrain_geometries;
+	egkr::vector<terrain_render_data> terrain_geometries;
 
 	void reset()
 	{

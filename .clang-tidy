@@ -23,7 +23,8 @@ Checks: "*,
         -cppcoreguidelines-pro-type-union-access,
         -missing-field-initializers,
         -hicpp-uppercase-literal-suffix,
-        -cppcoreguidlines-avoid-magic-numbers,
+        -cppcoreguidelines-avoid-magic-numbers,
+        -readability-uppercase-literal-suffix,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

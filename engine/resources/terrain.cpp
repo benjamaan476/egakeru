@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "resources/resource.h"
 #include "systems/geometry_utils.h"
+#include "systems/material_system.h"
 #include "systems/resource_system.h"
 
 namespace egkr
@@ -13,7 +14,7 @@ namespace egkr
 
     terrain::terrain(const terrain::configuration& configuration)
         : resource(0, 0, configuration.name), unique_id{identifier::acquire_unique_id(this)}, name{configuration.name}, tiles_x{configuration.tiles_x}, tiles_y{configuration.tiles_y},
-          scale_x{configuration.scale_x}, scale_y{configuration.scale_y}, scale_z{configuration.scale_z}
+          scale_x{configuration.scale_x}, scale_y{configuration.scale_y}, scale_z{configuration.scale_z}, material_names{configuration.material_names}
     {
 	vertices.resize(tiles_x * tiles_y);
 	indices.resize(6 * tiles_x * tiles_y);
@@ -24,8 +25,12 @@ namespace egkr
 	    {
 		const uint32_t v0 = y * tiles_x + x;
 
-		vertices[v0]
-		    = terrain::vertex{.position = {x * scale_x, y * scale_y, configuration.height_data[v0] * scale_z}, .normal = {0, 0, 1}, .tex = {x, y}, .colour{0.5, 0.5, 0.5, 1.0}, .tangent{1, 0, 0, 0}};
+		vertices[v0] = terrain::vertex{.position = {x * scale_x, y * scale_y, configuration.height_data[v0] * scale_z},
+		    .normal = {0, 0, 1},
+		    .tex = {x, y},
+		    .colour{0.5, 0.5, 0.5, 1.0},
+		    .tangent{1, 0, 0, 0},
+		    .material_weights{1, 0, 0, 0}};
 	    }
 	}
 	uint32_t i{};
@@ -65,6 +70,16 @@ namespace egkr
 	};
 	geometry = geometry::geometry::create(properties);
 	geometry->increment_generation();
+
+	for (const auto& material_name : material_names)
+	{
+	    auto mat = material_system::acquire(material_name);
+	    if (!mat)
+	    {
+		mat = material_system::get_default_material();
+	    }
+	    materials.emplace_back(mat);
+	}
     }
 
     void terrain::unload()
