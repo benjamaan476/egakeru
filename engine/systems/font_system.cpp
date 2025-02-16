@@ -122,7 +122,7 @@ namespace egkr
 		font.resource_data = (font::bitmap_font_resource_data*)(font.loaded_resource->data);
 		bool result = setup_font_data(font.resource_data->data);
 		font.resource_data->data.atlas->map_texture = texture_system::acquire(font.resource_data->pages[0].file);
-
+		font.resource_data->data.atlas->acquire();
 
 		auto id = font_system_->registered_bitmap_fonts_.size();
 		font_system_->registered_bitmap_fonts_.emplace_back(id, font);
@@ -187,7 +187,6 @@ namespace egkr
 		data.atlas->repeat_v = texture_map::repeat::clamp_to_edge;
 		data.atlas->repeat_w = texture_map::repeat::clamp_to_edge;
 		data.atlas->use = texture_map::use::map_diffuse;
-		data.atlas->acquire();
 
 		if (data.tab_advance > 0.F)
 		{

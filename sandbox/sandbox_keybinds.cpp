@@ -144,6 +144,15 @@ static void on_set_render_mode_normals(key /*key*/, keymap::entry_bind_type /*ty
 	event::fire_event(event::code::render_mode, application_instance, context);
 }
 
+static void on_set_render_mode_mip(key /*key*/, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
+{
+	application* application_instance = (application*)user_data;
+	event::context context{};
+	uint32_t mode{ 3 };
+	context.set(0, mode);
+	event::fire_event(event::code::render_mode, application_instance, context);
+}
+
 static void on_set_gizmo_mode(key key, keymap::entry_bind_type /*type*/, keymap::modifier /*modifier*/, void* user_data)
 {
 	application* application_instance = (application*)user_data;
@@ -241,6 +250,7 @@ void egkr::setup_keymaps(application* application_instance)
 	sandbox_keymap.add_binding(key::key_0, keymap::entry_bind_type::press, keymap::modifier::control, application_instance, on_set_render_mode_default);
 	sandbox_keymap.add_binding(key::key_1, keymap::entry_bind_type::press, keymap::modifier::control, application_instance, on_set_render_mode_lighting);
 	sandbox_keymap.add_binding(key::key_2, keymap::entry_bind_type::press, keymap::modifier::control, application_instance, on_set_render_mode_normals);
+	sandbox_keymap.add_binding(key::key_3, keymap::entry_bind_type::press, keymap::modifier::control, application_instance, on_set_render_mode_mip);
 
 	sandbox_keymap.add_binding(key::key_0, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);
 	sandbox_keymap.add_binding(key::key_1, keymap::entry_bind_type::press, keymap::modifier::none, application_instance, on_set_gizmo_mode);

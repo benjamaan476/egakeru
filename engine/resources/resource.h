@@ -12,6 +12,7 @@ namespace egkr
     struct image_resource_parameters
     {
 	bool flip_y{};
+	uint32_t mip_levels{ 1 };
     };
 
     constexpr auto RESOURCE_MAGIC = 0xdeadbeef;

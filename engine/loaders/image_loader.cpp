@@ -69,6 +69,7 @@ namespace egkr
 	    properties->id = 0;
 	    properties->data = image_data;
 	    properties->name = name;
+		properties->mip_levels = (uint32_t)std::floorf(std::log2f(std::max(width, height))) + 1;
 
 	    for (auto y{0}; y < height; ++y)
 	    {
