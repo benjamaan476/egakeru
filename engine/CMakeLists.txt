@@ -43,6 +43,7 @@ set(SOURCES
     renderer/viewport.cpp
     renderer/passes/editor_pass.cpp
     renderer/passes/scene_pass.cpp
+    renderer/passes/oit_pass.cpp
     renderer/passes/skybox_pass.cpp
     renderer/passes/ui_pass.cpp
     resources/geometry.cpp

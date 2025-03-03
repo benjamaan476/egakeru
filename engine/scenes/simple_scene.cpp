@@ -92,11 +92,11 @@ namespace egkr::scene
 		}
 	    }
 
-	    for (const auto& mesh : frame_geometry_.transparent_geometries)
-	    {
-		frame_geometry_.world_geometries.push_back(mesh);
-	    }
-
+	 //    for (const auto& mesh : frame_geometry_.transparent_geometries)
+	 //    {
+		// frame_geometry_.world_geometries.push_back(mesh);
+	 //    }
+		//
 	    //TODO: Frustum culling
 	    for (const auto& terrain : terrains_ | std::views::values)
 	    {

@@ -81,7 +81,6 @@ namespace egkr
 		const vulkan_context* context_{};
 		vk::Image image_;
 		vk::DeviceMemory memory_;
-		vk::Format format_;
 		vk::ImageView view_;
 		uint32_t width_{};
 		uint32_t height_{};

@@ -413,7 +413,7 @@ namespace egkr
 		};
 		width_ = width;
 		height_ = height;
-		mip = (uint32_t)std::floorf(std::log2f(std::max(width, height)) + 1);
+		mip = (uint32_t)floorf(std::log2f(std::max(width, height)) + 1);
 
 		populate_internal(texture_properties);
 

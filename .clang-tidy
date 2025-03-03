@@ -23,7 +23,7 @@ Checks: "*,
         -cppcoreguidelines-pro-type-union-access,
         -missing-field-initializers,
         -hicpp-uppercase-literal-suffix,
-        -cppcoreguidlines-avoid-magic-numbers,
+        -cppcoreguidelines-avoid-magic-numbers,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
@@ -36,6 +36,8 @@ CheckOptions:
     value: '^[ijk_xyz]$'
   - key: readability-identifier-length.IgnoredParameterNames
     value: 'x|y|z'
+  - key: readability-identifier-length.IgnoredLoopCounterNams
+    value: 'x|y|z|i'
 
 
 

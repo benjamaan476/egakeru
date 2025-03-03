@@ -25,7 +25,6 @@ namespace egkr::renderpass
 			vk::AttachmentDescription attach{};
 			if (attachment_config.type == render_target::attachment_type::colour)
 			{
-				bool do_clear_colour = clear_flags_ & clear_flags::colour;
 				if (attachment_config.source == render_target::attachment_source::default_source)
 				{
 					attach.setFormat(context_->swpchain->get_format().format);
@@ -37,6 +36,7 @@ namespace egkr::renderpass
 
 				attach.setSamples(vk::SampleCountFlagBits::e1);
 
+				bool do_clear_colour = clear_flags_ & clear_flags::colour;
 				if (attachment_config.load_op == render_target::load_operation::dont_care)
 				{
 					attach.setLoadOp(do_clear_colour ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare);
@@ -93,7 +93,7 @@ namespace egkr::renderpass
 				}
 				// else
 				// {
-				// 	attach.setFormat(context_->device.depth_format);
+				//	attach.setFormat(context_->device.depth_format);
 				// }
 
 				attach.setSamples(vk::SampleCountFlagBits::e1);

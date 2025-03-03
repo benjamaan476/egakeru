@@ -3,7 +3,7 @@
 version=0.1
 name=test_material
 diffuse_colour=1.0 1.0 1.0 1.0
-diffuse_map_name=orange_lines_512
-specular_map_name=orange_lines_512_spec
+diffuse_map_name=sponza_thorn_diff
+specular_map_name=sponza_thorn_spec
 shader=Shader.Material
 shininess=64.0

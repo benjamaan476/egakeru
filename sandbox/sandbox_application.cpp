@@ -50,10 +50,10 @@ bool sandbox_application::init()
 
     std::vector<vertex_2d> vertices{4};
 
-    vertices[0] = {{0.F, 136.F}, {0.F, 1.F}};
-    vertices[1] = {{512.F, 136.F}, {1.F, 1.F}};
-    vertices[2] = {{512.F, 0.F}, {1.F, 0.F}};
-    vertices[3] = {{0.F, 0.F}, {0.F, 0.F}};
+    vertices[0] = {.position={0.F, 136.F}, .tex={0.F, 1.F}};
+    vertices[1] = {.position={512.F, 136.F}, .tex={1.F, 1.F}};
+    vertices[2] = {.position={512.F, 0.F}, .tex={1.F, 0.F}};
+    vertices[3] = {.position={0.F, 0.F}, .tex={0.F, 0.F}};
 
     std::vector<uint32_t> indices{0, 1, 2, 0, 2, 3};
 
@@ -189,6 +189,9 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     editor_pass->projection = world_view.projection;
 
     editor_pass->data.gizmo = gizmo_;
+
+    oit_pass->viewport = &world_view;
+    oit_pass->data.oit_geometries = frame_data.transparent_geometries;
 }
 
 void sandbox_application::render_frame(egkr::frame_data& frame_data)
@@ -543,34 +546,42 @@ void sandbox_application::load_scene()
 void sandbox_application::configure_rendergraph()
 {
     frame_graph = egkr::rendergraph::create("sandbox");
-    frame_graph.add_gloabl_source("colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::global);
-    frame_graph.add_gloabl_source("depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
+    frame_graph.add_gloabl_source("global_colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::global);
+    frame_graph.add_gloabl_source("global_depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
 
     skybox_pass = (egkr::pass::skybox*)frame_graph.create_pass("skybox", &egkr::pass::skybox::create);
-    frame_graph.add_sink("skybox", "colourbuffer");
-    frame_graph.add_source("skybox", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
-    frame_graph.set_sink_linkage("skybox", "colourbuffer", "", "colourbuffer");
+    frame_graph.add_sink("skybox", "skybox_colourbuffer_sink");
+    frame_graph.add_source("skybox", "skybox_colourbuffer_source", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
+    frame_graph.set_sink_linkage("skybox", "skybox_colourbuffer_sink", "", "global_colourbuffer");
 
     scene_pass = (egkr::pass::scene*)frame_graph.create_pass("scene", &egkr::pass::scene::create);
-    frame_graph.add_sink("scene", "colourbuffer");
-    frame_graph.add_sink("scene", "depthbuffer");
-    frame_graph.add_source("scene", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
-    frame_graph.add_source("scene", "depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
-    frame_graph.set_sink_linkage("scene", "colourbuffer", "skybox", "colourbuffer");
-    frame_graph.set_sink_linkage("scene", "depthbuffer", {}, "depthbuffer");
+    frame_graph.add_sink("scene", "scene_colourbuffer_sink");
+    frame_graph.add_sink("scene", "scene_depthbuffer_sink");
+    frame_graph.add_source("scene", "scene_colourbuffer_source", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
+    frame_graph.add_source("scene", "scene_depthbuffer_source", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
+    frame_graph.set_sink_linkage("scene", "scene_colourbuffer_sink", "skybox", "skybox_colourbuffer_source");
+    frame_graph.set_sink_linkage("scene", "scene_depthbuffer_sink", {}, "global_depthbuffer");
+
+    oit_pass = (egkr::pass::oit*)frame_graph.create_pass("oit", &egkr::pass::oit::create);
+    frame_graph.add_sink("oit", "oit_colourbuffer_sink");
+    frame_graph.add_sink("oit", "oit_depthbuffer_sink");
+    frame_graph.add_source("oit", "oit_colourbuffer_source", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
+    frame_graph.add_source("oit", "oit_depthbuffer_source", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::other);
+    frame_graph.set_sink_linkage("oit", "oit_colourbuffer_sink", "scene", "scene_colourbuffer_source");
+    frame_graph.set_sink_linkage("oit", "oit_depthbuffer_sink", "scene", "scene_depthbuffer_source");
 
     editor_pass = (egkr::pass::editor*)frame_graph.create_pass("editor", &egkr::pass::editor::create);
-    frame_graph.add_sink("editor", "colourbuffer");
-    frame_graph.add_sink("editor", "depthbuffer");
-    frame_graph.add_source("editor", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
-    frame_graph.add_source("editor", "depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::other);
-    frame_graph.set_sink_linkage("editor", "colourbuffer", "scene", "colourbuffer");
-    frame_graph.set_sink_linkage("editor", "depthbuffer", "scene", "depthbuffer");
+    frame_graph.add_sink("editor", "editor_colourbuffer_sink");
+    frame_graph.add_sink("editor", "editor_depthbuffer_sink");
+    frame_graph.add_source("editor", "editor_colourbuffer_source", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
+    frame_graph.add_source("editor", "editor_depthbuffer_source", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::other);
+    frame_graph.set_sink_linkage("editor", "editor_colourbuffer_sink", "oit", "oit_colourbuffer_source");
+    frame_graph.set_sink_linkage("editor", "editor_depthbuffer_sink", "oit", "oit_depthbuffer_source");
 
     ui_pass = (egkr::pass::ui*)frame_graph.create_pass("ui", &egkr::pass::ui::create);
-    frame_graph.add_sink("ui", "colourbuffer");
-    frame_graph.add_source("ui", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
-    frame_graph.set_sink_linkage("ui", "colourbuffer", "editor", "colourbuffer");
+    // frame_graph.add_sink("ui", "ui_colourbuffer_sink");
+    // frame_graph.add_source("ui", "ui_colourbuffer_source", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
+    // frame_graph.set_sink_linkage("ui", "ui_colourbuffer_sink", "editor", "editor_colourbuffer_source");
 
     frame_graph.finalise();
 }

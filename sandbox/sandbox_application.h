@@ -17,6 +17,7 @@
 #include <renderer/render_graph.h>
 #include <renderer/passes/skybox_pass.h>
 #include <renderer/passes/scene_pass.h>
+#include <renderer/passes/oit_pass.h>
 #include <renderer/passes/editor_pass.h>
 #include <renderer/passes/ui_pass.h>
 
@@ -82,6 +83,7 @@ private:
     egkr::rendergraph frame_graph;
     egkr::pass::skybox* skybox_pass{};
     egkr::pass::scene* scene_pass{};
+    egkr::pass::oit* oit_pass{};
     egkr::pass::editor* editor_pass{};
     egkr::pass::ui* ui_pass{};
 };
