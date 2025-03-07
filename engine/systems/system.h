@@ -22,6 +22,7 @@ namespace egkr
 		geometry,
 		light,
 		audio,
+		ui,
 
 		known_max = 255,
 

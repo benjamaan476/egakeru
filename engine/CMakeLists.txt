@@ -72,6 +72,7 @@ set(SOURCES
     systems/shader_system.cpp
     systems/system.cpp
     systems/texture_system.cpp
+    systems/ui_system.cpp
 
     plugins/audio/audio_loader.cpp
     plugins/audio/oal_plugin.cpp
@@ -95,7 +96,7 @@ set(HEADERS
     renderer/passes/*.h
 )
 
-add_library(engine SHARED ${SOURCES})
+add_library(engine SHARED ${SOURCES} "systems/ui_system.cpp")
 if (WIN32)
     target_sources(engine PRIVATE
     platform/windows/platform_windows.cpp

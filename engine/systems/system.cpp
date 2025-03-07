@@ -13,7 +13,7 @@
 #include <systems/console_system.h>
 #include <systems/evar_system.h>
 #include <systems/audio_system.h>
-
+#include <systems/ui_system.h>
 #include <application/application.h>
 #include "engine/engine.h"
 
@@ -166,6 +166,9 @@ namespace egkr
 
 			registered_systems_.emplace(system_type::audio, audio::audio_system::create(audio_configuration));
 		}
+		{
+			registered_systems_.emplace(system_type::ui, ui_system::create({}));
+		}
 	}
 
 	void system_manager::register_extension()
@@ -190,6 +193,7 @@ namespace egkr
 		{
 			return;
 		}
+		system_manager_state->registered_systems_[system_type::ui]->shutdown();
 		system_manager_state->registered_systems_[system_type::audio]->shutdown();
 		system_manager_state->registered_systems_[system_type::evar]->shutdown();
 		system_manager_state->registered_systems_[system_type::console]->shutdown();
