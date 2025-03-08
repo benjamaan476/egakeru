@@ -42,8 +42,8 @@ namespace egkr
 	bool skybox::load()
 	{
 		cubemap_ = egkr::texture_map::texture_map::create(configuration_.texture_map_properties);
-		cubemap_->acquire();
 		cubemap_->map_texture = texture_system::acquire_cube(configuration_.name);
+		cubemap_->acquire();
 
 		geometry_ = egkr::geometry_system::acquire(configuration_.geometry_properties);
 

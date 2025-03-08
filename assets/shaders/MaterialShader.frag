@@ -76,6 +76,11 @@ void main() {
     } else if(in_mode == 2) {
         out_colour = vec4(abs(normal), 1.0);
     }
+    else if(in_mode == 3)
+    {
+        float mipLevel = textureQueryLod(samplers[SAMP_DIFFUSE], in_dto.tex_coord).x;
+        out_colour = vec4(0.2 * mipLevel);
+    }
 }
 
 vec4 calculate_directional_light(directional_light light, vec3 normal, vec3 view_direction) {

@@ -257,7 +257,8 @@ namespace egkr
 		    .usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment,
 		    .memory_properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 		    .aspect_flags = vk::ImageAspectFlagBits::eColor,
-		    .texture_type = egkr::texture::type::texture_2d};
+		    .texture_type = egkr::texture::type::texture_2d,
+		.mip_levels = 1};
 		((vulkan_texture*)(render_textures_[i].get()))->populate_internal(depth_image_properties);
 	    }
 	}
