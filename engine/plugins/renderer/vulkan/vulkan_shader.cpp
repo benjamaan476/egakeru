@@ -381,9 +381,11 @@ namespace egkr
 					for (auto i{ 0U }; i < total_sampler_count; ++i)
 					{
 						auto& texture_map = instance_states[get_bound_instance_id()].instance_textures[i];
-
+						if (!texture_map)
+						{
+							continue;
+						}
 						auto vulkan_map = (vulkan_texture_map*)texture_map.get();
-
 						auto texture_data = texture_map->map_texture;
 
 						if (texture_data->get_generation() == invalid_32_id)
@@ -398,6 +400,18 @@ namespace egkr
 								break;
 							case texture_map::use::map_normal:
 								texture_data = texture_system::get_default_normal_texture();
+								break;
+							case texture_map::use::map_albedo:
+								texture_data = texture_system::get_default_albedo_texture();
+								break;
+							case texture_map::use::map_metallic:
+								texture_data = texture_system::get_default_metallic_texture();
+								break;
+							case texture_map::use::map_roughness:
+								texture_data = texture_system::get_default_roughness_texture();
+								break;
+							case texture_map::use::map_ao:
+								texture_data = texture_system::get_default_ao_texture();
 								break;
 							default:
 								texture_data = texture_system::get_default_texture();

@@ -90,6 +90,35 @@ namespace egkr::pass
 	    terrain_shader_locations.num_point_lights = terrain_shader->get_uniform_index("num_point_lights");
 	}
 
+	{
+		const std::string shader_name = "Shader.PBR";
+		auto resource = resource_system::load(shader_name, resource::type::shader, nullptr);
+		auto* shader = (shader::properties*)resource->data;
+		shader_system::create_shader(*shader, renderpass.get());
+		resource_system::unload(resource);
+
+		pbr_shader = shader_system::get_shader(shader_name);
+
+		pbr_shader_locations.projection = pbr_shader->get_uniform_index("projection");
+		pbr_shader_locations.view = pbr_shader->get_uniform_index("view");
+		pbr_shader_locations.albedo_texture = pbr_shader->get_uniform_index("albedo_texture");
+		pbr_shader_locations.normal_texture = pbr_shader->get_uniform_index("normal_texture");
+		pbr_shader_locations.metallic_texture = pbr_shader->get_uniform_index("metallic_texture");
+		pbr_shader_locations.roughness_texture = pbr_shader->get_uniform_index("roughness_texture");
+		pbr_shader_locations.ao_texture = pbr_shader->get_uniform_index("ao_texture");
+		pbr_shader_locations.view_position = pbr_shader->get_uniform_index("view_position");
+		pbr_shader_locations.model = pbr_shader->get_uniform_index("model");
+		pbr_shader_locations.cube_texture = pbr_shader->get_uniform_index("cube_texture");
+		pbr_shader_locations.point_lights = pbr_shader->get_uniform_index("point_lights");
+		pbr_shader_locations.directional_light = pbr_shader->get_uniform_index("dir_light");
+		pbr_shader_locations.num_point_lights = pbr_shader->get_uniform_index("num_point_lights");
+		pbr_shader_locations.ambient_colour = pbr_shader->get_uniform_index("ambient_colour");
+		pbr_shader_locations.properties = pbr_shader->get_uniform_index("properties");
+		pbr_shader_locations.mode = pbr_shader->get_uniform_index("mode");
+
+	}
+
+
 	event::register_event(event::code::render_mode, this, on_event);
 	return true;
     }
@@ -146,12 +175,53 @@ namespace egkr::pass
 	shader_system::use(material_shader->get_id());
 	material_system::apply_global(material_shader->get_id(), frame_data, projection, view, data.ambient_colour, view_position, data.render_mode);
 
+	shader_system::use(pbr_shader->get_id());
+	shader_system::set_uniform(pbr_shader_locations.projection, &projection);
+	shader_system::set_uniform(pbr_shader_locations.view, &view);
+	shader_system::set_uniform(pbr_shader_locations.ambient_colour, &data.ambient_colour);
+	shader_system::set_uniform(pbr_shader_locations.view_position, &view_position);
+	shader_system::set_uniform(pbr_shader_locations.mode, &data.render_mode);
+	pbr_shader->apply_globals(true);
+
+	material::type current_type = material::type::pbr;
+
 	for (const egkr::render_data& render_data : data.geometries)
 	{
 	    auto mat = render_data.render_geometry->get_material();
 	    bool needs_update = (mat->get_render_frame() != frame_data.frame_number || mat->get_draw_index() != frame_data.draw_index);
 
-	    material_system::apply_instance(mat, needs_update);
+		if (current_type != mat->get_material_type())
+		{
+			current_type = mat->get_material_type();
+			shader_system::use(current_type == material::type::pbr ? pbr_shader->get_id() : material_shader->get_id());
+		}
+
+		switch (current_type)
+		{
+		case material::type::phong:
+			material_system::apply_instance(mat, needs_update);
+			break;
+		case material::type::pbr:
+		{
+			shader_system::bind_instance(mat->get_internal_id());
+			shader_system::set_uniform(pbr_shader_locations.albedo_texture, &mat->get_albedo_map());
+			shader_system::set_uniform(pbr_shader_locations.normal_texture, &mat->get_normal_map());
+			shader_system::set_uniform(pbr_shader_locations.metallic_texture, &mat->get_metallic_map());
+			shader_system::set_uniform(pbr_shader_locations.roughness_texture, &mat->get_roughness_map());
+			shader_system::set_uniform(pbr_shader_locations.ao_texture, &mat->get_ao_map());
+			shader_system::set_uniform(pbr_shader_locations.directional_light, light_system::get_directional_light());
+			shader_system::set_uniform(pbr_shader_locations.point_lights, light_system::get_point_lights().data());
+			auto num_point_lights = light_system::point_light_count();
+
+			shader_system::set_uniform(pbr_shader_locations.num_point_lights, &num_point_lights);
+
+			shader_system::apply_instance(needs_update);
+			break;
+		}
+		default:
+			LOG_ERROR("Unrecognised material type, skipping");
+			continue;
+		}
 	    mat->set_render_frame(frame_data.frame_number);
 	    mat->set_draw_index(frame_data.draw_index);
 

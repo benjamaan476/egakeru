@@ -37,6 +37,7 @@ namespace egkr
     const std::map<std::string, std::function<void(material::properties&, const std::string&)>> material_configuration_members = {
         {"version", [](material::properties& /* config */, const std::string& /* value */) noexcept {}},
         {"name", [](material::properties& config, const std::string& value) noexcept { config.name = value; }},
+        {"type", [](material::properties& config, const std::string& value) noexcept { config.material_type = (value == "phong") ? material::type::phong : material::type::pbr; }},
         {"diffuse_map_name", [](material::properties& config, const std::string& value) noexcept { config.diffuse_map_name = value; }},
         {"specular_map_name", [](material::properties& config, const std::string& value) noexcept { config.specular_map_name = value; }},
         {"normal_map_name", [](material::properties& config, const std::string& value) noexcept { config.normal_map_name = value; }},

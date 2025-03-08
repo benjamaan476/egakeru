@@ -141,6 +141,54 @@ namespace egkr
 	}
 	texture_system_->default_normal_texture_ = texture::texture::create(default_normal_properties, normal_data.data());
 
+	texture::properties default_albedo_properties
+	{
+	    .name = default_albedo_name.data(),
+	    .width = 16,
+	    .height = 16,
+	    .channel_count = 4,
+	    .texture_type = texture::type::texture_2d
+	};
+	egkr::vector<uint8_t> albedo_data(default_albedo_properties.width * default_albedo_properties.height * default_albedo_properties.channel_count);
+	std::ranges::fill(albedo_data, 255);
+	texture_system_->default_albedo_texture_ = texture::texture::create(default_albedo_properties, albedo_data.data());
+
+	texture::properties default_metallic_properties
+	{
+	    .name = default_metallic_name.data(),
+	    .width = 16,
+	    .height = 16,
+	    .channel_count = 4,
+	    .texture_type = texture::type::texture_2d
+	};
+	egkr::vector<uint8_t> metallic_data(default_metallic_properties.width * default_metallic_properties.height * default_metallic_properties.channel_count);
+	std::ranges::fill(metallic_data, 255);
+	texture_system_->default_metallic_texture_ = texture::texture::create(default_metallic_properties, metallic_data.data());
+
+	texture::properties default_roughness_properties
+	{
+	    .name = default_roughness_name.data(),
+	    .width = 16,
+	    .height = 16,
+	    .channel_count = 4,
+	    .texture_type = texture::type::texture_2d
+	};
+	egkr::vector<uint8_t> roughness_data(default_roughness_properties.width * default_roughness_properties.height * default_roughness_properties.channel_count);
+	std::ranges::fill(roughness_data, 255);
+	texture_system_->default_roughness_texture_ = texture::texture::create(default_roughness_properties, roughness_data.data());
+
+	texture::properties default_ao_properties
+	{
+	    .name = default_ao_name.data(),
+	    .width = 16,
+	    .height = 16,
+	    .channel_count = 4,
+	    .texture_type = texture::type::texture_2d
+	};
+	egkr::vector<uint8_t> ao_data(default_ao_properties.width * default_ao_properties.height * default_ao_properties.channel_count);
+	std::ranges::fill(ao_data, 255);
+	texture_system_->default_ao_texture_ = texture::texture::create(default_ao_properties, ao_data.data());
+
 	return true;
     }
 
@@ -169,6 +217,31 @@ namespace egkr
 	    texture_system_->default_normal_texture_->free();
 	    texture_system_->default_normal_texture_ = nullptr;
 	}
+
+	if (texture_system_->default_albedo_texture_)
+	{
+	    texture_system_->default_albedo_texture_->free();
+	    texture_system_->default_albedo_texture_ = nullptr;
+	}
+
+	if (texture_system_->default_metallic_texture_)
+	{
+	    texture_system_->default_metallic_texture_->free();
+	    texture_system_->default_metallic_texture_ = nullptr;
+	}
+
+	if (texture_system_->default_roughness_texture_)
+	{
+	    texture_system_->default_roughness_texture_->free();
+	    texture_system_->default_roughness_texture_ = nullptr;
+	}
+
+	if (texture_system_->default_ao_texture_)
+	{
+	    texture_system_->default_ao_texture_->free();
+	    texture_system_->default_ao_texture_ = nullptr;
+	}
+
 
 	for (auto& texture : texture_system_->registered_textures_)
 	{
@@ -227,6 +300,26 @@ namespace egkr
 	if (strcmp(texture_name.data(), default_normal_name.data()) == 0)
 	{
 	    return get_default_normal_texture();
+	}
+
+	if (strcmp(texture_name.data(), default_albedo_name.data()) == 0)
+	{
+	    return get_default_albedo_texture();
+	}
+
+	if (strcmp(texture_name.data(), default_metallic_name.data()) == 0)
+	{
+	    return get_default_metallic_texture();
+	}
+
+	if (strcmp(texture_name.data(), default_roughness_name.data()) == 0)
+	{
+	    return get_default_roughness_texture();
+	}
+
+	if (strcmp(texture_name.data(), default_ao_name.data()) == 0)
+	{
+	    return get_default_ao_texture();
 	}
 
 	if (texture_system_->registered_textures_by_name_.contains(texture_name.data()))
@@ -363,6 +456,10 @@ namespace egkr
 
     texture::shared_ptr texture_system::get_default_normal_texture() { return texture_system_->default_normal_texture_; }
 
+    texture::shared_ptr texture_system::get_default_albedo_texture() { return texture_system_->default_albedo_texture_; }
+    texture::shared_ptr texture_system::get_default_metallic_texture() { return texture_system_->default_metallic_texture_; }
+    texture::shared_ptr texture_system::get_default_roughness_texture() { return texture_system_->default_roughness_texture_; }
+    texture::shared_ptr texture_system::get_default_ao_texture() { return texture_system_->default_ao_texture_; }
 
     texture::shared_ptr texture_system::load_texture(const std::string& filename, uint32_t /*id*/)
     {

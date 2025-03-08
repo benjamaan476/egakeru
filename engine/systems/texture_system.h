@@ -13,6 +13,10 @@ namespace egkr
     constexpr static std::string_view default_diffuse_name{"default_diffuse_texture"};
     constexpr static std::string_view default_specular_name{"default_specular_texture"};
     constexpr static std::string_view default_normal_name{"default_normal_texture"};
+    constexpr static std::string_view default_albedo_name{"default_albedo_texture"};
+    constexpr static std::string_view default_metallic_name{"default_metallic_texture"};
+    constexpr static std::string_view default_roughness_name{"default_roughness_texture"};
+    constexpr static std::string_view default_ao_name{"default_ao_texture"};
 
     struct texture_system_configuration
     {
@@ -55,6 +59,10 @@ namespace egkr
 	static texture::shared_ptr get_default_diffuse_texture();
 	static texture::shared_ptr get_default_specular_texture();
 	static texture::shared_ptr get_default_normal_texture();
+	static texture::shared_ptr get_default_albedo_texture();
+	static texture::shared_ptr get_default_metallic_texture();
+	static texture::shared_ptr get_default_roughness_texture();
+	static texture::shared_ptr get_default_ao_texture();
     private:
 	static texture::shared_ptr load_texture(const std::string& filepath, uint32_t id);
 	static texture::shared_ptr load_cube_texture(const std::string& name, const egkr::vector<std::string>& texture_names, uint32_t id);
@@ -68,6 +76,10 @@ namespace egkr
 	texture::shared_ptr default_diffuse_texture_;
 	texture::shared_ptr default_specular_texture_;
 	texture::shared_ptr default_normal_texture_;
+	texture::shared_ptr default_albedo_texture_;
+	texture::shared_ptr default_metallic_texture_;
+	texture::shared_ptr default_roughness_texture_;
+	texture::shared_ptr default_ao_texture_;
 
 	egkr::vector<texture::shared_ptr> registered_textures_;
 	std::unordered_map<std::string, texture_handle> registered_textures_by_name_;

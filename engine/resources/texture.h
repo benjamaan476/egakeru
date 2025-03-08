@@ -128,7 +128,11 @@ namespace egkr
 			map_diffuse,
 			map_specular,
 			map_normal,
-			map_cube
+			map_cube,
+			map_albedo,
+			map_metallic,
+			map_roughness,
+			map_ao
 		};
 
 		struct properties

@@ -7,60 +7,88 @@
 
 namespace egkr
 {
-    material::shared_ptr material::create(const properties& properties)
-    {
-	auto mat = std::make_shared<material>(properties);
-	return mat;
-    }
-
-    material::material(const properties& material_properties): resource(0, 0, material_properties.name), diffuse_colour_{material_properties.diffuse_colour}, shader_name_{material_properties.shader_name}
-    {
-	diffuse_map_ = texture_map::create({});
-	if (material_properties.diffuse_map_name == default_diffuse_name)
+	material::shared_ptr material::create(const properties& properties)
 	{
-	    diffuse_map_->map_texture = texture_system::get_default_diffuse_texture();
-	}
-	else
-	{
-	    diffuse_map_->map_texture = texture_system::acquire(material_properties.diffuse_map_name);
+		auto mat = std::make_shared<material>(properties);
+		return mat;
 	}
 
-	specular_map_ = texture_map::create({});
-	if (material_properties.specular_map_name == default_specular_name)
+	material::material(const properties& material_properties) : resource(0, 0, material_properties.name), diffuse_colour_{ material_properties.diffuse_colour }, material_type{ material_properties.material_type }, shader_name_{ material_properties.shader_name }
 	{
-	    specular_map_->map_texture = texture_system::get_default_specular_texture();
-	}
-	else
-	{
-	    specular_map_->map_texture = texture_system::acquire(material_properties.specular_map_name);
+		diffuse_map_ = texture_map::create({});
+		if (material_properties.diffuse_map_name == default_diffuse_name)
+		{
+			diffuse_map_->map_texture = texture_system::get_default_diffuse_texture();
+		}
+		else
+		{
+			diffuse_map_->map_texture = texture_system::acquire(material_properties.diffuse_map_name);
+		}
+
+		specular_map_ = texture_map::create({});
+		if (material_properties.specular_map_name == default_specular_name)
+		{
+			specular_map_->map_texture = texture_system::get_default_specular_texture();
+		}
+		else
+		{
+			specular_map_->map_texture = texture_system::acquire(material_properties.specular_map_name);
+		}
+
+		normal_map_ = texture_map::create({});
+		if (material_properties.normal_map_name == default_normal_name)
+		{
+			normal_map_->map_texture = texture_system::get_default_diffuse_texture();
+		}
+		else
+		{
+			normal_map_->map_texture = texture_system::acquire(material_properties.normal_map_name);
+		}
+		shader_id_ = shader_system::get_shader_id(shader_name_);
 	}
 
-	normal_map_ = texture_map::create({});
-	if (material_properties.normal_map_name == default_normal_name)
+	material::~material()
 	{
-	    normal_map_->map_texture = texture_system::get_default_diffuse_texture();
+		engine::get()->get_renderer()->free_material(this);
+		free();
 	}
-	else
+
+	void material::free()
 	{
-	    normal_map_->map_texture = texture_system::acquire(material_properties.normal_map_name);
+		if (diffuse_map_)
+		{
+			diffuse_map_->release();
+		}
+
+		if (specular_map_)
+		{
+			specular_map_->release();
+		}
+
+		if (normal_map_)
+		{
+			normal_map_->release();
+		}
+		if (albedo_map_)
+		{
+			albedo_map_->release();
+		}
+		if (roughness_map_)
+		{
+			roughness_map_->release();
+		}
+		if (metallic_map_)
+		{
+			metallic_map_->release();
+		}
+		if (ao_map_)
+		{
+			ao_map_->release();
+		}
 	}
-	shader_id_ = shader_system::get_shader_id(shader_name_);
-    }
 
-    material::~material()
-    {
-	engine::get()->get_renderer()->free_material(this);
-	diffuse_map_.reset();
-	specular_map_.reset();
-	normal_map_.reset();
-    }
-
-    void material::free()
-    {
-	diffuse_map_->release();
-	specular_map_->release();
-	normal_map_->release();
-    }
-
-    void material::set_diffuse_colour(const float4 diffuse) { diffuse_colour_ = diffuse; }
+	void material::set_diffuse_colour(const float4 diffuse)
+	{
+		diffuse_colour_ = diffuse;
+	}
 }
