@@ -100,8 +100,7 @@ namespace egkr::scene
 	    //TODO: Frustum culling
 	    for (const auto& terrain : terrains_ | std::views::values)
 	    {
-		egkr::terrain_render_data terrain_data{
-		    .render_geometry = terrain->get_geometry(), .transform = terrain, .is_winding_reversed = terrain->get_determinant() < 0.f, .materials = terrain->get_materials()};
+		egkr::render_data terrain_data{.render_geometry = terrain->get_geometry(), .transform = terrain, .is_winding_reversed = terrain->get_determinant() < 0.f};
 		frame_geometry_.terrain_geometries.push_back(terrain_data);
 	    }
 

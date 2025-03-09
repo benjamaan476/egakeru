@@ -5,6 +5,3 @@ heightmap=GreyScaleElevation
 scale_x=1
 scale_y=1
 scale_z=100
-
-material0 = floor
-material1 = cobblestones

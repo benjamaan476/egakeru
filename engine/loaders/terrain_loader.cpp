@@ -45,7 +45,6 @@ namespace egkr::loader
         {"scale_x", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.scale_x = std::stof(value); }},
         {"scale_y", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.scale_y = std::stof(value); }},
         {"scale_z", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.scale_z = std::stof(value); }},
-        {"material", [](egkr::terrain::configuration& config, const std::string& value) noexcept { config.material_names.push_back(value); }},
     };
 
     egkr::terrain::configuration terrain::load_configuration_file(const std::string& path)
