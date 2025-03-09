@@ -43,19 +43,20 @@ const int SAMP_ROUGHNESS = 3;
 const int SAMP_AO = 4;
 const int SAMP_IBL = 5;
 
-layout(set = 1, binding = 1) uniform sampler2D samplers[5];
+layout(set = 1, binding = 1) uniform sampler2D samplers[6];
+layout(set = 1, binding = 1) uniform samplerCube samplersCube[6];
 
 const float PI = 3.14159265359;
 
 layout(location = 0) flat in int in_mode;
 layout(location = 1) in struct dto {
     vec4 ambient;
-	vec2 tex_coord;
-	vec3 normal;
-	vec3 view_position;
-	vec3 frag_position;
+    vec2 tex_coord;
+    vec3 normal;
+    vec3 view_position;
+    vec3 frag_position;
     vec4 colour;
-	vec4 tangent;
+    vec4 tangent;
 } in_dto;
 
 mat3 TBN;
@@ -112,7 +113,7 @@ vec3 calculate_reflectance(vec3 albedo, vec3 normal, vec3 view_direction, vec3 l
     vec3 refraction_diffuse = vec3(1) - fresnel;
     refraction_diffuse *= 1 - metallic;
 
-    return (refraction_diffuse * albedo/PI + specular) * radiance * normal_distribution;
+    return (refraction_diffuse * albedo / PI + specular) * radiance * normal_distribution;
 }
 
 void main() {
@@ -138,7 +139,7 @@ void main() {
     vec3 base_reflectivity = vec3(0.04);
     base_reflectivity = mix(base_reflectivity, albedo, metallic);
 
-    if(in_mode == 0 || in_mode == 1)
+    if (in_mode == 0 || in_mode == 1)
     {
         vec3 view_direction = in_dto.view_position - in_dto.frag_position;
         albedo += vec3(1) * in_mode;
@@ -155,7 +156,7 @@ void main() {
             total_reflectance += calculate_reflectance(albedo, normal, view_direction, light_dir, metallic, roughness, base_reflectivity, radiance);
         }
 
-        for(int i = 0; i < object_ubo.num_point_lights; i++)
+        for (int i = 0; i < object_ubo.num_point_lights; i++)
         {
             point_light light = object_ubo.point_lights[i];
 
@@ -166,15 +167,18 @@ void main() {
             total_reflectance += calculate_reflectance(albedo, normal, view_direction, light_dir, metallic, roughness, base_reflectivity, radiance);
         }
 
-        vec3 ambient = vec3(0.03) * albedo * ao;
+        vec3 irradiance = texture(samplersCube[SAMP_IBL], normal).rgb;
+
+        vec3 ambient = irradiance * albedo * ao;
         vec3 colour = ambient + total_reflectance;
         colour = colour / (colour + vec3(1));
-        colour = pow(colour, vec3(1/2.2));
+        colour = pow(colour, vec3(1 / 2.2));
 
         out_colour = vec4(colour, albedo_samp.a);
     }
-    else if(in_mode == 2)
+    else if (in_mode == 2)
     {
         out_colour = vec4(abs(normal), 1);
     }
 }
+

@@ -4,6 +4,7 @@ version = 0.1
 type=pbr
 name=roof
 shader=Shader.PBR
+diffuse_colour = 0.5 0 0 1
 
 [map]
 name = albedo
@@ -15,3 +16,23 @@ repeat_w = repeat
 texture_name = orange_lines_512
 [/map]
 
+
+[map]
+name = normal
+filter_min = linear
+filter_mag = linear
+repeat_u = repeat
+repeat_v = repeat
+repeat_w = repeat
+texture_name = sponza_roof_ddn
+[/map]
+
+[map]
+name = metallic
+filter_min = linear
+filter_mag = linear
+repeat_u = repeat
+repeat_v = repeat
+repeat_w = repeat
+texture_name = sponza_roof_spec
+[/map]

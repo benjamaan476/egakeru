@@ -138,6 +138,7 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     if (main_scene_->is_loaded())
     {
 	skybox_pass->data.skybox_data = main_scene_->get_skybox();
+	scene_pass->data.irradiance_texture = main_scene_->get_skybox()->get_texture_map()->map_texture;
     }
     else
     {

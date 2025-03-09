@@ -430,17 +430,14 @@ namespace egkr
 		path.replace_extension();
 		if (strncmp(map_type, "map_Kd", 7) == 0)
 		{
-		    // current_properties.diffuse_map_name = path.string();
 		    current_properties.texture_maps.emplace("diffuse", std::make_pair(path.string(), texture_map::properties{}));
 		}
 		else if (strncmp(map_type, "map_Ks", 7) == 0)
 		{
-		    // current_properties.specular_map_name = path.string();
 		    current_properties.texture_maps.emplace("specular", std::make_pair(path.string(), texture_map::properties{}));
 		}
 		else if (strncmp(map_type, "map_bump", 9) == 0)
 		{
-		    // current_properties.normal_map_name = path.string();
 		    current_properties.texture_maps.emplace("normal", std::make_pair(path.string(), texture_map::properties{}));
 		}
 	    }
@@ -613,18 +610,6 @@ namespace egkr
 	    (double)properties.diffuse_colour.a);
 	filesystem::write_line(handle, line);
 	line.clear();
-
-	// sprintf((char*)line.data(), "diffuse_map_name=%s", properties.diffuse_map_name.data());
-	// filesystem::write_line(handle, line);
-	// line.clear();
-	//
-	// sprintf((char*)line.data(), "specular_map_name=%s", properties.specular_map_name.data());
-	// filesystem::write_line(handle, line);
-	// line.clear();
-	//
-	// sprintf((char*)line.data(), "normal_map_name=%s", properties.normal_map_name.data());
-	// filesystem::write_line(handle, line);
-	// line.clear();
 
 	for (const auto& [name, map] : properties.texture_maps)
 	{

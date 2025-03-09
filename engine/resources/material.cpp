@@ -17,35 +17,6 @@ namespace egkr
     material::material(const properties& material_properties)
         : resource(0, 0, material_properties.name), diffuse_colour_{material_properties.diffuse_colour}, material_type{material_properties.material_type}, shader_name_{material_properties.shader_name}
     {
-	// diffuse_map_ = texture_map::create({});
-	// if (material_properties.diffuse_map_name == default_diffuse_name)
-	// {
-	//     diffuse_map_->map_texture = texture_system::get_default_diffuse_texture();
-	// }
-	// else
-	// {
-	//     diffuse_map_->map_texture = texture_system::acquire(material_properties.diffuse_map_name);
-	// }
-	//
-	// specular_map_ = texture_map::create({});
-	// if (material_properties.specular_map_name == default_specular_name)
-	// {
-	//     specular_map_->map_texture = texture_system::get_default_specular_texture();
-	// }
-	// else
-	// {
-	//     specular_map_->map_texture = texture_system::acquire(material_properties.specular_map_name);
-	// }
-	//
-	// normal_map_ = texture_map::create({});
-	// if (material_properties.normal_map_name == default_normal_name)
-	// {
-	//     normal_map_->map_texture = texture_system::get_default_diffuse_texture();
-	// }
-	// else
-	// {
-	//     normal_map_->map_texture = texture_system::acquire(material_properties.normal_map_name);
-	// }
 	egkr::vector<texture_map::texture_map::shared_ptr> maps;
 	if (material_properties.texture_maps.contains("diffuse"))
 	{
@@ -132,6 +103,18 @@ namespace egkr
 	}
 	maps.push_back(ao_map_);
 
+	if (material_properties.texture_maps.contains("ibl"))
+	{
+	    ibl_map_ = texture_map::create(material_properties.texture_maps.at("ibl").second);
+	    ibl_map_->map_texture = texture_system::acquire(material_properties.texture_maps.at("ibl").first);
+	}
+	else
+	{
+	    ibl_map_ = texture_map::create({});
+	    ibl_map_->map_texture = texture_system::get_default_ibl_texture();
+	}
+	maps.push_back(ibl_map_);
+
 	auto shader = shader_system::get_shader(shader_name_);
 	shader_id_ = shader->get_id();
 
@@ -177,6 +160,11 @@ namespace egkr
 	if (ao_map_)
 	{
 	    ao_map_->release();
+	}
+
+	if (ibl_map_)
+	{
+	    ibl_map_->release();
 	}
     }
 

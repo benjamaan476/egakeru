@@ -63,6 +63,7 @@ namespace egkr
 	static texture::shared_ptr get_default_metallic_texture();
 	static texture::shared_ptr get_default_roughness_texture();
 	static texture::shared_ptr get_default_ao_texture();
+	static texture::shared_ptr get_default_ibl_texture();
     private:
 	static texture::shared_ptr load_texture(const std::string& filepath, uint32_t id);
 	static texture::shared_ptr load_cube_texture(const std::string& name, const egkr::vector<std::string>& texture_names, uint32_t id);
@@ -80,6 +81,7 @@ namespace egkr
 	texture::shared_ptr default_metallic_texture_;
 	texture::shared_ptr default_roughness_texture_;
 	texture::shared_ptr default_ao_texture_;
+	texture::shared_ptr default_ibl_texture_;
 
 	egkr::vector<texture::shared_ptr> registered_textures_;
 	std::unordered_map<std::string, texture_handle> registered_textures_by_name_;

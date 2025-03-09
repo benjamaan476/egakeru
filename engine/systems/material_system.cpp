@@ -38,6 +38,8 @@ namespace egkr
 	    return false;
 	}
 
+	irradiance_texture_ = texture_system::get_default_ibl_texture();
+
 
 	return true;
     }
@@ -231,9 +233,6 @@ namespace egkr
     {
 	material::properties properties{};
 	properties.name = "default";
-	// properties.diffuse_map_name = default_diffuse_name;
-	// properties.specular_map_name = default_specular_name;
-	// properties.normal_map_name = default_normal_name;
 	properties.diffuse_colour = float4{1.F};
 	properties.shader_name = "Shader.Material";
 	properties.texture_maps.emplace("diffuse", std::make_pair(default_diffuse_name, texture_map::properties{}));
@@ -255,4 +254,17 @@ namespace egkr
 	return true;
     }
 
+    bool material_system::set_irradiance(const texture::shared_ptr& irradiance_texture)
+    {
+	if (irradiance_texture->get_properties().texture_type != texture::type::cube)
+	{
+	    LOG_ERROR("Irradiance texture must be a cube map");
+	    return false;
+	}
+
+	material_system_->irradiance_texture_ = irradiance_texture;
+	return true;
+    }
+
+    const texture::shared_ptr& material_system::get_irradiance() { return material_system_->irradiance_texture_; }
 }

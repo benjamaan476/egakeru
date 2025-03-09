@@ -23,13 +23,6 @@ namespace egkr
 	struct properties
 	{
 	    std::string name{"default"};
-	    // std::string diffuse_map_name{"default_diffuse_texture"};
-	    // std::string specular_map_name{"default_specular_texture"};
-	    // std::string normal_map_name{"default_normal_texture"};
-	    // std::string roughness_map_name{"default_roughness_texture"};
-	    // std::string albedo_map_name{"default_albedo_texture"};
-	    // std::string metallic_map_name{"default_metallic_texture"};
-	    // std::string ao_map_name{"default_ao_texture"};
 	    std::string shader_name{"Shader.Material"};
 	    float shininess{};
 	    float4 diffuse_colour{0.588F, 0.588F, 0.588F, 1.F};
@@ -78,6 +71,11 @@ namespace egkr
 	[[nodiscard]] const auto& get_ao_map() const { return ao_map_; }
 	[[nodiscard]] auto& get_ao_map() { return ao_map_; }
 
+	void set_ibl_map(const texture_map::texture_map::shared_ptr& map) { ibl_map_ = map; }
+	[[nodiscard]] const auto& get_ibl_map() const { return ibl_map_; }
+	[[nodiscard]] auto& get_ibl_map() { return ibl_map_; }
+
+
 	void set_shininess(float shininess) { shininess_ = shininess; }
 	[[nodiscard]] const auto& get_shininess() const { return shininess_; }
 
@@ -104,6 +102,7 @@ namespace egkr
 	texture_map::shared_ptr metallic_map_;
 	texture_map::shared_ptr roughness_map_;
 	texture_map::shared_ptr ao_map_;
+	texture_map::shared_ptr ibl_map_;
 	material::type material_type{type::phong};
 
 	std::string shader_name_;

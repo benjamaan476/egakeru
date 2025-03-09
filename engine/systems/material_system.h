@@ -56,19 +56,24 @@ namespace egkr
 	static void apply_global(uint32_t shader_id, const frame_data& frame_data, const float4x4& projection, const float4x4& view, const float4& ambient_colour, const float3& view_position, uint32_t mode);
 	static void apply_instance(const material::shared_ptr& material, bool needs_update);
 	static void apply_local(const material::shared_ptr& material, const float4x4& model);
+
+	static bool set_irradiance(const texture::shared_ptr& irradiance_texture);
+	[[nodiscard]] static const texture::shared_ptr& get_irradiance();
     private:
 	static bool create_default_material();
     private:
 	uint32_t max_material_count_{};
 
-	material::shared_ptr default_material_{};
-	egkr::vector<material::shared_ptr> registered_materials_{};
-	std::unordered_map<std::string, material_reference> registered_materials_by_name_{};
+	material::shared_ptr default_material_;
+	egkr::vector<material::shared_ptr> registered_materials_;
+	std::unordered_map<std::string, material_reference> registered_materials_by_name_;
 
 	material_shader_uniform_location material_locations_{};
 	ui_shader_uniform_location ui_locations_{};
 
 	uint32_t material_shader_id_{invalid_32_id};
 	uint32_t ui_shader_id_{invalid_32_id};
+
+	texture::shared_ptr irradiance_texture_;
     };
 }

@@ -34,11 +34,7 @@ namespace egkr
 	return false;
     }
 
-    enum class parse_mode : uint8_t
-    {
-	root,
-	map
-    } parse_mode;
+    static enum class parse_mode : uint8_t { root, map, property } parse_mode;
 
     static struct map
     {
@@ -46,6 +42,13 @@ namespace egkr
 	std::string map_name;
 	std::string texture_name;
     } current_map;
+
+    static struct property
+    {
+	std::string name;
+	std::string value;
+	std::string type;
+    } current_property;
 
     const std::map<std::string, std::function<void(material::properties&, const std::string&)>> material_configuration_members = {
         {"version", [](material::properties& /* config */, const std::string& /* value */) noexcept {}},
@@ -181,9 +184,6 @@ namespace egkr
 	if (!handle.is_valid)
 	{
 	    properties.diffuse_colour = float4{1.F};
-	    // properties.diffuse_map_name = default_diffuse_name;
-	    // properties.specular_map_name = default_specular_name;
-	    // properties.normal_map_name = default_normal_name;
 	    return properties;
 	}
 
