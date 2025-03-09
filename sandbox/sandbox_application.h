@@ -65,9 +65,9 @@ private:
 
     std::shared_ptr<egkr::light::directional_light> dir_light_;
 
-    egkr::audio::file* test_audio{};
-    egkr::audio::file* test_loop_audio{};
-    egkr::audio::file* test_music{};
+    // egkr::audio::file* test_audio{};
+    // egkr::audio::file* test_loop_audio{};
+    // egkr::audio::file* test_music{};
     egkr::audio::emitter test_emitter{};
 
     egkr::editor::gizmo gizmo_;

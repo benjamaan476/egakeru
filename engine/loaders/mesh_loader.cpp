@@ -430,15 +430,18 @@ namespace egkr
 		path.replace_extension();
 		if (strncmp(map_type, "map_Kd", 7) == 0)
 		{
-		    current_properties.diffuse_map_name = path.string();
+		    // current_properties.diffuse_map_name = path.string();
+		    current_properties.texture_maps.emplace("diffuse", std::make_pair(path.string(), texture_map::properties{}));
 		}
 		else if (strncmp(map_type, "map_Ks", 7) == 0)
 		{
-		    current_properties.specular_map_name = path.string();
+		    // current_properties.specular_map_name = path.string();
+		    current_properties.texture_maps.emplace("specular", std::make_pair(path.string(), texture_map::properties{}));
 		}
 		else if (strncmp(map_type, "map_bump", 9) == 0)
 		{
-		    current_properties.normal_map_name = path.string();
+		    // current_properties.normal_map_name = path.string();
+		    current_properties.texture_maps.emplace("normal", std::make_pair(path.string(), texture_map::properties{}));
 		}
 	    }
 	    break;
@@ -451,7 +454,8 @@ namespace egkr
 		std::filesystem::path path{texture_filename};
 		path = path.stem();
 		path.replace_extension();
-		current_properties.normal_map_name = path.string();
+		// current_properties.normal_map_name = path.string();
+		current_properties.texture_maps.emplace("normal", std::make_pair(path.string(), texture_map::properties{}));
 	    }
 	    break;
 	    case 'n':
@@ -610,17 +614,121 @@ namespace egkr
 	filesystem::write_line(handle, line);
 	line.clear();
 
-	sprintf((char*)line.data(), "diffuse_map_name=%s", properties.diffuse_map_name.data());
-	filesystem::write_line(handle, line);
-	line.clear();
+	// sprintf((char*)line.data(), "diffuse_map_name=%s", properties.diffuse_map_name.data());
+	// filesystem::write_line(handle, line);
+	// line.clear();
+	//
+	// sprintf((char*)line.data(), "specular_map_name=%s", properties.specular_map_name.data());
+	// filesystem::write_line(handle, line);
+	// line.clear();
+	//
+	// sprintf((char*)line.data(), "normal_map_name=%s", properties.normal_map_name.data());
+	// filesystem::write_line(handle, line);
+	// line.clear();
 
-	sprintf((char*)line.data(), "specular_map_name=%s", properties.specular_map_name.data());
-	filesystem::write_line(handle, line);
-	line.clear();
+	for (const auto& [name, map] : properties.texture_maps)
+	{
+	    sprintf((char*)line.data(), "[map]");
+	    filesystem::write_line(handle, line);
+	    line.clear();
 
-	sprintf((char*)line.data(), "normal_map_name=%s", properties.normal_map_name.data());
-	filesystem::write_line(handle, line);
-	line.clear();
+	    sprintf((char*)line.data(), "name=%s", name.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    std::string filter;
+	    switch (map.second.minify)
+	    {
+	    case texture_map::filter::linear:
+		filter = "linear";
+		break;
+	    case texture_map::filter::nearest:
+		filter = "nearest";
+		break;
+	    }
+	    sprintf((char*)line.data(), "filter_min=%s", filter.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    switch (map.second.magnify)
+	    {
+	    case texture_map::filter::linear:
+		filter = "linear";
+		break;
+	    case texture_map::filter::nearest:
+		filter = "nearest";
+		break;
+	    }
+	    sprintf((char*)line.data(), "filter_mag=%s", filter.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    std::string repeat;
+	    switch (map.second.repeat_u)
+	    {
+	    case texture_map::repeat::repeat:
+		repeat = "repeat";
+		break;
+	    case texture_map::repeat::mirrored_repeat:
+		repeat = "mirrored_repeat";
+		break;
+	    case texture_map::repeat::clamp_to_border:
+		repeat = "clamp_to_border";
+		break;
+	    case texture_map::repeat::clamp_to_edge:
+		repeat = "clamp_to_edge";
+		break;
+	    }
+	    sprintf((char*)line.data(), "repeat_u=%s", repeat.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    switch (map.second.repeat_v)
+	    {
+	    case texture_map::repeat::repeat:
+		repeat = "repeat";
+		break;
+	    case texture_map::repeat::mirrored_repeat:
+		repeat = "mirrored_repeat";
+		break;
+	    case texture_map::repeat::clamp_to_border:
+		repeat = "clamp_to_border";
+		break;
+	    case texture_map::repeat::clamp_to_edge:
+		repeat = "clamp_to_edge";
+		break;
+	    }
+	    sprintf((char*)line.data(), "repeat_v=%s", repeat.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    switch (map.second.repeat_w)
+	    {
+	    case texture_map::repeat::repeat:
+		repeat = "repeat";
+		break;
+	    case texture_map::repeat::mirrored_repeat:
+		repeat = "mirrored_repeat";
+		break;
+	    case texture_map::repeat::clamp_to_border:
+		repeat = "clamp_to_border";
+		break;
+	    case texture_map::repeat::clamp_to_edge:
+		repeat = "clamp_to_edge";
+		break;
+	    }
+	    sprintf((char*)line.data(), "repeat_w=%s", repeat.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    sprintf((char*)line.data(), "texture_map=%s", map.first.c_str());
+	    filesystem::write_line(handle, line);
+	    line.clear();
+
+	    sprintf((char*)line.data(), "[/map]");
+	    filesystem::write_line(handle, line);
+	    line.clear();
+	}
 
 	sprintf((char*)line.data(), "shader=%s", properties.shader_name.data());
 	filesystem::write_line(handle, line);

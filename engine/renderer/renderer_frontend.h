@@ -23,8 +23,6 @@ namespace egkr
 	API void tidy_up();
 	API void on_resize(uint32_t width, uint32_t height);
 
-	void free_material(material* texture) const;
-
 	[[nodiscard]] texture::shared_ptr create_texture() const;
 	texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const;
 	void create_texture(const texture::properties& properties, const uint8_t* data, texture* out_texture) const;

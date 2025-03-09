@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "engine/engine.h"
+#include <iterator>
 
 namespace egkr
 {
@@ -7,7 +8,10 @@ namespace egkr
 
     texture::shared_ptr texture::create(const properties& texture_properties, const uint8_t* texture_data) { return engine::get()->get_renderer()->create_texture(texture_properties, texture_data); }
 
-    void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture) { engine::get()->get_renderer()->create_texture(texture_properties, texture_data, out_texture); }
+    void texture::create(const properties& texture_properties, const uint8_t* texture_data, texture* out_texture)
+    {
+	engine::get()->get_renderer()->create_texture(texture_properties, texture_data, out_texture);
+    }
 
     texture::texture(const properties& texture_properties): resource(texture_properties.id, texture_properties.generation, texture_properties.name), properties_{texture_properties}
     {
@@ -46,4 +50,13 @@ namespace egkr
     texture_map::texture_map::~texture_map() = default;
 
     void texture_map::texture_map::free() { release(); }
+
+    void texture_map::update(const texture_map::properties& properties)
+    {
+	minify = properties.minify;
+	magnify = properties.magnify;
+	repeat_u = properties.repeat_u;
+	repeat_v = properties.repeat_v;
+	repeat_w = properties.repeat_w;
+    }
 }

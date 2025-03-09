@@ -14,7 +14,7 @@
 
 namespace egkr
 {
-    enum class backend_type
+    enum class backend_type : uint8_t
     {
 	vulkan,
 	opengl,
@@ -37,7 +37,7 @@ namespace egkr
 	float4 pad2{};
     };
 
-    enum class winding
+    enum class winding : uint8_t
     {
 	counter_clockwise,
 	clockwise
@@ -70,8 +70,6 @@ namespace egkr
 	virtual bool begin(const frame_data& frame_data) = 0;
 	virtual void end(frame_data& frame_data) = 0;
 	virtual void present(const frame_data& frame_data) = 0;
-
-	virtual void free_material(material* texture) const = 0;
 
 	[[nodiscard]] virtual texture::shared_ptr create_texture() const = 0;
 	virtual texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const = 0;

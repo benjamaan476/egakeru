@@ -4,6 +4,7 @@
 
 #include "resource.h"
 #include "texture.h"
+#include <unordered_map>
 
 namespace egkr
 {
@@ -13,25 +14,29 @@ namespace egkr
     class material : public resource
     {
     public:
-		enum class type : uint8_t
-		{
-			phong, pbr
-		};
+	enum class type : uint8_t
+	{
+	    phong,
+	    pbr
+	};
 
 	struct properties
 	{
 	    std::string name{"default"};
-	    std::string diffuse_map_name{"default_diffuse_texture"};
-	    std::string specular_map_name{"default_specular_texture"};
-	    std::string normal_map_name{"default_normal_texture"};
-	    std::string roughness_map_name{"default_roughness_texture"};
-	    std::string albedo_map_name{"default_albedo_texture"};
-	    std::string metallic_map_name{"default_metallic_texture"};
-	    std::string ao_map_name{"default_ao_texture"};
+	    // std::string diffuse_map_name{"default_diffuse_texture"};
+	    // std::string specular_map_name{"default_specular_texture"};
+	    // std::string normal_map_name{"default_normal_texture"};
+	    // std::string roughness_map_name{"default_roughness_texture"};
+	    // std::string albedo_map_name{"default_albedo_texture"};
+	    // std::string metallic_map_name{"default_metallic_texture"};
+	    // std::string ao_map_name{"default_ao_texture"};
 	    std::string shader_name{"Shader.Material"};
 	    float shininess{};
 	    float4 diffuse_colour{0.588F, 0.588F, 0.588F, 1.F};
-		type material_type{type::phong};
+	    type material_type{type::phong};
+
+	    // ["albedo", { "roof_albedo", {linear, linear, repeat...}}]
+	    std::unordered_map<std::string, std::pair<std::string, texture_map::properties>> texture_maps;
 	};
 
 	using shared_ptr = std::shared_ptr<material>;
@@ -99,7 +104,7 @@ namespace egkr
 	texture_map::shared_ptr metallic_map_;
 	texture_map::shared_ptr roughness_map_;
 	texture_map::shared_ptr ao_map_;
-	material::type material_type{ type::phong };
+	material::type material_type{type::phong};
 
 	std::string shader_name_;
 	uint32_t shader_id_{invalid_32_id};

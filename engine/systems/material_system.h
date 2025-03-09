@@ -58,7 +58,6 @@ namespace egkr
 	static void apply_local(const material::shared_ptr& material, const float4x4& model);
     private:
 	static bool create_default_material();
-	static bool load_material(const material::properties& properties, material::shared_ptr& material);
     private:
 	uint32_t max_material_count_{};
 

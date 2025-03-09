@@ -1,11 +1,17 @@
 # roof
 # auto generated material
 version = 0.1
-name=roof
-diffuse_colour=0.588 0.588 0.588 1.000
-diffuse_map_name=sponza_roof_diff
-specular_map_name=sponza_roof_spec
-normal_map_name=sponza_roof_ddn
-shader=Shader.PBR
-shininess=1.500000
 type=pbr
+name=roof
+shader=Shader.PBR
+
+[map]
+name = albedo
+filter_min = linear
+filter_mag = linear
+repeat_u = repeat
+repeat_v = repeat
+repeat_w = repeat
+texture_name = orange_lines_512
+[/map]
+

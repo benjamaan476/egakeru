@@ -83,23 +83,23 @@ bool sandbox_application::init()
     cam->set_aspect((float)width_ / (float)height_);
 
     //TODO add to scene
-    test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
-    test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
-    test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
+    // test_audio = egkr::audio::audio_system::load_chunk("Test.ogg");
+    // test_loop_audio = egkr::audio::audio_system::load_chunk("Fire_loop.ogg");
+    // test_music = egkr::audio::audio_system::load_stream("Woodland Fantasy.ogg");
 
-    test_emitter.audio_file = test_loop_audio;
-    test_emitter.looping = true;
-    test_emitter.falloff = 1.F;
+    // test_emitter.audio_file = test_loop_audio;
+    // test_emitter.looping = true;
+    // test_emitter.falloff = 1.F;
 
-    egkr::audio::audio_system::set_master_volume(1.F);
-    egkr::audio::audio_system::set_channel_volume(0, 1.F);
-    egkr::audio::audio_system::set_channel_volume(1, 0.75F);
-    egkr::audio::audio_system::set_channel_volume(2, 0.5F);
-    egkr::audio::audio_system::set_channel_volume(3, 0.25F);
-    egkr::audio::audio_system::set_channel_volume(4, 0.F);
-    egkr::audio::audio_system::set_channel_volume(5, 0.F);
-    egkr::audio::audio_system::set_channel_volume(6, 1.F);
-    egkr::audio::audio_system::set_channel_volume(7, 1.0F);
+    // egkr::audio::audio_system::set_master_volume(1.F);
+    // egkr::audio::audio_system::set_channel_volume(0, 1.F);
+    // egkr::audio::audio_system::set_channel_volume(1, 0.75F);
+    // egkr::audio::audio_system::set_channel_volume(2, 0.5F);
+    // egkr::audio::audio_system::set_channel_volume(3, 0.25F);
+    // egkr::audio::audio_system::set_channel_volume(4, 0.F);
+    // egkr::audio::audio_system::set_channel_volume(5, 0.F);
+    // egkr::audio::audio_system::set_channel_volume(6, 1.F);
+    // egkr::audio::audio_system::set_channel_volume(7, 1.0F);
 
     //egkr::audio::audio_system::play_emitter(6, &test_emitter);
     //egkr::audio::audio_system::play_channel(7, test_music, true);
@@ -123,7 +123,7 @@ void sandbox_application::update(const egkr::frame_data& frame_data)
 
     main_scene_->update(frame_data, camera_, &world_view);
 
-    egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
+    // egkr::audio::audio_system::set_listener_orientation(camera_->get_position(), camera_->get_forward(), camera_->get_up());
 
     egkr::debug_console::update();
 }
@@ -269,9 +269,9 @@ bool sandbox_application::shutdown()
     //skybox_->destroy();
     //debug_frustum_->destroy();
 
-    egkr::audio::audio_system::close(test_audio);
-    egkr::audio::audio_system::close(test_loop_audio);
-    egkr::audio::audio_system::close(test_music);
+    // egkr::audio::audio_system::close(test_audio);
+    // egkr::audio::audio_system::close(test_loop_audio);
+    // egkr::audio::audio_system::close(test_music);
 
     return true;
 }

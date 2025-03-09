@@ -2,14 +2,9 @@
 
 namespace egkr
 {
-    renderer_frontend::unique_ptr renderer_frontend::create(renderer_backend::unique_ptr renderer_plugin)
-    {
-	return std::make_unique<renderer_frontend>(std::move(renderer_plugin));
-    }
+    renderer_frontend::unique_ptr renderer_frontend::create(renderer_backend::unique_ptr renderer_plugin) { return std::make_unique<renderer_frontend>(std::move(renderer_plugin)); }
 
-    renderer_frontend::renderer_frontend(renderer_backend::unique_ptr renderer_plugin) : backend_(std::move(renderer_plugin))
-    {
-    }
+    renderer_frontend::renderer_frontend(renderer_backend::unique_ptr renderer_plugin): backend_(std::move(renderer_plugin)) { }
 
     bool renderer_frontend::init(const platform::shared_ptr& platform)
     {
@@ -33,8 +28,6 @@ namespace egkr
 
 	backend_->resize(width, height);
     }
-
-    void renderer_frontend::free_material(material* texture) const { backend_->free_material(texture); }
 
     texture::shared_ptr renderer_frontend::create_texture() const { return backend_->create_texture(); }
 
