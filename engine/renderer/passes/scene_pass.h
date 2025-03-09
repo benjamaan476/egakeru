@@ -17,6 +17,7 @@ namespace egkr::pass
 	    egkr::vector<egkr::render_data> geometries;
 	    egkr::vector<egkr::render_data> terrain;
 	    egkr::vector<egkr::render_data> debug_geometries;
+	    texture::shared_ptr irradiance_texture;
 	} data;
 
 	struct debug_colour_shader_locations
@@ -44,9 +45,30 @@ namespace egkr::pass
 	    uint32_t num_point_lights{};
 	} terrain_shader_locations;
 
+	struct pbr_shader_locations
+	{
+	    uint32_t projection{};
+	    uint32_t view{};
+	    uint32_t ambient_colour{};
+	    uint32_t view_position{};
+	    uint32_t albedo_texture{};
+	    uint32_t normal_texture{};
+	    uint32_t metallic_texture{};
+	    uint32_t roughness_texture{};
+	    uint32_t ao_texture{};
+	    uint32_t ibl_texture{};
+	    uint32_t model{};
+	    uint32_t directional_light{};
+	    uint32_t point_lights{};
+	    uint32_t num_point_lights{};
+	    uint32_t properties{};
+	    uint32_t mode{};
+	} pbr_shader_locations;
+
 	shader::shared_ptr material_shader;
 	shader::shared_ptr debug_colour_shader;
 	shader::shared_ptr terrain_shader;
+	shader::shared_ptr pbr_shader;
 
 	static scene* create();
 	bool init() override;

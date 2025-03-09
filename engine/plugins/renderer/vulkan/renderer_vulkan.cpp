@@ -818,15 +818,6 @@ namespace egkr
 
     bool renderer_vulkan::is_multithreaded() const { return context_.multithreading_enabled; }
 
-    void renderer_vulkan::free_material(material* material) const
-    {
-	ZoneScoped;
-
-	material->get_diffuse_map()->release();
-	material->get_specular_map()->release();
-	material->get_normal_map()->release();
-    }
-
     texture::shared_ptr renderer_vulkan::create_texture() const { return std::make_shared<vulkan_texture>(); }
 
     texture::shared_ptr renderer_vulkan::create_texture(const texture::properties& properties, const uint8_t* data) const

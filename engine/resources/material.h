@@ -4,6 +4,7 @@
 
 #include "resource.h"
 #include "texture.h"
+#include <unordered_map>
 
 namespace egkr
 {
@@ -13,22 +14,24 @@ namespace egkr
     class material : public resource
     {
     public:
+	enum class type : uint8_t
+	{
+	    phong,
+	    pbr
+	};
+
 	struct properties
 	{
 	    std::string name{"default"};
-	    std::string diffuse_map_name{"default_diffuse_texture"};
-	    std::string specular_map_name{"default_specular_texture"};
-	    std::string normal_map_name{"default_normal_texture"};
 	    std::string shader_name{"Shader.Material"};
 	    float shininess{};
 	    float4 diffuse_colour{0.588F, 0.588F, 0.588F, 1.F};
+	    type material_type{type::phong};
+
+	    // ["albedo", { "roof_albedo", {linear, linear, repeat...}}]
+	    std::unordered_map<std::string, std::pair<std::string, texture_map::properties>> texture_maps;
 	};
 
-	enum class type : uint8_t
-	{
-	    world,
-	    ui
-	};
 	using shared_ptr = std::shared_ptr<material>;
 	static shared_ptr create(const properties& properties);
 
@@ -52,6 +55,27 @@ namespace egkr
 	[[nodiscard]] const auto& get_normal_map() const { return normal_map_; }
 	[[nodiscard]] auto& get_normal_map() { return normal_map_; }
 
+	void set_albedo_map(const texture_map::texture_map::shared_ptr& map) { albedo_map_ = map; }
+	[[nodiscard]] const auto& get_albedo_map() const { return albedo_map_; }
+	[[nodiscard]] auto& get_albedo_map() { return albedo_map_; }
+
+	void set_metallic_map(const texture_map::texture_map::shared_ptr& map) { metallic_map_ = map; }
+	[[nodiscard]] const auto& get_metallic_map() const { return metallic_map_; }
+	[[nodiscard]] auto& get_metallic_map() { return metallic_map_; }
+
+	void set_roughness_map(const texture_map::texture_map::shared_ptr& map) { roughness_map_ = map; }
+	[[nodiscard]] const auto& get_roughness_map() const { return roughness_map_; }
+	[[nodiscard]] auto& get_roughness_map() { return roughness_map_; }
+
+	void set_ao_map(const texture_map::texture_map::shared_ptr& map) { ao_map_ = map; }
+	[[nodiscard]] const auto& get_ao_map() const { return ao_map_; }
+	[[nodiscard]] auto& get_ao_map() { return ao_map_; }
+
+	void set_ibl_map(const texture_map::texture_map::shared_ptr& map) { ibl_map_ = map; }
+	[[nodiscard]] const auto& get_ibl_map() const { return ibl_map_; }
+	[[nodiscard]] auto& get_ibl_map() { return ibl_map_; }
+
+
 	void set_shininess(float shininess) { shininess_ = shininess; }
 	[[nodiscard]] const auto& get_shininess() const { return shininess_; }
 
@@ -66,12 +90,20 @@ namespace egkr
 
 	[[nodiscard]] auto get_draw_index() const { return draw_index_; }
 	void set_draw_index(uint64_t frame) { draw_index_ = frame; }
+
+	[[nodiscard]] auto get_material_type() const { return material_type; }
     private:
 	float shininess_{32.F};
 	float4 diffuse_colour_{1.F};
 	texture_map::shared_ptr diffuse_map_;
 	texture_map::shared_ptr specular_map_;
 	texture_map::shared_ptr normal_map_;
+	texture_map::shared_ptr albedo_map_;
+	texture_map::shared_ptr metallic_map_;
+	texture_map::shared_ptr roughness_map_;
+	texture_map::shared_ptr ao_map_;
+	texture_map::shared_ptr ibl_map_;
+	material::type material_type{type::phong};
 
 	std::string shader_name_;
 	uint32_t shader_id_{invalid_32_id};

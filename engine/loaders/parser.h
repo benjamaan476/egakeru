@@ -23,7 +23,7 @@ namespace egkr::parser
 	if (split_index == std::string::npos)
 	{
 	    LOG_ERROR("Potential formatting issue, {}", line);
-	    return {};
+	    return {{line, ""}};
 	}
 
 	auto variable_name = l.substr(0, split_index);

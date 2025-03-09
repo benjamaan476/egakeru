@@ -9,7 +9,7 @@
 namespace egkr
 {
     class swapchain;
-    class  renderer_vulkan : public renderer_backend
+    class renderer_vulkan : public renderer_backend
     {
     public:
 	static renderer_backend::unique_ptr create();
@@ -26,8 +26,6 @@ namespace egkr
 	bool begin(const frame_data& frame_data) final;
 	void end(frame_data& frame_data) final;
 	void present(const frame_data& frame_data) final;
-
-	void free_material(material* texture) const override;
 
 	[[nodiscard]] texture::shared_ptr create_texture() const override;
 	texture::shared_ptr create_texture(const texture::properties& properties, const uint8_t* data) const override;

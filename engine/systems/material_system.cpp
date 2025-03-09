@@ -38,6 +38,8 @@ namespace egkr
 	    return false;
 	}
 
+	irradiance_texture_ = texture_system::get_default_ibl_texture();
+
 
 	return true;
     }
@@ -46,13 +48,13 @@ namespace egkr
     {
 	if (material_system_->default_material_)
 	{
-	    engine::get()->get_renderer()->free_material(material_system_->default_material_.get());
 	    material_system_->default_material_.reset();
 	}
 
 	for (auto& material : material_system_->registered_materials_)
 	{
-	    engine::get()->get_renderer()->free_material(material.get());
+	    material->free();
+	    material.reset();
 	}
 	material_system_->registered_materials_.clear();
 
@@ -98,7 +100,7 @@ namespace egkr
 	}
 
 	auto new_material = material::create(properties);
-	load_material(properties, new_material);
+	// load_material(properties, new_material);
 
 	//if (new_material->get_generation() == invalid_id)
 	//{
@@ -231,11 +233,12 @@ namespace egkr
     {
 	material::properties properties{};
 	properties.name = "default";
-	properties.diffuse_map_name = default_diffuse_name;
-	properties.specular_map_name = default_specular_name;
-	properties.normal_map_name = default_normal_name;
 	properties.diffuse_colour = float4{1.F};
 	properties.shader_name = "Shader.Material";
+	properties.texture_maps.emplace("diffuse", std::make_pair(default_diffuse_name, texture_map::properties{}));
+	properties.texture_maps.emplace("specular", std::make_pair(default_specular_name, texture_map::properties{}));
+	properties.texture_maps.emplace("normal", std::make_pair(default_normal_name, texture_map::properties{}));
+
 	material_system_->default_material_ = material::create(properties);
 	egkr::vector<texture_map::texture_map::shared_ptr> texture_maps{
 	    material_system_->default_material_->get_diffuse_map(), material_system_->default_material_->get_specular_map(), material_system_->default_material_->get_normal_map()};
@@ -251,72 +254,17 @@ namespace egkr
 	return true;
     }
 
-    bool material_system::load_material(const material::properties& properties, material::shared_ptr& material)
+    bool material_system::set_irradiance(const texture::shared_ptr& irradiance_texture)
     {
-	texture_map::properties diffuse_properties{.minify = texture_map::filter::linear,
-	    .magnify = texture_map::filter::linear,
-	    .repeat_u = texture_map::repeat::repeat,
-	    .repeat_v = texture_map::repeat::repeat,
-	    .repeat_w = texture_map::repeat::repeat,
-	    .map_use = texture_map::use::map_diffuse};
-
-	auto diffuse_map = texture_map::texture_map::create(diffuse_properties);
-
-	//Get diffuse map
-	diffuse_map->map_texture = texture_system::acquire(properties.diffuse_map_name);
-	if (diffuse_map->map_texture == nullptr)
+	if (irradiance_texture->get_properties().texture_type != texture::type::cube)
 	{
-	    LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.diffuse_map_name.data(), properties.name.data());
-	    diffuse_map->map_texture = texture_system::get_default_texture();
+	    LOG_ERROR("Irradiance texture must be a cube map");
+	    return false;
 	}
-	diffuse_map->acquire();
 
-	texture_map::properties specular_properties = diffuse_properties;
-	specular_properties.map_use = texture_map::use::map_specular;
-
-	auto specular_map = texture_map::texture_map::create(specular_properties);
-
-	specular_map->map_texture = texture_system::acquire(properties.specular_map_name);
-	if (specular_map->map_texture == nullptr)
-	{
-	    LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.specular_map_name.data(), properties.name.data());
-	    specular_map->map_texture = texture_system::get_default_specular_texture();
-	}
-	specular_map->acquire();
-
-	texture_map::properties normal_properties = diffuse_properties;
-	normal_properties.map_use = texture_map::use::map_normal;
-
-	auto normal_map = texture_map::texture_map::create(normal_properties);
-	normal_map->map_texture = texture_system::acquire(properties.normal_map_name);
-	if (normal_map->map_texture == nullptr)
-	{
-	    LOG_WARN("Failed to find texture: {} for material {}. Setting default", properties.normal_map_name.data(), properties.name.data());
-	    normal_map->map_texture = texture_system::get_default_normal_texture();
-	}
-	normal_map->acquire();
-
-	egkr::vector<texture_map::texture_map::shared_ptr> maps{diffuse_map, specular_map, normal_map};
-	auto shader = shader_system::get_shader(properties.shader_name);
-	auto id = shader->acquire_instance_resources(maps);
-
-	//material.reset();
-	material = material::create(properties);
-	if (material->get_generation() == invalid_32_id)
-	{
-	    material->set_generation(0);
-	}
-	else
-	{
-	    material->increment_generation();
-	}
-	material->set_diffuse_colour(properties.diffuse_colour);
-	material->set_shininess(properties.shininess);
-	material->set_internal_id(id);
-	//material->set_name(properties.name);
-	material->set_diffuse_map(diffuse_map);
-	material->set_specular_map(specular_map);
-	material->set_normal_map(normal_map);
+	material_system_->irradiance_texture_ = irradiance_texture;
 	return true;
     }
+
+    const texture::shared_ptr& material_system::get_irradiance() { return material_system_->irradiance_texture_; }
 }

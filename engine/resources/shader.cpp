@@ -49,6 +49,8 @@ namespace egkr
 			return uniforms_[uniform_id_by_name_[uniform_name.data()]].index;
 		}
 
+		LOG_WARN("Attempted to retrieve an invalid uniform: {}, from shader: {}", uniform_name, get_name());
+
 		return invalid_32_id;
 	}
 
