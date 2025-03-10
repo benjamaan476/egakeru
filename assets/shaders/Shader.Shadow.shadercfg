@@ -1,0 +1,21 @@
+#Shadow Shader
+version=1
+
+name = Shader.Shadow
+stages = vertex,fragment
+stagefiles = shaders/ShadowShader.vert.spv,shaders/ShadowShader.frag.spv
+depth_test = 1
+depth_write = 1
+cull_mode=none
+
+attribute=vec3,in_position
+attribute=vec3,in_normal
+attribute=vec2,in_texcoord
+attribute=vec4,in_colour
+attribute=vec4,in_tangent
+
+uniform=mat4,0,projection
+uniform=mat4,0,view
+uniform=vec4,1,rubbish
+uniform=samp,1,colour_texture
+uniform=mat4,2,model

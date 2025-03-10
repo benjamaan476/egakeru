@@ -18,6 +18,8 @@ namespace egkr::pass
 	    egkr::vector<egkr::render_data> terrain;
 	    egkr::vector<egkr::render_data> debug_geometries;
 	    texture::shared_ptr irradiance_texture;
+	    float4x4 directional_light_view;
+	    float4x4 directional_light_projection;
 	} data;
 
 	struct debug_colour_shader_locations
@@ -57,6 +59,8 @@ namespace egkr::pass
 	    uint32_t roughness_texture{};
 	    uint32_t ao_texture{};
 	    uint32_t ibl_texture{};
+	    uint32_t shadow_texture{};
+	    uint32_t light_space{};
 	    uint32_t model{};
 	    uint32_t directional_light{};
 	    uint32_t point_lights{};
@@ -70,11 +74,17 @@ namespace egkr::pass
 	shader::shared_ptr terrain_shader;
 	shader::shared_ptr pbr_shader;
 
+	rendergraph::source* shadow_map_source;
+	uint32_t frame_count;
+	egkr::vector<texture_map::shared_ptr> shadow_maps;
+
 	static scene* create();
 	bool init() override;
-	bool execute(const frame_data& frame_data) const override;
+	bool execute(const frame_data& frame_data) override;
 	bool destroy() override;
 	~scene() override = default;
+
+	bool load_resources() override;
     private:
 	static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
     };

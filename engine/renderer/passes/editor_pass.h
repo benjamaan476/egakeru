@@ -32,9 +32,9 @@ namespace egkr::pass
 
 	static editor* create();
 	bool init() override;
-	bool execute(const frame_data& frame_data) const override;
+	bool execute(const frame_data& frame_data) override;
 	bool destroy() override;
-	 ~editor() override = default;
+	~editor() override = default;
     private:
 	static bool on_event(event::code code, void* /*sender*/, void* listener, const event::context& context);
     };

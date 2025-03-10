@@ -30,7 +30,7 @@ namespace egkr::pass
 	static ui* create();
 
 	bool init() override;
-	bool execute(const frame_data& frame_data) const override;
+	bool execute(const frame_data& frame_data) override;
 	bool destroy() override;
 
 	~ui() override = default;

@@ -51,9 +51,9 @@ namespace egkr::pass
 	return true;
     }
 
-    bool ui::execute(const frame_data& frame_data) const
+    bool ui::execute(const frame_data& frame_data)
     {
-	engine::get()->get_renderer()->set_active_viewport(viewport);
+	engine::get()->get_renderer()->set_active_viewport(viewport_);
 
 	renderpass->begin(frame_data.render_target_index);
 

@@ -115,6 +115,10 @@ namespace egkr
 	}
 	maps.push_back(ibl_map_);
 
+	shadow_map_ = texture_map::create({});
+	shadow_map_->map_texture = texture_system::get_default_texture();
+	maps.push_back(shadow_map_);
+
 	auto shader = shader_system::get_shader(shader_name_);
 	shader_id_ = shader->get_id();
 

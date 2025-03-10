@@ -75,6 +75,10 @@ namespace egkr
 	[[nodiscard]] const auto& get_ibl_map() const { return ibl_map_; }
 	[[nodiscard]] auto& get_ibl_map() { return ibl_map_; }
 
+	void set_shadow_map(const texture_map::texture_map::shared_ptr& map) { shadow_map_ = map; }
+	[[nodiscard]] const auto& get_shadow_map() const { return shadow_map_; }
+	[[nodiscard]] auto& get_shadow_map() { return shadow_map_; }
+
 
 	void set_shininess(float shininess) { shininess_ = shininess; }
 	[[nodiscard]] const auto& get_shininess() const { return shininess_; }
@@ -103,6 +107,7 @@ namespace egkr
 	texture_map::shared_ptr roughness_map_;
 	texture_map::shared_ptr ao_map_;
 	texture_map::shared_ptr ibl_map_;
+	texture_map::shared_ptr shadow_map_;
 	material::type material_type{type::phong};
 
 	std::string shader_name_;

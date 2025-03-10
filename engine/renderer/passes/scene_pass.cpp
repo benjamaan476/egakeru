@@ -1,4 +1,5 @@
 #include "scene_pass.h"
+#include "frame_data.h"
 #include "renderer/renderpass.h"
 #include <systems/resource_system.h>
 #include <systems/shader_system.h>
@@ -109,6 +110,8 @@ namespace egkr::pass
 	    pbr_shader_locations.view_position = pbr_shader->get_uniform_index("view_position");
 	    pbr_shader_locations.model = pbr_shader->get_uniform_index("model");
 	    pbr_shader_locations.ibl_texture = pbr_shader->get_uniform_index("cube_texture");
+	    pbr_shader_locations.shadow_texture = pbr_shader->get_uniform_index("shadow_texture");
+	    pbr_shader_locations.light_space = pbr_shader->get_uniform_index("light_space");
 	    pbr_shader_locations.point_lights = pbr_shader->get_uniform_index("point_lights");
 	    pbr_shader_locations.directional_light = pbr_shader->get_uniform_index("dir_light");
 	    pbr_shader_locations.num_point_lights = pbr_shader->get_uniform_index("num_point_lights");
@@ -122,9 +125,9 @@ namespace egkr::pass
 	return true;
     }
 
-    bool scene::execute(const frame_data& frame_data) const
+    bool scene::execute(const frame_data& frame_data)
     {
-	engine::get()->get_renderer()->set_active_viewport(viewport);
+	engine::get()->get_renderer()->set_active_viewport(viewport_);
 	renderpass->begin(frame_data.render_target_index);
 
 	if (!data.terrain.empty())
@@ -175,11 +178,16 @@ namespace egkr::pass
 	material_system::apply_global(material_shader->get_id(), frame_data, projection, view, data.ambient_colour, view_position, data.render_mode);
 
 	shader_system::use(pbr_shader->get_id());
+
+	float4x4 light_space = data.directional_light_projection * data.directional_light_view;
+	material_system::set_shadow_map(shadow_map_source->textures[frame_data.render_target_index], 0);
+
 	shader_system::set_uniform(pbr_shader_locations.projection, &projection);
 	shader_system::set_uniform(pbr_shader_locations.view, &view);
 	shader_system::set_uniform(pbr_shader_locations.ambient_colour, &data.ambient_colour);
 	shader_system::set_uniform(pbr_shader_locations.view_position, &view_position);
 	shader_system::set_uniform(pbr_shader_locations.mode, &data.render_mode);
+	shader_system::set_uniform(pbr_shader_locations.light_space, &light_space);
 	pbr_shader->apply_globals(true);
 
 	material::type current_type = material::type::pbr;
@@ -187,6 +195,7 @@ namespace egkr::pass
 	for (const egkr::render_data& render_data : data.geometries)
 	{
 	    auto mat = render_data.render_geometry->get_material();
+	    mat->get_shadow_map()->map_texture = material_system::get_shadow_map();
 	    bool needs_update = (mat->get_render_frame() != frame_data.frame_number || mat->get_draw_index() != frame_data.draw_index);
 
 	    if (current_type != mat->get_material_type())
@@ -210,6 +219,7 @@ namespace egkr::pass
 		shader_system::set_uniform(pbr_shader_locations.roughness_texture, &mat->get_roughness_map());
 		shader_system::set_uniform(pbr_shader_locations.ao_texture, &mat->get_ao_map());
 		shader_system::set_uniform(pbr_shader_locations.ibl_texture, &mat->get_ibl_map());
+		shader_system::set_uniform(pbr_shader_locations.shadow_texture, &mat->get_shadow_map());
 		shader_system::set_uniform(pbr_shader_locations.directional_light, light_system::get_directional_light());
 		shader_system::set_uniform(pbr_shader_locations.point_lights, light_system::get_point_lights().data());
 		auto num_point_lights = light_system::point_light_count();
@@ -297,5 +307,42 @@ namespace egkr::pass
 	    return false;
 	}
 	return false;
+    }
+
+    bool scene::load_resources()
+    {
+	for (auto& sink : sinks)
+	{
+	    if (sink.name == "shadowmap")
+	    {
+		shadow_map_source = sink.bound_source;
+		break;
+	    }
+	}
+
+	if (!shadow_map_source)
+	{
+	    LOG_ERROR("Could not find shadow map pass");
+	    return false;
+	}
+
+	frame_count = engine::get()->get_renderer()->get_backend()->get_window_attachment_count();
+	shadow_maps.resize(frame_count);
+	for (auto i{0U}; i < frame_count; i++)
+	{
+	    auto& map = shadow_maps[i];
+	    texture_map::properties props{
+	        .minify = texture_map::filter::linear,
+	        .magnify = texture_map::filter::linear,
+	        .repeat_u = texture_map::repeat::clamp_to_edge,
+	        .repeat_v = texture_map::repeat::clamp_to_edge,
+	        .repeat_w = texture_map::repeat::clamp_to_edge,
+	    };
+	    map->update(props);
+	    map->map_texture = shadow_map_source->textures[i];
+	    map->acquire();
+	}
+
+	return true;
     }
 }

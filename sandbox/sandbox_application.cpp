@@ -5,6 +5,7 @@
 #include "resources/geometry.h"
 #include "sandbox_keybinds.h"
 
+#include <iterator>
 #include <systems/geometry_system.h>
 #include <systems/light_system.h>
 #include <systems/camera_system.h>
@@ -134,7 +135,7 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     skybox_pass->projection = world_view.projection;
     skybox_pass->view_position = camera_->get_position();
     skybox_pass->do_execute = true;
-    skybox_pass->viewport = &world_view;
+    skybox_pass->viewport_ = &world_view;
     if (main_scene_->is_loaded())
     {
 	skybox_pass->data.skybox_data = main_scene_->get_skybox();
@@ -146,8 +147,11 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     }
 
     const auto& frame_data = main_scene_->get_frame_data();
+    shadow_pass->do_execute = true;
+    shadow_pass->data.geometries = frame_data.world_geometries;
+
     scene_pass->do_execute = true;
-    scene_pass->viewport = &world_view;
+    scene_pass->viewport_ = &world_view;
     scene_pass->view = camera_->get_view();
     scene_pass->projection = world_view.projection;
     scene_pass->view_position = camera_->get_position();
@@ -178,13 +182,13 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
 
     ui_pass->data.ui_geometries.push_back(data);
     ui_pass->data.texts = texts;
-    ui_pass->viewport = &ui_view;
+    ui_pass->viewport_ = &ui_view;
     ui_pass->projection = ui_view.projection;
     ui_pass->do_execute = true;
     ui_pass->view = glm::mat4(1.F);
 
     editor_pass->do_execute = true;
-    editor_pass->viewport = &world_view;
+    editor_pass->viewport_ = &world_view;
     editor_pass->view = camera_->get_view();
     editor_pass->view_position = camera_->get_position();
     editor_pass->projection = world_view.projection;
@@ -552,6 +556,10 @@ void sandbox_application::configure_rendergraph()
     frame_graph.add_source("skybox", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
     frame_graph.set_sink_linkage("skybox", "colourbuffer", "", "colourbuffer");
 
+    shadow_pass = (egkr::pass::shadow*)frame_graph.create_pass("shadow", &egkr::pass::shadow::create);
+    frame_graph.add_source("shadow", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::self);
+    frame_graph.add_source("shadow", "depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::self);
+
     scene_pass = (egkr::pass::scene*)frame_graph.create_pass("scene", &egkr::pass::scene::create);
     frame_graph.add_sink("scene", "colourbuffer");
     frame_graph.add_sink("scene", "depthbuffer");
@@ -572,6 +580,7 @@ void sandbox_application::configure_rendergraph()
     frame_graph.add_sink("ui", "colourbuffer");
     frame_graph.add_source("ui", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
     frame_graph.set_sink_linkage("ui", "colourbuffer", "editor", "colourbuffer");
+
 
     frame_graph.finalise();
 }

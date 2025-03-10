@@ -1,17 +1,15 @@
 #include "render_graph.h"
 #include <algorithm>
 #include "engine/engine.h"
+#include "renderer/render_target.h"
 
 namespace egkr
 {
     rendergraph::pass::pass() { event::register_event(event::code::render_target_refresh_required, this, on_event); }
     bool rendergraph::pass::init() { return false; }
-    bool rendergraph::pass::execute(const frame_data& /*frame_data*/) const { return false; }
+    bool rendergraph::pass::execute(const frame_data& /*frame_data*/) { return false; }
 
-    bool rendergraph::pass::destroy() 
-    {
-	return true; 
-    }
+    bool rendergraph::pass::destroy() { return true; }
 
     bool rendergraph::pass::regenerate_render_targets()
     {
@@ -39,13 +37,14 @@ namespace egkr
 			return false;
 		    }
 		}
-		else if (attachment.source == render_target::attachment_source::view)
+		else if (attachment.source == render_target::attachment_source::self)
 		{
-		    LOG_ERROR("Cant do this");
-		    return false;
+		    regenerate_attachments(1024, 1024);
+		    attachment.texture_attachment = get_texture(attachment.type, (uint8_t)a);
 		}
 	    }
 	    const auto& attachments = target->get_attachments();
+	    // bool use_custom_size = attachments[0].source == render_target::attachment_source::self;
 	    target = render_target::render_target::create(attachments, renderpass.get(), attachments[0].texture_attachment->get_width(), attachments[0].texture_attachment->get_height());
 	}
 	return true;
@@ -250,10 +249,45 @@ namespace egkr
 			}
 		    }
 		}
+		else if (src.source_type == source::type::render_target_depth_stencil)
+		{
+		    if (src.source_origin == source::origin::other)
+		    {
+			for (const auto& pass : passes)
+			{
+			    bool found = false;
+			    for (const auto& sink : pass->get_sinks())
+			    {
+				if (sink.bound_source == &src)
+				{
+				    found = true;
+				    break;
+				}
+			    }
+
+			    if (!found)
+			    {
+				LOG_WARN("No source found with depth stencil type");
+				break;
+			    }
+			}
+		    }
+		    else if (src.source_origin == source::origin::self)
+		    {
+			const uint32_t frame_count = engine::get()->get_renderer()->get_backend()->get_window_attachment_count();
+			for (uint8_t i{0U}; i < frame_count; i++)
+			{
+			    src.textures.resize(frame_count);
+			    src.textures[i] = renderpass->get_texture(render_target::attachment_type::depth, i);
+			}
+		    }
+		}
 		if (backbuffer_global_sink.bound_source != nullptr)
 		{
 		    break;
 		}
+	    }
+	    {
 	    }
 	    if (backbuffer_global_sink.bound_source != nullptr)
 	    {
@@ -295,5 +329,29 @@ namespace egkr
 	    }
 	}
 	return false;
+    }
+
+    bool egkr::rendergraph::load_resources()
+    {
+	for (const auto& pass : passes)
+	{
+	    for (auto& source : pass->get_sources())
+	    {
+		if (source.source_origin == source::origin::other)
+		{
+		    render_target::attachment_type tex_type = source.source_type == source::type::render_target_colour ? render_target::attachment_type::colour : render_target::attachment_type::depth;
+		    uint32_t frame_count = engine::get()->get_renderer()->get_backend()->get_window_attachment_count();
+		    source.textures.resize(frame_count);
+
+		    for (uint8_t i{0U}; i < frame_count; i++)
+		    {
+			source.textures[i] = pass->get_texture(tex_type, i);
+		    }
+		}
+	    }
+
+	    pass->load_resources();
+	}
+	return true;
     }
 }

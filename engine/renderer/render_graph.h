@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include "renderer/render_target.h"
 #include "resources/texture.h"
 #include "renderpass.h"
 #include "viewport.h"
@@ -45,8 +46,11 @@ namespace egkr
 	    virtual ~pass() = default;
 	    pass();
 	    virtual bool init() = 0;
-	    [[nodiscard]] virtual bool execute(const frame_data& frame_data) const = 0;
+	    [[nodiscard]] virtual bool execute(const frame_data& frame_data) = 0;
 	    virtual bool destroy() = 0;
+	    virtual bool load_resources() { return true; }
+	    virtual bool regenerate_attachments(uint32_t /* width */, uint32_t /* height */) { return true; }
+	    [[nodiscard]] virtual texture::shared_ptr get_texture(render_target::attachment_type /* type */, uint8_t /* frame_number */) const { return nullptr; }
 
 	    bool regenerate_render_targets();
 
@@ -58,7 +62,7 @@ namespace egkr
 	    [[nodiscard]] const auto& get_sinks() const { return sinks; }
 	    auto& get_sinks() { return sinks; }
 
-	    viewport* viewport;
+	    viewport* viewport_;
 	    float4x4 view;
 	    float4x4 projection;
 	    float3 view_position;
@@ -87,6 +91,7 @@ namespace egkr
 	bool set_sink_linkage(const std::string& pass_name, const std::string& sink_name, const std::string& source_pass_name, const std::string& source_name);
 
 	bool finalise();
+	bool load_resources();
 	bool execute(const frame_data& frame_data);
     private:
 	std::string name;

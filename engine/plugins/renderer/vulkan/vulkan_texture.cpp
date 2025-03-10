@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <renderer/renderer_frontend.h>
+#include <vulkan/vulkan_enums.hpp>
 namespace egkr
 {
     static vk::Format channel_count_to_format(uint8_t channel_count, vk::Format default_format)
@@ -261,7 +262,7 @@ namespace egkr
 
 	if ((uint32_t)(properties_.texture_flags & egkr::texture::flags::depth) != 0)
 	{
-	    usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+	    usage = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled;
 	    aspect = vk::ImageAspectFlagBits::eDepth;
 	    format = context_->device.depth_format;
 	}
@@ -576,7 +577,7 @@ namespace egkr
 	    .setAddressModeW(convert_repeat_type("w", repeat_u))
 	    .setAnisotropyEnable(true)
 	    .setMaxAnisotropy(16)
-	    .setBorderColor(vk::BorderColor::eFloatOpaqueBlack)
+	    .setBorderColor(vk::BorderColor::eFloatOpaqueWhite)
 	    .setUnnormalizedCoordinates(false)
 	    .setCompareEnable(false)
 	    .setMipmapMode(vk::SamplerMipmapMode::eLinear)

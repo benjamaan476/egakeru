@@ -45,6 +45,7 @@ set(SOURCES
     renderer/passes/scene_pass.cpp
     renderer/passes/skybox_pass.cpp
     renderer/passes/ui_pass.cpp
+    renderer/passes/shadow_pass.cpp
     resources/geometry.cpp
     resources/job.cpp
     resources/material.cpp

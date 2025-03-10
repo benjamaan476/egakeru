@@ -267,4 +267,10 @@ namespace egkr
     }
 
     const texture::shared_ptr& material_system::get_irradiance() { return material_system_->irradiance_texture_; }
+    bool material_system::set_shadow_map(const texture::shared_ptr& shadow_texture, uint8_t /* index */)
+    {
+	material_system_->shadow_texture_ = shadow_texture;
+	return true;
+    }
+    const texture::shared_ptr& material_system::get_shadow_map() { return material_system_->shadow_texture_; }
 }

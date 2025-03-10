@@ -18,6 +18,7 @@
 #include <renderer/passes/skybox_pass.h>
 #include <renderer/passes/scene_pass.h>
 #include <renderer/passes/editor_pass.h>
+#include <renderer/passes/shadow_pass.h>
 #include <renderer/passes/ui_pass.h>
 
 class sandbox_application final : public egkr::application
@@ -84,4 +85,5 @@ private:
     egkr::pass::scene* scene_pass{};
     egkr::pass::editor* editor_pass{};
     egkr::pass::ui* ui_pass{};
+    egkr::pass::shadow* shadow_pass{};
 };

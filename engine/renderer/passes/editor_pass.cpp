@@ -63,9 +63,9 @@ namespace egkr::pass
 	return true;
     }
 
-    bool editor::execute(const frame_data& frame_data) const
+    bool editor::execute(const frame_data& frame_data)
     {
-	engine::get()->get_renderer()->set_active_viewport(viewport);
+	engine::get()->get_renderer()->set_active_viewport(viewport_);
 
 	renderpass->begin(frame_data.render_target_index);
 
@@ -94,7 +94,7 @@ namespace egkr::pass
 	        glm::decompose(model, model_scale, rotation, translation, skew, perspective);
 
 	        constexpr const float fixed_size{0.1f};
-	        auto scale_factor = (2 * std::tan(viewport->fov / 2) * distance) * fixed_size;
+	        auto scale_factor = (2 * std::tan(viewport_->fov / 2) * distance) * fixed_size;
 	        egkr::editor::gizmo::set_scale(scale_factor);
 	        float4x4 scale = glm::scale(glm::mat4(1.f), glm::vec3{scale_factor, scale_factor, scale_factor});
 

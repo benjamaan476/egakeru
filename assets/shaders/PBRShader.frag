@@ -41,10 +41,12 @@ const int SAMP_NORMAL = 1;
 const int SAMP_METALLIC = 2;
 const int SAMP_ROUGHNESS = 3;
 const int SAMP_AO = 4;
-const int SAMP_IBL = 5;
+const int SAMP_SHADOW = 5;
+const int SAMP_IBL = 6;
+const int SAMP_COUNT = 7;
 
-layout(set = 1, binding = 1) uniform sampler2D samplers[6];
-layout(set = 1, binding = 1) uniform samplerCube samplersCube[6];
+layout(set = 1, binding = 1) uniform sampler2D samplers[SAMP_COUNT];
+layout(set = 1, binding = 1) uniform samplerCube samplersCube[SAMP_COUNT];
 
 const float PI = 3.14159265359;
 
@@ -57,6 +59,7 @@ layout(location = 1) in struct dto {
     vec3 frag_position;
     vec4 colour;
     vec4 tangent;
+    vec4 light_space_frag_position;
 } in_dto;
 
 mat3 TBN;
@@ -116,6 +119,18 @@ vec3 calculate_reflectance(vec3 albedo, vec3 normal, vec3 view_direction, vec3 l
     return (refraction_diffuse * albedo / PI + specular) * radiance * normal_distribution;
 }
 
+float calculate_shadow(vec4 light_space_frag_position) {
+    vec3 projected = light_space_frag_position.xyz / light_space_frag_position.w;
+    //NDC
+    projected = projected * 0.5 + 0.5;
+
+    float closest_depth = texture(samplers[SAMP_SHADOW], projected.xy).r;
+    float current_depth = projected.z;
+
+    float shadow = current_depth > closest_depth ? 1 : 0;
+    return shadow;
+}
+
 void main() {
     vec3 normal = in_dto.normal;
     vec3 tangent = in_dto.tangent.xyz;
@@ -168,9 +183,11 @@ void main() {
         }
 
         vec3 irradiance = texture(samplersCube[SAMP_IBL], normal).rgb;
+        float shadow = calculate_shadow(in_dto.light_space_frag_position);
 
         vec3 ambient = irradiance * albedo * ao;
-        vec3 colour = ambient + total_reflectance;
+        // vec3 colour = ambient + total_reflectance;
+        vec3 colour = vec3(shadow, shadow, shadow);
         colour = colour / (colour + vec3(1));
         colour = pow(colour, vec3(1 / 2.2));
 
@@ -181,4 +198,3 @@ void main() {
         out_colour = vec4(abs(normal), 1);
     }
 }
-

@@ -11,26 +11,26 @@ namespace egkr
     }
     namespace render_target
     {
-	enum class attachment_type
+	enum class attachment_type : uint8_t
 	{
 	    colour = 0x01,
 	    depth = 0x02,
 	    stencil = 0x04,
 	};
 
-	enum class attachment_source
+	enum class attachment_source : uint8_t
 	{
 	    default_source,
-	    view
+	    self
 	};
 
-	enum class load_operation
+	enum class load_operation : uint8_t
 	{
 	    dont_care,
 	    load
 	};
 
-	enum class store_operation
+	enum class store_operation : uint8_t
 	{
 	    dont_care,
 	    store

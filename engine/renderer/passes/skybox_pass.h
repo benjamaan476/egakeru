@@ -25,7 +25,7 @@ namespace egkr::pass
 	static skybox* create();
 
 	bool init() override;
-	bool execute(const frame_data& frame_data) const override;
+	bool execute(const frame_data& frame_data) override;
 	bool destroy() override;
 	~skybox() override = default;
     };

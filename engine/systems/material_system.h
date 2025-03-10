@@ -1,5 +1,6 @@
 #pragma once
 
+#include "keys.h"
 #include "pch.h"
 
 #include "resources/material.h"
@@ -59,6 +60,10 @@ namespace egkr
 
 	static bool set_irradiance(const texture::shared_ptr& irradiance_texture);
 	[[nodiscard]] static const texture::shared_ptr& get_irradiance();
+
+	static bool set_shadow_map(const texture::shared_ptr& texture, uint8_t index);
+	[[nodiscard]] static const texture::shared_ptr& get_shadow_map();
+	static void set_directional_light_space(const float4x4& light_space);
     private:
 	static bool create_default_material();
     private:
@@ -75,5 +80,7 @@ namespace egkr
 	uint32_t ui_shader_id_{invalid_32_id};
 
 	texture::shared_ptr irradiance_texture_;
+	texture::shared_ptr shadow_texture_;
+	float4x4 light_space_{1};
     };
 }
