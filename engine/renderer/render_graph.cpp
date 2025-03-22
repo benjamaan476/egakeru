@@ -272,15 +272,6 @@ namespace egkr
 			    }
 			}
 		    }
-		    else if (src.source_origin == source::origin::self)
-		    {
-			const uint32_t frame_count = engine::get()->get_renderer()->get_backend()->get_window_attachment_count();
-			for (uint8_t i{0U}; i < frame_count; i++)
-			{
-			    src.textures.resize(frame_count);
-			    src.textures[i] = renderpass->get_texture(render_target::attachment_type::depth, i);
-			}
-		    }
 		}
 		if (backbuffer_global_sink.bound_source != nullptr)
 		{
@@ -313,6 +304,19 @@ namespace egkr
 	    {
 		LOG_ERROR("Failed to regenerate render targets for pass {}", renderpass->get_name());
 		return false;
+	    }
+
+	    for(auto& src : renderpass->get_sources())
+	    {
+		    if (src.source_origin == source::origin::self)
+		    {
+			const uint32_t frame_count = engine::get()->get_renderer()->get_backend()->get_window_attachment_count();
+			for (uint8_t i{0U}; i < frame_count; i++)
+			{
+			    src.textures.resize(frame_count);
+			    src.textures[i] = renderpass->get_texture(render_target::attachment_type::depth, i);
+			}
+		    }
 	    }
 	}
 	return true;

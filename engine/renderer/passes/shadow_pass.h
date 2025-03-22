@@ -24,7 +24,6 @@ namespace egkr::pass
 	    uint32_t projection{};
 	    uint32_t view{};
 	    uint32_t model{};
-	    uint32_t light_space{};
 	    uint32_t colour_map{};
 	} shadow_shader_locations;
 
@@ -39,7 +38,7 @@ namespace egkr::pass
     private:
 	shader::shared_ptr shadow_shader;
 	uint16_t resolution;
-	uint32_t instance_count;
+	uint32_t instance_count = 0;
 	texture_map::shared_ptr default_colour_map;
 	egkr::vector<texture::shared_ptr> colour_textures;
 	egkr::vector<texture::shared_ptr> depth_textures;

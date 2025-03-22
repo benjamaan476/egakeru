@@ -100,6 +100,7 @@ namespace egkr
 
 	    //Game owns these, scene just references them
 	    void add_directional_light(const std::string& name, std::shared_ptr<light::directional_light>& light);
+	    const std::shared_ptr<light::directional_light>& get_directional_light() const { return directional_light_; }
 	    void remove_directional_light();
 
 	    void add_point_light(const std::string& name, light::point_light& light);

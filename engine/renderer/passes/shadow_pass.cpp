@@ -65,12 +65,36 @@ namespace egkr::pass
 	    shadow_shader_locations.projection = shadow_shader->get_uniform_index("projection");
 	    shadow_shader_locations.view = shadow_shader->get_uniform_index("view");
 	    shadow_shader_locations.model = shadow_shader->get_uniform_index("model");
-	    // shadow_shader_locations.light_space = shadow_shader->get_uniform_index("light_space");
 	    shadow_shader_locations.colour_map = shadow_shader->get_uniform_index("colour_texture");
 	}
 
 	for (auto i{0U}; i < egkr::engine::get()->get_renderer()->get_backend()->get_window_attachment_count(); i++)
 	{
+	    const texture::properties colour_properties{
+		.name = std::format("shadow_pass_colour_{}", i),
+		.width = resolution,
+		.height = resolution,
+		.channel_count = 4,
+		.mip_levels = 1,
+		.texture_flags = texture::flags::is_writable,
+		.texture_type = texture::type::texture_2d
+	    };
+
+	    colour_textures.push_back(texture::create(colour_properties, nullptr));
+	    colour_textures[i]->populate_writeable();
+	    
+	    const texture::properties depth_properties{
+		.name = std::format("shadow_pass_depth_{}", i),
+		    .width = resolution,
+		    .height = resolution,
+		    .channel_count = 4,
+		    .mip_levels = 1,
+		    .texture_flags = texture::flags::depth,
+		    .texture_type = texture::type::texture_2d
+	    };
+
+	    depth_textures.push_back(texture::create(depth_properties, nullptr));
+	    depth_textures[i]->populate_writeable();
 	}
 
 	return true;
@@ -115,16 +139,16 @@ namespace egkr::pass
 	for (const auto& geo : data.geometries)
 	{
 	    auto& mat = geo.render_geometry->get_material();
-	    if (mat->get_id() > highest_count)
+	    if (mat->get_internal_id() > highest_count)
 	    {
-		highest_count = mat->get_id() + 1;
+		highest_count = mat->get_internal_id() + 1;
 	    }
 	}
 	highest_count++;
 
 	if (highest_count > instance_count)
 	{
-	    for (auto i{0U}; i < instance_count; i++)
+	    for (auto i{0U}; i < highest_count; i++)
 	    {
 		const auto& map = default_colour_map;
 		shadow_shader->acquire_instance_resources({map});

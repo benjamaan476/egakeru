@@ -338,7 +338,8 @@ namespace egkr::pass
 	        .repeat_v = texture_map::repeat::clamp_to_edge,
 	        .repeat_w = texture_map::repeat::clamp_to_edge,
 	    };
-	    map->update(props);
+	    map = texture_map::create(props);
+	    // map->update(props);
 	    map->map_texture = shadow_map_source->textures[i];
 	    map->acquire();
 	}

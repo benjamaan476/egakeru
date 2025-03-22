@@ -115,6 +115,9 @@ bool sandbox_application::init()
     world_view = egkr::viewport::create({0, 0, width_, height_}, egkr::projection_type::perspective, glm::radians(57.f), 0.1f, 4000.f);
     world_view2 = egkr::viewport::create({20, 20, 128.8, 72}, egkr::projection_type::perspective, glm::radians(57.f), 0.1f, 4000.f);
     ui_view = egkr::viewport::create({0, 0, width_, height_}, egkr::projection_type::orthographic, 0, -100.f, 100.f);
+
+
+    frame_graph.load_resources();
     return true;
 }
 
@@ -149,6 +152,7 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     const auto& frame_data = main_scene_->get_frame_data();
     shadow_pass->do_execute = true;
     shadow_pass->data.geometries = frame_data.world_geometries;
+    shadow_pass->data.terrain = frame_data.terrain_geometries;
 
     scene_pass->do_execute = true;
     scene_pass->viewport_ = &world_view;
@@ -161,10 +165,18 @@ void sandbox_application::prepare_frame(const egkr::frame_data& /*frame_data*/)
     scene_pass->data.terrain = frame_data.terrain_geometries;
     scene_pass->data.ambient_colour = main_scene_->get_ambient_colour();
 
+    if(auto dir_light = main_scene_->get_directional_light())
+    {
+	const egkr::float4 light_dir = glm::normalize(dir_light->direction);
+	egkr::float3 shadow_map_cam_pos = -100.f * light_dir;
+	auto camera_looat = glm::lookAt(shadow_map_cam_pos, egkr::float3(0), {0,0,1});
+	scene_pass->data.directional_light_view = camera_looat;
+    }
     if (test_lines_)
     {
 	scene_pass->data.debug_geometries.push_back(egkr::render_data{.render_geometry = test_lines_->get_geometry(), .transform = test_lines_});
     }
+    
 
     const auto& pos = camera_->get_position();
     std::string text = std::format("Camera pos: {:.3} {:.3} {:.3}\n Mouse pos: {} {}", (double)pos.x, (double)pos.y, (double)pos.z, mouse_pos_.x, mouse_pos_.y);
@@ -563,10 +575,12 @@ void sandbox_application::configure_rendergraph()
     scene_pass = (egkr::pass::scene*)frame_graph.create_pass("scene", &egkr::pass::scene::create);
     frame_graph.add_sink("scene", "colourbuffer");
     frame_graph.add_sink("scene", "depthbuffer");
+    frame_graph.add_sink("scene", "shadowmap");
     frame_graph.add_source("scene", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
     frame_graph.add_source("scene", "depthbuffer", egkr::rendergraph::source::type::render_target_depth_stencil, egkr::rendergraph::source::origin::global);
     frame_graph.set_sink_linkage("scene", "colourbuffer", "skybox", "colourbuffer");
     frame_graph.set_sink_linkage("scene", "depthbuffer", {}, "depthbuffer");
+    frame_graph.set_sink_linkage("scene", "shadowmap", "shadow", "depthbuffer");
 
     editor_pass = (egkr::pass::editor*)frame_graph.create_pass("editor", &egkr::pass::editor::create);
     frame_graph.add_sink("editor", "colourbuffer");
@@ -580,7 +594,6 @@ void sandbox_application::configure_rendergraph()
     frame_graph.add_sink("ui", "colourbuffer");
     frame_graph.add_source("ui", "colourbuffer", egkr::rendergraph::source::type::render_target_colour, egkr::rendergraph::source::origin::other);
     frame_graph.set_sink_linkage("ui", "colourbuffer", "editor", "colourbuffer");
-
 
     frame_graph.finalise();
 }
